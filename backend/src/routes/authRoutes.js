@@ -1,15 +1,32 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 
+const authenticate = require("../middleware/authenticate");
+const checkActiveStatus = require("../middleware/checkActiveStatus");
+
 const {
     login,
+    changePassword,
+    refreshAccessToken,
+    logout,
 } = require("../controllers/authController");
 
 const router = express.Router();
 
+
+// ======================================================
+// LOGIN RATE LIMITER
+// Prevents brute-force login attempts
+// ======================================================
+
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
+
     limit: 10,
+
+    standardHeaders: true,
+
+    legacyHeaders: false,
 
     message: {
         message:
@@ -17,10 +34,51 @@ const loginLimiter = rateLimit({
     },
 });
 
+
+// ======================================================
+// PUBLIC ROUTES
+// ======================================================
+
+// Login
 router.post(
     "/login",
     loginLimiter,
     login
 );
+
+
+// Refresh access token
+// Uses refreshToken stored in httpOnly cookie
+router.post(
+    "/refresh",
+    refreshAccessToken
+);
+
+
+// ======================================================
+// PROTECTED ROUTES
+// ======================================================
+
+// Change own password
+router.post(
+    "/change-password",
+    authenticate,
+    checkActiveStatus,
+    changePassword
+);
+
+
+// Logout
+router.post(
+    "/logout",
+    authenticate,
+    checkActiveStatus,
+    logout
+);
+
+
+// ======================================================
+// EXPORT ROUTER
+// ======================================================
 
 module.exports = router;
