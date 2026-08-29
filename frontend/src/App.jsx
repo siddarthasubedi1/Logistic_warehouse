@@ -1,9 +1,10 @@
 import {
-  BrowserRouter,
   Navigate,
   Route,
   Routes,
 } from "react-router-dom";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
@@ -11,110 +12,172 @@ import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import TraineeDashboard from "./pages/TraineeDashboard";
+import ProfilePage from "./pages/ProfilePage";
 
-import ProtectedRoute from "./components/ProtectedRoute";
+import CreateUserPage from "./pages/admin/CreateUserPage";
+import ManageUsersPage from "./pages/admin/ManageUsersPage";
+
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public */}
+    <Routes>
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+      {/* PUBLIC */}
 
-        <Route
-          path="/unauthorized"
-          element={
-            <Unauthorized />
-          }
-        />
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
-        {/* ADMIN */}
 
-        <Route
-          element={
-            <ProtectedRoute
-              allowedRoles={[
-                "admin",
-              ]}
+      <Route
+        path="/unauthorized"
+        element={<Unauthorized />}
+      />
+
+
+      {/* =====================================
+              ADMIN
+          ====================================== */}
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/create-user"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <CreateUserPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <ManageUsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =====================================
+              TRAINER
+          ====================================== */}
+
+      <Route
+        path="/trainer"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainer",
+            ]}
+          >
+            <TrainerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/trainer/profile"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainer",
+            ]}
+          >
+            <ProfilePage
+              role="trainer"
             />
-          }
-        >
-          <Route
-            path="/admin"
-            element={
-              <AdminDashboard />
-            }
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =====================================
+              TRAINEE
+          ====================================== */}
+
+      <Route
+        path="/trainee"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/trainee/profile"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <ProfilePage
+              role="trainee"
+            />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ROOT */}
+
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to="/login"
+            replace
           />
-        </Route>
+        }
+      />
 
-        {/* TRAINER */}
 
-        <Route
-          element={
-            <ProtectedRoute
-              allowedRoles={[
-                "trainer",
-              ]}
-            />
-          }
-        >
-          <Route
-            path="/trainer"
-            element={
-              <TrainerDashboard />
-            }
+      {/* UNKNOWN */}
+
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/login"
+            replace
           />
-        </Route>
+        }
+      />
 
-        {/* TRAINEE */}
-
-        <Route
-          element={
-            <ProtectedRoute
-              allowedRoles={[
-                "trainee",
-              ]}
-            />
-          }
-        >
-          <Route
-            path="/trainee"
-            element={
-              <TraineeDashboard />
-            }
-          />
-        </Route>
-
-        {/* Default */}
-
-        <Route
-          path="/"
-          element={
-            <Navigate
-              to="/login"
-              replace
-            />
-          }
-        />
-
-        {/* Unknown route */}
-
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/login"
-              replace
-            />
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    </Routes>
   );
 }
+
 
 export default App;

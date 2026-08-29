@@ -3,13 +3,22 @@ import LoginForm from "../components/auth/LoginForm";
 
 function Login() {
     return (
-        <main className="min-h-screen bg-slate-100 lg:flex">
-            <LoginBranding />
+        <div className="min-h-screen bg-[#f5f5f5] p-3 sm:p-5">
 
-            <section className="flex min-h-screen flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
+            <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-[1450px] overflow-hidden bg-white lg:grid-cols-[1fr_1fr]">
+
+                {/* LEFT SIDE */}
+
+                <LoginBranding />
+
+
+                {/* RIGHT SIDE */}
+
                 <LoginForm />
-            </section>
-        </main>
+
+            </div>
+
+        </div>
     );
 }
 
