@@ -14,7 +14,10 @@ const {
 } = require("../controllers/adminController");
 
 const router = express.Router();
-
+const {
+    getPasswordResetRequests,
+    resetUserPassword,
+} = require("../controllers/passwordResetController");
 
 // ======================================================
 // PENDING USERS
@@ -95,6 +98,29 @@ router.delete(
     authorize("admin"),
     checkActiveStatus,
     deleteUser
+);
+
+// ======================================================
+// PASSWORD RESET MANAGEMENT
+// ======================================================
+
+// Admin: view pending password reset requests
+router.get(
+    "/password-reset-requests",
+    authenticate,
+    authorize("admin"),
+    checkActiveStatus,
+    getPasswordResetRequests
+);
+
+
+// Admin: reset Trainer/Trainee password
+router.post(
+    "/users/:id/reset-password",
+    authenticate,
+    authorize("admin"),
+    checkActiveStatus,
+    resetUserPassword
 );
 
 

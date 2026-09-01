@@ -1,8 +1,11 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 
-const authenticate = require("../middleware/authenticate");
-const checkActiveStatus = require("../middleware/checkActiveStatus");
+const authenticate =
+    require("../middleware/authenticate");
+
+const checkActiveStatus =
+    require("../middleware/checkActiveStatus");
 
 const {
     login,
@@ -11,28 +14,65 @@ const {
     logout,
 } = require("../controllers/authController");
 
-const router = express.Router();
+const {
+    requestPasswordReset,
+} = require(
+    "../controllers/passwordResetController"
+);
+
+
+const router =
+    express.Router();
 
 
 // ======================================================
 // LOGIN RATE LIMITER
-// Prevents brute-force login attempts
 // ======================================================
 
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+const loginLimiter =
+    rateLimit({
+        windowMs:
+            15 * 60 * 1000,
 
-    limit: 10,
+        limit:
+            10,
 
-    standardHeaders: true,
+        standardHeaders:
+            true,
 
-    legacyHeaders: false,
+        legacyHeaders:
+            false,
 
-    message: {
-        message:
-            "Too many login attempts. Please try again later.",
-    },
-});
+        message: {
+            message:
+                "Too many login attempts. Please try again later.",
+        },
+    });
+
+
+// ======================================================
+// FORGOT PASSWORD RATE LIMITER
+// ======================================================
+
+const forgotPasswordLimiter =
+    rateLimit({
+        windowMs:
+            15 * 60 * 1000,
+
+        limit:
+            5,
+
+        standardHeaders:
+            true,
+
+        legacyHeaders:
+            false,
+
+        message: {
+            message:
+                "Too many password reset requests. Please try again later.",
+        },
+    });
 
 
 // ======================================================
@@ -47,8 +87,15 @@ router.post(
 );
 
 
+// Forgot password request
+router.post(
+    "/forgot-password",
+    forgotPasswordLimiter,
+    requestPasswordReset
+);
+
+
 // Refresh access token
-// Uses refreshToken stored in httpOnly cookie
 router.post(
     "/refresh",
     refreshAccessToken
@@ -81,4 +128,5 @@ router.post(
 // EXPORT ROUTER
 // ======================================================
 
-module.exports = router;
+module.exports =
+    router;

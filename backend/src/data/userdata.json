@@ -41,6 +41,19 @@
         "age": 22,
         "phoneNumber": "9808908079",
         "address": "Pokhara",
-        "gender": "male"
+        "gender": "male",
+        "profileImage": "/uploads/profiles/sher-singh.jpg"
+    },
+    {
+        "id": 5,
+        "firstName": "Sher",
+        "lastName": "Singh",
+        "email": "siddarthasubedi123@gmail.com",
+        "role": "trainee",
+        "age": 22,
+        "phoneNumber": "9808908079",
+        "address": "Pokhara",
+        "gender": "male",
+        "profileImage": "/uploads/profiles/sher-singh.jpg"
     }
 ]

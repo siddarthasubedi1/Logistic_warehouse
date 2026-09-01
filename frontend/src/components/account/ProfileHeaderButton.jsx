@@ -1,23 +1,37 @@
-import { useNavigate } from "react-router-dom";
+import {
+    useNavigate,
+} from "react-router-dom";
+
+
+const BACKEND_URL =
+    "http://localhost:5000";
 
 
 function ProfileHeaderButton({
     user,
     role,
 }) {
-    const navigate = useNavigate();
+    const navigate =
+        useNavigate();
+
 
     const firstName =
         user?.firstName ||
-        (role === "trainer"
-            ? "Trainer"
-            : "Trainee");
+        (
+            role === "trainer"
+                ? "Trainer"
+                : "Trainee"
+        );
+
 
     const lastName =
-        user?.lastName || "";
+        user?.lastName ||
+        "";
+
 
     const fullName =
         `${firstName} ${lastName}`.trim();
+
 
     const initial =
         firstName
@@ -31,24 +45,44 @@ function ProfileHeaderButton({
             : "/trainee/profile";
 
 
+    const profileImageUrl =
+        user?.profileImage
+            ? `${BACKEND_URL}${user.profileImage}`
+            : "";
+
+
     return (
         <button
             type="button"
             onClick={() =>
-                navigate(profilePath)
+                navigate(
+                    profilePath
+                )
             }
             className="group flex items-center gap-3 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-50"
             title="View profile"
         >
 
-            {/* AVATAR */}
+            {/* PROFILE IMAGE */}
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 ring-2 ring-transparent transition group-hover:ring-blue-100">
-                {initial}
-            </div>
+            {profileImageUrl ? (
+                <img
+                    src={
+                        profileImageUrl
+                    }
+                    alt={
+                        `${fullName} profile`
+                    }
+                    className="h-9 w-9 shrink-0 rounded-full border border-slate-200 object-cover ring-2 ring-transparent transition group-hover:ring-blue-100"
+                />
+            ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 ring-2 ring-transparent transition group-hover:ring-blue-100">
+                    {initial}
+                </div>
+            )}
 
 
-            {/* NAME */}
+            {/* NAME + ROLE */}
 
             <div className="hidden sm:block">
 
@@ -63,7 +97,7 @@ function ProfileHeaderButton({
             </div>
 
 
-            {/* ARROW */}
+            {/* DROPDOWN ARROW */}
 
             <svg
                 viewBox="0 0 24 24"

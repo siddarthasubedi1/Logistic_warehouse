@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const userSchema = new mongoose.Schema(
     {
         username: {
@@ -52,24 +53,57 @@ const userSchema = new mongoose.Schema(
 
         gender: {
             type: String,
-            enum: ["male", "female", "other"],
+            enum: [
+                "male",
+                "female",
+                "other",
+            ],
+        },
+
+        profileImage: {
+            type: String,
+            trim: true,
+            default: "",
         },
 
         role: {
             type: String,
-            enum: ["admin", "trainer", "trainee"],
+            enum: [
+                "admin",
+                "trainer",
+                "trainee",
+            ],
             required: true,
         },
 
+
         status: {
             type: String,
-            enum: ["active", "deactivated"],
+            enum: [
+                "active",
+                "deactivated",
+            ],
             default: "active",
         },
 
         mustChangePassword: {
             type: Boolean,
             default: true,
+        },
+
+        /*
+            Increment this whenever authentication
+            sessions must be revoked.
+
+            Example:
+            - password reset
+            - password change
+            - account deactivation
+        */
+
+        authVersion: {
+            type: Number,
+            default: 0,
         },
 
         createdBy: {
@@ -88,4 +122,9 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("User", userSchema);
+
+module.exports =
+    mongoose.model(
+        "User",
+        userSchema
+    );
