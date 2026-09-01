@@ -5,7 +5,7 @@ import api from "../../services/api";
 import PasswordInput from "./PasswordInput";
 
 
-function LoginForm() {
+function LoginForm({ onForgotPassword }) {
     const navigate = useNavigate();
 
     const [username, setUsername] =
@@ -21,12 +21,20 @@ function LoginForm() {
         useState("");
 
 
+    // ======================================================
+    // CLEAR ERROR
+    // ======================================================
+
     const clearError = () => {
         if (error) {
             setError("");
         }
     };
 
+
+    // ======================================================
+    // DASHBOARD PATH
+    // ======================================================
 
     const getDashboardPath = (role) => {
         if (role === "admin") {
@@ -45,6 +53,10 @@ function LoginForm() {
     };
 
 
+    // ======================================================
+    // PROFILE PATH
+    // ======================================================
+
     const getProfilePath = (role) => {
         if (role === "trainer") {
             return "/trainer/profile";
@@ -58,11 +70,16 @@ function LoginForm() {
     };
 
 
+    // ======================================================
+    // LOGIN
+    // ======================================================
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const cleanUsername =
             username.trim();
+
 
         if (
             !cleanUsername ||
@@ -112,7 +129,9 @@ function LoginForm() {
 
 
             /*
-                Save authentication state.
+                ===========================================
+                SAVE AUTHENTICATION STATE
+                ===========================================
             */
 
             sessionStorage.setItem(
@@ -206,7 +225,9 @@ function LoginForm() {
 
 
             /*
+                ===========================================
                 DEACTIVATED ACCOUNT
+                ===========================================
             */
 
             if (
@@ -225,7 +246,9 @@ function LoginForm() {
 
 
             /*
+                ===========================================
                 INVALID USERNAME / PASSWORD
+                ===========================================
             */
 
             if (
@@ -243,7 +266,9 @@ function LoginForm() {
 
 
             /*
+                ===========================================
                 LOGIN RATE LIMIT
+                ===========================================
             */
 
             if (
@@ -258,6 +283,12 @@ function LoginForm() {
             }
 
 
+            /*
+                ===========================================
+                GENERAL ERROR
+                ===========================================
+            */
+
             setError(
                 error.response?.data
                     ?.message ||
@@ -270,12 +301,18 @@ function LoginForm() {
     };
 
 
+    // ======================================================
+    // UI
+    // ======================================================
+
     return (
         <section className="flex min-h-[680px] items-center justify-center bg-white px-6 py-10 sm:px-10 lg:px-14">
 
             <div className="w-full max-w-[410px]">
 
-                {/* MOBILE BRAND */}
+                {/* ==================================================
+                    MOBILE BRAND
+                ================================================== */}
 
                 <div className="mb-10 lg:hidden">
 
@@ -293,7 +330,9 @@ function LoginForm() {
                 </div>
 
 
-                {/* TITLE */}
+                {/* ==================================================
+                    TITLE
+                ================================================== */}
 
                 <div>
 
@@ -308,7 +347,9 @@ function LoginForm() {
                 </div>
 
 
-                {/* ERROR */}
+                {/* ==================================================
+                    ERROR
+                ================================================== */}
 
                 {error && (
                     <div className="mt-6 flex gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
@@ -336,7 +377,6 @@ function LoginForm() {
                                     r=".7"
                                     fill="currentColor"
                                 />
-
                             </svg>
 
                         </div>
@@ -358,6 +398,10 @@ function LoginForm() {
                 )}
 
 
+                {/* ==================================================
+                    LOGIN FORM
+                ================================================== */}
+
                 <form
                     onSubmit={handleSubmit}
                     className="mt-7"
@@ -377,6 +421,8 @@ function LoginForm() {
 
                         <div className="relative mt-2">
 
+                            {/* USER ICON */}
+
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
 
                                 <svg
@@ -393,7 +439,6 @@ function LoginForm() {
                                     />
 
                                     <path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6" />
-
                                 </svg>
 
                             </div>
@@ -425,6 +470,8 @@ function LoginForm() {
                             />
 
 
+                            {/* VALID USERNAME INDICATOR */}
+
                             {username &&
                                 !error && (
                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-emerald-500">
@@ -447,7 +494,9 @@ function LoginForm() {
                     </div>
 
 
-                    {/* PASSWORD */}
+                    {/* ==================================================
+                        PASSWORD
+                    ================================================== */}
 
                     <div className="mt-5">
 
@@ -472,7 +521,29 @@ function LoginForm() {
                     </div>
 
 
-                    {/* LOGIN */}
+                    {/* ==================================================
+                        FORGOT PASSWORD
+                    ================================================== */}
+
+                    <div className="mt-3 flex justify-end">
+
+                        <button
+                            type="button"
+                            onClick={
+                                onForgotPassword
+                            }
+                            disabled={loading}
+                            className="text-[10px] font-semibold text-blue-600 transition hover:text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Forgot Password?
+                        </button>
+
+                    </div>
+
+
+                    {/* ==================================================
+                        LOGIN BUTTON
+                    ================================================== */}
 
                     <button
                         type="submit"
@@ -487,7 +558,9 @@ function LoginForm() {
                 </form>
 
 
-                {/* HELP */}
+                {/* ==================================================
+                    HELP
+                ================================================== */}
 
                 <div className="mt-8 border-t border-slate-100 pt-6 text-center">
 

@@ -1,1 +1,67 @@
 @import "tailwindcss";
+
+
+html {
+    background: #f5f7fb;
+}
+
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+
+    background: #f5f7fb;
+    color: #172033;
+
+    /*
+        Prevent blinking text caret
+        on normal page content.
+    */
+
+    caret-color: transparent;
+}
+
+
+input,
+textarea,
+[contenteditable="true"] {
+    /*
+        Real text fields still need
+        the normal typing cursor.
+    */
+
+    caret-color: auto;
+}
+
+
+button,
+a,
+label,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div,
+section,
+header,
+main,
+aside,
+nav,
+table,
+th,
+td {
+    caret-color: transparent;
+}
+
+
+input,
+textarea,
+select,
+button {
+    font: inherit;
+}

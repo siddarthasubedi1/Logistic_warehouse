@@ -3,31 +3,9 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL: "http://localhost:5000/api",
-
-    /*
-        Required because the backend stores the
-        refresh token in an httpOnly cookie.
-    */
     withCredentials: true,
-
-    headers: {
-        "Content-Type": "application/json",
-    },
 });
 
-
-/*
-    ============================================
-    REQUEST INTERCEPTOR
-    ============================================
-
-    Add the current access token to protected
-    backend requests.
-
-    Example:
-
-    Authorization: Bearer eyJ...
-*/
 
 api.interceptors.request.use(
     (config) => {
@@ -36,10 +14,34 @@ api.interceptors.request.use(
                 "accessToken"
             );
 
-
         if (accessToken) {
             config.headers.Authorization =
                 `Bearer ${accessToken}`;
+        }
+
+
+        /*
+            IMPORTANT:
+
+            Do not force application/json
+            when FormData is being sent.
+
+            The browser must automatically
+            generate:
+
+            multipart/form-data;
+            boundary=...
+
+            This fixes profile-image upload.
+        */
+
+        if (
+            config.data instanceof
+            FormData
+        ) {
+            delete config.headers[
+                "Content-Type"
+            ];
         }
 
 
@@ -47,16 +49,12 @@ api.interceptors.request.use(
     },
 
     (error) => {
-        return Promise.reject(error);
+        return Promise.reject(
+            error
+        );
     }
 );
 
-
-/*
-    ============================================
-    RESPONSE INTERCEPTOR
-    ============================================
-*/
 
 api.interceptors.response.use(
     (response) => {
@@ -68,21 +66,13 @@ api.interceptors.response.use(
             error.response?.status;
 
         const code =
-            error.response?.data?.code;
+            error.response?.data
+                ?.code;
 
 
-        /*
-            ====================================
-            DEACTIVATED ACCOUNT
-            ====================================
-
-            Your backend returns:
-
-            code: ACCOUNT_DEACTIVATED
-
-            when a deactivated user attempts to
-            use a protected API.
-        */
+        // ==================================================
+        // DEACTIVATED ACCOUNT
+        // ==================================================
 
         if (
             status === 403 &&
@@ -98,10 +88,34 @@ api.interceptors.response.use(
             );
 
 
-            /*
-                Avoid redirect loop if the user
-                is already on the login page.
-            */
+            if (
+                window.location.pathname !==
+                "/login"
+            ) {
+                window.location.replace(
+                    "/login"
+                );
+            }
+        }
+
+
+        // ==================================================
+        // REVOKED SESSION
+        // ==================================================
+
+        if (
+            status === 401 &&
+            code ===
+            "SESSION_REVOKED"
+        ) {
+            sessionStorage.removeItem(
+                "accessToken"
+            );
+
+            sessionStorage.removeItem(
+                "user"
+            );
+
 
             if (
                 window.location.pathname !==
@@ -114,25 +128,9 @@ api.interceptors.response.use(
         }
 
 
-        /*
-            IMPORTANT FOR SPRINT 1:
-
-            We do NOT automatically redirect every
-            401 response here.
-
-            Login itself can return 401 for an
-            incorrect username/password, and
-            LoginForm.jsx needs that response so it
-            can display:
-
-            "Invalid username or password."
-
-            Therefore normal 401 handling remains
-            with the component that made the request.
-        */
-
-
-        return Promise.reject(error);
+        return Promise.reject(
+            error
+        );
     }
 );
 

@@ -1,7 +1,33 @@
+import { useState } from "react";
+
 import LoginBranding from "../components/auth/LoginBranding";
 import LoginForm from "../components/auth/LoginForm";
+import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
+
 
 function Login() {
+    const [showForgotPassword, setShowForgotPassword] =
+        useState(false);
+
+
+    // ======================================================
+    // SHOW FORGOT PASSWORD FORM
+    // ======================================================
+
+    const handleForgotPassword = () => {
+        setShowForgotPassword(true);
+    };
+
+
+    // ======================================================
+    // RETURN TO LOGIN FORM
+    // ======================================================
+
+    const handleBackToLogin = () => {
+        setShowForgotPassword(false);
+    };
+
+
     return (
         <div className="min-h-screen bg-[#f5f5f5] p-3 sm:p-5">
 
@@ -14,12 +40,25 @@ function Login() {
 
                 {/* RIGHT SIDE */}
 
-                <LoginForm />
+                {showForgotPassword ? (
+                    <ForgotPasswordForm
+                        onBackToLogin={
+                            handleBackToLogin
+                        }
+                    />
+                ) : (
+                    <LoginForm
+                        onForgotPassword={
+                            handleForgotPassword
+                        }
+                    />
+                )}
 
             </div>
 
         </div>
     );
 }
+
 
 export default Login;
