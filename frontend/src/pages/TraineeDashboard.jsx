@@ -1,5 +1,12 @@
+import {
+    useEffect,
+    useState,
+} from "react";
+
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import TraineeHeader from "../components/trainee/TraineeHeader";
+
+import api from "../services/api";
 
 import boxLift from "../images/box-lift.jpg";
 import heightImage from "../images/hight.jpg";
@@ -9,17 +16,136 @@ import warehouseImage from "../images/warehouse.jpg";
 
 
 function TraineeDashboard() {
-    const storedUser =
-        sessionStorage.getItem("user");
+    const [user, setUser] =
+        useState(null);
 
-    let user = null;
+    const [loading, setLoading] =
+        useState(true);
 
-    try {
-        user = storedUser
-            ? JSON.parse(storedUser)
-            : null;
-    } catch {
-        user = null;
+    const [error, setError] =
+        useState("");
+
+
+    useEffect(() => {
+        const loadTrainee =
+            async () => {
+                try {
+                    setLoading(true);
+                    setError("");
+
+                    const response =
+                        await api.get(
+                            "/users/me"
+                        );
+
+                    const currentUser =
+                        response.data?.user;
+
+
+                    if (!currentUser) {
+                        setError(
+                            "Unable to load trainee information."
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        currentUser.role !==
+                        "trainee"
+                    ) {
+                        setError(
+                            "This account is not authorised to access the Trainee Dashboard."
+                        );
+
+                        return;
+                    }
+
+
+                    setUser(
+                        currentUser
+                    );
+
+
+                    sessionStorage.setItem(
+                        "user",
+                        JSON.stringify(
+                            currentUser
+                        )
+                    );
+
+                } catch (error) {
+                    console.error(
+                        "Trainee dashboard error:",
+                        error
+                    );
+
+
+                    setError(
+                        error.response?.data
+                            ?.message ||
+                        "Unable to load Trainee Dashboard."
+                    );
+
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+
+        loadTrainee();
+
+    }, []);
+
+
+    if (loading) {
+        return (
+            <DashboardLayout
+                role="trainee"
+                showHeader={false}
+            >
+                <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb]">
+
+                    <div className="text-center">
+
+                        <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+
+                        <p className="mt-4 text-sm font-medium text-slate-600">
+                            Loading Trainee Dashboard...
+                        </p>
+
+                    </div>
+
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+
+    if (error) {
+        return (
+            <DashboardLayout
+                role="trainee"
+                showHeader={false}
+            >
+                <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb] px-5">
+
+                    <div className="w-full max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+
+                        <h2 className="text-base font-bold text-slate-900">
+                            Unable to Load Dashboard
+                        </h2>
+
+                        <p className="mt-2 text-sm text-red-600">
+                            {error}
+                        </p>
+
+                    </div>
+
+                </div>
+            </DashboardLayout>
+        );
     }
 
 
@@ -30,19 +156,81 @@ function TraineeDashboard() {
         >
             <div className="min-h-screen bg-[#f6f8fb]">
 
-                <TraineeHeader user={user} />
+                <TraineeHeader
+                    user={user}
+                />
+
 
                 <div className="px-6 py-5 xl:px-7">
-
-                    {/* =================================================
-                        MAIN DASHBOARD GRID
-                    ================================================= */}
 
                     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_285px]">
 
                         {/* LEFT COLUMN */}
 
                         <div className="min-w-0 space-y-4">
+
+
+                            {/* =========================================
+                                TRAINEE ACCOUNT INFORMATION
+                            ========================================= */}
+
+                            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                    <div>
+
+                                        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-blue-600">
+                                            Trainee Account
+                                        </p>
+
+                                        <h2 className="mt-1 text-[16px] font-bold text-[#172033]">
+
+                                            {user?.firstName}{" "}
+                                            {user?.lastName}
+
+                                        </h2>
+
+                                        <p className="mt-1 text-[9px] text-slate-500">
+
+                                            Username:{" "}
+
+                                            <span className="font-semibold text-slate-700">
+                                                {user?.username}
+                                            </span>
+
+                                        </p>
+
+                                    </div>
+
+
+                                    <div className="flex gap-2">
+
+                                        <span className="rounded-full bg-blue-50 px-3 py-1.5 text-[8px] font-semibold capitalize text-blue-700">
+
+                                            {user?.role}
+
+                                        </span>
+
+
+                                        <span
+                                            className={`rounded-full px-3 py-1.5 text-[8px] font-semibold capitalize ${user?.status ===
+                                                "active"
+                                                ? "bg-emerald-50 text-emerald-700"
+                                                : "bg-red-50 text-red-600"
+                                                }`}
+                                        >
+
+                                            {user?.status}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
 
                             {/* =========================================
                                 TRAINING MODULES
@@ -56,8 +244,6 @@ function TraineeDashboard() {
 
                                 <div className="grid gap-3 md:grid-cols-2">
 
-                                    {/* MANUAL HANDLING */}
-
                                     <TrainingCard
                                         status="IN PROGRESS"
                                         statusType="progress"
@@ -68,8 +254,6 @@ function TraineeDashboard() {
                                         buttonText="Continue Learning"
                                     />
 
-
-                                    {/* WORKING AT HEIGHT */}
 
                                     <TrainingCard
                                         status="NOT STARTED"
@@ -230,11 +414,10 @@ function TraineeDashboard() {
                         </div>
 
 
-                        {/* =================================================
-                            RIGHT COLUMN
-                        ================================================= */}
+                        {/* RIGHT COLUMN */}
 
                         <div className="space-y-4">
+
 
                             {/* PROGRESS */}
 
@@ -747,7 +930,8 @@ function Notification({
         <div className="flex items-start gap-3">
 
             <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles[color]}`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles[color]
+                    }`}
             >
 
                 {icon === "gift" && (
