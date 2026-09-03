@@ -81,6 +81,10 @@ describe("Authentication", () => {
                 username: "testtrainer",
                 passwordHash,
                 role: "trainer",
+                age: 25,
+                phoneNumber: "9800000000",
+                address: "Kathmandu, Nepal",
+                gender: "male",
                 status: "active",
                 mustChangePassword: false,
             });
@@ -134,6 +138,10 @@ describe("Authentication", () => {
                 username: "testtrainee",
                 passwordHash,
                 role: "trainee",
+                age: 22,
+                phoneNumber: "9811111111",
+                address: "Lalitpur, Nepal",
+                gender: "female",
                 status: "active",
                 mustChangePassword: false,
             });
@@ -181,9 +189,16 @@ describe("Authentication", () => {
                 firstName: "Wrong",
                 lastName: "Password",
                 email: "wrong@test.com",
-                username: "wrongpassworduser",
+                username: "wrong.password",
                 passwordHash,
-                role: "trainee",
+                role: "trainer",
+
+                age: 25,
+                phoneNumber: "9800000001",
+                address: "Kathmandu, Nepal",
+                gender: "male",
+
+                accountStatus: "created",
                 status: "active",
                 mustChangePassword: false,
             });
@@ -260,6 +275,13 @@ describe("Authentication", () => {
                 username: "disableduser",
                 passwordHash,
                 role: "trainer",
+
+                age: 25,
+                phoneNumber: "9800000002",
+                address: "Kathmandu, Nepal",
+                gender: "male",
+
+                accountStatus: "created",
                 status: "deactivated",
                 mustChangePassword: false,
             });

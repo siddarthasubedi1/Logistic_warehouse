@@ -12,12 +12,9 @@ async function createUser({
     username,
     password,
     role,
+    status = "active",
 }) {
-    const passwordHash =
-        await bcrypt.hash(
-            password,
-            10
-        );
+    const passwordHash = await bcrypt.hash(password, 12);
 
     return await User.create({
         firstName,
@@ -26,7 +23,16 @@ async function createUser({
         username,
         passwordHash,
         role,
-        status: "active",
+
+        ...(role !== "admin" && {
+            age: 25,
+            phoneNumber: "9800000000",
+            address: "Kathmandu, Nepal",
+            gender: "male",
+        }),
+
+        accountStatus: "created",
+        status,
         mustChangePassword: false,
     });
 }
