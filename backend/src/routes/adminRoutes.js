@@ -1,10 +1,7 @@
 const express = require("express");
 
-const authenticate = require("../middleware/authenticate");
-const authorize = require("../middleware/authorize");
-const checkActiveStatus = require("../middleware/checkActiveStatus");
-
 const {
+    createPendingUser,
     getPendingUsers,
     generateCredentials,
     listUsers,
@@ -13,119 +10,147 @@ const {
     deleteUser,
 } = require("../controllers/adminController");
 
-const router = express.Router();
 const {
     getPasswordResetRequests,
     resetUserPassword,
 } = require("../controllers/passwordResetController");
 
+const authenticate = require("../middleware/authenticate");
+const authorize = require("../middleware/authorize");
+const checkActiveStatus = require("../middleware/checkActiveStatus");
+
+const router = express.Router();
+
+
 // ======================================================
-// PENDING USERS
-// Reads users from userdata.json
-// Admin only
+// ADMIN PROTECTION
+// All routes below require:
+// 1. Logged-in user
+// 2. Active account
+// 3. Admin role
+// ======================================================
+
+router.use(
+    authenticate,
+    checkActiveStatus,
+    authorize("admin")
+);
+
+
+// ======================================================
+// CREATE USER INFORMATION
+// Save Trainer/Trainee information into MongoDB
+// accountStatus = pending
+//
+// POST /api/admin/pending-users
+// ======================================================
+
+router.post(
+    "/pending-users",
+    createPendingUser
+);
+
+
+// ======================================================
+// GET PENDING USERS
+// Used by Select Pending User dropdown
+//
+// GET /api/admin/pending-users
 // ======================================================
 
 router.get(
     "/pending-users",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     getPendingUsers
 );
 
 
 // ======================================================
-// GENERATE CREDENTIALS
-// Admin selects a pending user and generates account
+// GENERATE ACCOUNT CREDENTIALS
+// Generates username + temporary password
+// Updates same User document:
+// pending -> created
+//
+// POST /api/admin/generate-credentials
 // ======================================================
 
 router.post(
     "/generate-credentials",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     generateCredentials
 );
 
 
 // ======================================================
 // LIST CREATED USERS
-// Returns Trainer and Trainee accounts from MongoDB
+//
+// GET /api/admin/users
 // ======================================================
 
 router.get(
     "/users",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     listUsers
 );
 
 
 // ======================================================
+// PASSWORD RESET REQUESTS
+// Admin views pending Trainer/Trainee reset requests
+//
+// GET /api/admin/password-reset-requests
+// ======================================================
+
+router.get(
+    "/password-reset-requests",
+    getPasswordResetRequests
+);
+
+
+// ======================================================
+// ADMIN RESET USER PASSWORD
+// Generates a new temporary password
+//
+// POST /api/admin/users/:id/reset-password
+// ======================================================
+
+router.post(
+    "/users/:id/reset-password",
+    resetUserPassword
+);
+
+
+// ======================================================
 // DEACTIVATE USER
+//
+// PATCH /api/admin/users/:id/deactivate
 // ======================================================
 
 router.patch(
     "/users/:id/deactivate",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     deactivateUser
 );
 
 
 // ======================================================
 // REACTIVATE USER
+//
+// PATCH /api/admin/users/:id/reactivate
 // ======================================================
 
 router.patch(
     "/users/:id/reactivate",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     reactivateUser
 );
 
 
 // ======================================================
 // DELETE USER
+//
+// DELETE /api/admin/users/:id
 // ======================================================
 
 router.delete(
     "/users/:id",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
     deleteUser
 );
 
-// ======================================================
-// PASSWORD RESET MANAGEMENT
-// ======================================================
-
-// Admin: view pending password reset requests
-router.get(
-    "/password-reset-requests",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
-    getPasswordResetRequests
-);
-
-
-// Admin: reset Trainer/Trainee password
-router.post(
-    "/users/:id/reset-password",
-    authenticate,
-    authorize("admin"),
-    checkActiveStatus,
-    resetUserPassword
-);
-
-
-// ======================================================
-// EXPORT ROUTER
-// ======================================================
 
 module.exports = router;
