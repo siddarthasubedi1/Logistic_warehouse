@@ -55,5 +55,17 @@
         "address": "Pokhara",
         "gender": "male",
         "profileImage": "/uploads/profiles/sher-singh.jpg"
+    },
+    {
+        "id": 6,
+        "firstName": "Sharan",
+        "lastName": "Karki",
+        "email": "siddarthasubedi123@gmail.com",
+        "role": "trainer",
+        "age": 34,
+        "phoneNumber": "9808908079",
+        "address": "Pokhara",
+        "gender": "male",
+        "profileImage": "/uploads/profiles/sher-singh.jpg"
     }
 ]

@@ -4,7 +4,6 @@ const bcrypt = require("bcrypt");
 const app = require("../app");
 const User = require("../src/models/User");
 
-
 async function createUser({
     firstName,
     lastName,
