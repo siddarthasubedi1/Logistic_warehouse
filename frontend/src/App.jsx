@@ -12,10 +12,16 @@ import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import TraineeDashboard from "./pages/TraineeDashboard";
+
 import ProfilePage from "./pages/ProfilePage";
 
 import CreateUserPage from "./pages/admin/CreateUserPage";
 import ManageUsersPage from "./pages/admin/ManageUsersPage";
+import RolesPermissionsPage from "./pages/admin/RolesPermissionsPage";
+import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
+import EditRolePage from "./pages/admin/EditRolePage";
+
+import TrainerTrainingSectionPage from "./pages/trainer/TrainerTrainingSectionPage";
 
 
 function App() {
@@ -36,9 +42,7 @@ function App() {
       />
 
 
-      {/* =====================================
-              ADMIN
-          ====================================== */}
+      {/* ADMIN */}
 
       <Route
         path="/admin"
@@ -82,9 +86,49 @@ function App() {
       />
 
 
-      {/* =====================================
-              TRAINER
-          ====================================== */}
+      <Route
+        path="/admin/roles"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <RolesPermissionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/roles/:roleName/edit"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <EditRolePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/roles/:roleName"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <RoleDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* TRAINER */}
 
       <Route
         path="/trainer"
@@ -95,6 +139,20 @@ function App() {
             ]}
           >
             <TrainerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/trainer/training/:sectionId"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainer",
+            ]}
+          >
+            <TrainerTrainingSectionPage />
           </ProtectedRoute>
         }
       />
@@ -116,9 +174,7 @@ function App() {
       />
 
 
-      {/* =====================================
-              TRAINEE
-          ====================================== */}
+      {/* TRAINEE */}
 
       <Route
         path="/trainee"

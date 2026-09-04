@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema(
             sparse: true,
             lowercase: true,
             trim: true,
-            default: null,
         },
 
         email: {
@@ -38,34 +37,58 @@ const userSchema = new mongoose.Schema(
 
         age: {
             type: Number,
+
             required: function () {
-                return this.role === "trainer" || this.role === "trainee";
+                return (
+                    this.role === "trainer" ||
+                    this.role === "trainee"
+                );
             },
+
             min: 16,
         },
 
         phoneNumber: {
             type: String,
+
             required: function () {
-                return this.role === "trainer" || this.role === "trainee";
+                return (
+                    this.role === "trainer" ||
+                    this.role === "trainee"
+                );
             },
+
             trim: true,
         },
 
         address: {
             type: String,
+
             required: function () {
-                return this.role === "trainer" || this.role === "trainee";
+                return (
+                    this.role === "trainer" ||
+                    this.role === "trainee"
+                );
             },
+
             trim: true,
         },
 
         gender: {
             type: String,
+
             required: function () {
-                return this.role === "trainer" || this.role === "trainee";
+                return (
+                    this.role === "trainer" ||
+                    this.role === "trainee"
+                );
             },
-            enum: ["male", "female", "other"],
+
+            enum: [
+                "male",
+                "female",
+                "other",
+            ],
         },
 
         profileImage: {
@@ -76,19 +99,62 @@ const userSchema = new mongoose.Schema(
 
         role: {
             type: String,
-            enum: ["admin", "trainer", "trainee"],
+
+            enum: [
+                "admin",
+                "trainer",
+                "trainee",
+            ],
+
             required: true,
+        },
+
+        /*
+            Training sections assigned to a Trainer.
+
+            A Trainer can have:
+            []
+            ["manual-handling"]
+            ["working-at-height"]
+            ["manual-handling", "working-at-height"]
+
+            This allows ONE Trainer to manage
+            more than one training section.
+        */
+        assignedTrainingSections: {
+            type: [
+                {
+                    type: String,
+
+                    enum: [
+                        "manual-handling",
+                        "working-at-height",
+                    ],
+                },
+            ],
+
+            default: [],
         },
 
         accountStatus: {
             type: String,
-            enum: ["pending", "created"],
+
+            enum: [
+                "pending",
+                "created",
+            ],
+
             default: "pending",
         },
 
         status: {
             type: String,
-            enum: ["active", "deactivated"],
+
+            enum: [
+                "active",
+                "deactivated",
+            ],
+
             default: "active",
         },
 
@@ -97,15 +163,6 @@ const userSchema = new mongoose.Schema(
             default: true,
         },
 
-        /*
-            Increment this whenever authentication
-            sessions must be revoked.
-
-            Example:
-            - password reset
-            - password change
-            - account deactivation
-        */
         authVersion: {
             type: Number,
             default: 0,
@@ -127,4 +184,8 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports =
+    mongoose.model(
+        "User",
+        userSchema
+    );

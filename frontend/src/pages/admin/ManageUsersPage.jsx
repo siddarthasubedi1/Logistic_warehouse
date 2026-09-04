@@ -1,7 +1,12 @@
-import { useLocation } from "react-router-dom";
+import {
+    useLocation,
+} from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+
 import ManageUsersTable from "../../components/admin/ManageUsersTable";
+
+import TrainerAssignmentsPanel from "../../components/admin/TrainerAssignmentsPanel";
 
 
 function ManageUsersPage() {
@@ -10,7 +15,7 @@ function ManageUsersPage() {
 
 
     // ======================================================
-    // PASSWORD RESET NAVIGATION DATA
+    // PASSWORD RESET NAVIGATION
     // ======================================================
 
     const selectedUserId =
@@ -36,14 +41,25 @@ function ManageUsersPage() {
             subtitle="View and manage Trainer and Trainee access."
         >
 
-            <ManageUsersTable
-                selectedUserId={
-                    selectedUserId
-                }
-                passwordResetRequest={
-                    passwordResetRequest
-                }
-            />
+            <div className="space-y-6">
+
+                {/* TRAINER ASSIGNMENTS */}
+
+                <TrainerAssignmentsPanel />
+
+
+                {/* USER MANAGEMENT */}
+
+                <ManageUsersTable
+                    selectedUserId={
+                        selectedUserId
+                    }
+                    passwordResetRequest={
+                        passwordResetRequest
+                    }
+                />
+
+            </div>
 
         </DashboardLayout>
     );

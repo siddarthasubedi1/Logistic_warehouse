@@ -1,4 +1,6 @@
-const express = require("express");
+const express =
+    require("express");
+
 
 const {
     createPendingUser,
@@ -8,26 +10,48 @@ const {
     deactivateUser,
     reactivateUser,
     deleteUser,
-} = require("../controllers/adminController");
+} = require(
+    "../controllers/adminController"
+);
+
 
 const {
     getPasswordResetRequests,
     resetUserPassword,
-} = require("../controllers/passwordResetController");
+} = require(
+    "../controllers/passwordResetController"
+);
 
-const authenticate = require("../middleware/authenticate");
-const authorize = require("../middleware/authorize");
-const checkActiveStatus = require("../middleware/checkActiveStatus");
 
-const router = express.Router();
+const {
+    updateTrainerTrainingSections,
+} = require(
+    "../controllers/trainerAssignmentController"
+);
+
+
+const authenticate =
+    require(
+        "../middleware/authenticate"
+    );
+
+const authorize =
+    require(
+        "../middleware/authorize"
+    );
+
+const checkActiveStatus =
+    require(
+        "../middleware/checkActiveStatus"
+    );
+
+
+const router =
+    express.Router();
 
 
 // ======================================================
 // ADMIN PROTECTION
-// All routes below require:
-// 1. Logged-in user
-// 2. Active account
-// 3. Admin role
 // ======================================================
 
 router.use(
@@ -38,11 +62,7 @@ router.use(
 
 
 // ======================================================
-// CREATE USER INFORMATION
-// Save Trainer/Trainee information into MongoDB
-// accountStatus = pending
-//
-// POST /api/admin/pending-users
+// CREATE PENDING USER
 // ======================================================
 
 router.post(
@@ -53,9 +73,6 @@ router.post(
 
 // ======================================================
 // GET PENDING USERS
-// Used by Select Pending User dropdown
-//
-// GET /api/admin/pending-users
 // ======================================================
 
 router.get(
@@ -65,12 +82,7 @@ router.get(
 
 
 // ======================================================
-// GENERATE ACCOUNT CREDENTIALS
-// Generates username + temporary password
-// Updates same User document:
-// pending -> created
-//
-// POST /api/admin/generate-credentials
+// GENERATE CREDENTIALS
 // ======================================================
 
 router.post(
@@ -80,9 +92,7 @@ router.post(
 
 
 // ======================================================
-// LIST CREATED USERS
-//
-// GET /api/admin/users
+// LIST USERS
 // ======================================================
 
 router.get(
@@ -93,9 +103,6 @@ router.get(
 
 // ======================================================
 // PASSWORD RESET REQUESTS
-// Admin views pending Trainer/Trainee reset requests
-//
-// GET /api/admin/password-reset-requests
 // ======================================================
 
 router.get(
@@ -105,10 +112,7 @@ router.get(
 
 
 // ======================================================
-// ADMIN RESET USER PASSWORD
-// Generates a new temporary password
-//
-// POST /api/admin/users/:id/reset-password
+// RESET PASSWORD
 // ======================================================
 
 router.post(
@@ -118,9 +122,22 @@ router.post(
 
 
 // ======================================================
-// DEACTIVATE USER
+// TRAINER TRAINING ASSIGNMENTS
 //
-// PATCH /api/admin/users/:id/deactivate
+// One Trainer can be assigned:
+// - Manual Handling
+// - Working at Height
+// - Both
+// ======================================================
+
+router.patch(
+    "/trainers/:id/training-sections",
+    updateTrainerTrainingSections
+);
+
+
+// ======================================================
+// DEACTIVATE USER
 // ======================================================
 
 router.patch(
@@ -131,8 +148,6 @@ router.patch(
 
 // ======================================================
 // REACTIVATE USER
-//
-// PATCH /api/admin/users/:id/reactivate
 // ======================================================
 
 router.patch(
@@ -143,8 +158,6 @@ router.patch(
 
 // ======================================================
 // DELETE USER
-//
-// DELETE /api/admin/users/:id
 // ======================================================
 
 router.delete(
@@ -153,4 +166,5 @@ router.delete(
 );
 
 
-module.exports = router;
+module.exports =
+    router;

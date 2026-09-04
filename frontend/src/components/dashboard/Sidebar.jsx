@@ -86,6 +86,33 @@ function SidebarIcon({
     }
 
 
+    if (type === "roles") {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className={iconClass}
+            >
+                <circle
+                    cx="9"
+                    cy="7"
+                    r="3"
+                />
+
+                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+
+                <path d="M17 8l2 2 3-4" />
+
+                <path d="M16 14h5" />
+
+                <path d="M18.5 11.5v5" />
+            </svg>
+        );
+    }
+
+
     if (type === "training") {
         return (
             <svg
@@ -250,29 +277,6 @@ function Sidebar({
         useLocation();
 
 
-    /*
-        ========================================
-        SPRINT 1 NAVIGATION
-        ========================================
-
-        Admin:
-        - Dashboard
-        - Create User
-        - Manage Users
-
-        Trainer:
-        - Dashboard only
-
-        Trainee:
-        - Dashboard only as working route
-
-        Other trainee items are shown visually
-        because they are part of the supplied
-        trainee UI, but they are disabled until
-        later sprint implementation.
-    */
-
-
     const adminItems = [
         {
             label: "Dashboard",
@@ -292,6 +296,13 @@ function Sidebar({
             label: "Manage Users",
             path: "/admin/users",
             icon: "users",
+            enabled: true,
+        },
+
+        {
+            label: "Roles & Permissions",
+            path: "/admin/roles",
+            icon: "roles",
             enabled: true,
         },
     ];
@@ -377,21 +388,31 @@ function Sidebar({
         roleItems[role] || [];
 
 
+    const isItemActive = (item) => {
+        if (item.path === "/admin/roles") {
+            return location.pathname.startsWith(
+                "/admin/roles"
+            );
+        }
+
+        return (
+            location.pathname ===
+            item.path
+        );
+    };
+
+
     return (
         <aside className="flex min-h-screen w-[190px] flex-col bg-[#073763] text-white">
 
-            {/* =====================================
-                LOGO
-            ====================================== */}
+            {/* LOGO */}
 
             <div className="border-b border-white/10 px-5 py-5">
                 <Logo light />
             </div>
 
 
-            {/* =====================================
-                NAVIGATION
-            ====================================== */}
+            {/* NAVIGATION */}
 
             <nav className="flex flex-1 flex-col px-3 py-5">
 
@@ -401,14 +422,10 @@ function Sidebar({
                         (item) => {
 
                             const active =
-                                location.pathname ===
-                                item.path;
+                                isItemActive(
+                                    item
+                                );
 
-
-                            /*
-                                Disabled items are visual
-                                only and do not navigate.
-                            */
 
                             if (!item.enabled) {
                                 return (
@@ -466,9 +483,7 @@ function Sidebar({
                 </div>
 
 
-                {/* =====================================
-                    LOGOUT
-                ====================================== */}
+                {/* LOGOUT */}
 
                 <div className="mt-4 border-t border-white/10 pt-4">
 
@@ -477,9 +492,7 @@ function Sidebar({
                 </div>
 
 
-                {/* =====================================
-                    TRAINEE BOTTOM SAFETY CARD
-                ====================================== */}
+                {/* TRAINEE BOTTOM CARD */}
 
                 {role === "trainee" && (
                     <div className="mt-auto pt-8">
@@ -532,9 +545,7 @@ function Sidebar({
                 )}
 
 
-                {/* =====================================
-                    TRAINER SPRINT 1 BADGE
-                ====================================== */}
+                {/* TRAINER BADGE */}
 
                 {role === "trainer" && (
                     <div className="mt-auto pt-8">
@@ -559,12 +570,11 @@ function Sidebar({
 
 
                             <p className="mt-3 text-[11px] font-semibold text-white">
-                                Trainer Access
+                                Trainer
                             </p>
 
-                            <p className="mt-1 text-[9px] leading-4 text-slate-300">
-                                Secure role-based access
-                                enabled.
+                            <p className="mt-1 text-[10px] leading-4 text-slate-300">
+                                Training and trainee management.
                             </p>
 
                         </div>
@@ -573,9 +583,7 @@ function Sidebar({
                 )}
 
 
-                {/* =====================================
-                    ADMIN SPRINT 1 BADGE
-                ====================================== */}
+                {/* ADMIN BADGE */}
 
                 {role === "admin" && (
                     <div className="mt-auto pt-8">
@@ -584,29 +592,9 @@ function Sidebar({
 
                             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
 
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-5 w-5"
-                                >
-                                    <circle
-                                        cx="9"
-                                        cy="8"
-                                        r="3"
-                                    />
-
-                                    <circle
-                                        cx="17"
-                                        cy="9"
-                                        r="2"
-                                    />
-
-                                    <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                                    <path d="M15 15c3 0 5 1.6 5.5 5" />
-                                </svg>
+                                <SidebarIcon
+                                    type="users"
+                                />
 
                             </div>
 
@@ -615,9 +603,8 @@ function Sidebar({
                                 Administrator
                             </p>
 
-                            <p className="mt-1 text-[9px] leading-4 text-slate-300">
-                                User account and access
-                                management.
+                            <p className="mt-1 text-[10px] leading-4 text-slate-300">
+                                User account and access management.
                             </p>
 
                         </div>
