@@ -1,5 +1,6 @@
 import {
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
@@ -15,89 +16,532 @@ import loadingImage from "../images/loading.jpg";
 import warehouseImage from "../images/warehouse.jpg";
 
 
+// ======================================================
+// TRAINING MODULES
+// ======================================================
+
+const TRAINING_MODULES = {
+    "manual-handling": {
+        id:
+            "manual-handling",
+
+        title:
+            "Manual Handling",
+
+        description:
+            "Learn safe manual handling techniques and reduce injury risks.",
+
+        image:
+            boxLift,
+    },
+
+
+    "working-at-height": {
+        id:
+            "working-at-height",
+
+        title:
+            "Working at Height",
+
+        description:
+            "Learn how to work safely at elevated heights and prevent falls.",
+
+        image:
+            heightImage,
+    },
+};
+
+
+// ======================================================
+// FORMAT STATUS
+// ======================================================
+
+const formatTrainingStatus = (
+    status
+) => {
+    if (
+        status ===
+        "in-progress"
+    ) {
+        return {
+            label:
+                "IN PROGRESS",
+
+            type:
+                "progress",
+
+            buttonText:
+                "Continue Learning",
+        };
+    }
+
+
+    if (
+        status ===
+        "completed"
+    ) {
+        return {
+            label:
+                "COMPLETED",
+
+            type:
+                "completed",
+
+            buttonText:
+                "Review Training",
+        };
+    }
+
+
+    return {
+        label:
+            "NOT STARTED",
+
+        type:
+            "notStarted",
+
+        buttonText:
+            "Start Learning",
+    };
+};
+
+
+// ======================================================
+// DASHBOARD
+// ======================================================
+
 function TraineeDashboard() {
-    const [user, setUser] =
-        useState(null);
+    const [
+        user,
+        setUser,
+    ] = useState(null);
 
-    const [loading, setLoading] =
-        useState(true);
 
-    const [error, setError] =
-        useState("");
+    const [
+        trainingProgress,
+        setTrainingProgress,
+    ] = useState([]);
+
+
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
+
+
+    const [
+        error,
+        setError,
+    ] = useState("");
+
+
+    const [
+        moduleActionError,
+        setModuleActionError,
+    ] = useState("");
+
+
+    const [
+        startingModule,
+        setStartingModule,
+    ] = useState("");
+
+
+    // ==================================================
+    // LOAD DASHBOARD
+    // ==================================================
+
+    const loadDashboard =
+        async () => {
+            try {
+                setLoading(
+                    true
+                );
+
+                setError(
+                    ""
+                );
+
+
+                // ==========================================
+                // LOAD CURRENT USER
+                // ==========================================
+
+                const userResponse =
+                    await api.get(
+                        "/users/me"
+                    );
+
+
+                const currentUser =
+                    userResponse.data
+                        ?.user;
+
+
+                if (
+                    !currentUser
+                ) {
+                    setError(
+                        "Unable to load trainee information."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    currentUser.role !==
+                    "trainee"
+                ) {
+                    setError(
+                        "This account is not authorised to access the Trainee Dashboard."
+                    );
+
+                    return;
+                }
+
+
+                setUser(
+                    currentUser
+                );
+
+
+                sessionStorage.setItem(
+                    "user",
+
+                    JSON.stringify(
+                        currentUser
+                    )
+                );
+
+
+                // ==========================================
+                // LOAD REAL TRAINING PROGRESS
+                // ==========================================
+
+                const progressResponse =
+                    await api.get(
+                        "/users/me/training-progress"
+                    );
+
+
+                setTrainingProgress(
+                    Array.isArray(
+                        progressResponse
+                            .data
+                            ?.progress
+                    )
+                        ? progressResponse
+                            .data
+                            .progress
+                        : []
+                );
+
+            } catch (error) {
+                console.error(
+                    "Trainee dashboard error:",
+                    error
+                );
+
+
+                setError(
+                    error.response
+                        ?.data
+                        ?.message ||
+                    "Unable to load Trainee Dashboard."
+                );
+
+            } finally {
+                setLoading(
+                    false
+                );
+            }
+        };
 
 
     useEffect(() => {
-        const loadTrainee =
-            async () => {
-                try {
-                    setLoading(true);
-                    setError("");
-
-                    const response =
-                        await api.get(
-                            "/users/me"
-                        );
-
-                    const currentUser =
-                        response.data?.user;
-
-
-                    if (!currentUser) {
-                        setError(
-                            "Unable to load trainee information."
-                        );
-
-                        return;
-                    }
-
-
-                    if (
-                        currentUser.role !==
-                        "trainee"
-                    ) {
-                        setError(
-                            "This account is not authorised to access the Trainee Dashboard."
-                        );
-
-                        return;
-                    }
-
-
-                    setUser(
-                        currentUser
-                    );
-
-
-                    sessionStorage.setItem(
-                        "user",
-                        JSON.stringify(
-                            currentUser
-                        )
-                    );
-
-                } catch (error) {
-                    console.error(
-                        "Trainee dashboard error:",
-                        error
-                    );
-
-
-                    setError(
-                        error.response?.data
-                            ?.message ||
-                        "Unable to load Trainee Dashboard."
-                    );
-
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-
-        loadTrainee();
-
+        loadDashboard();
     }, []);
 
+
+    // ==================================================
+    // ASSIGNED SECTIONS
+    // ==================================================
+
+    const assignedTrainingSections =
+        useMemo(() => {
+            if (
+                !Array.isArray(
+                    user
+                        ?.assignedTrainingSections
+                )
+            ) {
+                return [];
+            }
+
+
+            return user
+                .assignedTrainingSections;
+
+        }, [
+            user,
+        ]);
+
+
+    // ==================================================
+    // COMBINE ASSIGNMENT + REAL PROGRESS
+    // ==================================================
+
+    const assignedModules =
+        useMemo(() => {
+            return assignedTrainingSections
+                .map(
+                    (
+                        sectionId
+                    ) => {
+                        const module =
+                            TRAINING_MODULES[
+                            sectionId
+                            ];
+
+
+                        if (!module) {
+                            return null;
+                        }
+
+
+                        const progressRecord =
+                            trainingProgress.find(
+                                (
+                                    item
+                                ) =>
+                                    item.trainingSection ===
+                                    sectionId
+                            );
+
+
+                        const status =
+                            progressRecord
+                                ?.status ||
+                            "not-started";
+
+
+                        const progress =
+                            Number(
+                                progressRecord
+                                    ?.progress ||
+                                0
+                            );
+
+
+                        const statusInfo =
+                            formatTrainingStatus(
+                                status
+                            );
+
+
+                        return {
+                            ...module,
+
+                            status,
+
+                            progress,
+
+                            statusLabel:
+                                statusInfo.label,
+
+                            statusType:
+                                statusInfo.type,
+
+                            buttonText:
+                                statusInfo.buttonText,
+
+                            startedAt:
+                                progressRecord
+                                    ?.startedAt ||
+                                null,
+
+                            completedAt:
+                                progressRecord
+                                    ?.completedAt ||
+                                null,
+                        };
+                    }
+                )
+                .filter(
+                    Boolean
+                );
+
+        }, [
+            assignedTrainingSections,
+            trainingProgress,
+        ]);
+
+
+    // ==================================================
+    // DASHBOARD STATISTICS
+    // ==================================================
+
+    const completedModules =
+        assignedModules.filter(
+            (
+                module
+            ) =>
+                module.status ===
+                "completed"
+        ).length;
+
+
+    const totalProgress =
+        assignedModules.length >
+            0
+            ? Math.round(
+                assignedModules.reduce(
+                    (
+                        total,
+                        module
+                    ) =>
+                        total +
+                        module.progress,
+                    0
+                ) /
+                assignedModules.length
+            )
+            : 0;
+
+
+    // ==================================================
+    // START / CONTINUE TRAINING
+    // ==================================================
+
+    const handleTrainingClick =
+        async (
+            moduleId
+        ) => {
+            try {
+                setStartingModule(
+                    moduleId
+                );
+
+
+                setModuleActionError(
+                    ""
+                );
+
+
+                const response =
+                    await api.post(
+                        `/users/me/training-progress/${moduleId}/start`
+                    );
+
+
+                const updatedProgress =
+                    response.data
+                        ?.progress;
+
+
+                if (
+                    updatedProgress
+                ) {
+                    setTrainingProgress(
+                        (
+                            currentProgress
+                        ) => {
+                            const exists =
+                                currentProgress.some(
+                                    (
+                                        item
+                                    ) =>
+                                        item.trainingSection ===
+                                        moduleId
+                                );
+
+
+                            if (exists) {
+                                return currentProgress.map(
+                                    (
+                                        item
+                                    ) =>
+                                        item.trainingSection ===
+                                            moduleId
+                                            ? {
+                                                ...item,
+
+                                                trainingSection:
+                                                    updatedProgress.trainingSection,
+
+                                                status:
+                                                    updatedProgress.status,
+
+                                                progress:
+                                                    updatedProgress.progress,
+
+                                                startedAt:
+                                                    updatedProgress.startedAt,
+
+                                                completedAt:
+                                                    updatedProgress.completedAt,
+
+                                                lastAccessedAt:
+                                                    updatedProgress.lastAccessedAt,
+                                            }
+                                            : item
+                                );
+                            }
+
+
+                            return [
+                                ...currentProgress,
+
+                                {
+                                    trainingSection:
+                                        updatedProgress.trainingSection,
+
+                                    status:
+                                        updatedProgress.status,
+
+                                    progress:
+                                        updatedProgress.progress,
+
+                                    startedAt:
+                                        updatedProgress.startedAt,
+
+                                    completedAt:
+                                        updatedProgress.completedAt,
+
+                                    lastAccessedAt:
+                                        updatedProgress.lastAccessedAt,
+                                },
+                            ];
+                        }
+                    );
+                }
+
+            } catch (error) {
+                console.error(
+                    "Start training error:",
+                    error
+                );
+
+
+                setModuleActionError(
+                    error.response
+                        ?.data
+                        ?.message ||
+                    "Unable to start this training module."
+                );
+
+            } finally {
+                setStartingModule(
+                    ""
+                );
+            }
+        };
+
+
+    // ==================================================
+    // LOADING
+    // ==================================================
 
     if (loading) {
         return (
@@ -105,11 +549,13 @@ function TraineeDashboard() {
                 role="trainee"
                 showHeader={false}
             >
+
                 <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb]">
 
                     <div className="text-center">
 
                         <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+
 
                         <p className="mt-4 text-sm font-medium text-slate-600">
                             Loading Trainee Dashboard...
@@ -118,10 +564,15 @@ function TraineeDashboard() {
                     </div>
 
                 </div>
+
             </DashboardLayout>
         );
     }
 
+
+    // ==================================================
+    // ERROR
+    // ==================================================
 
     if (error) {
         return (
@@ -129,6 +580,7 @@ function TraineeDashboard() {
                 role="trainee"
                 showHeader={false}
             >
+
                 <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb] px-5">
 
                     <div className="w-full max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
@@ -137,6 +589,7 @@ function TraineeDashboard() {
                             Unable to Load Dashboard
                         </h2>
 
+
                         <p className="mt-2 text-sm text-red-600">
                             {error}
                         </p>
@@ -144,6 +597,7 @@ function TraineeDashboard() {
                     </div>
 
                 </div>
+
             </DashboardLayout>
         );
     }
@@ -154,10 +608,13 @@ function TraineeDashboard() {
             role="trainee"
             showHeader={false}
         >
+
             <div className="min-h-screen bg-[#f6f8fb]">
 
                 <TraineeHeader
-                    user={user}
+                    user={
+                        user
+                    }
                 />
 
 
@@ -165,14 +622,15 @@ function TraineeDashboard() {
 
                     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_285px]">
 
-                        {/* LEFT COLUMN */}
+
+                        {/* ================================================= */}
+                        {/* LEFT */}
+                        {/* ================================================= */}
 
                         <div className="min-w-0 space-y-4">
 
 
-                            {/* =========================================
-                                TRAINEE ACCOUNT INFORMATION
-                            ========================================= */}
+                            {/* ACCOUNT */}
 
                             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
 
@@ -184,12 +642,14 @@ function TraineeDashboard() {
                                             Trainee Account
                                         </p>
 
+
                                         <h2 className="mt-1 text-[16px] font-bold text-[#172033]">
 
                                             {user?.firstName}{" "}
                                             {user?.lastName}
 
                                         </h2>
+
 
                                         <p className="mt-1 text-[9px] text-slate-500">
 
@@ -204,12 +664,10 @@ function TraineeDashboard() {
                                     </div>
 
 
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
 
                                         <span className="rounded-full bg-blue-50 px-3 py-1.5 text-[8px] font-semibold capitalize text-blue-700">
-
                                             {user?.role}
-
                                         </span>
 
 
@@ -220,9 +678,7 @@ function TraineeDashboard() {
                                                 : "bg-red-50 text-red-600"
                                                 }`}
                                         >
-
                                             {user?.status}
-
                                         </span>
 
                                     </div>
@@ -232,49 +688,109 @@ function TraineeDashboard() {
                             </section>
 
 
-                            {/* =========================================
-                                TRAINING MODULES
-                            ========================================= */}
+                            {/* MODULE ACTION ERROR */}
+
+                            {moduleActionError && (
+                                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[10px] font-medium text-red-700">
+                                    {moduleActionError}
+                                </div>
+                            )}
+
+
+                            {/* TRAINING */}
 
                             <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
 
-                                <h2 className="mb-3 text-[13px] font-bold text-[#172033]">
-                                    My Training Modules
-                                </h2>
+                                <div className="mb-3 flex items-center justify-between gap-3">
 
-                                <div className="grid gap-3 md:grid-cols-2">
+                                    <div>
 
-                                    <TrainingCard
-                                        status="IN PROGRESS"
-                                        statusType="progress"
-                                        title="Manual Handling"
-                                        description="Learn safe manual handling techniques and reduce injury risks."
-                                        progress={60}
-                                        image={boxLift}
-                                        buttonText="Continue Learning"
-                                    />
+                                        <h2 className="text-[13px] font-bold text-[#172033]">
+                                            My Training Modules
+                                        </h2>
 
 
-                                    <TrainingCard
-                                        status="NOT STARTED"
-                                        statusType="notStarted"
-                                        title="Working at Height"
-                                        description="Learn how to work safely at elevated heights and prevent falls."
-                                        progress={0}
-                                        image={
-                                            heightImage
-                                        }
-                                        buttonText="Start Learning"
-                                    />
+                                        <p className="mt-1 text-[8px] text-slate-500">
+                                            Training assigned to you by the Administrator.
+                                        </p>
+
+                                    </div>
+
+
+                                    <span className="rounded-full bg-blue-50 px-3 py-1 text-[8px] font-semibold text-blue-700">
+
+                                        {
+                                            assignedModules.length
+                                        }{" "}
+
+                                        Assigned
+
+                                    </span>
 
                                 </div>
+
+
+                                {assignedModules.length ===
+                                    0 ? (
+
+                                    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center">
+
+                                        <h3 className="text-sm font-bold text-slate-700">
+                                            No Training Assigned
+                                        </h3>
+
+
+                                        <p className="mt-2 text-[9px] text-slate-500">
+                                            Please contact the Administrator.
+                                        </p>
+
+                                    </div>
+
+                                ) : (
+
+                                    <div
+                                        className={`grid gap-3 ${assignedModules.length >
+                                            1
+                                            ? "md:grid-cols-2"
+                                            : "grid-cols-1"
+                                            }`}
+                                    >
+
+                                        {assignedModules.map(
+                                            (
+                                                module
+                                            ) => (
+
+                                                <TrainingCard
+                                                    key={
+                                                        module.id
+                                                    }
+
+                                                    module={
+                                                        module
+                                                    }
+
+                                                    loading={
+                                                        startingModule ===
+                                                        module.id
+                                                    }
+
+                                                    onStart={
+                                                        handleTrainingClick
+                                                    }
+                                                />
+
+                                            )
+                                        )}
+
+                                    </div>
+
+                                )}
 
                             </section>
 
 
-                            {/* =========================================
-                                PANORAMIC SCENARIOS
-                            ========================================= */}
+                            {/* PANORAMIC SCENARIOS */}
 
                             <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
 
@@ -283,6 +799,7 @@ function TraineeDashboard() {
                                     <h2 className="text-[13px] font-bold text-[#172033]">
                                         Panoramic Scenarios
                                     </h2>
+
 
                                     <button
                                         type="button"
@@ -298,23 +815,31 @@ function TraineeDashboard() {
 
                                     <ScenarioCard
                                         title="Warehouse - Receiving Area"
+
                                         description="Identify hazards in the receiving area."
+
                                         image={
                                             warehouseImage
                                         }
                                     />
 
+
                                     <ScenarioCard
                                         title="Storage Area - High Risk"
+
                                         description="Spot the hazards in the storage area."
+
                                         image={
                                             insideWarehouse
                                         }
                                     />
 
+
                                     <ScenarioCard
                                         title="Loading Dock"
+
                                         description="Find and report the safety hazards."
+
                                         image={
                                             loadingImage
                                         }
@@ -325,24 +850,20 @@ function TraineeDashboard() {
                             </section>
 
 
-                            {/* =========================================
-                                QUIZ RESULTS
-                            ========================================= */}
+                            {/* QUIZ RESULTS */}
 
                             <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
 
-                                <div className="mb-3 flex items-center justify-between">
+                                <div className="mb-3">
 
                                     <h2 className="text-[13px] font-bold text-[#172033]">
                                         Recent Quiz Results
                                     </h2>
 
-                                    <button
-                                        type="button"
-                                        className="text-[10px] font-semibold text-blue-600 hover:text-blue-700"
-                                    >
-                                        View All
-                                    </button>
+
+                                    <p className="mt-1 text-[8px] text-slate-500">
+                                        Your completed quiz attempts will appear here.
+                                    </p>
 
                                 </div>
 
@@ -382,26 +903,16 @@ function TraineeDashboard() {
 
                                         <tbody>
 
-                                            <QuizRow
-                                                quiz="Manual Handling Quiz"
-                                                module="Manual Handling"
-                                                score="85%"
-                                                date="May 10, 2026"
-                                            />
+                                            <tr>
 
-                                            <QuizRow
-                                                quiz="Working at Height Quiz"
-                                                module="Working at Height"
-                                                score="70%"
-                                                date="May 15, 2026"
-                                            />
+                                                <td
+                                                    colSpan="5"
+                                                    className="px-3 py-8 text-center text-[9px] text-slate-400"
+                                                >
+                                                    No quiz attempts yet.
+                                                </td>
 
-                                            <QuizRow
-                                                quiz="Safety Basics Quiz"
-                                                module="General Safety"
-                                                score="92%"
-                                                date="May 19, 2026"
-                                            />
+                                            </tr>
 
                                         </tbody>
 
@@ -414,7 +925,9 @@ function TraineeDashboard() {
                         </div>
 
 
-                        {/* RIGHT COLUMN */}
+                        {/* ================================================= */}
+                        {/* RIGHT */}
+                        {/* ================================================= */}
 
                         <div className="space-y-4">
 
@@ -431,27 +944,39 @@ function TraineeDashboard() {
                                 <div className="mt-4 flex items-center gap-5">
 
                                     <ProgressCircle
-                                        percentage={80}
+                                        percentage={
+                                            totalProgress
+                                        }
                                     />
 
 
                                     <div className="space-y-3">
 
                                         <ProgressStat
-                                            value="2"
+                                            value={
+                                                completedModules
+                                            }
+
                                             label="Modules Completed"
+
                                             color="green"
                                         />
 
+
                                         <ProgressStat
-                                            value="4"
+                                            value="0"
+
                                             label="Quizzes Taken"
+
                                             color="blue"
                                         />
 
+
                                         <ProgressStat
-                                            value="80%"
+                                            value="0%"
+
                                             label="Average Score"
+
                                             color="orange"
                                         />
 
@@ -478,9 +1003,88 @@ function TraineeDashboard() {
                                         <path d="M22 20V8" />
                                     </svg>
 
+
                                     View Detailed Progress
 
                                 </button>
+
+                            </section>
+
+
+                            {/* ASSIGNMENT */}
+
+                            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+
+                                <h2 className="text-[13px] font-bold text-[#172033]">
+                                    My Training Status
+                                </h2>
+
+
+                                <div className="mt-4 space-y-2">
+
+                                    {assignedModules.map(
+                                        (
+                                            module
+                                        ) => (
+
+                                            <div
+                                                key={
+                                                    module.id
+                                                }
+                                                className="rounded-md border border-slate-100 bg-slate-50 px-3 py-3"
+                                            >
+
+                                                <div className="flex items-center justify-between gap-2">
+
+                                                    <p className="text-[9px] font-semibold text-slate-700">
+                                                        {module.title}
+                                                    </p>
+
+
+                                                    <span
+                                                        className={`rounded-full px-2 py-1 text-[7px] font-bold ${module.status ===
+                                                            "completed"
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : module.status ===
+                                                                "in-progress"
+                                                                ? "bg-yellow-100 text-yellow-700"
+                                                                : "bg-blue-100 text-blue-600"
+                                                            }`}
+                                                    >
+                                                        {
+                                                            module.statusLabel
+                                                        }
+                                                    </span>
+
+                                                </div>
+
+
+                                                <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-200">
+
+                                                    <div
+                                                        className="h-full bg-emerald-500"
+                                                        style={{
+                                                            width:
+                                                                `${module.progress}%`,
+                                                        }}
+                                                    />
+
+                                                </div>
+
+
+                                                <p className="mt-1 text-[7px] text-slate-400">
+                                                    {
+                                                        module.progress
+                                                    }
+                                                    % Complete
+                                                </p>
+
+                                            </div>
+
+                                        )
+                                    )}
+
+                                </div>
 
                             </section>
 
@@ -495,6 +1099,7 @@ function TraineeDashboard() {
                                         Notifications
                                     </h2>
 
+
                                     <button
                                         type="button"
                                         className="text-[9px] font-semibold text-blue-600"
@@ -505,31 +1110,34 @@ function TraineeDashboard() {
                                 </div>
 
 
-                                <div className="mt-4 space-y-4">
+                                <div className="mt-4">
 
-                                    <Notification
-                                        icon="gift"
-                                        title="New training program available"
-                                        text="Warehouse Fire Safety Training"
-                                        time="2 hours ago"
-                                        color="purple"
-                                    />
+                                    {assignedModules.length >
+                                        0 ? (
 
-                                    <Notification
-                                        icon="check"
-                                        title="You passed the quiz!"
-                                        text="Manual Handling Quiz"
-                                        time="1 day ago"
-                                        color="green"
-                                    />
+                                        <Notification
+                                            icon="gift"
 
-                                    <Notification
-                                        icon="award"
-                                        title="Complete another module"
-                                        text="Finish Working at Height module"
-                                        time="2 days ago"
-                                        color="yellow"
-                                    />
+                                            title="Training available"
+
+                                            text={`${assignedModules.length} assigned training ${assignedModules.length ===
+                                                1
+                                                ? "module is"
+                                                : "modules are"
+                                                } available.`}
+
+                                            time="Available now"
+
+                                            color="purple"
+                                        />
+
+                                    ) : (
+
+                                        <p className="text-[9px] text-slate-400">
+                                            No notifications.
+                                        </p>
+
+                                    )}
 
                                 </div>
 
@@ -540,41 +1148,26 @@ function TraineeDashboard() {
 
                             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
 
-                                <div className="flex items-center justify-between">
-
-                                    <h2 className="text-[13px] font-bold text-[#172033]">
-                                        My Achievements
-                                    </h2>
-
-                                    <button
-                                        type="button"
-                                        className="text-[9px] font-semibold text-blue-600"
-                                    >
-                                        View All
-                                    </button>
-
-                                </div>
+                                <h2 className="text-[13px] font-bold text-[#172033]">
+                                    My Achievements
+                                </h2>
 
 
-                                <div className="mt-5 grid grid-cols-3 gap-2">
+                                <div className="py-8 text-center">
 
-                                    <Achievement
-                                        type="manual"
-                                        title="Manual Handling"
-                                        subtitle="Completed"
-                                    />
+                                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                                        ☆
+                                    </div>
 
-                                    <Achievement
-                                        type="quiz"
-                                        title="Quiz Master"
-                                        subtitle="Score 80%"
-                                    />
 
-                                    <Achievement
-                                        type="vest"
-                                        title="Safety Starter"
-                                        subtitle="In Progress"
-                                    />
+                                    <p className="mt-3 text-[9px] font-semibold text-slate-600">
+                                        No achievements yet
+                                    </p>
+
+
+                                    <p className="mt-1 text-[7px] text-slate-400">
+                                        Complete training to earn achievements.
+                                    </p>
 
                                 </div>
 
@@ -609,13 +1202,16 @@ function TraineeDashboard() {
 
 
                                         <div>
+
                                             <p className="text-[10px] text-slate-600">
                                                 Need Help?
                                             </p>
 
+
                                             <p className="text-[11px] font-semibold text-blue-600">
                                                 Contact Support
                                             </p>
+
                                         </div>
 
                                     </div>
@@ -636,19 +1232,20 @@ function TraineeDashboard() {
                 </div>
 
             </div>
+
         </DashboardLayout>
     );
 }
 
 
+// ======================================================
+// TRAINING CARD
+// ======================================================
+
 function TrainingCard({
-    status,
-    statusType,
-    title,
-    description,
-    progress,
-    image,
-    buttonText,
+    module,
+    loading,
+    onStart,
 }) {
     return (
         <div className="overflow-hidden rounded-md border border-slate-200 bg-white">
@@ -658,38 +1255,51 @@ function TrainingCard({
                 <div className="flex flex-col p-4">
 
                     <span
-                        className={`w-fit rounded px-2 py-1 text-[8px] font-bold ${statusType ===
+                        className={`w-fit rounded px-2 py-1 text-[8px] font-bold ${module.statusType ===
                             "progress"
-                            ? "bg-emerald-100 text-emerald-600"
-                            : "bg-blue-100 text-blue-500"
+                            ? "bg-amber-100 text-amber-700"
+                            : module.statusType ===
+                                "completed"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-blue-100 text-blue-500"
                             }`}
                     >
-                        {status}
+                        {
+                            module.statusLabel
+                        }
                     </span>
 
 
                     <h3 className="mt-4 text-[15px] font-bold text-[#172033]">
-                        {title}
+                        {module.title}
                     </h3>
 
 
                     <p className="mt-2 text-[9px] leading-4 text-slate-500">
-                        {description}
+                        {module.description}
                     </p>
 
 
                     <div className="mt-auto">
 
                         <p className="mb-1 text-[9px] text-slate-500">
-                            {progress}% Complete
+
+                            {
+                                module.progress
+                            }
+                            % Complete
+
                         </p>
+
 
                         <div className="h-[5px] overflow-hidden rounded-full bg-slate-200">
 
                             <div
-                                className="h-full bg-emerald-500"
+                                className="h-full bg-emerald-500 transition-all duration-300"
+
                                 style={{
-                                    width: `${progress}%`,
+                                    width:
+                                        `${module.progress}%`,
                                 }}
                             />
 
@@ -698,15 +1308,33 @@ function TrainingCard({
 
                         <button
                             type="button"
-                            className="mt-3 flex w-full items-center justify-between rounded bg-[#06345f] px-4 py-2 text-[9px] font-semibold text-white transition hover:bg-[#0a467d]"
+
+                            disabled={
+                                loading
+                            }
+
+                            onClick={() =>
+                                onStart(
+                                    module.id
+                                )
+                            }
+
+                            className="mt-3 flex w-full items-center justify-between rounded bg-[#06345f] px-4 py-2 text-[9px] font-semibold text-white transition hover:bg-[#0a467d] disabled:cursor-not-allowed disabled:opacity-60"
                         >
+
                             <span>
-                                {buttonText}
+
+                                {loading
+                                    ? "Opening..."
+                                    : module.buttonText}
+
                             </span>
+
 
                             <span>
                                 ›
                             </span>
+
                         </button>
 
                     </div>
@@ -715,8 +1343,14 @@ function TrainingCard({
 
 
                 <img
-                    src={image}
-                    alt={title}
+                    src={
+                        module.image
+                    }
+
+                    alt={
+                        module.title
+                    }
+
                     className="h-full min-h-[205px] w-full object-cover"
                 />
 
@@ -726,6 +1360,10 @@ function TrainingCard({
     );
 }
 
+
+// ======================================================
+// SCENARIO CARD
+// ======================================================
 
 function ScenarioCard({
     title,
@@ -738,10 +1376,17 @@ function ScenarioCard({
             <div className="relative">
 
                 <img
-                    src={image}
-                    alt={title}
+                    src={
+                        image
+                    }
+
+                    alt={
+                        title
+                    }
+
                     className="h-[110px] w-full object-cover"
                 />
+
 
                 <div className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/70 text-white">
 
@@ -786,11 +1431,13 @@ function ScenarioCard({
                     type="button"
                     className="mt-2 flex items-center gap-1 rounded border border-blue-200 px-2 py-1 text-[8px] font-semibold text-blue-600"
                 >
+
                     <span className="text-[10px]">
                         ▶
                     </span>
 
                     Start Scenario
+
                 </button>
 
             </div>
@@ -799,6 +1446,10 @@ function ScenarioCard({
     );
 }
 
+
+// ======================================================
+// TABLE HEADING
+// ======================================================
 
 function TableHeading({
     children,
@@ -811,43 +1462,9 @@ function TableHeading({
 }
 
 
-function QuizRow({
-    quiz,
-    module,
-    score,
-    date,
-}) {
-    return (
-        <tr className="border-b border-slate-100 last:border-b-0">
-
-            <td className="px-2 py-2 text-[8px] font-medium text-slate-700">
-                {quiz}
-            </td>
-
-            <td className="px-2 py-2 text-[8px] text-slate-600">
-                {module}
-            </td>
-
-            <td className="px-2 py-2 text-[8px] font-semibold text-slate-700">
-                {score}
-            </td>
-
-            <td className="px-2 py-2 text-[8px] text-slate-600">
-                {date}
-            </td>
-
-            <td className="px-2 py-2">
-
-                <span className="rounded bg-emerald-100 px-2 py-1 text-[8px] font-semibold text-emerald-600">
-                    Passed
-                </span>
-
-            </td>
-
-        </tr>
-    );
-}
-
+// ======================================================
+// PROGRESS CIRCLE
+// ======================================================
 
 function ProgressCircle({
     percentage,
@@ -855,11 +1472,13 @@ function ProgressCircle({
     return (
         <div
             className="relative flex h-[92px] w-[92px] shrink-0 items-center justify-center rounded-full"
+
             style={{
-                background: `conic-gradient(
-                    #9aacc1 ${percentage}%,
-                    #e3e8ef ${percentage}% 100%
-                )`,
+                background:
+                    `conic-gradient(
+                        #9aacc1 ${percentage}%,
+                        #e3e8ef ${percentage}% 100%
+                    )`,
             }}
         >
 
@@ -876,15 +1495,24 @@ function ProgressCircle({
 }
 
 
+// ======================================================
+// PROGRESS STAT
+// ======================================================
+
 function ProgressStat({
     value,
     label,
     color,
 }) {
     const colors = {
-        green: "text-emerald-600",
-        blue: "text-blue-600",
-        orange: "text-orange-500",
+        green:
+            "text-emerald-600",
+
+        blue:
+            "text-blue-600",
+
+        orange:
+            "text-orange-500",
     };
 
 
@@ -892,11 +1520,14 @@ function ProgressStat({
         <div>
 
             <p
-                className={`text-[15px] font-bold ${colors[color]
+                className={`text-[15px] font-bold ${colors[
+                    color
+                ]
                     }`}
             >
                 {value}
             </p>
+
 
             <p className="text-[8px] leading-3 text-slate-500">
                 {label}
@@ -906,6 +1537,10 @@ function ProgressStat({
     );
 }
 
+
+// ======================================================
+// NOTIFICATION
+// ======================================================
 
 function Notification({
     icon,
@@ -930,27 +1565,34 @@ function Notification({
         <div className="flex items-start gap-3">
 
             <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles[color]
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles[
+                    color
+                ]
                     }`}
             >
 
-                {icon === "gift" && (
-                    <span className="text-sm">
-                        🎁
-                    </span>
-                )}
+                {icon ===
+                    "gift" && (
+                        <span className="text-sm">
+                            🎁
+                        </span>
+                    )}
 
-                {icon === "check" && (
-                    <span className="text-sm font-bold">
-                        ✓
-                    </span>
-                )}
 
-                {icon === "award" && (
-                    <span className="text-sm">
-                        ☆
-                    </span>
-                )}
+                {icon ===
+                    "check" && (
+                        <span className="text-sm font-bold">
+                            ✓
+                        </span>
+                    )}
+
+
+                {icon ===
+                    "award" && (
+                        <span className="text-sm">
+                            ☆
+                        </span>
+                    )}
 
             </div>
 
@@ -961,73 +1603,17 @@ function Notification({
                     {title}
                 </p>
 
+
                 <p className="mt-[2px] text-[8px] text-slate-500">
                     {text}
                 </p>
+
 
                 <p className="mt-[2px] text-[7px] text-slate-400">
                     {time}
                 </p>
 
             </div>
-
-        </div>
-    );
-}
-
-
-function Achievement({
-    type,
-    title,
-    subtitle,
-}) {
-    return (
-        <div className="text-center">
-
-            <div className="mx-auto flex h-11 w-11 items-center justify-center">
-
-                {type === "manual" && (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white">
-
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-5 w-5"
-                        >
-                            <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
-
-                            <path d="m9 12 2 2 4-4" />
-                        </svg>
-
-                    </div>
-                )}
-
-
-                {type === "quiz" && (
-                    <div className="text-[30px]">
-                        🏆
-                    </div>
-                )}
-
-
-                {type === "vest" && (
-                    <div className="text-[28px]">
-                        🦺
-                    </div>
-                )}
-
-            </div>
-
-
-            <p className="mt-1 text-[8px] font-semibold text-slate-700">
-                {title}
-            </p>
-
-            <p className="mt-[2px] text-[7px] text-slate-400">
-                {subtitle}
-            </p>
 
         </div>
     );

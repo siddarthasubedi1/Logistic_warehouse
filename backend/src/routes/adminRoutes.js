@@ -3,8 +3,6 @@ const express =
 
 
 const {
-    createPendingUser,
-    getPendingUsers,
     generateCredentials,
     listUsers,
     deactivateUser,
@@ -16,17 +14,19 @@ const {
 
 
 const {
-    getPasswordResetRequests,
-    resetUserPassword,
+    createPendingUser,
+    getPendingUsers,
+    updateUserTrainingSections,
 } = require(
-    "../controllers/passwordResetController"
+    "../controllers/userTrainingAssignmentController"
 );
 
 
 const {
-    updateTrainerTrainingSections,
+    getPasswordResetRequests,
+    resetUserPassword,
 } = require(
-    "../controllers/trainerAssignmentController"
+    "../controllers/passwordResetController"
 );
 
 
@@ -35,10 +35,12 @@ const authenticate =
         "../middleware/authenticate"
     );
 
+
 const authorize =
     require(
         "../middleware/authorize"
     );
+
 
 const checkActiveStatus =
     require(
@@ -62,7 +64,9 @@ router.use(
 
 
 // ======================================================
-// CREATE PENDING USER
+// CREATE PENDING TRAINER / TRAINEE
+//
+// Training section is selected during creation.
 // ======================================================
 
 router.post(
@@ -82,7 +86,7 @@ router.get(
 
 
 // ======================================================
-// GENERATE CREDENTIALS
+// GENERATE USERNAME + PASSWORD
 // ======================================================
 
 router.post(
@@ -92,7 +96,7 @@ router.post(
 
 
 // ======================================================
-// LIST USERS
+// LIST CREATED TRAINERS + TRAINEES
 // ======================================================
 
 router.get(
@@ -112,7 +116,7 @@ router.get(
 
 
 // ======================================================
-// RESET PASSWORD
+// ADMIN RESET USER PASSWORD
 // ======================================================
 
 router.post(
@@ -122,17 +126,26 @@ router.post(
 
 
 // ======================================================
-// TRAINER TRAINING ASSIGNMENTS
+// UPDATE TRAINER OR TRAINEE TRAINING ASSIGNMENT
 //
-// One Trainer can be assigned:
-// - Manual Handling
-// - Working at Height
-// - Both
+// Examples:
+//
+// Trainer:
+// Manual Handling
+//
+// Trainer:
+// Manual Handling + Working at Height
+//
+// Trainee:
+// Working at Height
+//
+// Trainee:
+// Manual Handling + Working at Height
 // ======================================================
 
 router.patch(
-    "/trainers/:id/training-sections",
-    updateTrainerTrainingSections
+    "/users/:id/training-sections",
+    updateUserTrainingSections
 );
 
 

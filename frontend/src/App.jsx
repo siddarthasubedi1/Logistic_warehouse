@@ -22,6 +22,7 @@ import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
 import EditRolePage from "./pages/admin/EditRolePage";
 
 import TrainerTrainingSectionPage from "./pages/trainer/TrainerTrainingSectionPage";
+import TrainerTasksPage from "./pages/trainer/TrainerTasksPage";
 
 
 function App() {
@@ -34,7 +35,6 @@ function App() {
         path="/login"
         element={<Login />}
       />
-
 
       <Route
         path="/unauthorized"
@@ -153,6 +153,20 @@ function App() {
             ]}
           >
             <TrainerTrainingSectionPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/trainer/training/:sectionId/tasks"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainer",
+            ]}
+          >
+            <TrainerTasksPage />
           </ProtectedRoute>
         }
       />

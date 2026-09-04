@@ -1,5 +1,6 @@
 import {
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
@@ -10,6 +11,7 @@ const TRAINING_SECTIONS = [
     {
         id: "manual-handling",
         name: "Manual Handling",
+
         description:
             "Safe lifting, carrying and manual handling procedures.",
     },
@@ -17,6 +19,7 @@ const TRAINING_SECTIONS = [
     {
         id: "working-at-height",
         name: "Working at Height",
+
         description:
             "Safety procedures for working at elevated locations.",
     },
@@ -25,14 +28,14 @@ const TRAINING_SECTIONS = [
 
 function TrainerAssignmentsPanel() {
     const [
-        trainers,
-        setTrainers,
+        users,
+        setUsers,
     ] = useState([]);
 
 
     const [
-        selectedTrainerId,
-        setSelectedTrainerId,
+        selectedUserId,
+        setSelectedUserId,
     ] = useState("");
 
 
@@ -40,6 +43,12 @@ function TrainerAssignmentsPanel() {
         selectedSections,
         setSelectedSections,
     ] = useState([]);
+
+
+    const [
+        roleFilter,
+        setRoleFilter,
+    ] = useState("all");
 
 
     const [
@@ -67,10 +76,10 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // LOAD TRAINERS
+    // LOAD TRAINERS + TRAINEES
     // ======================================================
 
-    const loadTrainers =
+    const loadUsers =
         async () => {
             try {
                 setLoading(true);
@@ -83,7 +92,7 @@ function TrainerAssignmentsPanel() {
                     );
 
 
-                const users =
+                const responseUsers =
                     Array.isArray(
                         response.data
                     )
@@ -92,21 +101,26 @@ function TrainerAssignmentsPanel() {
                             ?.users || [];
 
 
-                const trainerUsers =
-                    users.filter(
+                const manageableUsers =
+                    responseUsers.filter(
                         (user) =>
                             user.role ===
-                            "trainer"
+                            "trainer" ||
+                            user.role ===
+                            "trainee"
                     );
 
 
-                setTrainers(
-                    trainerUsers
+                setUsers(
+                    manageableUsers
                 );
+
+
+                return manageableUsers;
 
             } catch (error) {
                 console.error(
-                    "Load Trainers error:",
+                    "Load users error:",
                     error
                 );
 
@@ -115,8 +129,11 @@ function TrainerAssignmentsPanel() {
                     error.response
                         ?.data
                         ?.message ||
-                    "Unable to load Trainers."
+                    "Unable to load Trainers and Trainees."
                 );
+
+
+                return [];
 
             } finally {
                 setLoading(false);
@@ -125,23 +142,90 @@ function TrainerAssignmentsPanel() {
 
 
     useEffect(() => {
-        loadTrainers();
+        loadUsers();
     }, []);
 
 
     // ======================================================
-    // SELECT TRAINER
+    // FILTER USERS
     // ======================================================
 
-    const handleTrainerChange = (
+    const filteredUsers =
+        useMemo(() => {
+            if (
+                roleFilter ===
+                "all"
+            ) {
+                return users;
+            }
+
+
+            return users.filter(
+                (user) =>
+                    user.role ===
+                    roleFilter
+            );
+
+        }, [
+            users,
+            roleFilter,
+        ]);
+
+
+    // ======================================================
+    // CURRENT USER
+    // ======================================================
+
+    const selectedUser =
+        users.find(
+            (user) =>
+                String(user._id) ===
+                String(
+                    selectedUserId
+                )
+        );
+
+
+    // ======================================================
+    // ROLE FILTER CHANGE
+    // ======================================================
+
+    const handleRoleFilterChange = (
         event
     ) => {
-        const trainerId =
+        setRoleFilter(
+            event.target.value
+        );
+
+
+        setSelectedUserId(
+            ""
+        );
+
+
+        setSelectedSections(
+            []
+        );
+
+
+        setError("");
+        setMessage("");
+    };
+
+
+    // ======================================================
+    // USER CHANGE
+    // ======================================================
+
+    const handleUserChange = (
+        event
+    ) => {
+        const userId =
             event.target.value;
 
 
-        setSelectedTrainerId(
-            trainerId
+        setSelectedUserId(
+            userId
         );
 
 
@@ -149,15 +233,28 @@ function TrainerAssignmentsPanel() {
         setError("");
 
 
-        const trainer =
-            trainers.find(
+        if (!userId) {
+            setSelectedSections(
+                []
+            );
+
+            return;
+        }
+
+
+        const user =
+            users.find(
                 (item) =>
-                    item._id ===
-                    trainerId
+                    String(
+                        item._id
+                    ) ===
+                    String(
+                        userId
+                    )
             );
 
 
-        if (!trainer) {
+        if (!user) {
             setSelectedSections(
                 []
             );
@@ -168,16 +265,18 @@ function TrainerAssignmentsPanel() {
 
         setSelectedSections(
             Array.isArray(
-                trainer.assignedTrainingSections
+                user
+                    .assignedTrainingSections
             )
-                ? trainer.assignedTrainingSections
+                ? user
+                    .assignedTrainingSections
                 : []
         );
     };
 
 
     // ======================================================
-    // TOGGLE TRAINING SECTION
+    // TOGGLE SECTION
     // ======================================================
 
     const toggleTrainingSection = (
@@ -185,7 +284,6 @@ function TrainerAssignmentsPanel() {
     ) => {
         setSelectedSections(
             (current) => {
-
                 if (
                     current.includes(
                         sectionId
@@ -205,20 +303,34 @@ function TrainerAssignmentsPanel() {
                 ];
             }
         );
+
+
+        setError("");
+        setMessage("");
     };
 
 
     // ======================================================
-    // SAVE ASSIGNMENTS
+    // SAVE ASSIGNMENT
     // ======================================================
 
     const saveAssignments =
         async () => {
+            if (!selectedUserId) {
+                setError(
+                    "Please select a Trainer or Trainee."
+                );
+
+                return;
+            }
+
+
             if (
-                !selectedTrainerId
+                selectedSections.length ===
+                0
             ) {
                 setError(
-                    "Please select a Trainer."
+                    "Please select at least one training section."
                 );
 
                 return;
@@ -234,7 +346,7 @@ function TrainerAssignmentsPanel() {
 
                 const response =
                     await api.patch(
-                        `/admin/trainers/${selectedTrainerId}/training-sections`,
+                        `/admin/users/${selectedUserId}/training-sections`,
                         {
                             trainingSections:
                                 selectedSections,
@@ -245,16 +357,41 @@ function TrainerAssignmentsPanel() {
                 setMessage(
                     response.data
                         ?.message ||
-                    "Trainer assignments updated successfully."
+                    "Training assignment updated successfully."
                 );
 
 
-                await loadTrainers();
+                const refreshedUsers =
+                    await loadUsers();
 
+
+                const refreshedUser =
+                    refreshedUsers.find(
+                        (user) =>
+                            String(
+                                user._id
+                            ) ===
+                            String(
+                                selectedUserId
+                            )
+                    );
+
+
+                if (refreshedUser) {
+                    setSelectedSections(
+                        Array.isArray(
+                            refreshedUser
+                                .assignedTrainingSections
+                        )
+                            ? refreshedUser
+                                .assignedTrainingSections
+                            : []
+                    );
+                }
 
             } catch (error) {
                 console.error(
-                    "Save assignment error:",
+                    "Save training assignment error:",
                     error
                 );
 
@@ -263,7 +400,7 @@ function TrainerAssignmentsPanel() {
                     error.response
                         ?.data
                         ?.message ||
-                    "Unable to update Trainer assignments."
+                    "Unable to update training assignment."
                 );
 
             } finally {
@@ -273,15 +410,25 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // SELECTED TRAINER
+    // SECTION NAME
     // ======================================================
 
-    const selectedTrainer =
-        trainers.find(
-            (trainer) =>
-                trainer._id ===
-                selectedTrainerId
+    const getSectionName = (
+        sectionId
+    ) => {
+        const section =
+            TRAINING_SECTIONS.find(
+                (item) =>
+                    item.id ===
+                    sectionId
+            );
+
+
+        return (
+            section?.name ||
+            sectionId
         );
+    };
 
 
     // ======================================================
@@ -289,7 +436,7 @@ function TrainerAssignmentsPanel() {
     // ======================================================
 
     return (
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
             {/* HEADER */}
 
@@ -297,7 +444,7 @@ function TrainerAssignmentsPanel() {
 
                 <div className="flex items-start gap-3">
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
 
                         <svg
                             viewBox="0 0 24 24"
@@ -323,13 +470,16 @@ function TrainerAssignmentsPanel() {
 
 
                     <div>
+
                         <h2 className="text-lg font-bold text-slate-900">
-                            Trainer Training Assignments
+                            Trainer & Trainee Training Assignments
                         </h2>
 
+
                         <p className="mt-1 text-sm text-slate-500">
-                            Assign one or multiple training sections to a Trainer.
+                            Assign one or both training sections to a Trainer or Trainee.
                         </p>
+
                     </div>
 
                 </div>
@@ -342,7 +492,7 @@ function TrainerAssignmentsPanel() {
                 {/* ERROR */}
 
                 {error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                         {error}
                     </div>
                 )}
@@ -351,82 +501,159 @@ function TrainerAssignmentsPanel() {
                 {/* SUCCESS */}
 
                 {message && (
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
                         {message}
                     </div>
                 )}
 
 
-                {/* SELECT TRAINER */}
+                {/* FILTER + SELECT USER */}
 
-                <div>
+                <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
 
-                    <label className="mb-2 block text-sm font-semibold text-slate-800">
-                        Select Trainer
-                    </label>
+                    {/* ROLE FILTER */}
 
+                    <div>
 
-                    <select
-                        value={
-                            selectedTrainerId
-                        }
-                        onChange={
-                            handleTrainerChange
-                        }
-                        disabled={
-                            loading
-                        }
-                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                    >
-
-                        <option value="">
-                            {loading
-                                ? "Loading Trainers..."
-                                : "Select a Trainer"}
-                        </option>
+                        <label className="mb-2 block text-sm font-semibold text-slate-800">
+                            User Type
+                        </label>
 
 
-                        {trainers.map(
-                            (trainer) => (
-                                <option
-                                    key={
-                                        trainer._id
-                                    }
-                                    value={
-                                        trainer._id
-                                    }
-                                >
-                                    {trainer.firstName}{" "}
-                                    {trainer.lastName}
-                                    {" - "}
-                                    {trainer.username}
-                                </option>
-                            )
-                        )}
+                        <select
+                            value={
+                                roleFilter
+                            }
+                            onChange={
+                                handleRoleFilterChange
+                            }
+                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        >
+                            <option value="all">
+                                All Users
+                            </option>
 
-                    </select>
+                            <option value="trainer">
+                                Trainers
+                            </option>
+
+                            <option value="trainee">
+                                Trainees
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    {/* SELECT USER */}
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-semibold text-slate-800">
+                            Select Trainer or Trainee
+                        </label>
+
+
+                        <select
+                            value={
+                                selectedUserId
+                            }
+                            onChange={
+                                handleUserChange
+                            }
+                            disabled={
+                                loading
+                            }
+                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
+                        >
+
+                            <option value="">
+
+                                {loading
+                                    ? "Loading users..."
+                                    : "Select a user"}
+
+                            </option>
+
+
+                            {filteredUsers.map(
+                                (user) => (
+                                    <option
+                                        key={
+                                            user._id
+                                        }
+                                        value={
+                                            user._id
+                                        }
+                                    >
+                                        {user.firstName}{" "}
+                                        {user.lastName}
+                                        {" — "}
+                                        {user.role ===
+                                            "trainer"
+                                            ? "Trainer"
+                                            : "Trainee"}
+                                        {user.username
+                                            ? ` — ${user.username}`
+                                            : ""}
+                                    </option>
+                                )
+                            )}
+
+                        </select>
+
+                    </div>
 
                 </div>
 
 
-                {/* TRAINER INFORMATION */}
+                {/* SELECTED USER */}
 
-                {selectedTrainer && (
-                    <div className="rounded-xl bg-slate-50 p-4">
+                {selectedUser && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
 
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            Selected Trainer
-                        </p>
+                        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
-                        <p className="mt-2 font-semibold text-slate-900">
-                            {selectedTrainer.firstName}{" "}
-                            {selectedTrainer.lastName}
-                        </p>
+                            <div>
 
-                        <p className="mt-1 text-sm text-slate-500">
-                            Username:{" "}
-                            {selectedTrainer.username}
-                        </p>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                    Selected User
+                                </p>
+
+
+                                <p className="mt-2 text-base font-bold text-slate-900">
+                                    {selectedUser.firstName}{" "}
+                                    {selectedUser.lastName}
+                                </p>
+
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    {selectedUser.username}
+                                </p>
+
+                            </div>
+
+
+                            <div className="flex flex-wrap gap-2">
+
+                                <span className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold capitalize text-blue-700">
+                                    {selectedUser.role}
+                                </span>
+
+
+                                <span
+                                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedUser.status ===
+                                        "active"
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : "bg-red-100 text-red-700"
+                                        }`}
+                                >
+                                    {selectedUser.status}
+                                </span>
+
+                            </div>
+
+                        </div>
 
                     </div>
                 )}
@@ -434,23 +661,27 @@ function TrainerAssignmentsPanel() {
 
                 {/* TRAINING SECTIONS */}
 
-                {selectedTrainerId && (
+                {selectedUser && (
                     <div>
 
-                        <h3 className="text-sm font-bold text-slate-900">
-                            Training Sections
-                        </h3>
+                        <div>
 
-                        <p className="mt-1 text-xs text-slate-500">
-                            You can select more than one section for the same Trainer.
-                        </p>
+                            <h3 className="text-sm font-bold text-slate-900">
+                                Assigned Training Sections
+                            </h3>
+
+
+                            <p className="mt-1 text-xs leading-5 text-slate-500">
+                                Select one or both sections. The selected sections will appear on this user's dashboard.
+                            </p>
+
+                        </div>
 
 
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
 
                             {TRAINING_SECTIONS.map(
                                 (section) => {
-
                                     const selected =
                                         selectedSections.includes(
                                             section.id
@@ -469,15 +700,17 @@ function TrainerAssignmentsPanel() {
                                                 )
                                             }
                                             className={`rounded-xl border p-5 text-left transition ${selected
-                                                ? "border-blue-500 bg-blue-50"
-                                                : "border-slate-200 bg-white hover:border-blue-300"
+                                                ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                                                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"
                                                 }`}
                                         >
 
                                             <div className="flex items-start gap-3">
 
+                                                {/* CHECKBOX */}
+
                                                 <div
-                                                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${selected
+                                                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${selected
                                                         ? "border-blue-600 bg-blue-600 text-white"
                                                         : "border-slate-300 bg-white"
                                                         }`}
@@ -493,15 +726,12 @@ function TrainerAssignmentsPanel() {
                                                 <div>
 
                                                     <p className="font-semibold text-slate-900">
-                                                        {
-                                                            section.name
-                                                        }
+                                                        {section.name}
                                                     </p>
 
+
                                                     <p className="mt-1 text-xs leading-5 text-slate-500">
-                                                        {
-                                                            section.description
-                                                        }
+                                                        {section.description}
                                                     </p>
 
                                                 </div>
@@ -519,9 +749,9 @@ function TrainerAssignmentsPanel() {
                 )}
 
 
-                {/* CURRENT ASSIGNMENT SUMMARY */}
+                {/* SUMMARY */}
 
-                {selectedTrainerId && (
+                {selectedUser && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
 
                         <p className="text-sm font-semibold text-slate-900">
@@ -532,35 +762,24 @@ function TrainerAssignmentsPanel() {
                         {selectedSections.length ===
                             0 ? (
                             <p className="mt-2 text-sm text-slate-500">
-                                No training sections selected.
+                                No training section selected.
                             </p>
                         ) : (
                             <div className="mt-3 flex flex-wrap gap-2">
 
                                 {selectedSections.map(
-                                    (sectionId) => {
-
-                                        const section =
-                                            TRAINING_SECTIONS.find(
-                                                (item) =>
-                                                    item.id ===
-                                                    sectionId
-                                            );
-
-
-                                        return (
-                                            <span
-                                                key={
-                                                    sectionId
-                                                }
-                                                className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700"
-                                            >
-                                                {section
-                                                    ?.name ||
-                                                    sectionId}
-                                            </span>
-                                        );
-                                    }
+                                    (sectionId) => (
+                                        <span
+                                            key={
+                                                sectionId
+                                            }
+                                            className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
+                                        >
+                                            {getSectionName(
+                                                sectionId
+                                            )}
+                                        </span>
+                                    )
                                 )}
 
                             </div>
@@ -572,7 +791,7 @@ function TrainerAssignmentsPanel() {
 
                 {/* SAVE */}
 
-                {selectedTrainerId && (
+                {selectedUser && (
                     <div className="flex justify-end">
 
                         <button
@@ -581,13 +800,17 @@ function TrainerAssignmentsPanel() {
                                 saveAssignments
                             }
                             disabled={
-                                saving
+                                saving ||
+                                selectedSections.length ===
+                                0 ||
+                                selectedUser.status !==
+                                "active"
                             }
                             className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {saving
                                 ? "Saving..."
-                                : "Save Training Assignments"}
+                                : "Save Training Assignment"}
                         </button>
 
                     </div>

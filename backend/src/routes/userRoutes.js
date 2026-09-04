@@ -1,16 +1,29 @@
-const express = require("express");
+const express =
+    require("express");
+
 
 const authenticate =
-    require("../middleware/authenticate");
+    require(
+        "../middleware/authenticate"
+    );
+
 
 const authorize =
-    require("../middleware/authorize");
+    require(
+        "../middleware/authorize"
+    );
+
 
 const checkActiveStatus =
-    require("../middleware/checkActiveStatus");
+    require(
+        "../middleware/checkActiveStatus"
+    );
+
 
 const uploadProfileImage =
-    require("../middleware/uploadProfileImage");
+    require(
+        "../middleware/uploadProfileImage"
+    );
 
 
 const {
@@ -22,13 +35,24 @@ const {
 );
 
 
+const {
+    getMyTrainingProgress,
+    startTrainingModule,
+} = require(
+    "../controllers/trainingProgressController"
+);
+
+
 const router =
     express.Router();
 
 
 // ======================================================
 // GET OWN PROFILE
-// Admin, Trainer and Trainee
+//
+// Admin
+// Trainer
+// Trainee
 // ======================================================
 
 router.get(
@@ -49,7 +73,54 @@ router.get(
 
 
 // ======================================================
+// GET TRAINEE'S OWN TRAINING PROGRESS
+//
+// GET /api/users/me/training-progress
+// ======================================================
+
+router.get(
+    "/me/training-progress",
+
+    authenticate,
+
+    authorize(
+        "trainee"
+    ),
+
+    checkActiveStatus,
+
+    getMyTrainingProgress
+);
+
+
+// ======================================================
+// START / CONTINUE TRAINING MODULE
+//
+// POST
+// /api/users/me/training-progress/manual-handling/start
+//
+// POST
+// /api/users/me/training-progress/working-at-height/start
+// ======================================================
+
+router.post(
+    "/me/training-progress/:trainingSection/start",
+
+    authenticate,
+
+    authorize(
+        "trainee"
+    ),
+
+    checkActiveStatus,
+
+    startTrainingModule
+);
+
+
+// ======================================================
 // UPLOAD / CHANGE OWN PROFILE IMAGE
+//
 // Trainer and Trainee only
 // ======================================================
 
@@ -75,6 +146,7 @@ router.patch(
 
 // ======================================================
 // DELETE OWN PROFILE IMAGE
+//
 // Trainer and Trainee only
 // ======================================================
 
@@ -95,7 +167,8 @@ router.delete(
 
 
 // ======================================================
-// EXPORT ROUTER
+// EXPORT
 // ======================================================
 
-module.exports = router;
+module.exports =
+    router;
