@@ -264,13 +264,17 @@ function TrainerAssignmentsPanel() {
 
 
         setSelectedSections(
-            Array.isArray(
-                user
-                    .assignedTrainingSections
-            )
-                ? user
-                    .assignedTrainingSections
-                : []
+            user.role === "trainee"
+                ? TRAINING_SECTIONS.map(
+                    (section) => section.id
+                )
+                : Array.isArray(
+                    user
+                        .assignedTrainingSections
+                )
+                    ? user
+                        .assignedTrainingSections
+                    : []
         );
     };
 
@@ -282,6 +286,13 @@ function TrainerAssignmentsPanel() {
     const toggleTrainingSection = (
         sectionId
     ) => {
+        if (
+            selectedUser?.role === "trainee"
+        ) {
+            return;
+        }
+
+
         setSelectedSections(
             (current) => {
                 if (
@@ -477,7 +488,7 @@ function TrainerAssignmentsPanel() {
 
 
                         <p className="mt-1 text-sm text-slate-500">
-                            Assign one or both training sections to a Trainer or Trainee.
+                            Trainers can have one or both sections. Trainees always receive both sections automatically.
                         </p>
 
                     </div>
@@ -672,7 +683,9 @@ function TrainerAssignmentsPanel() {
 
 
                             <p className="mt-1 text-xs leading-5 text-slate-500">
-                                Select one or both sections. The selected sections will appear on this user's dashboard.
+                                {selectedUser.role === "trainer"
+                                    ? "Select one or both sections for this Trainer."
+                                    : "Both sections are required for Trainees and are selected automatically."}
                             </p>
 
                         </div>
@@ -699,9 +712,15 @@ function TrainerAssignmentsPanel() {
                                                     section.id
                                                 )
                                             }
+                                            disabled={
+                                                selectedUser.role === "trainee"
+                                            }
                                             className={`rounded-xl border p-5 text-left transition ${selected
                                                 ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
                                                 : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"
+                                                } ${selectedUser.role === "trainee"
+                                                    ? "cursor-not-allowed opacity-80"
+                                                    : ""
                                                 }`}
                                         >
 

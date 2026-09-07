@@ -4,383 +4,988 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const {
+    writeAuditLog,
+} = require("../utils/auditLogger");
+
+const {
     generateAccessToken,
     generateRefreshToken,
 } = require("../utils/generateTokens");
 
 
 // ======================================================
+// HELPER
+//
+// IMPORTANT:
+// Forced first-login password change applies ONLY to:
+// - Trainer
+// - Trainee
+//
+// Admin is NEVER included.
+// ======================================================
+
+const requiresForcedPasswordChange = (user) => {
+    return (
+        ["trainer", "trainee"].includes(
+            user?.role
+        ) &&
+        user?.mustChangePassword === true
+    );
+};
+
+
+// ======================================================
 // LOGIN
-// Admin, Trainer and Trainee can use this endpoint
+// Admin, Trainer and Trainee
 // ======================================================
 
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
-
-        // Check that username and password were provided
-        if (!username || !password) {
-            return res.status(400).json({
-                message: "Username and password are required",
-            });
-        }
-
-        // Find user using username
-        const user = await User.findOne({
-            username: username.toLowerCase().trim(),
-        });
-
-        // Do not reveal whether username or password was wrong
-        if (!user) {
-            return res.status(401).json({
-                message: "Invalid username or password",
-            });
-        }
-
-        // Check account status before allowing login
-        if (user.status !== "active") {
-            return res.status(403).json({
-                code: "ACCOUNT_DEACTIVATED",
-                message: "Your account has been deactivated",
-            });
-        }
-
-        // Compare entered password with bcrypt hash
-        const passwordMatches = await bcrypt.compare(
+        const {
+            username,
             password,
-            user.passwordHash
-        );
+        } = req.body;
 
-        if (!passwordMatches) {
-            return res.status(401).json({
-                message: "Invalid username or password",
-            });
+
+        // ==================================================
+        // REQUIRED FIELDS
+        // ==================================================
+
+        if (
+            !username ||
+            !password
+        ) {
+            return res
+                .status(400)
+                .json({
+                    message:
+                        "Username and password are required",
+                });
         }
 
-        // Generate short-lived access token
-        const accessToken = generateAccessToken(user);
 
-        // Generate refresh token
-        const refreshToken = generateRefreshToken(user);
+        const normalizedUsername =
+            String(username)
+                .trim()
+                .toLowerCase();
 
-        // Store only a hash of the refresh token in MongoDB
-        user.refreshTokenHash = await bcrypt.hash(
-            refreshToken,
-            12
-        );
+
+        // ==================================================
+        // FIND USER
+        // ==================================================
+
+        const user =
+            await User.findOne({
+                username:
+                    normalizedUsername,
+            });
+
+
+        // ==================================================
+        // USER NOT FOUND
+        // ==================================================
+
+        if (!user) {
+            await writeAuditLog({
+                req,
+
+                username:
+                    normalizedUsername,
+
+                role:
+                    "unknown",
+
+                action:
+                    "LOGIN_FAILED",
+
+                status:
+                    "failure",
+
+                details: {
+                    reason:
+                        "INVALID_CREDENTIALS",
+                },
+            });
+
+
+            return res
+                .status(401)
+                .json({
+                    message:
+                        "Invalid username or password",
+                });
+        }
+
+
+        // ==================================================
+        // ACCOUNT STATUS
+        // ==================================================
+
+        if (
+            user.status !==
+            "active"
+        ) {
+            await writeAuditLog({
+                req,
+                user,
+
+                action:
+                    "LOGIN_FAILED",
+
+                status:
+                    "failure",
+
+                details: {
+                    reason:
+                        "ACCOUNT_DEACTIVATED",
+                },
+            });
+
+
+            return res
+                .status(403)
+                .json({
+                    code:
+                        "ACCOUNT_DEACTIVATED",
+
+                    message:
+                        "Your account has been deactivated",
+                });
+        }
+
+
+        // ==================================================
+        // PASSWORD MUST EXIST
+        // ==================================================
+
+        if (
+            !user.passwordHash
+        ) {
+            await writeAuditLog({
+                req,
+                user,
+
+                action:
+                    "LOGIN_FAILED",
+
+                status:
+                    "failure",
+
+                details: {
+                    reason:
+                        "ACCOUNT_CREDENTIALS_NOT_READY",
+                },
+            });
+
+
+            return res
+                .status(401)
+                .json({
+                    message:
+                        "Account credentials are not ready",
+                });
+        }
+
+
+        // ==================================================
+        // VERIFY PASSWORD
+        // ==================================================
+
+        const passwordMatches =
+            await bcrypt.compare(
+                password,
+                user.passwordHash
+            );
+
+
+        if (
+            !passwordMatches
+        ) {
+            await writeAuditLog({
+                req,
+                user,
+
+                action:
+                    "LOGIN_FAILED",
+
+                status:
+                    "failure",
+
+                details: {
+                    reason:
+                        "INVALID_CREDENTIALS",
+                },
+            });
+
+
+            return res
+                .status(401)
+                .json({
+                    message:
+                        "Invalid username or password",
+                });
+        }
+
+
+        // ==================================================
+        // DETERMINE WHETHER PASSWORD CHANGE IS REQUIRED
+        //
+        // ADMIN IS EXCLUDED HERE.
+        // ==================================================
+
+        const passwordChangeRequired =
+            requiresForcedPasswordChange(
+                user
+            );
+
+
+        // ==================================================
+        // CREATE ACCESS TOKEN
+        // ==================================================
+
+        const accessToken =
+            generateAccessToken(
+                user
+            );
+
+
+        // ==================================================
+        // CREATE REFRESH TOKEN
+        // ==================================================
+
+        const refreshToken =
+            generateRefreshToken(
+                user
+            );
+
+
+        // ==================================================
+        // STORE REFRESH TOKEN HASH
+        // ==================================================
+
+        user.refreshTokenHash =
+            await bcrypt.hash(
+                refreshToken,
+                12
+            );
+
 
         await user.save();
 
-        // Store actual refresh token in httpOnly cookie
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
 
-            secure:
-                process.env.NODE_ENV === "production",
+        // ==================================================
+        // REFRESH TOKEN COOKIE
+        // ==================================================
 
-            sameSite: "strict",
+        res.cookie(
+            "refreshToken",
+            refreshToken,
+            {
+                httpOnly:
+                    true,
 
-            maxAge:
-                7 * 24 * 60 * 60 * 1000,
-        });
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
 
-        return res.status(200).json({
-            message: "Login successful",
+                sameSite:
+                    "strict",
 
-            accessToken,
+                maxAge:
+                    7 *
+                    24 *
+                    60 *
+                    60 *
+                    1000,
+            }
+        );
 
-            user: {
-                id: user._id,
-                username: user.username,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                role: user.role,
-                status: user.status,
-                mustChangePassword:
-                    user.mustChangePassword,
+
+        // ==================================================
+        // AUDIT LOG
+        //
+        // Trainer/Trainee using temporary password:
+        // TEMPORARY_PASSWORD_LOGIN
+        //
+        // Admin or normal Trainer/Trainee login:
+        // LOGIN_SUCCESS
+        // ==================================================
+
+        await writeAuditLog({
+            req,
+            user,
+
+            action:
+                passwordChangeRequired
+                    ? "TEMPORARY_PASSWORD_LOGIN"
+                    : "LOGIN_SUCCESS",
+
+            status:
+                "success",
+
+            details: {
+                passwordChangeRequired,
             },
         });
+
+
+        // ==================================================
+        // RESPONSE
+        //
+        // Important:
+        // Admin always receives:
+        // mustChangePassword: false
+        //
+        // even if an old Admin database record accidentally
+        // contains mustChangePassword: true.
+        // ==================================================
+
+        return res
+            .status(200)
+            .json({
+                message:
+                    passwordChangeRequired
+                        ? "Login successful. Password change required."
+                        : "Login successful",
+
+                accessToken,
+
+                user: {
+                    id:
+                        user._id,
+
+                    username:
+                        user.username,
+
+                    firstName:
+                        user.firstName,
+
+                    lastName:
+                        user.lastName,
+
+                    email:
+                        user.email,
+
+                    role:
+                        user.role,
+
+                    status:
+                        user.status,
+
+                    mustChangePassword:
+                        passwordChangeRequired,
+                },
+            });
+
     } catch (error) {
         console.error(
             "Login error:",
-            error.message
+            error
         );
 
-        return res.status(500).json({
-            message: "Server error",
-        });
+
+        return res
+            .status(500)
+            .json({
+                message:
+                    "Server error",
+            });
     }
 };
 
 
 // ======================================================
 // CHANGE OWN PASSWORD
-// Admin, Trainer and Trainee
+//
+// Admin:
+// Can change password normally if you have a profile
+// password-change feature.
+//
+// Trainer/Trainee:
+// If using temporary credentials, this completes the
+// mandatory first-login password change.
 // ======================================================
 
-const changePassword = async (req, res) => {
-    try {
-        const {
-            currentPassword,
-            newPassword,
-        } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({
-                message:
-                    "Current password and new password are required",
-            });
-        }
-
-        // Minimum password length
-        if (newPassword.length < 12) {
-            return res.status(400).json({
-                message:
-                    "New password must contain at least 12 characters",
-            });
-        }
-
-        // req.user.id comes from authenticate middleware
-        const user = await User.findById(
-            req.user.id
-        );
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found",
-            });
-        }
-
-        // Extra status check
-        if (user.status !== "active") {
-            return res.status(403).json({
-                code: "ACCOUNT_DEACTIVATED",
-                message:
-                    "Your account has been deactivated",
-            });
-        }
-
-        // Verify current password
-        const passwordMatches =
-            await bcrypt.compare(
+const changePassword =
+    async (req, res) => {
+        try {
+            const {
                 currentPassword,
-                user.passwordHash
-            );
-
-        if (!passwordMatches) {
-            return res.status(400).json({
-                message:
-                    "Current password is incorrect",
-            });
-        }
-
-        // Prevent reusing the current password
-        const samePassword =
-            await bcrypt.compare(
                 newPassword,
-                user.passwordHash
-            );
+            } = req.body;
 
-        if (samePassword) {
-            return res.status(400).json({
-                message:
-                    "New password must be different from the current password",
-            });
-        }
 
-        // Hash new password with bcrypt cost factor 12
-        user.passwordHash =
-            await bcrypt.hash(
-                newPassword,
+            // ==================================================
+            // REQUIRED FIELDS
+            // ==================================================
+
+            if (
+                !currentPassword ||
+                !newPassword
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Current password and new password are required",
+                    });
+            }
+
+
+            // ==================================================
+            // PASSWORD LENGTH
+            // ==================================================
+
+            if (
+                newPassword.length <
                 12
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "New password must contain at least 12 characters",
+                    });
+            }
+
+
+            // ==================================================
+            // CURRENT USER
+            // ==================================================
+
+            const user =
+                await User.findById(
+                    req.user.id
+                );
+
+
+            if (!user) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
+
+
+            // ==================================================
+            // ACTIVE USER ONLY
+            // ==================================================
+
+            if (
+                user.status !==
+                "active"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        code:
+                            "ACCOUNT_DEACTIVATED",
+
+                        message:
+                            "Your account has been deactivated",
+                    });
+            }
+
+
+            // ==================================================
+            // VERIFY CURRENT PASSWORD
+            // ==================================================
+
+            if (
+                !user.passwordHash
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Current password is unavailable",
+                    });
+            }
+
+
+            const currentPasswordMatches =
+                await bcrypt.compare(
+                    currentPassword,
+                    user.passwordHash
+                );
+
+
+            // ==================================================
+            // ONLY TRAINER/TRAINEE CAN BE IN FORCED MODE
+            // ==================================================
+
+            const forcedPasswordChange =
+                requiresForcedPasswordChange(
+                    user
+                );
+
+
+            if (
+                !currentPasswordMatches
+            ) {
+                await writeAuditLog({
+                    req,
+                    user,
+
+                    action:
+                        forcedPasswordChange
+                            ? "FORCED_PASSWORD_CHANGE_FAILED"
+                            : "PASSWORD_CHANGE_FAILED",
+
+                    status:
+                        "failure",
+
+                    details: {
+                        reason:
+                            "CURRENT_PASSWORD_INCORRECT",
+                    },
+                });
+
+
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Current password is incorrect",
+                    });
+            }
+
+
+            // ==================================================
+            // NEW PASSWORD MUST BE DIFFERENT
+            // ==================================================
+
+            const samePassword =
+                await bcrypt.compare(
+                    newPassword,
+                    user.passwordHash
+                );
+
+
+            if (
+                samePassword
+            ) {
+                await writeAuditLog({
+                    req,
+                    user,
+
+                    action:
+                        forcedPasswordChange
+                            ? "FORCED_PASSWORD_CHANGE_FAILED"
+                            : "PASSWORD_CHANGE_FAILED",
+
+                    status:
+                        "failure",
+
+                    details: {
+                        reason:
+                            "PASSWORD_REUSE",
+                    },
+                });
+
+
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "New password must be different from the current password",
+                    });
+            }
+
+
+            // ==================================================
+            // HASH NEW PASSWORD
+            // ==================================================
+
+            user.passwordHash =
+                await bcrypt.hash(
+                    newPassword,
+                    12
+                );
+
+
+            // ==================================================
+            // COMPLETE TEMPORARY PASSWORD FLOW
+            //
+            // Only necessary for Trainer/Trainee.
+            // Setting false for Admin is harmless as well.
+            // ==================================================
+
+            if (
+                ["trainer", "trainee"].includes(
+                    user.role
+                )
+            ) {
+                user.mustChangePassword =
+                    false;
+            }
+
+
+            // ==================================================
+            // INVALIDATE OLD ACCESS TOKENS
+            // ==================================================
+
+            user.authVersion =
+                (
+                    user.authVersion ||
+                    0
+                ) + 1;
+
+
+            // ==================================================
+            // REMOVE REFRESH SESSION
+            // ==================================================
+
+            user.refreshTokenHash =
+                null;
+
+
+            await user.save();
+
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+                user,
+
+                action:
+                    forcedPasswordChange
+                        ? "FORCED_PASSWORD_CHANGE_COMPLETED"
+                        : "PASSWORD_CHANGED",
+
+                status:
+                    "success",
+
+                details: {
+                    forcedPasswordChange,
+                },
+            });
+
+
+            // ==================================================
+            // CLEAR COOKIE
+            // ==================================================
+
+            res.clearCookie(
+                "refreshToken",
+                {
+                    httpOnly:
+                        true,
+
+                    secure:
+                        process.env.NODE_ENV ===
+                        "production",
+
+                    sameSite:
+                        "strict",
+                }
             );
 
-        // First password change has now been completed
-        user.mustChangePassword = false;
 
-        // Invalidate current refresh session
-        user.refreshTokenHash = null;
+            // ==================================================
+            // USER MUST LOGIN AGAIN
+            // ==================================================
 
-        await user.save();
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "Password changed successfully. Please log in again.",
+                });
 
-        // Remove refresh token cookie
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
+        } catch (error) {
+            console.error(
+                "Change password error:",
+                error
+            );
 
-            secure:
-                process.env.NODE_ENV === "production",
 
-            sameSite: "strict",
-        });
-
-        return res.status(200).json({
-            message:
-                "Password changed successfully. Please log in again.",
-        });
-    } catch (error) {
-        console.error(
-            "Change password error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message: "Server error",
-        });
-    }
-};
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
+        }
+    };
 
 
 // ======================================================
 // REFRESH ACCESS TOKEN
-// Creates a new access token using refresh token cookie
 // ======================================================
 
-const refreshAccessToken = async (
-    req,
-    res
-) => {
-    try {
-        // Read refresh token from httpOnly cookie
-        const refreshToken =
-            req.cookies.refreshToken;
-
-        if (!refreshToken) {
-            return res.status(401).json({
-                message:
-                    "Refresh token is required",
-            });
-        }
-
-        let decoded;
-
-        // Verify refresh token signature and expiry
+const refreshAccessToken =
+    async (req, res) => {
         try {
-            decoded = jwt.verify(
-                refreshToken,
-                process.env.JWT_REFRESH_SECRET
-            );
+            const refreshToken =
+                req.cookies
+                    ?.refreshToken;
+
+
+            if (
+                !refreshToken
+            ) {
+                return res
+                    .status(401)
+                    .json({
+                        message:
+                            "Refresh token is required",
+                    });
+            }
+
+
+            // ==================================================
+            // VERIFY REFRESH TOKEN
+            // ==================================================
+
+            let decoded;
+
+
+            try {
+                decoded =
+                    jwt.verify(
+                        refreshToken,
+
+                        process.env
+                            .JWT_REFRESH_SECRET
+                    );
+
+            } catch {
+                return res
+                    .status(401)
+                    .json({
+                        message:
+                            "Invalid or expired refresh token",
+                    });
+            }
+
+
+            // ==================================================
+            // USER
+            // ==================================================
+
+            const user =
+                await User.findById(
+                    decoded.id
+                );
+
+
+            if (!user) {
+                return res
+                    .status(401)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
+
+
+            // ==================================================
+            // ACTIVE ACCOUNT
+            // ==================================================
+
+            if (
+                user.status !==
+                "active"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        code:
+                            "ACCOUNT_DEACTIVATED",
+
+                        message:
+                            "Your account has been deactivated",
+                    });
+            }
+
+
+            // ==================================================
+            // REFRESH SESSION EXISTS
+            // ==================================================
+
+            if (
+                !user.refreshTokenHash
+            ) {
+                return res
+                    .status(401)
+                    .json({
+                        message:
+                            "Refresh session is no longer valid",
+                    });
+            }
+
+
+            // ==================================================
+            // VERIFY STORED REFRESH TOKEN
+            // ==================================================
+
+            const refreshTokenMatches =
+                await bcrypt.compare(
+                    refreshToken,
+                    user.refreshTokenHash
+                );
+
+
+            if (
+                !refreshTokenMatches
+            ) {
+                return res
+                    .status(401)
+                    .json({
+                        message:
+                            "Invalid refresh session",
+                    });
+            }
+
+
+            // ==================================================
+            // AUTH VERSION CHECK
+            // ==================================================
+
+            const tokenAuthVersion =
+                decoded.authVersion ||
+                0;
+
+
+            const currentAuthVersion =
+                user.authVersion ||
+                0;
+
+
+            if (
+                tokenAuthVersion !==
+                currentAuthVersion
+            ) {
+                return res
+                    .status(401)
+                    .json({
+                        code:
+                            "SESSION_REVOKED",
+
+                        message:
+                            "Your session is no longer valid. Please log in again.",
+                    });
+            }
+
+
+            // ==================================================
+            // NEW ACCESS TOKEN
+            // ==================================================
+
+            const accessToken =
+                generateAccessToken(
+                    user
+                );
+
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "Access token refreshed successfully",
+
+                    accessToken,
+                });
+
         } catch (error) {
-            return res.status(401).json({
-                message:
-                    "Invalid or expired refresh token",
-            });
-        }
-
-        // Find current user from database
-        const user = await User.findById(
-            decoded.id
-        );
-
-        if (!user) {
-            return res.status(401).json({
-                message: "User not found",
-            });
-        }
-
-        // IMPORTANT:
-        // Check database status again instead of trusting token
-        if (user.status !== "active") {
-            return res.status(403).json({
-                code: "ACCOUNT_DEACTIVATED",
-                message:
-                    "Your account has been deactivated",
-            });
-        }
-
-        // User must have a stored refresh-token hash
-        if (!user.refreshTokenHash) {
-            return res.status(401).json({
-                message:
-                    "Refresh session is no longer valid",
-            });
-        }
-
-        // Compare cookie token with stored hash
-        const refreshTokenMatches =
-            await bcrypt.compare(
-                refreshToken,
-                user.refreshTokenHash
+            console.error(
+                "Refresh token error:",
+                error
             );
 
-        if (!refreshTokenMatches) {
-            return res.status(401).json({
-                message:
-                    "Invalid refresh session",
-            });
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
         }
-
-        // Generate a new short-lived access token
-        const accessToken =
-            generateAccessToken(user);
-
-        return res.status(200).json({
-            message:
-                "Access token refreshed successfully",
-
-            accessToken,
-        });
-    } catch (error) {
-        console.error(
-            "Refresh token error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message: "Server error",
-        });
-    }
-};
+    };
 
 
 // ======================================================
 // LOGOUT
-// Admin, Trainer and Trainee
 // ======================================================
 
-const logout = async (req, res) => {
-    try {
-        // req.user.id comes from authenticate middleware
-        const user = await User.findById(
-            req.user.id
-        );
+const logout =
+    async (req, res) => {
+        try {
+            const user =
+                await User.findById(
+                    req.user.id
+                );
 
-        if (user) {
-            // Remove stored refresh-token hash
-            user.refreshTokenHash = null;
 
-            await user.save();
+            if (user) {
+                user.refreshTokenHash =
+                    null;
+
+
+                await user.save();
+
+
+                await writeAuditLog({
+                    req,
+                    user,
+
+                    action:
+                        "LOGOUT",
+
+                    status:
+                        "success",
+                });
+            }
+
+
+            res.clearCookie(
+                "refreshToken",
+                {
+                    httpOnly:
+                        true,
+
+                    secure:
+                        process.env.NODE_ENV ===
+                        "production",
+
+                    sameSite:
+                        "strict",
+                }
+            );
+
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "Logged out successfully",
+                });
+
+        } catch (error) {
+            console.error(
+                "Logout error:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
         }
-
-        // Delete refresh token cookie
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-
-            secure:
-                process.env.NODE_ENV === "production",
-
-            sameSite: "strict",
-        });
-
-        return res.status(200).json({
-            message:
-                "Logged out successfully",
-        });
-    } catch (error) {
-        console.error(
-            "Logout error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message: "Server error",
-        });
-    }
-};
+    };
 
 
 // ======================================================
-// EXPORT CONTROLLERS
+// EXPORTS
 // ======================================================
 
 module.exports = {
