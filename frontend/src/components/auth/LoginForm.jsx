@@ -1,24 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+    useState,
+} from "react";
+
+import {
+    useNavigate,
+} from "react-router-dom";
 
 import api from "../../services/api";
+
 import PasswordInput from "./PasswordInput";
 
 
-function LoginForm({ onForgotPassword }) {
-    const navigate = useNavigate();
+function LoginForm({
+    onForgotPassword,
+    onPasswordChangeRequired,
+}) {
+    const navigate =
+        useNavigate();
 
-    const [username, setUsername] =
-        useState("");
 
-    const [password, setPassword] =
-        useState("");
+    const [
+        username,
+        setUsername,
+    ] = useState("");
 
-    const [loading, setLoading] =
-        useState(false);
 
-    const [error, setError] =
-        useState("");
+    const [
+        password,
+        setPassword,
+    ] = useState("");
+
+
+    const [
+        loading,
+        setLoading,
+    ] = useState(false);
+
+
+    const [
+        error,
+        setError,
+    ] = useState("");
 
 
     // ======================================================
@@ -36,269 +58,276 @@ function LoginForm({ onForgotPassword }) {
     // DASHBOARD PATH
     // ======================================================
 
-    const getDashboardPath = (role) => {
-        if (role === "admin") {
-            return "/admin";
-        }
-
-        if (role === "trainer") {
-            return "/trainer";
-        }
-
-        if (role === "trainee") {
-            return "/trainee";
-        }
-
-        return null;
-    };
+    const getDashboardPath =
+        (role) => {
+            if (
+                role === "admin"
+            ) {
+                return "/admin";
+            }
 
 
-    // ======================================================
-    // PROFILE PATH
-    // ======================================================
+            if (
+                role === "trainer"
+            ) {
+                return "/trainer";
+            }
 
-    const getProfilePath = (role) => {
-        if (role === "trainer") {
-            return "/trainer/profile";
-        }
 
-        if (role === "trainee") {
-            return "/trainee/profile";
-        }
+            if (
+                role === "trainee"
+            ) {
+                return "/trainee";
+            }
 
-        return null;
-    };
+
+            return null;
+        };
 
 
     // ======================================================
     // LOGIN
     // ======================================================
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        const cleanUsername =
-            username.trim();
+    const handleSubmit =
+        async (event) => {
+            event.preventDefault();
 
 
-        if (
-            !cleanUsername ||
-            !password
-        ) {
-            setError(
-                "Please enter your username and password."
-            );
-
-            return;
-        }
-
-
-        try {
-            setLoading(true);
-            setError("");
-
-
-            const response =
-                await api.post(
-                    "/auth/login",
-                    {
-                        username:
-                            cleanUsername,
-
-                        password,
-                    }
-                );
-
-
-            const {
-                accessToken,
-                user,
-            } = response.data;
+            const cleanUsername =
+                username.trim();
 
 
             if (
-                !accessToken ||
-                !user
+                !cleanUsername ||
+                !password
             ) {
                 setError(
-                    "Login response is incomplete. Please try again."
+                    "Please enter your username and password."
                 );
 
                 return;
             }
 
 
-            /*
-                ===========================================
-                SAVE AUTHENTICATION STATE
-                ===========================================
-            */
+            try {
+                setLoading(true);
 
-            sessionStorage.setItem(
-                "accessToken",
-                accessToken
-            );
-
-            sessionStorage.setItem(
-                "user",
-                JSON.stringify(user)
-            );
+                setError("");
 
 
-            /*
-                ===========================================
-                FIRST LOGIN PASSWORD CHANGE
-                ===========================================
+                const response =
+                    await api.post(
+                        "/auth/login",
+                        {
+                            username:
+                                cleanUsername,
 
-                Newly-created Trainer/Trainee accounts
-                have mustChangePassword = true.
-
-                They must update their temporary password
-                before continuing to the dashboard.
-            */
-
-            if (
-                user.mustChangePassword ===
-                true
-            ) {
-                const profilePath =
-                    getProfilePath(
-                        user.role
+                            password,
+                        }
                     );
 
 
-                if (profilePath) {
-                    navigate(
-                        profilePath,
-                        {
-                            replace: true,
-                        }
+                const {
+                    accessToken,
+                    user,
+                } =
+                    response.data;
+
+
+                if (
+                    !accessToken ||
+                    !user
+                ) {
+                    setError(
+                        "Login response is incomplete. Please try again."
                     );
 
                     return;
                 }
-            }
 
 
-            /*
-                ===========================================
-                NORMAL ROLE REDIRECTION
-                ===========================================
-            */
+                // ==================================================
+                // SAVE LOGIN
+                // ==================================================
 
-            const dashboardPath =
-                getDashboardPath(
-                    user.role
+                sessionStorage.setItem(
+                    "accessToken",
+                    accessToken
                 );
 
 
-            if (!dashboardPath) {
-                sessionStorage.removeItem(
-                    "accessToken"
+                sessionStorage.setItem(
+                    "user",
+                    JSON.stringify(
+                        user
+                    )
                 );
 
-                sessionStorage.removeItem(
-                    "user"
-                );
+
+                // ==================================================
+                // PASSWORD CHANGE REQUIRED
+                //
+                // IMPORTANT:
+                //
+                // ONLY TRAINER AND TRAINEE.
+                //
+                // ADMIN WILL NEVER ENTER THIS BLOCK.
+                // ==================================================
+
+                const requiresForcedPasswordChange =
+                    [
+                        "trainer",
+                        "trainee",
+                    ].includes(
+                        user.role
+                    ) &&
+                    user.mustChangePassword ===
+                    true;
 
 
-                setError(
-                    "Your account role is not authorised."
-                );
+                if (
+                    requiresForcedPasswordChange
+                ) {
+                    if (
+                        typeof onPasswordChangeRequired ===
+                        "function"
+                    ) {
+                        onPasswordChangeRequired(
+                            user
+                        );
+                    }
 
-                return;
-            }
 
-
-            navigate(
-                dashboardPath,
-                {
-                    replace: true,
+                    return;
                 }
-            );
-
-        } catch (error) {
-            console.error(
-                "Login error:",
-                error
-            );
 
 
-            /*
-                ===========================================
-                DEACTIVATED ACCOUNT
-                ===========================================
-            */
+                // ==================================================
+                // NORMAL LOGIN
+                //
+                // Admin directly enters Admin dashboard.
+                //
+                // Trainer/Trainee who already changed password
+                // enter their dashboard normally.
+                // ==================================================
 
-            if (
-                error.response?.status ===
-                403 &&
-                error.response?.data
-                    ?.code ===
-                "ACCOUNT_DEACTIVATED"
-            ) {
-                setError(
-                    "Your account has been deactivated. Please contact the administrator."
+                const dashboardPath =
+                    getDashboardPath(
+                        user.role
+                    );
+
+
+                if (
+                    !dashboardPath
+                ) {
+                    sessionStorage.removeItem(
+                        "accessToken"
+                    );
+
+
+                    sessionStorage.removeItem(
+                        "user"
+                    );
+
+
+                    setError(
+                        "Your account role is not authorised."
+                    );
+
+
+                    return;
+                }
+
+
+                navigate(
+                    dashboardPath,
+                    {
+                        replace:
+                            true,
+                    }
                 );
 
-                return;
-            }
+            } catch (error) {
+                console.error(
+                    "Login error:",
+                    error
+                );
 
 
-            /*
-                ===========================================
-                INVALID USERNAME / PASSWORD
-                ===========================================
-            */
+                // ==================================================
+                // DEACTIVATED ACCOUNT
+                // ==================================================
 
-            if (
-                error.response?.status ===
-                401
-            ) {
+                if (
+                    error.response
+                        ?.status ===
+                    403 &&
+                    error.response
+                        ?.data
+                        ?.code ===
+                    "ACCOUNT_DEACTIVATED"
+                ) {
+                    setError(
+                        "Your account has been deactivated. Please contact the administrator."
+                    );
+
+                    return;
+                }
+
+
+                // ==================================================
+                // INVALID LOGIN
+                // ==================================================
+
+                if (
+                    error.response
+                        ?.status ===
+                    401
+                ) {
+                    setError(
+                        error.response
+                            ?.data
+                            ?.message ||
+                        "Invalid username or password."
+                    );
+
+                    return;
+                }
+
+
+                // ==================================================
+                // TOO MANY ATTEMPTS
+                // ==================================================
+
+                if (
+                    error.response
+                        ?.status ===
+                    429
+                ) {
+                    setError(
+                        "Too many login attempts. Please wait and try again."
+                    );
+
+                    return;
+                }
+
+
+                // ==================================================
+                // GENERAL ERROR
+                // ==================================================
+
                 setError(
-                    error.response?.data
+                    error.response
+                        ?.data
                         ?.message ||
-                    "Invalid username or password."
+                    "Unable to login. Please try again."
                 );
 
-                return;
+            } finally {
+                setLoading(false);
             }
-
-
-            /*
-                ===========================================
-                LOGIN RATE LIMIT
-                ===========================================
-            */
-
-            if (
-                error.response?.status ===
-                429
-            ) {
-                setError(
-                    "Too many login attempts. Please wait and try again."
-                );
-
-                return;
-            }
-
-
-            /*
-                ===========================================
-                GENERAL ERROR
-                ===========================================
-            */
-
-            setError(
-                error.response?.data
-                    ?.message ||
-                "Unable to login. Please try again."
-            );
-
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
 
     // ======================================================
@@ -310,9 +339,7 @@ function LoginForm({ onForgotPassword }) {
 
             <div className="w-full max-w-[410px]">
 
-                {/* ==================================================
-                    MOBILE BRAND
-                ================================================== */}
+                {/* MOBILE BRAND */}
 
                 <div className="mb-10 lg:hidden">
 
@@ -323,6 +350,7 @@ function LoginForm({ onForgotPassword }) {
                         </span>
                     </p>
 
+
                     <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                         Warehousing & Logistics
                     </p>
@@ -330,15 +358,14 @@ function LoginForm({ onForgotPassword }) {
                 </div>
 
 
-                {/* ==================================================
-                    TITLE
-                ================================================== */}
+                {/* TITLE */}
 
                 <div>
 
                     <h2 className="text-[27px] font-bold text-[#172033]">
                         Welcome Back
                     </h2>
+
 
                     <p className="mt-2 text-[12px] leading-5 text-slate-500">
                         Sign in to continue to UK LogiWare Safety Training.
@@ -347,9 +374,7 @@ function LoginForm({ onForgotPassword }) {
                 </div>
 
 
-                {/* ==================================================
-                    ERROR
-                ================================================== */}
+                {/* ERROR */}
 
                 {error && (
                     <div className="mt-6 flex gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
@@ -388,6 +413,7 @@ function LoginForm({ onForgotPassword }) {
                                 Login Failed
                             </p>
 
+
                             <p className="mt-1 text-[10px] leading-4 text-red-500">
                                 {error}
                             </p>
@@ -398,12 +424,12 @@ function LoginForm({ onForgotPassword }) {
                 )}
 
 
-                {/* ==================================================
-                    LOGIN FORM
-                ================================================== */}
+                {/* LOGIN FORM */}
 
                 <form
-                    onSubmit={handleSubmit}
+                    onSubmit={
+                        handleSubmit
+                    }
                     className="mt-7"
                 >
 
@@ -420,8 +446,6 @@ function LoginForm({ onForgotPassword }) {
 
 
                         <div className="relative mt-2">
-
-                            {/* USER ICON */}
 
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
 
@@ -447,7 +471,9 @@ function LoginForm({ onForgotPassword }) {
                             <input
                                 id="username"
                                 type="text"
-                                value={username}
+                                value={
+                                    username
+                                }
                                 onChange={(
                                     event
                                 ) => {
@@ -458,7 +484,9 @@ function LoginForm({ onForgotPassword }) {
 
                                     clearError();
                                 }}
-                                disabled={loading}
+                                disabled={
+                                    loading
+                                }
                                 autoComplete="username"
                                 placeholder="Enter your username"
                                 className={`h-[48px] w-full rounded-lg border bg-white pl-11 pr-11 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 ${error
@@ -469,8 +497,6 @@ function LoginForm({ onForgotPassword }) {
                                     }`}
                             />
 
-
-                            {/* VALID USERNAME INDICATOR */}
 
                             {username &&
                                 !error && (
@@ -494,14 +520,14 @@ function LoginForm({ onForgotPassword }) {
                     </div>
 
 
-                    {/* ==================================================
-                        PASSWORD
-                    ================================================== */}
+                    {/* PASSWORD */}
 
                     <div className="mt-5">
 
                         <PasswordInput
-                            value={password}
+                            value={
+                                password
+                            }
                             onChange={(
                                 event
                             ) => {
@@ -512,18 +538,20 @@ function LoginForm({ onForgotPassword }) {
 
                                 clearError();
                             }}
-                            error={Boolean(
-                                error
-                            )}
-                            disabled={loading}
+                            error={
+                                Boolean(
+                                    error
+                                )
+                            }
+                            disabled={
+                                loading
+                            }
                         />
 
                     </div>
 
 
-                    {/* ==================================================
-                        FORGOT PASSWORD
-                    ================================================== */}
+                    {/* FORGOT PASSWORD */}
 
                     <div className="mt-3 flex justify-end">
 
@@ -532,7 +560,9 @@ function LoginForm({ onForgotPassword }) {
                             onClick={
                                 onForgotPassword
                             }
-                            disabled={loading}
+                            disabled={
+                                loading
+                            }
                             className="text-[10px] font-semibold text-blue-600 transition hover:text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             Forgot Password?
@@ -541,13 +571,13 @@ function LoginForm({ onForgotPassword }) {
                     </div>
 
 
-                    {/* ==================================================
-                        LOGIN BUTTON
-                    ================================================== */}
+                    {/* LOGIN BUTTON */}
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={
+                            loading
+                        }
                         className="mt-6 flex h-[48px] w-full items-center justify-center rounded-lg bg-[#1769e0] text-[12px] font-semibold text-white transition hover:bg-[#0f5dc9] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {loading
@@ -558,15 +588,14 @@ function LoginForm({ onForgotPassword }) {
                 </form>
 
 
-                {/* ==================================================
-                    HELP
-                ================================================== */}
+                {/* HELP */}
 
                 <div className="mt-8 border-t border-slate-100 pt-6 text-center">
 
                     <p className="text-[10px] text-slate-400">
                         Having trouble signing in?
                     </p>
+
 
                     <p className="mt-1 text-[10px] font-semibold text-blue-600">
                         Contact your Administrator

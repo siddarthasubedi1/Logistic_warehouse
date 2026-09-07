@@ -1,31 +1,115 @@
-import { useState } from "react";
+import {
+    useState,
+} from "react";
 
 import LoginBranding from "../components/auth/LoginBranding";
+
 import LoginForm from "../components/auth/LoginForm";
+
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
+
+import ForcePasswordChangeModal from "../components/auth/ForcePasswordChangeModal";
+
+
+const getStoredForcedPasswordUser =
+    () => {
+        try {
+            const storedUser =
+                sessionStorage.getItem(
+                    "user"
+                );
+
+
+            if (
+                !storedUser
+            ) {
+                return null;
+            }
+
+
+            const user =
+                JSON.parse(
+                    storedUser
+                );
+
+
+            return (
+                user
+                    ?.mustChangePassword ===
+                    true
+                    ? user
+                    : null
+            );
+
+        } catch {
+            return null;
+        }
+    };
 
 
 function Login() {
-    const [showForgotPassword, setShowForgotPassword] =
-        useState(false);
+    const [
+        showForgotPassword,
+        setShowForgotPassword,
+    ] = useState(false);
+
+
+    const [
+        forcedPasswordUser,
+        setForcedPasswordUser,
+    ] = useState(
+        getStoredForcedPasswordUser
+    );
 
 
     // ======================================================
-    // SHOW FORGOT PASSWORD FORM
+    // FORGOT PASSWORD
     // ======================================================
 
-    const handleForgotPassword = () => {
-        setShowForgotPassword(true);
-    };
+    const handleForgotPassword =
+        () => {
+            setShowForgotPassword(
+                true
+            );
+        };
+
+
+    const handleBackToLogin =
+        () => {
+            setShowForgotPassword(
+                false
+            );
+        };
 
 
     // ======================================================
-    // RETURN TO LOGIN FORM
+    // FIRST LOGIN PASSWORD CHANGE
     // ======================================================
 
-    const handleBackToLogin = () => {
-        setShowForgotPassword(false);
-    };
+    const handlePasswordChangeRequired =
+        (user) => {
+            setShowForgotPassword(
+                false
+            );
+
+
+            setForcedPasswordUser(
+                user
+            );
+        };
+
+
+    const handlePasswordChangeCompleted =
+        () => {
+            setForcedPasswordUser(
+                null
+            );
+
+
+            setShowForgotPassword(
+                false
+            );
+        };
 
 
     return (
@@ -33,12 +117,8 @@ function Login() {
 
             <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-[1450px] overflow-hidden bg-white lg:grid-cols-[1fr_1fr]">
 
-                {/* LEFT SIDE */}
-
                 <LoginBranding />
 
-
-                {/* RIGHT SIDE */}
 
                 {showForgotPassword ? (
                     <ForgotPasswordForm
@@ -51,10 +131,27 @@ function Login() {
                         onForgotPassword={
                             handleForgotPassword
                         }
+                        onPasswordChangeRequired={
+                            handlePasswordChangeRequired
+                        }
                     />
                 )}
 
             </div>
+
+
+            {/* MANDATORY POPUP */}
+
+            {forcedPasswordUser && (
+                <ForcePasswordChangeModal
+                    user={
+                        forcedPasswordUser
+                    }
+                    onCompleted={
+                        handlePasswordChangeCompleted
+                    }
+                />
+            )}
 
         </div>
     );

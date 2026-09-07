@@ -5,6 +5,7 @@ const express =
 const {
     generateCredentials,
     listUsers,
+    updateUser,
     deactivateUser,
     reactivateUser,
     deleteUser,
@@ -27,6 +28,13 @@ const {
     resetUserPassword,
 } = require(
     "../controllers/passwordResetController"
+);
+
+
+const {
+    getAuditLogs,
+} = require(
+    "../controllers/auditController"
 );
 
 
@@ -53,7 +61,7 @@ const router =
 
 
 // ======================================================
-// ADMIN PROTECTION
+// PROTECT ALL ADMIN ROUTES
 // ======================================================
 
 router.use(
@@ -64,9 +72,21 @@ router.use(
 
 
 // ======================================================
+// AUDIT LOGS
+//
+// GET /api/admin/audit-logs
+// ======================================================
+
+router.get(
+    "/audit-logs",
+    getAuditLogs
+);
+
+
+// ======================================================
 // CREATE PENDING TRAINER / TRAINEE
 //
-// Training section is selected during creation.
+// POST /api/admin/pending-users
 // ======================================================
 
 router.post(
@@ -77,6 +97,8 @@ router.post(
 
 // ======================================================
 // GET PENDING USERS
+//
+// GET /api/admin/pending-users
 // ======================================================
 
 router.get(
@@ -86,7 +108,9 @@ router.get(
 
 
 // ======================================================
-// GENERATE USERNAME + PASSWORD
+// GENERATE USERNAME + TEMPORARY PASSWORD
+//
+// POST /api/admin/generate-credentials
 // ======================================================
 
 router.post(
@@ -96,7 +120,9 @@ router.post(
 
 
 // ======================================================
-// LIST CREATED TRAINERS + TRAINEES
+// LIST CREATED USERS
+//
+// GET /api/admin/users
 // ======================================================
 
 router.get(
@@ -106,7 +132,32 @@ router.get(
 
 
 // ======================================================
+// EDIT USER
+//
+// PATCH /api/admin/users/:id
+//
+// Examples:
+// {
+//     "firstName": "John",
+//     "lastName": "Smith",
+//     "email": "john@example.com",
+//     "phoneNumber": "9800000000",
+//     "address": "Kathmandu",
+//     "age": 25,
+//     "gender": "male"
+// }
+// ======================================================
+
+router.patch(
+    "/users/:id",
+    updateUser
+);
+
+
+// ======================================================
 // PASSWORD RESET REQUESTS
+//
+// GET /api/admin/password-reset-requests
 // ======================================================
 
 router.get(
@@ -116,7 +167,9 @@ router.get(
 
 
 // ======================================================
-// ADMIN RESET USER PASSWORD
+// ADMIN RESET TRAINER / TRAINEE PASSWORD
+//
+// POST /api/admin/users/:id/reset-password
 // ======================================================
 
 router.post(
@@ -126,21 +179,17 @@ router.post(
 
 
 // ======================================================
-// UPDATE TRAINER OR TRAINEE TRAINING ASSIGNMENT
+// UPDATE TRAINING ASSIGNMENT
 //
-// Examples:
-//
-// Trainer:
-// Manual Handling
+// PATCH /api/admin/users/:id/training-sections
 //
 // Trainer:
-// Manual Handling + Working at Height
+// - Manual Handling
+// - Working at Height
+// - Both
 //
 // Trainee:
-// Working at Height
-//
-// Trainee:
-// Manual Handling + Working at Height
+// - Both automatically
 // ======================================================
 
 router.patch(
@@ -151,6 +200,8 @@ router.patch(
 
 // ======================================================
 // DEACTIVATE USER
+//
+// PATCH /api/admin/users/:id/deactivate
 // ======================================================
 
 router.patch(
@@ -161,6 +212,8 @@ router.patch(
 
 // ======================================================
 // REACTIVATE USER
+//
+// PATCH /api/admin/users/:id/reactivate
 // ======================================================
 
 router.patch(
@@ -171,6 +224,8 @@ router.patch(
 
 // ======================================================
 // DELETE USER
+//
+// DELETE /api/admin/users/:id
 // ======================================================
 
 router.delete(
@@ -178,6 +233,10 @@ router.delete(
     deleteUser
 );
 
+
+// ======================================================
+// EXPORT
+// ======================================================
 
 module.exports =
     router;
