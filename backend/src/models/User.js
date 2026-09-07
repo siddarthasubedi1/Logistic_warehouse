@@ -1,188 +1,244 @@
-const mongoose = require("mongoose");
+const mongoose =
+    require("mongoose");
 
-const userSchema = new mongoose.Schema(
-    {
-        username: {
-            type: String,
-            unique: true,
-            sparse: true,
-            lowercase: true,
-            trim: true,
-        },
 
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-        },
-
-        passwordHash: {
-            type: String,
-            default: null,
-        },
-
-        firstName: {
-            type: String,
-            required: true,
-            trim: true,
-        },
-
-        lastName: {
-            type: String,
-            required: true,
-            trim: true,
-        },
-
-        age: {
-            type: Number,
-
-            required: function () {
-                return (
-                    this.role === "trainer" ||
-                    this.role === "trainee"
-                );
+const userSchema =
+    new mongoose.Schema(
+        {
+            username: {
+                type: String,
+                unique: true,
+                sparse: true,
+                lowercase: true,
+                trim: true,
             },
 
-            min: 16,
-        },
 
-        phoneNumber: {
-            type: String,
-
-            required: function () {
-                return (
-                    this.role === "trainer" ||
-                    this.role === "trainee"
-                );
+            email: {
+                type: String,
+                required: true,
+                unique: true,
+                lowercase: true,
+                trim: true,
             },
 
-            trim: true,
-        },
 
-        address: {
-            type: String,
-
-            required: function () {
-                return (
-                    this.role === "trainer" ||
-                    this.role === "trainee"
-                );
+            passwordHash: {
+                type: String,
+                default: null,
             },
 
-            trim: true,
-        },
 
-        gender: {
-            type: String,
-
-            required: function () {
-                return (
-                    this.role === "trainer" ||
-                    this.role === "trainee"
-                );
+            firstName: {
+                type: String,
+                required: true,
+                trim: true,
             },
 
-            enum: [
-                "male",
-                "female",
-                "other",
-            ],
-        },
 
-        profileImage: {
-            type: String,
-            trim: true,
-            default: "",
-        },
+            lastName: {
+                type: String,
+                required: true,
+                trim: true,
+            },
 
-        role: {
-            type: String,
 
-            enum: [
-                "admin",
-                "trainer",
-                "trainee",
-            ],
+            age: {
+                type: Number,
 
-            required: true,
-        },
-
-        /*
-            Training sections assigned to a Trainer.
-
-            A Trainer can have:
-            []
-            ["manual-handling"]
-            ["working-at-height"]
-            ["manual-handling", "working-at-height"]
-
-            This allows ONE Trainer to manage
-            more than one training section.
-        */
-        assignedTrainingSections: {
-            type: [
-                {
-                    type: String,
-
-                    enum: [
-                        "manual-handling",
-                        "working-at-height",
-                    ],
+                required: function () {
+                    return (
+                        this.role ===
+                        "trainer" ||
+                        this.role ===
+                        "trainee"
+                    );
                 },
-            ],
 
-            default: [],
+                min: 16,
+            },
+
+
+            phoneNumber: {
+                type: String,
+
+                required: function () {
+                    return (
+                        this.role ===
+                        "trainer" ||
+                        this.role ===
+                        "trainee"
+                    );
+                },
+
+                trim: true,
+            },
+
+
+            address: {
+                type: String,
+
+                required: function () {
+                    return (
+                        this.role ===
+                        "trainer" ||
+                        this.role ===
+                        "trainee"
+                    );
+                },
+
+                trim: true,
+            },
+
+
+            gender: {
+                type: String,
+
+                required: function () {
+                    return (
+                        this.role ===
+                        "trainer" ||
+                        this.role ===
+                        "trainee"
+                    );
+                },
+
+                enum: [
+                    "male",
+                    "female",
+                    "other",
+                ],
+            },
+
+
+            profileImage: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+
+
+            role: {
+                type: String,
+
+                enum: [
+                    "admin",
+                    "trainer",
+                    "trainee",
+                ],
+
+                required: true,
+            },
+
+
+            // ==========================================
+            // SPRINT 1
+            // Existing training sections
+            // ==========================================
+
+            assignedTrainingSections: {
+                type: [
+                    {
+                        type: String,
+
+                        enum: [
+                            "manual-handling",
+                            "working-at-height",
+                        ],
+                    },
+                ],
+
+                default: [],
+            },
+
+
+            // ==========================================
+            // SPRINT 2
+            // Administrator-managed Training Fields
+            //
+            // One Trainer can have:
+            //
+            // Field A
+            //
+            // or
+            //
+            // Field A + Field B + Field C
+            // ==========================================
+
+            assignedFields: {
+                type: [
+                    {
+                        type:
+                            mongoose.Schema.Types
+                                .ObjectId,
+
+                        ref:
+                            "TrainingField",
+                    },
+                ],
+
+                default: [],
+            },
+
+
+            accountStatus: {
+                type: String,
+
+                enum: [
+                    "pending",
+                    "created",
+                ],
+
+                default: "pending",
+            },
+
+
+            status: {
+                type: String,
+
+                enum: [
+                    "active",
+                    "deactivated",
+                ],
+
+                default: "active",
+            },
+
+
+            mustChangePassword: {
+                type: Boolean,
+                default: true,
+            },
+
+
+            authVersion: {
+                type: Number,
+                default: 0,
+            },
+
+
+            createdBy: {
+                type:
+                    mongoose.Schema.Types
+                        .ObjectId,
+
+                ref: "User",
+
+                default: null,
+            },
+
+
+            refreshTokenHash: {
+                type: String,
+                default: null,
+            },
         },
 
-        accountStatus: {
-            type: String,
+        {
+            timestamps: true,
+        }
+    );
 
-            enum: [
-                "pending",
-                "created",
-            ],
-
-            default: "pending",
-        },
-
-        status: {
-            type: String,
-
-            enum: [
-                "active",
-                "deactivated",
-            ],
-
-            default: "active",
-        },
-
-        mustChangePassword: {
-            type: Boolean,
-            default: true,
-        },
-
-        authVersion: {
-            type: Number,
-            default: 0,
-        },
-
-        createdBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-        },
-
-        refreshTokenHash: {
-            type: String,
-            default: null,
-        },
-    },
-    {
-        timestamps: true,
-    }
-);
 
 module.exports =
     mongoose.model(
