@@ -9,11 +9,9 @@ const authenticate = async (
     next
 ) => {
     try {
-        /*
-            =========================================
-            1. CHECK AUTHORIZATION HEADER
-            =========================================
-        */
+        // ==================================================
+        // AUTHORIZATION HEADER
+        // ==================================================
 
         const authHeader =
             req.headers.authorization;
@@ -25,68 +23,69 @@ const authenticate = async (
                 "Bearer "
             )
         ) {
-            return res.status(401).json({
-                code:
-                    "AUTHENTICATION_REQUIRED",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "AUTHENTICATION_REQUIRED",
 
-                message:
-                    "Authentication required",
-            });
+                    message:
+                        "Authentication required",
+                });
         }
 
 
-        /*
-            =========================================
-            2. EXTRACT ACCESS TOKEN
-            =========================================
-        */
+        // ==================================================
+        // ACCESS TOKEN
+        // ==================================================
 
         const token =
-            authHeader.split(" ")[1];
+            authHeader
+                .split(" ")[1];
 
 
         if (!token) {
-            return res.status(401).json({
-                code:
-                    "AUTHENTICATION_REQUIRED",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "AUTHENTICATION_REQUIRED",
 
-                message:
-                    "Authentication required",
-            });
+                    message:
+                        "Authentication required",
+                });
         }
 
 
-        /*
-            =========================================
-            3. VERIFY JWT
-            =========================================
-        */
+        // ==================================================
+        // VERIFY TOKEN
+        // ==================================================
 
         const decoded =
             jwt.verify(
                 token,
-                process.env.JWT_ACCESS_SECRET
+
+                process.env
+                    .JWT_ACCESS_SECRET
             );
 
 
         if (!decoded?.id) {
-            return res.status(401).json({
-                code:
-                    "INVALID_ACCESS_TOKEN",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "INVALID_ACCESS_TOKEN",
 
-                message:
-                    "Invalid access token",
-            });
+                    message:
+                        "Invalid access token",
+                });
         }
 
 
-        /*
-            =========================================
-            4. LOAD CURRENT USER FROM MONGODB
-
-            Never trust JWT role alone.
-            =========================================
-        */
+        // ==================================================
+        // LOAD USER FROM DATABASE
+        // ==================================================
 
         const user =
             await User.findById(
@@ -97,77 +96,76 @@ const authenticate = async (
 
 
         if (!user) {
-            return res.status(401).json({
-                code:
-                    "ACCOUNT_NOT_FOUND",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "ACCOUNT_NOT_FOUND",
 
-                message:
-                    "Account no longer exists",
-            });
+                    message:
+                        "Account no longer exists",
+                });
         }
 
 
-        /*
-            =========================================
-            5. CHECK ACCOUNT STATUS
-            =========================================
-        */
+        // ==================================================
+        // ACTIVE ACCOUNT
+        // ==================================================
 
         if (
             user.status !==
             "active"
         ) {
-            return res.status(403).json({
-                code:
-                    "ACCOUNT_DEACTIVATED",
+            return res
+                .status(403)
+                .json({
+                    code:
+                        "ACCOUNT_DEACTIVATED",
 
-                message:
-                    "Your account has been deactivated",
-            });
+                    message:
+                        "Your account has been deactivated",
+                });
         }
 
 
-        /*
-            =========================================
-            6. CHECK SESSION VERSION
-
-            Password reset/change increments
-            authVersion.
-
-            Old token then becomes invalid.
-            =========================================
-        */
+        // ==================================================
+        // AUTH VERSION CHECK
+        // ==================================================
 
         const tokenAuthVersion =
-            decoded.authVersion || 0;
+            decoded.authVersion ||
+            0;
+
 
         const databaseAuthVersion =
-            user.authVersion || 0;
+            user.authVersion ||
+            0;
 
 
         if (
             tokenAuthVersion !==
             databaseAuthVersion
         ) {
-            return res.status(401).json({
-                code:
-                    "SESSION_REVOKED",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "SESSION_REVOKED",
 
-                message:
-                    "Your session is no longer valid. Please log in again.",
-            });
+                    message:
+                        "Your session is no longer valid. Please log in again.",
+                });
         }
 
 
-        /*
-            =========================================
-            7. ATTACH CURRENT DATABASE USER
-            =========================================
-        */
+        // ==================================================
+        // ATTACH USER
+        // ==================================================
 
         req.user = {
             id:
-                user._id.toString(),
+                user._id
+                    .toString(),
 
             username:
                 user.username,
@@ -186,34 +184,104 @@ const authenticate = async (
         };
 
 
+        // ==================================================
+        // FORCED PASSWORD CHANGE
+        //
+        // IMPORTANT:
+        //
+        // ONLY:
+        // Trainer
+        // Trainee
+        //
+        // Admin is NOT included.
+        // ==================================================
+
+        const requiresForcedPasswordChange =
+            ["trainer", "trainee"].includes(
+                user.role
+            ) &&
+            user.mustChangePassword ===
+            true;
+
+
+        // ==================================================
+        // WHILE USING TEMPORARY PASSWORD:
+        //
+        // Trainer/Trainee can only:
+        // - change password
+        // - logout
+        // ==================================================
+
+        const passwordChangeAllowedPaths =
+            [
+                "/api/auth/change-password",
+                "/api/auth/logout",
+            ];
+
+
+        const currentPath =
+            req.originalUrl
+                .split("?")[0];
+
+
+        if (
+            requiresForcedPasswordChange &&
+            !passwordChangeAllowedPaths.includes(
+                currentPath
+            )
+        ) {
+            return res
+                .status(403)
+                .json({
+                    code:
+                        "PASSWORD_CHANGE_REQUIRED",
+
+                    message:
+                        "You must change your temporary password before continuing.",
+                });
+        }
+
+
         next();
 
     } catch (error) {
+        // ==================================================
+        // EXPIRED TOKEN
+        // ==================================================
+
         if (
             error.name ===
             "TokenExpiredError"
         ) {
-            return res.status(401).json({
-                code:
-                    "ACCESS_TOKEN_EXPIRED",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "ACCESS_TOKEN_EXPIRED",
 
-                message:
-                    "Access token has expired",
-            });
+                    message:
+                        "Access token has expired",
+                });
         }
 
+
+        // ==================================================
+        // INVALID TOKEN
+        // ==================================================
 
         if (
             error.name ===
             "JsonWebTokenError"
         ) {
-            return res.status(401).json({
-                code:
-                    "INVALID_ACCESS_TOKEN",
+            return res
+                .status(401)
+                .json({
+                    code:
+                        "INVALID_ACCESS_TOKEN",
 
-                message:
-                    "Invalid access token",
-            });
+                    message:
+                        "Invalid access token",
+                });
         }
 
 
@@ -223,16 +291,17 @@ const authenticate = async (
         );
 
 
-        return res.status(500).json({
-            code:
-                "AUTHENTICATION_ERROR",
+        return res
+            .status(500)
+            .json({
+                code:
+                    "AUTHENTICATION_ERROR",
 
-            message:
-                "Unable to authenticate request",
-        });
+                message:
+                    "Unable to authenticate request",
+            });
     }
 };
 
 
-module.exports =
-    authenticate;
+module.exports = authenticate;

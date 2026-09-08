@@ -1,11 +1,19 @@
 import axios from "axios";
 
 
-const api = axios.create({
-    baseURL: "http://localhost:5000/api",
-    withCredentials: true,
-});
+const api =
+    axios.create({
+        baseURL:
+            "http://localhost:5000/api",
 
+        withCredentials:
+            true,
+    });
+
+
+// ======================================================
+// REQUEST INTERCEPTOR
+// ======================================================
 
 api.interceptors.request.use(
     (config) => {
@@ -14,32 +22,26 @@ api.interceptors.request.use(
                 "accessToken"
             );
 
-        if (accessToken) {
+
+        if (
+            accessToken
+        ) {
             config.headers.Authorization =
                 `Bearer ${accessToken}`;
         }
 
 
         /*
-            IMPORTANT:
-
             Do not force application/json
-            when FormData is being sent.
-
-            The browser must automatically
-            generate:
-
-            multipart/form-data;
-            boundary=...
-
-            This fixes profile-image upload.
+            while sending FormData.
         */
 
         if (
             config.data instanceof
             FormData
         ) {
-            delete config.headers[
+            delete config
+                .headers[
                 "Content-Type"
             ];
         }
@@ -56,6 +58,10 @@ api.interceptors.request.use(
 );
 
 
+// ======================================================
+// RESPONSE INTERCEPTOR
+// ======================================================
+
 api.interceptors.response.use(
     (response) => {
         return response;
@@ -63,10 +69,13 @@ api.interceptors.response.use(
 
     (error) => {
         const status =
-            error.response?.status;
+            error.response
+                ?.status;
+
 
         const code =
-            error.response?.data
+            error.response
+                ?.data
                 ?.code;
 
 
@@ -83,13 +92,15 @@ api.interceptors.response.use(
                 "accessToken"
             );
 
+
             sessionStorage.removeItem(
                 "user"
             );
 
 
             if (
-                window.location.pathname !==
+                window.location
+                    .pathname !==
                 "/login"
             ) {
                 window.location.replace(
@@ -100,7 +111,37 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // REVOKED SESSION
+        // FIRST LOGIN PASSWORD CHANGE REQUIRED
+        // ==================================================
+
+        if (
+            status === 403 &&
+            code ===
+            "PASSWORD_CHANGE_REQUIRED"
+        ) {
+            /*
+                Keep authentication state because the
+                change-password request requires the
+                temporary authenticated access token.
+
+                We only move the user back to /login,
+                where the mandatory modal is displayed.
+            */
+
+            if (
+                window.location
+                    .pathname !==
+                "/login"
+            ) {
+                window.location.replace(
+                    "/login"
+                );
+            }
+        }
+
+
+        // ==================================================
+        // SESSION REVOKED
         // ==================================================
 
         if (
@@ -112,13 +153,15 @@ api.interceptors.response.use(
                 "accessToken"
             );
 
+
             sessionStorage.removeItem(
                 "user"
             );
 
 
             if (
-                window.location.pathname !==
+                window.location
+                    .pathname !==
                 "/login"
             ) {
                 window.location.replace(

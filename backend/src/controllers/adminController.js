@@ -1,422 +1,1355 @@
-const bcrypt = require("bcrypt");
-
-const User = require("../models/User");
-
-const generateUsername = require("../utils/generateUsername");
-const generatePassword = require("../utils/generatePassword");
+const bcrypt =
+    require("bcrypt");
 
 
-// ======================================================
-// CREATE / SAVE USER INFORMATION
-// Saves Trainer or Trainee directly in users collection
-// Account remains pending until credentials are generated
-// ======================================================
+const User =
+    require("../models/User");
 
-const createPendingUser = async (req, res) => {
-    try {
-        const {
-            firstName,
-            lastName,
-            age,
-            email,
-            phoneNumber,
-            address,
-            gender,
-            role,
-        } = req.body;
 
-        // ----------------------------------------------
-        // Required field validation
-        // ----------------------------------------------
+const {
+    writeAuditLog,
+} = require(
+    "../utils/auditLogger"
+);
 
-        if (
-            !firstName?.trim() ||
-            !lastName?.trim() ||
-            age === undefined ||
-            age === null ||
-            age === "" ||
-            !email?.trim() ||
-            !phoneNumber?.trim() ||
-            !address?.trim() ||
-            !gender ||
-            !role
-        ) {
-            return res.status(400).json({
-                message: "All user information is required",
-            });
-        }
 
-        // ----------------------------------------------
-        // Role validation
-        // ----------------------------------------------
+const generateUsername =
+    require(
+        "../utils/generateUsername"
+    );
 
-        const normalizedRole = String(role)
-            .trim()
-            .toLowerCase();
 
-        if (
-            !["trainer", "trainee"].includes(
-                normalizedRole
-            )
-        ) {
-            return res.status(400).json({
-                message:
-                    "Role must be Trainer or Trainee",
-            });
-        }
-
-        // ----------------------------------------------
-        // Gender validation
-        // ----------------------------------------------
-
-        const normalizedGender = String(gender)
-            .trim()
-            .toLowerCase();
-
-        if (
-            !["male", "female", "other"].includes(
-                normalizedGender
-            )
-        ) {
-            return res.status(400).json({
-                message:
-                    "Please select a valid gender",
-            });
-        }
-
-        // ----------------------------------------------
-        // Age validation
-        // ----------------------------------------------
-
-        const parsedAge = Number(age);
-
-        if (
-            !Number.isInteger(parsedAge) ||
-            parsedAge < 16
-        ) {
-            return res.status(400).json({
-                message: "Age must be 16 or above",
-            });
-        }
-
-        // ----------------------------------------------
-        // Normalize email
-        // ----------------------------------------------
-
-        const normalizedEmail = String(email)
-            .trim()
-            .toLowerCase();
-
-        const emailPattern =
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailPattern.test(normalizedEmail)) {
-            return res.status(400).json({
-                message:
-                    "Please enter a valid email address",
-            });
-        }
-
-        // ----------------------------------------------
-        // Prevent duplicate email
-        // ----------------------------------------------
-
-        const existingUser = await User.findOne({
-            email: normalizedEmail,
-        });
-
-        if (existingUser) {
-            return res.status(409).json({
-                message:
-                    "A user with this email already exists",
-            });
-        }
-
-        // ----------------------------------------------
-        // Save user directly to MongoDB users collection
-        // No username/password yet
-        // ----------------------------------------------
-
-        const user = await User.create({
-            username: null,
-            passwordHash: null,
-
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            age: parsedAge,
-
-            email: normalizedEmail,
-
-            phoneNumber:
-                phoneNumber.trim(),
-
-            address:
-                address.trim(),
-
-            gender:
-                normalizedGender,
-
-            role:
-                normalizedRole,
-
-            accountStatus:
-                "pending",
-
-            status:
-                "active",
-
-            mustChangePassword:
-                true,
-
-            createdBy:
-                req.user.id,
-        });
-
-        return res.status(201).json({
-            message:
-                "User information saved successfully",
-
-            user: {
-                id: user._id,
-                firstName:
-                    user.firstName,
-                lastName:
-                    user.lastName,
-                age:
-                    user.age,
-                email:
-                    user.email,
-                phoneNumber:
-                    user.phoneNumber,
-                address:
-                    user.address,
-                gender:
-                    user.gender,
-                role:
-                    user.role,
-                accountStatus:
-                    user.accountStatus,
-            },
-        });
-    } catch (error) {
-        console.error(
-            "Create user information error:",
-            error.message
-        );
-
-        if (error.code === 11000) {
-            return res.status(409).json({
-                message:
-                    "A user with this email already exists",
-            });
-        }
-
-        return res.status(500).json({
-            message:
-                "Unable to save user information",
-        });
-    }
-};
+const generatePassword =
+    require(
+        "../utils/generatePassword"
+    );
 
 
 // ======================================================
-// GET PENDING USERS
-// Reads pending Trainer/Trainee users from MongoDB
+// GENERATE USERNAME + TEMPORARY PASSWORD
+//
+// POST /api/admin/generate-credentials
 // ======================================================
 
-const getPendingUsers = async (req, res) => {
-    try {
-        const pendingUsers = await User.find({
-            role: {
-                $in: [
-                    "trainer",
-                    "trainee",
-                ],
-            },
+const generateCredentials =
+    async (req, res) => {
+        try {
+            const {
+                pendingUserId,
+            } = req.body;
 
-            accountStatus:
-                "pending",
-        })
-            .select(
-                "firstName lastName age email phoneNumber address gender role accountStatus createdAt"
-            )
-            .sort({
-                createdAt: -1,
-            });
 
-        const formattedUsers =
-            pendingUsers.map(
-                (user) => ({
-                    id:
-                        user._id,
+            // ==================================================
+            // REQUIRED ID
+            // ==================================================
 
-                    firstName:
-                        user.firstName,
+            if (
+                !pendingUserId
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Pending user ID is required",
+                    });
+            }
 
-                    lastName:
-                        user.lastName,
 
-                    age:
-                        user.age,
+            // ==================================================
+            // FIND PENDING USER
+            // ==================================================
 
-                    email:
-                        user.email,
+            const user =
+                await User.findOne({
+                    _id:
+                        pendingUserId,
 
-                    phoneNumber:
-                        user.phoneNumber,
-
-                    address:
-                        user.address,
-
-                    gender:
-                        user.gender,
-
-                    role:
-                        user.role,
+                    role: {
+                        $in: [
+                            "trainer",
+                            "trainee",
+                        ],
+                    },
 
                     accountStatus:
-                        user.accountStatus,
-
-                    createdAt:
-                        user.createdAt,
-                })
-            );
-
-        return res
-            .status(200)
-            .json(formattedUsers);
-    } catch (error) {
-        console.error(
-            "Get pending users error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message:
-                "Unable to load pending users",
-        });
-    }
-};
+                        "pending",
+                });
 
 
-// ======================================================
-// GENERATE USERNAME + PASSWORD
-// Updates the SAME pending User document
-// Does NOT create another User
-// ======================================================
+            if (
+                !user
+            ) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "Pending user not found",
+                    });
+            }
 
-const generateCredentials = async (req, res) => {
-    try {
-        const {
-            pendingUserId,
-        } = req.body;
 
-        if (!pendingUserId) {
-            return res.status(400).json({
-                message:
-                    "Pending user ID is required",
-            });
-        }
+            // ==================================================
+            // TRAINER / TRAINEE ONLY
+            // ==================================================
 
-        // ----------------------------------------------
-        // Find pending user in users collection
-        // ----------------------------------------------
-
-        const user = await User.findOne({
-            _id: pendingUserId,
-
-            role: {
-                $in: [
+            if (
+                ![
                     "trainer",
                     "trainee",
-                ],
-            },
+                ].includes(
+                    user.role
+                )
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Invalid user role",
+                    });
+            }
 
-            accountStatus:
-                "pending",
-        });
 
-        if (!user) {
-            return res.status(404).json({
-                message:
-                    "Pending user not found",
+            // ==================================================
+            // GENERATE USERNAME
+            // ==================================================
+
+            const username =
+                await generateUsername(
+                    user.firstName,
+                    user.lastName
+                );
+
+
+            // ==================================================
+            // GENERATE TEMPORARY PASSWORD
+            // ==================================================
+
+            const generatedPassword =
+                generatePassword();
+
+
+            // ==================================================
+            // HASH TEMPORARY PASSWORD
+            // ==================================================
+
+            const passwordHash =
+                await bcrypt.hash(
+                    generatedPassword,
+                    12
+                );
+
+
+            // ==================================================
+            // UPDATE USER
+            // ==================================================
+
+            user.username =
+                username;
+
+
+            user.passwordHash =
+                passwordHash;
+
+
+            user.accountStatus =
+                "created";
+
+
+            user.status =
+                "active";
+
+
+            /*
+                Trainer/Trainee must change this
+                generated password at first login.
+            */
+
+            user.mustChangePassword =
+                true;
+
+
+            await user.save();
+
+
+            // ==================================================
+            // AUDIT LOG
+            //
+            // Never save generated password.
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_GENERATED_CREDENTIALS",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin generated temporary login credentials for ${user.firstName} ${user.lastName}`,
+
+                    temporaryPasswordRequired:
+                        true,
+                },
             });
-        }
 
-        // ----------------------------------------------
-        // Extra protection
-        // ----------------------------------------------
 
-        if (
-            ![
-                "trainer",
-                "trainee",
-            ].includes(user.role)
-        ) {
-            return res.status(400).json({
-                message:
-                    "Invalid user role",
-            });
-        }
+            // ==================================================
+            // RETURN CREDENTIALS ONCE
+            // ==================================================
 
-        // ----------------------------------------------
-        // Generate username
-        // ----------------------------------------------
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "Account generated successfully. These credentials are shown only once.",
 
-        const username =
-            await generateUsername(
-                user.firstName,
-                user.lastName
+                    user: {
+                        id:
+                            user._id,
+
+                        firstName:
+                            user.firstName,
+
+                        lastName:
+                            user.lastName,
+
+                        age:
+                            user.age,
+
+                        email:
+                            user.email,
+
+                        phoneNumber:
+                            user.phoneNumber,
+
+                        address:
+                            user.address,
+
+                        gender:
+                            user.gender,
+
+                        role:
+                            user.role,
+
+                        status:
+                            user.status,
+
+                        accountStatus:
+                            user.accountStatus,
+
+                        assignedTrainingSections:
+                            user.assignedTrainingSections,
+                    },
+
+                    credentials: {
+                        username:
+                            username,
+
+                        password:
+                            generatedPassword,
+                    },
+                });
+
+        } catch (error) {
+            console.error(
+                "Generate credentials error:",
+                error
             );
 
-        // ----------------------------------------------
-        // Generate temporary password
-        // ----------------------------------------------
 
-        const generatedPassword =
-            generatePassword();
+            if (
+                error.name ===
+                "CastError"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Invalid pending user ID",
+                    });
+            }
 
-        // ----------------------------------------------
-        // Hash password
-        // ----------------------------------------------
 
-        const passwordHash =
-            await bcrypt.hash(
-                generatedPassword,
-                12
+            if (
+                error.code ===
+                11000
+            ) {
+                return res
+                    .status(409)
+                    .json({
+                        message:
+                            "Generated username already exists. Please try again.",
+                    });
+            }
+
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Unable to generate account credentials",
+                });
+        }
+    };
+
+
+// ======================================================
+// LIST CREATED TRAINERS + TRAINEES
+//
+// GET /api/admin/users
+// ======================================================
+
+const listUsers =
+    async (req, res) => {
+        try {
+            const users =
+                await User.find({
+                    role: {
+                        $in: [
+                            "trainer",
+                            "trainee",
+                        ],
+                    },
+
+                    accountStatus:
+                        "created",
+                })
+                    .select(
+                        "-passwordHash -refreshTokenHash"
+                    )
+                    .sort({
+                        createdAt:
+                            -1,
+                    });
+
+
+            return res
+                .status(200)
+                .json(
+                    users
+                );
+
+        } catch (error) {
+            console.error(
+                "List users error:",
+                error
             );
 
-        // ----------------------------------------------
-        // Update SAME MongoDB document
-        // ----------------------------------------------
 
-        user.username =
-            username;
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
+        }
+    };
 
-        user.passwordHash =
-            passwordHash;
 
-        user.accountStatus =
-            "created";
+// ======================================================
+// UPDATE / EDIT USER INFORMATION
+//
+// PATCH /api/admin/users/:id
+//
+// This records:
+// - which Admin edited
+// - which user was edited
+// - previous values
+// - new values
+// ======================================================
 
-        user.status =
-            "active";
+const updateUser =
+    async (req, res) => {
+        try {
+            // ==================================================
+            // FIND USER
+            // ==================================================
 
-        user.mustChangePassword =
-            true;
+            const user =
+                await User.findById(
+                    req.params.id
+                );
 
-        await user.save();
 
-        // ----------------------------------------------
-        // Return credentials once
-        // ----------------------------------------------
+            if (
+                !user
+            ) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
 
-        return res.status(200).json({
-            message:
-                "Account generated successfully. These credentials are shown only once.",
 
-            user: {
-                id:
+            // ==================================================
+            // ADMIN ACCOUNT CANNOT BE EDITED HERE
+            // ==================================================
+
+            if (
+                user.role ===
+                "admin"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        message:
+                            "Administrator accounts cannot be edited through this endpoint",
+                    });
+            }
+
+
+            // ==================================================
+            // ONLY TRAINER / TRAINEE
+            // ==================================================
+
+            if (
+                ![
+                    "trainer",
+                    "trainee",
+                ].includes(
+                    user.role
+                )
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Only Trainer and Trainee accounts can be edited",
+                    });
+            }
+
+
+            // ==================================================
+            // STORE OLD VALUES
+            // ==================================================
+
+            const previousData = {
+                firstName:
+                    user.firstName,
+
+                lastName:
+                    user.lastName,
+
+                age:
+                    user.age,
+
+                email:
+                    user.email,
+
+                phoneNumber:
+                    user.phoneNumber,
+
+                address:
+                    user.address,
+
+                gender:
+                    user.gender,
+            };
+
+
+            const changedFields = {};
+
+
+            // ==================================================
+            // FIRST NAME
+            // ==================================================
+
+            if (
+                req.body.firstName !==
+                undefined
+            ) {
+                const value =
+                    String(
+                        req.body.firstName
+                    ).trim();
+
+
+                if (
+                    !value
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "First name cannot be empty",
+                        });
+                }
+
+
+                if (
+                    value !==
+                    user.firstName
+                ) {
+                    changedFields.firstName = {
+                        from:
+                            user.firstName,
+
+                        to:
+                            value,
+                    };
+
+
+                    user.firstName =
+                        value;
+                }
+            }
+
+
+            // ==================================================
+            // LAST NAME
+            // ==================================================
+
+            if (
+                req.body.lastName !==
+                undefined
+            ) {
+                const value =
+                    String(
+                        req.body.lastName
+                    ).trim();
+
+
+                if (
+                    !value
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Last name cannot be empty",
+                        });
+                }
+
+
+                if (
+                    value !==
+                    user.lastName
+                ) {
+                    changedFields.lastName = {
+                        from:
+                            user.lastName,
+
+                        to:
+                            value,
+                    };
+
+
+                    user.lastName =
+                        value;
+                }
+            }
+
+
+            // ==================================================
+            // AGE
+            // ==================================================
+
+            if (
+                req.body.age !==
+                undefined
+            ) {
+                const parsedAge =
+                    Number(
+                        req.body.age
+                    );
+
+
+                if (
+                    !Number.isInteger(
+                        parsedAge
+                    ) ||
+                    parsedAge < 16
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Age must be 16 or above",
+                        });
+                }
+
+
+                if (
+                    parsedAge !==
+                    user.age
+                ) {
+                    changedFields.age = {
+                        from:
+                            user.age,
+
+                        to:
+                            parsedAge,
+                    };
+
+
+                    user.age =
+                        parsedAge;
+                }
+            }
+
+
+            // ==================================================
+            // EMAIL
+            // ==================================================
+
+            if (
+                req.body.email !==
+                undefined
+            ) {
+                const normalizedEmail =
+                    String(
+                        req.body.email
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                const emailPattern =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+                if (
+                    !emailPattern.test(
+                        normalizedEmail
+                    )
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Please enter a valid email address",
+                        });
+                }
+
+
+                const existingEmailUser =
+                    await User.findOne({
+                        email:
+                            normalizedEmail,
+
+                        _id: {
+                            $ne:
+                                user._id,
+                        },
+                    });
+
+
+                if (
+                    existingEmailUser
+                ) {
+                    return res
+                        .status(409)
+                        .json({
+                            message:
+                                "Another user already uses this email address",
+                        });
+                }
+
+
+                if (
+                    normalizedEmail !==
+                    user.email
+                ) {
+                    changedFields.email = {
+                        from:
+                            user.email,
+
+                        to:
+                            normalizedEmail,
+                    };
+
+
+                    user.email =
+                        normalizedEmail;
+                }
+            }
+
+
+            // ==================================================
+            // PHONE NUMBER
+            // ==================================================
+
+            if (
+                req.body.phoneNumber !==
+                undefined
+            ) {
+                const value =
+                    String(
+                        req.body.phoneNumber
+                    ).trim();
+
+
+                if (
+                    !value
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Phone number cannot be empty",
+                        });
+                }
+
+
+                if (
+                    value !==
+                    user.phoneNumber
+                ) {
+                    changedFields.phoneNumber = {
+                        from:
+                            user.phoneNumber,
+
+                        to:
+                            value,
+                    };
+
+
+                    user.phoneNumber =
+                        value;
+                }
+            }
+
+
+            // ==================================================
+            // ADDRESS
+            // ==================================================
+
+            if (
+                req.body.address !==
+                undefined
+            ) {
+                const value =
+                    String(
+                        req.body.address
+                    ).trim();
+
+
+                if (
+                    !value
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Address cannot be empty",
+                        });
+                }
+
+
+                if (
+                    value !==
+                    user.address
+                ) {
+                    changedFields.address = {
+                        from:
+                            user.address,
+
+                        to:
+                            value,
+                    };
+
+
+                    user.address =
+                        value;
+                }
+            }
+
+
+            // ==================================================
+            // GENDER
+            // ==================================================
+
+            if (
+                req.body.gender !==
+                undefined
+            ) {
+                const normalizedGender =
+                    String(
+                        req.body.gender
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                if (
+                    ![
+                        "male",
+                        "female",
+                        "other",
+                    ].includes(
+                        normalizedGender
+                    )
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "Please select a valid gender",
+                        });
+                }
+
+
+                if (
+                    normalizedGender !==
+                    user.gender
+                ) {
+                    changedFields.gender = {
+                        from:
+                            user.gender,
+
+                        to:
+                            normalizedGender,
+                    };
+
+
+                    user.gender =
+                        normalizedGender;
+                }
+            }
+
+
+            // ==================================================
+            // NOTHING CHANGED
+            // ==================================================
+
+            if (
+                Object.keys(
+                    changedFields
+                ).length === 0
+            ) {
+                return res
+                    .status(200)
+                    .json({
+                        message:
+                            "No user information was changed",
+
+                        user,
+                    });
+            }
+
+
+            // ==================================================
+            // SAVE
+            // ==================================================
+
+            await user.save();
+
+
+            // ==================================================
+            // UPDATED DATA
+            // ==================================================
+
+            const updatedData = {
+                firstName:
+                    user.firstName,
+
+                lastName:
+                    user.lastName,
+
+                age:
+                    user.age,
+
+                email:
+                    user.email,
+
+                phoneNumber:
+                    user.phoneNumber,
+
+                address:
+                    user.address,
+
+                gender:
+                    user.gender,
+            };
+
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_EDITED_USER",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin edited ${user.firstName} ${user.lastName}`,
+
+                    previousData,
+
+                    updatedData,
+
+                    changedFields,
+                },
+            });
+
+
+            // ==================================================
+            // RESPONSE
+            // ==================================================
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "User updated successfully",
+
+                    user: {
+                        id:
+                            user._id,
+
+                        firstName:
+                            user.firstName,
+
+                        lastName:
+                            user.lastName,
+
+                        age:
+                            user.age,
+
+                        username:
+                            user.username,
+
+                        email:
+                            user.email,
+
+                        phoneNumber:
+                            user.phoneNumber,
+
+                        address:
+                            user.address,
+
+                        gender:
+                            user.gender,
+
+                        role:
+                            user.role,
+
+                        status:
+                            user.status,
+
+                        accountStatus:
+                            user.accountStatus,
+
+                        assignedTrainingSections:
+                            user.assignedTrainingSections,
+                    },
+                });
+
+        } catch (error) {
+            console.error(
+                "Update user error:",
+                error
+            );
+
+
+            if (
+                error.code ===
+                11000
+            ) {
+                return res
+                    .status(409)
+                    .json({
+                        message:
+                            "This email address is already being used",
+                    });
+            }
+
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Unable to update user",
+                });
+        }
+    };
+
+
+// ======================================================
+// DEACTIVATE USER
+//
+// PATCH /api/admin/users/:id/deactivate
+// ======================================================
+
+const deactivateUser =
+    async (req, res) => {
+        try {
+            const user =
+                await User.findById(
+                    req.params.id
+                );
+
+
+            if (
+                !user
+            ) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
+
+
+            if (
+                user.role ===
+                "admin"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        message:
+                            "Administrator accounts cannot be deactivated",
+                    });
+            }
+
+
+            if (
+                user.accountStatus !==
+                "created"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Pending users cannot be deactivated",
+                    });
+            }
+
+
+            if (
+                user.status ===
+                "deactivated"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "User is already deactivated",
+                    });
+            }
+
+
+            // ==================================================
+            // CHANGE STATUS
+            // ==================================================
+
+            user.status =
+                "deactivated";
+
+
+            // ==================================================
+            // INVALIDATE LOGIN
+            // ==================================================
+
+            user.refreshTokenHash =
+                null;
+
+
+            user.authVersion =
+                (
+                    user.authVersion ||
+                    0
+                ) + 1;
+
+
+            await user.save();
+
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_DEACTIVATED_USER",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin deactivated ${user.firstName} ${user.lastName}`,
+                },
+            });
+
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "User deactivated successfully",
+
+                    user: {
+                        id:
+                            user._id,
+
+                        username:
+                            user.username,
+
+                        firstName:
+                            user.firstName,
+
+                        lastName:
+                            user.lastName,
+
+                        role:
+                            user.role,
+
+                        status:
+                            user.status,
+                    },
+                });
+
+        } catch (error) {
+            console.error(
+                "Deactivate user error:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
+        }
+    };
+
+
+// ======================================================
+// REACTIVATE USER
+//
+// PATCH /api/admin/users/:id/reactivate
+// ======================================================
+
+const reactivateUser =
+    async (req, res) => {
+        try {
+            const user =
+                await User.findById(
+                    req.params.id
+                );
+
+
+            if (
+                !user
+            ) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
+
+
+            if (
+                user.role ===
+                "admin"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        message:
+                            "Administrator accounts cannot be reactivated through this endpoint",
+                    });
+            }
+
+
+            if (
+                user.accountStatus !==
+                "created"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Pending users cannot be reactivated",
+                    });
+            }
+
+
+            if (
+                user.status ===
+                "active"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "User is already active",
+                    });
+            }
+
+
+            // ==================================================
+            // ACTIVATE USER
+            // ==================================================
+
+            user.status =
+                "active";
+
+
+            await user.save();
+
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_REACTIVATED_USER",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin reactivated ${user.firstName} ${user.lastName}`,
+                },
+            });
+
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "User reactivated successfully",
+
+                    user: {
+                        id:
+                            user._id,
+
+                        username:
+                            user.username,
+
+                        firstName:
+                            user.firstName,
+
+                        lastName:
+                            user.lastName,
+
+                        role:
+                            user.role,
+
+                        status:
+                            user.status,
+                    },
+                });
+
+        } catch (error) {
+            console.error(
+                "Reactivate user error:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
+        }
+    };
+
+
+// ======================================================
+// DELETE USER
+//
+// DELETE /api/admin/users/:id
+// ======================================================
+
+const deleteUser =
+    async (req, res) => {
+        try {
+            const user =
+                await User.findById(
+                    req.params.id
+                );
+
+
+            if (
+                !user
+            ) {
+                return res
+                    .status(404)
+                    .json({
+                        message:
+                            "User not found",
+                    });
+            }
+
+
+            // ==================================================
+            // ADMIN CANNOT BE DELETED
+            // ==================================================
+
+            if (
+                user.role ===
+                "admin"
+            ) {
+                return res
+                    .status(403)
+                    .json({
+                        message:
+                            "Administrator accounts cannot be deleted",
+                    });
+            }
+
+
+            // ==================================================
+            // COPY TARGET INFORMATION BEFORE DELETE
+            //
+            // Important because after delete the User
+            // document no longer exists.
+            // ==================================================
+
+            const deletedUserSnapshot = {
+                _id:
                     user._id,
 
                 firstName:
@@ -425,20 +1358,11 @@ const generateCredentials = async (req, res) => {
                 lastName:
                     user.lastName,
 
-                age:
-                    user.age,
+                username:
+                    user.username,
 
                 email:
                     user.email,
-
-                phoneNumber:
-                    user.phoneNumber,
-
-                address:
-                    user.address,
-
-                gender:
-                    user.gender,
 
                 role:
                     user.role,
@@ -448,274 +1372,68 @@ const generateCredentials = async (req, res) => {
 
                 accountStatus:
                     user.accountStatus,
-            },
-
-            credentials: {
-                username:
-                    username,
-
-                password:
-                    generatedPassword,
-            },
-        });
-    } catch (error) {
-        console.error(
-            "Generate credentials error:",
-            error.message
-        );
-
-        if (
-            error.name ===
-            "CastError"
-        ) {
-            return res.status(400).json({
-                message:
-                    "Invalid pending user ID",
-            });
-        }
-
-        if (error.code === 11000) {
-            return res.status(409).json({
-                message:
-                    "Generated username already exists. Please try again.",
-            });
-        }
-
-        return res.status(500).json({
-            message:
-                "Unable to generate account credentials",
-        });
-    }
-};
+            };
 
 
-// ======================================================
-// LIST ALL CREATED TRAINERS AND TRAINEES
-// Pending users are not shown in Manage Users
-// ======================================================
+            // ==================================================
+            // AUDIT LOG BEFORE DELETE
+            // ==================================================
 
-const listUsers = async (req, res) => {
-    try {
-        const users = await User.find({
-            role: {
-                $in: [
-                    "trainer",
-                    "trainee",
-                ],
-            },
+            await writeAuditLog({
+                req,
 
-            accountStatus:
-                "created",
-        })
-            .select(
-                "-passwordHash -refreshTokenHash"
-            )
-            .sort({
-                createdAt: -1,
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_DELETED_USER",
+
+                status:
+                    "success",
+
+                targetUser:
+                    deletedUserSnapshot,
+
+                details: {
+                    message:
+                        `Admin deleted ${user.firstName} ${user.lastName}`,
+
+                    assignedTrainingSections:
+                        user.assignedTrainingSections ||
+                        [],
+                },
             });
 
-        return res
-            .status(200)
-            .json(users);
-    } catch (error) {
-        console.error(
-            "List users error:",
-            error.message
-        );
 
-        return res.status(500).json({
-            message:
-                "Server error",
-        });
-    }
-};
+            // ==================================================
+            // DELETE
+            // ==================================================
+
+            await user.deleteOne();
 
 
-// ======================================================
-// DEACTIVATE USER
-// ======================================================
+            return res
+                .status(200)
+                .json({
+                    message:
+                        "User deleted successfully",
+                });
 
-const deactivateUser = async (req, res) => {
-    try {
-        const user =
-            await User.findById(
-                req.params.id
+        } catch (error) {
+            console.error(
+                "Delete user error:",
+                error
             );
 
-        if (!user) {
-            return res.status(404).json({
-                message:
-                    "User not found",
-            });
+
+            return res
+                .status(500)
+                .json({
+                    message:
+                        "Server error",
+                });
         }
-
-        if (user.role === "admin") {
-            return res.status(403).json({
-                message:
-                    "Administrator accounts cannot be deactivated",
-            });
-        }
-
-        if (
-            user.accountStatus !==
-            "created"
-        ) {
-            return res.status(400).json({
-                message:
-                    "Pending users cannot be deactivated",
-            });
-        }
-
-        if (
-            user.status ===
-            "deactivated"
-        ) {
-            return res.status(400).json({
-                message:
-                    "User is already deactivated",
-            });
-        }
-
-        user.status =
-            "deactivated";
-
-        // Invalidate existing login sessions
-        user.refreshTokenHash =
-            null;
-
-        user.authVersion += 1;
-
-        await user.save();
-
-        return res.status(200).json({
-            message:
-                "User deactivated successfully",
-        });
-    } catch (error) {
-        console.error(
-            "Deactivate user error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message:
-                "Server error",
-        });
-    }
-};
-
-
-// ======================================================
-// REACTIVATE USER
-// ======================================================
-
-const reactivateUser = async (req, res) => {
-    try {
-        const user =
-            await User.findById(
-                req.params.id
-            );
-
-        if (!user) {
-            return res.status(404).json({
-                message:
-                    "User not found",
-            });
-        }
-
-        if (user.role === "admin") {
-            return res.status(403).json({
-                message:
-                    "Administrator accounts cannot be reactivated through this endpoint",
-            });
-        }
-
-        if (
-            user.accountStatus !==
-            "created"
-        ) {
-            return res.status(400).json({
-                message:
-                    "Pending users cannot be reactivated",
-            });
-        }
-
-        if (
-            user.status ===
-            "active"
-        ) {
-            return res.status(400).json({
-                message:
-                    "User is already active",
-            });
-        }
-
-        user.status =
-            "active";
-
-        await user.save();
-
-        return res.status(200).json({
-            message:
-                "User reactivated successfully",
-        });
-    } catch (error) {
-        console.error(
-            "Reactivate user error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message:
-                "Server error",
-        });
-    }
-};
-
-
-// ======================================================
-// DELETE USER
-// ======================================================
-
-const deleteUser = async (req, res) => {
-    try {
-        const user =
-            await User.findById(
-                req.params.id
-            );
-
-        if (!user) {
-            return res.status(404).json({
-                message:
-                    "User not found",
-            });
-        }
-
-        if (user.role === "admin") {
-            return res.status(403).json({
-                message:
-                    "Administrator accounts cannot be deleted",
-            });
-        }
-
-        await user.deleteOne();
-
-        return res.status(200).json({
-            message:
-                "User deleted successfully",
-        });
-    } catch (error) {
-        console.error(
-            "Delete user error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            message:
-                "Server error",
-        });
-    }
-};
+    };
 
 
 // ======================================================
@@ -723,10 +1441,9 @@ const deleteUser = async (req, res) => {
 // ======================================================
 
 module.exports = {
-    createPendingUser,
-    getPendingUsers,
     generateCredentials,
     listUsers,
+    updateUser,
     deactivateUser,
     reactivateUser,
     deleteUser,

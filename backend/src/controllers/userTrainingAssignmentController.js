@@ -2,6 +2,17 @@ const User =
     require("../models/User");
 
 
+const {
+    writeAuditLog,
+} = require(
+    "../utils/auditLogger"
+);
+
+
+// ======================================================
+// TRAINING SECTIONS
+// ======================================================
+
 const ALLOWED_TRAINING_SECTIONS = [
     "manual-handling",
     "working-at-height",
@@ -22,6 +33,7 @@ const validateTrainingSections = (
     ) {
         return {
             valid: false,
+
             message:
                 "Training sections must be provided as an array",
         };
@@ -36,10 +48,12 @@ const validateTrainingSections = (
 
 
     if (
-        uniqueSections.length === 0
+        uniqueSections.length ===
+        0
     ) {
         return {
             valid: false,
+
             message:
                 "Please select at least one training section",
         };
@@ -55,9 +69,12 @@ const validateTrainingSections = (
         );
 
 
-    if (invalidSection) {
+    if (
+        invalidSection
+    ) {
         return {
             valid: false,
+
             message:
                 "One or more selected training sections are invalid",
         };
@@ -66,6 +83,7 @@ const validateTrainingSections = (
 
     return {
         valid: true,
+
         sections:
             uniqueSections,
     };
@@ -77,7 +95,13 @@ const validateTrainingSections = (
 //
 // POST /api/admin/pending-users
 //
-// Training assignment is selected DURING user creation.
+// Trainer:
+// - Manual Handling
+// - Working at Height
+// - Both
+//
+// Trainee:
+// - Both automatically
 // ======================================================
 
 const createPendingUser =
@@ -152,21 +176,48 @@ const createPendingUser =
             // TRAINING ASSIGNMENT
             // ==================================================
 
-            const assignmentValidation =
-                validateTrainingSections(
-                    assignedTrainingSections
-                );
+            let assignmentValidation;
 
+
+            /*
+                Trainee automatically receives
+                both training sections.
+            */
 
             if (
-                !assignmentValidation.valid
+                normalizedRole ===
+                "trainee"
             ) {
-                return res
-                    .status(400)
-                    .json({
-                        message:
-                            assignmentValidation.message,
-                    });
+                assignmentValidation = {
+                    valid:
+                        true,
+
+                    sections: [
+                        ...ALLOWED_TRAINING_SECTIONS,
+                    ],
+                };
+
+            } else {
+                /*
+                    Trainer can have one or both.
+                */
+
+                assignmentValidation =
+                    validateTrainingSections(
+                        assignedTrainingSections
+                    );
+
+
+                if (
+                    !assignmentValidation.valid
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                assignmentValidation.message,
+                        });
+                }
             }
 
 
@@ -260,7 +311,9 @@ const createPendingUser =
                 });
 
 
-            if (existingUser) {
+            if (
+                existingUser
+            ) {
                 return res
                     .status(409)
                     .json({
@@ -273,9 +326,7 @@ const createPendingUser =
             // ==================================================
             // CREATE PENDING USER
             //
-            // IMPORTANT:
-            // We intentionally DO NOT set username: null.
-            // Username will be created when credentials are generated.
+            // Username/password are generated later.
             // ==================================================
 
             const user =
@@ -316,6 +367,11 @@ const createPendingUser =
                     status:
                         "active",
 
+                    /*
+                        Only relevant after credentials
+                        are generated.
+                    */
+
                     mustChangePassword:
                         true,
 
@@ -323,6 +379,41 @@ const createPendingUser =
                         req.user.id,
                 });
 
+
+            // ==================================================
+            // AUDIT LOG
+            //
+            // Records which Admin created which user.
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_CREATED_USER",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin created ${user.role} ${user.firstName} ${user.lastName}`,
+
+                    assignedTrainingSections:
+                        user.assignedTrainingSections,
+                },
+            });
+
+
+            // ==================================================
+            // RESPONSE
+            // ==================================================
 
             return res
                 .status(201)
@@ -421,7 +512,8 @@ const getPendingUsers =
                         "firstName lastName age email phoneNumber address gender role assignedTrainingSections accountStatus createdAt"
                     )
                     .sort({
-                        createdAt: -1,
+                        createdAt:
+                            -1,
                     });
 
 
@@ -491,14 +583,10 @@ const getPendingUsers =
 
 
 // ======================================================
-// UPDATE TRAINER OR TRAINEE ASSIGNMENT
+// UPDATE TRAINER OR TRAINEE TRAINING ASSIGNMENT
 //
 // PATCH
 // /api/admin/users/:id/training-sections
-//
-// Works for:
-// Trainer
-// Trainee
 // ======================================================
 
 const updateUserTrainingSections =
@@ -509,21 +597,9 @@ const updateUserTrainingSections =
             } = req.body;
 
 
-            const validation =
-                validateTrainingSections(
-                    trainingSections
-                );
-
-
-            if (!validation.valid) {
-                return res
-                    .status(400)
-                    .json({
-                        message:
-                            validation.message,
-                    });
-            }
-
+            // ==================================================
+            // FIND USER
+            // ==================================================
 
             const user =
                 await User.findById(
@@ -531,7 +607,9 @@ const updateUserTrainingSections =
                 );
 
 
-            if (!user) {
+            if (
+                !user
+            ) {
                 return res
                     .status(404)
                     .json({
@@ -563,7 +641,7 @@ const updateUserTrainingSections =
 
 
             // ==================================================
-            // ACCOUNT MUST EXIST
+            // ACCOUNT MUST BE CREATED
             // ==================================================
 
             if (
@@ -596,12 +674,109 @@ const updateUserTrainingSections =
             }
 
 
+            // ==================================================
+            // SAVE PREVIOUS ASSIGNMENT FOR AUDIT LOG
+            // ==================================================
+
+            const previousTrainingSections = [
+                ...(
+                    user
+                        .assignedTrainingSections ||
+                    []
+                ),
+            ];
+
+
+            let sectionsToSave;
+
+
+            // ==================================================
+            // TRAINEE ALWAYS GETS BOTH
+            // ==================================================
+
+            if (
+                user.role ===
+                "trainee"
+            ) {
+                sectionsToSave = [
+                    ...ALLOWED_TRAINING_SECTIONS,
+                ];
+
+            } else {
+                // ==================================================
+                // TRAINER CAN HAVE ONE OR BOTH
+                // ==================================================
+
+                const validation =
+                    validateTrainingSections(
+                        trainingSections
+                    );
+
+
+                if (
+                    !validation.valid
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                validation.message,
+                        });
+                }
+
+
+                sectionsToSave =
+                    validation.sections;
+            }
+
+
+            // ==================================================
+            // SAVE
+            // ==================================================
+
             user.assignedTrainingSections =
-                validation.sections;
+                sectionsToSave;
 
 
             await user.save();
 
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
+
+            await writeAuditLog({
+                req,
+
+                user:
+                    req.user,
+
+                action:
+                    "ADMIN_CHANGED_TRAINING_ASSIGNMENT",
+
+                status:
+                    "success",
+
+                targetUser:
+                    user,
+
+                details: {
+                    message:
+                        `Admin changed training assignment for ${user.firstName} ${user.lastName}`,
+
+                    previousTrainingSections,
+
+                    newTrainingSections: [
+                        ...user
+                            .assignedTrainingSections,
+                    ],
+                },
+            });
+
+
+            // ==================================================
+            // RESPONSE
+            // ==================================================
 
             return res
                 .status(200)
@@ -655,6 +830,10 @@ const updateUserTrainingSections =
         }
     };
 
+
+// ======================================================
+// EXPORTS
+// ======================================================
 
 module.exports = {
     createPendingUser,

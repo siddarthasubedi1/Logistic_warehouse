@@ -196,11 +196,28 @@ function CreateUserForm() {
 
 
         setFormData(
-            (current) => ({
-                ...current,
-                [name]:
-                    value,
-            })
+            (current) => {
+                if (
+                    name === "role"
+                ) {
+                    return {
+                        ...current,
+                        role: value,
+                        assignedTrainingSections:
+                            value === "trainee"
+                                ? TRAINING_SECTIONS.map(
+                                    (section) => section.id
+                                )
+                                : [],
+                    };
+                }
+
+
+                return {
+                    ...current,
+                    [name]: value,
+                };
+            }
         );
 
 
@@ -216,6 +233,13 @@ function CreateUserForm() {
     const toggleTrainingSection = (
         sectionId
     ) => {
+        if (
+            formData.role === "trainee"
+        ) {
+            return;
+        }
+
+
         setFormData(
             (current) => {
                 const currentSections =
@@ -317,11 +341,11 @@ function CreateUserForm() {
 
 
             if (
-                assignedTrainingSections.length ===
-                0
+                role === "trainer" &&
+                assignedTrainingSections.length === 0
             ) {
                 setError(
-                    "Please select at least one training section."
+                    "Please select at least one training section for the Trainer."
                 );
 
                 return;
@@ -734,7 +758,7 @@ UK LogiWare Administrator`;
 
 
                         <p className="mt-1 text-sm text-slate-500">
-                            Complete the details and assign at least one training section.
+                            Complete the user details. Trainers can be assigned one or both sections; Trainees automatically receive both.
                         </p>
 
                     </div>
@@ -1058,11 +1082,9 @@ UK LogiWare Administrator`;
 
 
                                     <p className="mt-1 text-xs leading-5 text-slate-500">
-                                        Select one or both training sections for this{" "}
-                                        {formData.role ===
-                                            "trainer"
-                                            ? "Trainer"
-                                            : "Trainee"}.
+                                        {formData.role === "trainer"
+                                            ? "Select Manual Handling, Working at Height, or both."
+                                            : "Both training sections are assigned automatically to every Trainee."}
                                     </p>
 
                                 </div>
@@ -1089,9 +1111,15 @@ UK LogiWare Administrator`;
                                                             section.id
                                                         )
                                                     }
+                                                    disabled={
+                                                        formData.role === "trainee"
+                                                    }
                                                     className={`rounded-xl border p-5 text-left transition ${selected
                                                         ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
                                                         : "border-slate-200 bg-white hover:border-blue-300"
+                                                        } ${formData.role === "trainee"
+                                                            ? "cursor-not-allowed opacity-80"
+                                                            : ""
                                                         }`}
                                                 >
 
