@@ -1,20 +1,44 @@
 require("dotenv").config();
 
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const path = require("path");
+const express =
+    require("express");
+
+const cors =
+    require("cors");
+
+const cookieParser =
+    require("cookie-parser");
+
+const path =
+    require("path");
+
 
 const authRoutes =
-    require("./src/routes/authRoutes");
+    require(
+        "./src/routes/authRoutes"
+    );
+
 
 const adminRoutes =
-    require("./src/routes/adminRoutes");
+    require(
+        "./src/routes/adminRoutes"
+    );
+
 
 const userRoutes =
-    require("./src/routes/userRoutes");
+    require(
+        "./src/routes/userRoutes"
+    );
 
-const app = express();
+
+const trainingProgrammeRoutes =
+    require(
+        "./src/routes/trainingProgrammeRoutes"
+    );
+
+
+const app =
+    express();
 
 
 // ======================================================
@@ -27,13 +51,20 @@ app.use(
             process.env.CLIENT_URL ||
             "http://localhost:5173",
 
-        credentials: true,
+        credentials:
+            true,
     })
 );
 
-app.use(express.json());
 
-app.use(cookieParser());
+app.use(
+    express.json()
+);
+
+
+app.use(
+    cookieParser()
+);
 
 
 // ======================================================
@@ -46,12 +77,16 @@ app.use(
     express.static(
         path.join(
             __dirname,
+
             "uploads/profiles"
         ),
 
         {
-            index: false,
-            maxAge: "1d",
+            index:
+                false,
+
+            maxAge:
+                "1d",
         }
     )
 );
@@ -82,17 +117,29 @@ app.get(
 
 app.use(
     "/api/auth",
+
     authRoutes
 );
 
+
 app.use(
     "/api/admin",
+
     adminRoutes
 );
 
+
 app.use(
     "/api/users",
+
     userRoutes
+);
+
+
+app.use(
+    "/api/training-programmes",
+
+    trainingProgrammeRoutes
 );
 
 
@@ -101,7 +148,12 @@ app.use(
 // ======================================================
 
 app.use(
-    (error, req, res, next) => {
+    (
+        error,
+        req,
+        res,
+        next
+    ) => {
 
         if (
             error?.code ===
@@ -154,9 +206,12 @@ app.use(
         }
 
 
-        next(error);
+        next(
+            error
+        );
     }
 );
 
 
-module.exports = app;
+module.exports =
+    app;
