@@ -9,6 +9,10 @@ import LogoutButton from "./LogoutButton";
 import singleTruck from "../../images/single-truck.jpg";
 
 
+// ======================================================
+// SIDEBAR ICON
+// ======================================================
+
 function SidebarIcon({
     type,
 }) {
@@ -16,30 +20,49 @@ function SidebarIcon({
         "h-[18px] w-[18px] shrink-0";
 
 
-    if (type === "dashboard") {
+    // ==================================================
+    // DASHBOARD
+    // ==================================================
+
+    if (
+        type ===
+        "dashboard"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <path d="M3 12 12 4l9 8" />
+
                 <path d="M5 10v10h14V10" />
             </svg>
         );
     }
 
 
-    if (type === "create") {
+    // ==================================================
+    // CREATE USER
+    // ==================================================
+
+    if (
+        type ===
+        "create"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="10"
@@ -57,14 +80,23 @@ function SidebarIcon({
     }
 
 
-    if (type === "users") {
+    // ==================================================
+    // USERS
+    // ==================================================
+
+    if (
+        type ===
+        "users"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="9"
@@ -86,14 +118,23 @@ function SidebarIcon({
     }
 
 
-    if (type === "roles") {
+    // ==================================================
+    // ROLES
+    // ==================================================
+
+    if (
+        type ===
+        "roles"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="9"
@@ -113,50 +154,83 @@ function SidebarIcon({
     }
 
 
-    if (type === "training") {
+    // ==================================================
+    // TRAINING
+    // ==================================================
+
+    if (
+        type ===
+        "training"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <path d="M4 5h6v14H4z" />
+
                 <path d="M14 5h6v14h-6z" />
+
                 <path d="M10 8h4" />
+
                 <path d="M10 16h4" />
             </svg>
         );
     }
 
 
-    if (type === "progress") {
+    // ==================================================
+    // PROGRESS
+    // ==================================================
+
+    if (
+        type ===
+        "progress"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <path d="M4 20V10" />
+
                 <path d="M10 20V4" />
+
                 <path d="M16 20v-7" />
+
                 <path d="M22 20V8" />
             </svg>
         );
     }
 
 
-    if (type === "scenario") {
+    // ==================================================
+    // SCENARIO
+    // ==================================================
+
+    if (
+        type ===
+        "scenario"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="12"
@@ -171,22 +245,34 @@ function SidebarIcon({
                 />
 
                 <path d="M12 2v3" />
+
                 <path d="M12 19v3" />
+
                 <path d="M2 12h3" />
+
                 <path d="M19 12h3" />
             </svg>
         );
     }
 
 
-    if (type === "quiz") {
+    // ==================================================
+    // QUIZ
+    // ==================================================
+
+    if (
+        type ===
+        "quiz"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="12"
@@ -207,14 +293,23 @@ function SidebarIcon({
     }
 
 
-    if (type === "notification") {
+    // ==================================================
+    // NOTIFICATION
+    // ==================================================
+
+    if (
+        type ===
+        "notification"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
 
@@ -224,14 +319,23 @@ function SidebarIcon({
     }
 
 
-    if (type === "profile") {
+    // ==================================================
+    // PROFILE
+    // ==================================================
+
+    if (
+        type ===
+        "profile"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="12"
@@ -245,14 +349,23 @@ function SidebarIcon({
     }
 
 
-    if (type === "help") {
+    // ==================================================
+    // HELP
+    // ==================================================
+
+    if (
+        type ===
+        "help"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <path d="M4 13a8 8 0 0 1 16 0" />
 
@@ -270,6 +383,10 @@ function SidebarIcon({
 }
 
 
+// ======================================================
+// SIDEBAR
+// ======================================================
+
 function Sidebar({
     role,
 }) {
@@ -277,170 +394,423 @@ function Sidebar({
         useLocation();
 
 
+    // ==================================================
+    // ADMIN MENU
+    // ==================================================
+
     const adminItems = [
         {
-            label: "Dashboard",
-            path: "/admin",
-            icon: "dashboard",
-            enabled: true,
+            label:
+                "Dashboard",
+
+            path:
+                "/admin",
+
+            icon:
+                "dashboard",
+
+            enabled:
+                true,
         },
 
         {
-            label: "Create User",
-            path: "/admin/create-user",
-            icon: "create",
-            enabled: true,
+            label:
+                "Create User",
+
+            path:
+                "/admin/create-user",
+
+            icon:
+                "create",
+
+            enabled:
+                true,
         },
 
         {
-            label: "Manage Users",
-            path: "/admin/users",
-            icon: "users",
-            enabled: true,
+            label:
+                "Manage Users",
+
+            path:
+                "/admin/users",
+
+            icon:
+                "users",
+
+            enabled:
+                true,
         },
 
         {
-            label: "Roles & Permissions",
-            path: "/admin/roles",
-            icon: "roles",
-            enabled: true,
+            label:
+                "Roles & Permissions",
+
+            path:
+                "/admin/roles",
+
+            icon:
+                "roles",
+
+            enabled:
+                true,
+        },
+
+        // ==============================================
+        // IMPORTANT
+        // SHARED SPRINT 2 ROUTE
+        // ==============================================
+
+        {
+            label:
+                "Training Programmes",
+
+            path:
+                "/training-programmes",
+
+            icon:
+                "training",
+
+            enabled:
+                true,
         },
     ];
 
+
+    // ==================================================
+    // TRAINER MENU
+    // ==================================================
 
     const trainerItems = [
         {
-            label: "Dashboard",
-            path: "/trainer",
-            icon: "dashboard",
-            enabled: true,
+            label:
+                "Dashboard",
+
+            path:
+                "/trainer",
+
+            icon:
+                "dashboard",
+
+            enabled:
+                true,
+        },
+
+        // ==============================================
+        // IMPORTANT
+        // SAME ROUTE AS ADMIN
+        // ==============================================
+
+        {
+            label:
+                "Training Programmes",
+
+            path:
+                "/training-programmes",
+
+            icon:
+                "training",
+
+            enabled:
+                true,
         },
     ];
 
+
+    // ==================================================
+    // TRAINEE MENU
+    // ==================================================
 
     const traineeItems = [
         {
-            label: "Dashboard",
-            path: "/trainee",
-            icon: "dashboard",
-            enabled: true,
+            label:
+                "Dashboard",
+
+            path:
+                "/trainee",
+
+            icon:
+                "dashboard",
+
+            enabled:
+                true,
         },
 
         {
-            label: "My Training",
-            path: "/trainee/training",
-            icon: "training",
-            enabled: false,
+            label:
+                "My Training",
+
+            path:
+                "/my-training",
+
+            icon:
+                "training",
+
+            enabled:
+                false,
         },
 
         {
-            label: "My Progress",
-            path: "/trainee/progress",
-            icon: "progress",
-            enabled: false,
+            label:
+                "My Progress",
+
+            path:
+                "/trainee/progress",
+
+            icon:
+                "progress",
+
+            enabled:
+                false,
         },
 
         {
-            label: "Panoramic Scenarios",
-            path: "/trainee/scenarios",
-            icon: "scenario",
-            enabled: false,
+            label:
+                "Panoramic Scenarios",
+
+            path:
+                "/trainee/scenarios",
+
+            icon:
+                "scenario",
+
+            enabled:
+                false,
         },
 
         {
-            label: "Quizzes",
-            path: "/trainee/quizzes",
-            icon: "quiz",
-            enabled: false,
+            label:
+                "Quizzes",
+
+            path:
+                "/trainee/quizzes",
+
+            icon:
+                "quiz",
+
+            enabled:
+                false,
         },
 
         {
-            label: "Notifications",
-            path: "/trainee/notifications",
-            icon: "notification",
-            enabled: false,
+            label:
+                "Notifications",
+
+            path:
+                "/trainee/notifications",
+
+            icon:
+                "notification",
+
+            enabled:
+                false,
         },
 
         {
-            label: "Profile",
-            path: "/trainee/profile",
-            icon: "profile",
-            enabled: false,
+            label:
+                "Profile",
+
+            path:
+                "/trainee/profile",
+
+            icon:
+                "profile",
+
+            enabled:
+                false,
         },
 
         {
-            label: "Help Support",
-            path: "/trainee/help",
-            icon: "help",
-            enabled: false,
+            label:
+                "Help Support",
+
+            path:
+                "/trainee/help",
+
+            icon:
+                "help",
+
+            enabled:
+                false,
         },
     ];
 
 
+    // ==================================================
+    // MENU BY ROLE
+    // ==================================================
+
     const roleItems = {
-        admin: adminItems,
-        trainer: trainerItems,
-        trainee: traineeItems,
+        admin:
+            adminItems,
+
+        trainer:
+            trainerItems,
+
+        trainee:
+            traineeItems,
     };
 
 
     const items =
-        roleItems[role] || [];
+        roleItems[
+        role
+        ] ||
+        [];
 
 
-    const isItemActive = (item) => {
-        if (item.path === "/admin/roles") {
-            return location.pathname.startsWith(
+    // ==================================================
+    // ACTIVE MENU
+    // ==================================================
+
+    const isItemActive =
+        (
+            item
+        ) => {
+
+            if (
+                item.path ===
                 "/admin/roles"
+            ) {
+                return location
+                    .pathname
+                    .startsWith(
+                        "/admin/roles"
+                    );
+            }
+
+
+            // ==========================================
+            // TRAINING PROGRAMMES
+            //
+            // Keep active when user enters
+            // /training-programmes/:programmeId/sections
+            // ==========================================
+
+            if (
+                item.path ===
+                "/training-programmes"
+            ) {
+                return location
+                    .pathname
+                    .startsWith(
+                        "/training-programmes"
+                    );
+            }
+
+
+            return (
+                location.pathname ===
+                item.path
             );
-        }
+        };
 
-        return (
-            location.pathname ===
-            item.path
-        );
-    };
 
+    // ==================================================
+    // UI
+    // ==================================================
 
     return (
         <aside className="flex min-h-screen w-[190px] flex-col bg-[#073763] text-white">
 
-            {/* LOGO */}
+            {/* ==========================================
+                LOGO
+            ========================================== */}
 
             <div className="border-b border-white/10 px-5 py-5">
-                <Logo light />
+
+                <Logo
+                    light
+                />
+
             </div>
 
 
-            {/* NAVIGATION */}
+            {/* ==========================================
+                NAVIGATION
+            ========================================== */}
 
             <nav className="flex flex-1 flex-col px-3 py-5">
 
                 <div className="space-y-2">
 
-                    {items.map(
-                        (item) => {
+                    {
+                        items.map(
+                            (
+                                item
+                            ) => {
 
-                            const active =
-                                isItemActive(
-                                    item
-                                );
+                                const active =
+                                    isItemActive(
+                                        item
+                                    );
 
 
-                            if (!item.enabled) {
+                                // ==========================
+                                // DISABLED
+                                // ==========================
+
+                                if (
+                                    !item.enabled
+                                ) {
+                                    return (
+                                        <button
+                                            key={
+                                                item.label
+                                            }
+
+                                            type="button"
+
+                                            disabled
+
+                                            title="Available in a later sprint"
+
+                                            className="flex w-full cursor-default items-center gap-3 rounded-md px-3 py-[10px] text-left text-[12px] font-medium text-slate-300"
+                                        >
+
+                                            <SidebarIcon
+                                                type={
+                                                    item.icon
+                                                }
+                                            />
+
+
+                                            <span>
+                                                {
+                                                    item.label
+                                                }
+                                            </span>
+
+                                        </button>
+                                    );
+                                }
+
+
+                                // ==========================
+                                // LINK
+                                // ==========================
+
                                 return (
-                                    <button
-                                        key={item.label}
-                                        type="button"
-                                        disabled
-                                        title="Available in a later sprint"
-                                        className="flex w-full cursor-default items-center gap-3 rounded-md px-3 py-[10px] text-left text-[12px] font-medium text-slate-300"
+                                    <NavLink
+                                        key={
+                                            `${role}-${item.path}-${item.label}`
+                                        }
+
+                                        to={
+                                            item.path
+                                        }
+
+                                        className={`flex items-center gap-3 rounded-md px-3 py-[10px] text-[12px] font-medium transition ${active
+                                            ? "bg-[#1976e9] text-white shadow-sm"
+                                            : "text-slate-200 hover:bg-white/10 hover:text-white"
+                                            }`}
                                     >
+
                                         <SidebarIcon
                                             type={
                                                 item.icon
                                             }
                                         />
+
 
                                         <span>
                                             {
@@ -448,42 +818,18 @@ function Sidebar({
                                             }
                                         </span>
 
-                                    </button>
+                                    </NavLink>
                                 );
                             }
-
-
-                            return (
-                                <NavLink
-                                    key={item.path}
-                                    to={item.path}
-                                    className={`flex items-center gap-3 rounded-md px-3 py-[10px] text-[12px] font-medium transition ${active
-                                        ? "bg-[#1976e9] text-white shadow-sm"
-                                        : "text-slate-200 hover:bg-white/10 hover:text-white"
-                                        }`}
-                                >
-
-                                    <SidebarIcon
-                                        type={
-                                            item.icon
-                                        }
-                                    />
-
-                                    <span>
-                                        {
-                                            item.label
-                                        }
-                                    </span>
-
-                                </NavLink>
-                            );
-                        }
-                    )}
+                        )
+                    }
 
                 </div>
 
 
-                {/* LOGOUT */}
+                {/* ======================================
+                    LOGOUT
+                ====================================== */}
 
                 <div className="mt-4 border-t border-white/10 pt-4">
 
@@ -492,125 +838,162 @@ function Sidebar({
                 </div>
 
 
-                {/* TRAINEE BOTTOM CARD */}
+                {/* ======================================
+                    TRAINEE CARD
+                ====================================== */}
 
-                {role === "trainee" && (
-                    <div className="mt-auto pt-8">
+                {
+                    role ===
+                    "trainee" && (
 
-                        <div className="overflow-hidden rounded-lg border border-white/10 bg-[#0b416f]">
+                        <div className="mt-auto pt-8">
 
-                            <img
-                                src={singleTruck}
-                                alt="UK LogiWare truck"
-                                className="h-[145px] w-full object-cover"
-                            />
+                            <div className="overflow-hidden rounded-lg border border-white/10 bg-[#0b416f]">
+
+                                <img
+                                    src={
+                                        singleTruck
+                                    }
+
+                                    alt="UK LogiWare truck"
+
+                                    className="h-[145px] w-full object-cover"
+                                />
 
 
-                            <div className="flex items-start gap-2 px-3 py-3">
+                                <div className="flex items-start gap-2 px-3 py-3">
 
-                                <div className="mt-[1px]">
+                                    <div className="mt-[1px]">
+
+                                        <svg
+                                            viewBox="0 0 24 24"
+
+                                            fill="none"
+
+                                            stroke="currentColor"
+
+                                            strokeWidth="1.8"
+
+                                            className="h-5 w-5 text-white"
+                                        >
+
+                                            <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
+
+                                            <path d="m9 12 2 2 4-4" />
+
+                                        </svg>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <p className="text-[11px] font-semibold text-white">
+                                            Our priority.
+                                        </p>
+
+
+                                        <p className="text-[10px] leading-4 text-slate-200">
+                                            Your safety.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    )
+                }
+
+
+                {/* ======================================
+                    TRAINER BADGE
+                ====================================== */}
+
+                {
+                    role ===
+                    "trainer" && (
+
+                        <div className="mt-auto pt-8">
+
+                            <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
+
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
 
                                     <svg
                                         viewBox="0 0 24 24"
+
                                         fill="none"
+
                                         stroke="currentColor"
+
                                         strokeWidth="1.8"
-                                        className="h-5 w-5 text-white"
+
+                                        className="h-5 w-5"
                                     >
-                                        <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
+
+                                        <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
 
                                         <path d="m9 12 2 2 4-4" />
+
                                     </svg>
 
                                 </div>
 
 
-                                <div>
+                                <p className="mt-3 text-[11px] font-semibold text-white">
+                                    Trainer
+                                </p>
 
-                                    <p className="text-[11px] font-semibold text-white">
-                                        Our priority.
-                                    </p>
 
-                                    <p className="text-[10px] leading-4 text-slate-200">
-                                        Your safety.
-                                    </p>
+                                <p className="mt-1 text-[10px] leading-4 text-slate-300">
+                                    Training and trainee management.
+                                </p>
+
+                            </div>
+
+                        </div>
+                    )
+                }
+
+
+                {/* ======================================
+                    ADMIN BADGE
+                ====================================== */}
+
+                {
+                    role ===
+                    "admin" && (
+
+                        <div className="mt-auto pt-8">
+
+                            <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
+
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
+
+                                    <SidebarIcon
+                                        type="users"
+                                    />
 
                                 </div>
 
-                            </div>
 
-                        </div>
-
-                    </div>
-                )}
+                                <p className="mt-3 text-[11px] font-semibold text-white">
+                                    Administrator
+                                </p>
 
 
-                {/* TRAINER BADGE */}
-
-                {role === "trainer" && (
-                    <div className="mt-auto pt-8">
-
-                        <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
-
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-5 w-5"
-                                >
-                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                    <path d="m9 12 2 2 4-4" />
-                                </svg>
+                                <p className="mt-1 text-[10px] leading-4 text-slate-300">
+                                    User account and access management.
+                                </p>
 
                             </div>
 
-
-                            <p className="mt-3 text-[11px] font-semibold text-white">
-                                Trainer
-                            </p>
-
-                            <p className="mt-1 text-[10px] leading-4 text-slate-300">
-                                Training and trainee management.
-                            </p>
-
                         </div>
-
-                    </div>
-                )}
-
-
-                {/* ADMIN BADGE */}
-
-                {role === "admin" && (
-                    <div className="mt-auto pt-8">
-
-                        <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
-
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
-
-                                <SidebarIcon
-                                    type="users"
-                                />
-
-                            </div>
-
-
-                            <p className="mt-3 text-[11px] font-semibold text-white">
-                                Administrator
-                            </p>
-
-                            <p className="mt-1 text-[10px] leading-4 text-slate-300">
-                                User account and access management.
-                            </p>
-
-                        </div>
-
-                    </div>
-                )}
+                    )
+                }
 
             </nav>
 

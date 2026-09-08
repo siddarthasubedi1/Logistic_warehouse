@@ -24,25 +24,39 @@ import EditRolePage from "./pages/admin/EditRolePage";
 import TrainerTrainingSectionPage from "./pages/trainer/TrainerTrainingSectionPage";
 import TrainerTasksPage from "./pages/trainer/TrainerTasksPage";
 
+import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
+import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
+import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
+import MyTrainingPage from "./pages/training/MyTrainingPage";
+import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 
 function App() {
   return (
     <Routes>
 
-      {/* PUBLIC */}
+      {/* =================================================
+          PUBLIC
+      ================================================= */}
 
       <Route
         path="/login"
-        element={<Login />}
+        element={
+          <Login />
+        }
       />
+
 
       <Route
         path="/unauthorized"
-        element={<Unauthorized />}
+        element={
+          <Unauthorized />
+        }
       />
 
 
-      {/* ADMIN */}
+      {/* =================================================
+          ADMIN
+      ================================================= */}
 
       <Route
         path="/admin"
@@ -128,7 +142,9 @@ function App() {
       />
 
 
-      {/* TRAINER */}
+      {/* =================================================
+          TRAINER
+      ================================================= */}
 
       <Route
         path="/trainer"
@@ -188,7 +204,60 @@ function App() {
       />
 
 
-      {/* TRAINEE */}
+      {/* =================================================
+          SHARED ADMIN + TRAINER PROGRAMME MANAGEMENT
+      ================================================= */}
+
+      <Route
+        path="/training-programmes"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+              "trainer",
+            ]}
+          >
+            <TrainingProgrammesPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/training-programmes/:programmeId/sections"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+              "trainer",
+            ]}
+          >
+            <TrainingProgrammeSectionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =================================================
+          ADMIN TRAINING ASSIGNMENTS
+
+          NO ADMIN ID
+          NO TRAINEE ID IN URL
+      ================================================= */}
+
+      <Route
+        path="/training-assignments"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <TrainingAssignmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =================================================
+          TRAINEE
+      ================================================= */}
 
       <Route
         path="/trainee"
@@ -220,7 +289,43 @@ function App() {
       />
 
 
-      {/* ROOT */}
+      {/* =================================================
+          TRAINEE MY TRAINING
+
+          NO TRAINEE ID
+      ================================================= */}
+
+      <Route
+        path="/my-training"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <MyTrainingPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-training/:programmeId"
+
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeLearningPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =================================================
+          ROOT
+      ================================================= */}
 
       <Route
         path="/"
@@ -233,7 +338,9 @@ function App() {
       />
 
 
-      {/* UNKNOWN */}
+      {/* =================================================
+          UNKNOWN
+      ================================================= */}
 
       <Route
         path="*"

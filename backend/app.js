@@ -14,28 +14,22 @@ const path =
 
 
 const authRoutes =
-    require(
-        "./src/routes/authRoutes"
-    );
-
+    require("./src/routes/authRoutes");
 
 const adminRoutes =
-    require(
-        "./src/routes/adminRoutes"
-    );
-
+    require("./src/routes/adminRoutes");
 
 const userRoutes =
-    require(
-        "./src/routes/userRoutes"
-    );
-
+    require("./src/routes/userRoutes");
 
 const trainingProgrammeRoutes =
-    require(
-        "./src/routes/trainingProgrammeRoutes"
-    );
+    require("./src/routes/trainingProgrammeRoutes");
 
+const trainingAssignmentRoutes =
+    require("./src/routes/trainingAssignmentRoutes");
+
+const myTrainingRoutes =
+    require("./src/routes/myTrainingRoutes");
 
 const app =
     express();
@@ -77,7 +71,6 @@ app.use(
     express.static(
         path.join(
             __dirname,
-
             "uploads/profiles"
         ),
 
@@ -99,8 +92,10 @@ app.use(
 app.get(
     "/api/test",
 
-    (req, res) => {
-
+    (
+        req,
+        res
+    ) => {
         return res
             .status(200)
             .json({
@@ -117,31 +112,49 @@ app.get(
 
 app.use(
     "/api/auth",
-
     authRoutes
 );
 
 
 app.use(
     "/api/admin",
-
     adminRoutes
 );
 
 
 app.use(
     "/api/users",
-
     userRoutes
 );
 
 
+// ======================================================
+// SPRINT 2 - TRAINING PROGRAMMES
+// ======================================================
+
 app.use(
     "/api/training-programmes",
-
     trainingProgrammeRoutes
 );
 
+
+// ======================================================
+// SPRINT 2 - TRAINING ASSIGNMENTS
+// ======================================================
+
+app.use(
+    "/api/training-assignments",
+    trainingAssignmentRoutes
+);
+
+// ======================================================
+// SPRINT 2 - MY TRAINING
+// ======================================================
+
+app.use(
+    "/api/my-training",
+    myTrainingRoutes
+);
 
 // ======================================================
 // UPLOAD ERROR HANDLER
@@ -159,7 +172,6 @@ app.use(
             error?.code ===
             "LIMIT_FILE_SIZE"
         ) {
-
             return res
                 .status(400)
                 .json({
@@ -176,7 +188,6 @@ app.use(
             error?.code ===
             "LIMIT_FILE_COUNT"
         ) {
-
             return res
                 .status(400)
                 .json({
@@ -193,7 +204,6 @@ app.use(
             error?.message ===
             "Only JPG, JPEG, PNG and WebP images are allowed."
         ) {
-
             return res
                 .status(400)
                 .json({
