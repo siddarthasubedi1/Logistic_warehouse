@@ -21,22 +21,115 @@ import RolesPermissionsPage from "./pages/admin/RolesPermissionsPage";
 import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
 import EditRolePage from "./pages/admin/EditRolePage";
 
-import TrainerTrainingSectionPage from "./pages/trainer/TrainerTrainingSectionPage";
-import TrainerTasksPage from "./pages/trainer/TrainerTasksPage";
-
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
 import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 
+import {
+  getSessionUser,
+} from "./utils/session";
+
+
+// ======================================================
+// HOME REDIRECT
+// ======================================================
+
+function HomeRedirect() {
+  const user =
+    getSessionUser();
+
+
+  // ==================================================
+  // NOT LOGGED IN
+  // ==================================================
+
+  if (!user) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
+  }
+
+
+  // ==================================================
+  // ADMIN
+  // ==================================================
+
+  if (
+    user.role ===
+    "admin"
+  ) {
+    return (
+      <Navigate
+        to="/admin"
+        replace
+      />
+    );
+  }
+
+
+  // ==================================================
+  // TRAINER
+  // ==================================================
+
+  if (
+    user.role ===
+    "trainer"
+  ) {
+    return (
+      <Navigate
+        to="/trainer"
+        replace
+      />
+    );
+  }
+
+
+  // ==================================================
+  // TRAINEE
+  // ==================================================
+
+  if (
+    user.role ===
+    "trainee"
+  ) {
+    return (
+      <Navigate
+        to="/trainee"
+        replace
+      />
+    );
+  }
+
+
+  // ==================================================
+  // UNKNOWN ROLE
+  // ==================================================
+
+  return (
+    <Navigate
+      to="/login"
+      replace
+    />
+  );
+}
+
+
+// ======================================================
+// APP
+// ======================================================
+
 function App() {
   return (
     <Routes>
 
-      {/* =================================================
-          PUBLIC
-      ================================================= */}
+      {/* ================================================= */}
+      {/* PUBLIC */}
+      {/* ================================================= */}
 
       <Route
         path="/login"
@@ -54,9 +147,9 @@ function App() {
       />
 
 
-      {/* =================================================
-          ADMIN
-      ================================================= */}
+      {/* ================================================= */}
+      {/* ADMIN */}
+      {/* ================================================= */}
 
       <Route
         path="/admin"
@@ -115,20 +208,6 @@ function App() {
 
 
       <Route
-        path="/admin/roles/:roleName/edit"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
-          >
-            <EditRolePage />
-          </ProtectedRoute>
-        }
-      />
-
-
-      <Route
         path="/admin/roles/:roleName"
         element={
           <ProtectedRoute
@@ -142,9 +221,23 @@ function App() {
       />
 
 
-      {/* =================================================
-          TRAINER
-      ================================================= */}
+      <Route
+        path="/admin/roles/:roleName/edit"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <EditRolePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ================================================= */}
+      {/* TRAINER */}
+      {/* ================================================= */}
 
       <Route
         path="/trainer"
@@ -155,34 +248,6 @@ function App() {
             ]}
           >
             <TrainerDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-
-      <Route
-        path="/trainer/training/:sectionId"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "trainer",
-            ]}
-          >
-            <TrainerTrainingSectionPage />
-          </ProtectedRoute>
-        }
-      />
-
-
-      <Route
-        path="/trainer/training/:sectionId/tasks"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "trainer",
-            ]}
-          >
-            <TrainerTasksPage />
           </ProtectedRoute>
         }
       />
@@ -204,9 +269,9 @@ function App() {
       />
 
 
-      {/* =================================================
-          SHARED ADMIN + TRAINER PROGRAMME MANAGEMENT
-      ================================================= */}
+      {/* ================================================= */}
+      {/* ADMIN + TRAINER TRAINING MANAGEMENT */}
+      {/* ================================================= */}
 
       <Route
         path="/training-programmes"
@@ -238,26 +303,27 @@ function App() {
       />
 
 
-      {/* =================================================
-          ADMIN TRAINING ASSIGNMENTS
-
-          NO ADMIN ID
-          NO TRAINEE ID IN URL
-      ================================================= */}
+      {/* ================================================= */}
+      {/* ADMIN TRAINING ASSIGNMENTS */}
+      {/* ================================================= */}
 
       <Route
         path="/training-assignments"
         element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
             <TrainingAssignmentsPage />
           </ProtectedRoute>
         }
       />
 
 
-      {/* =================================================
-          TRAINEE
-      ================================================= */}
+      {/* ================================================= */}
+      {/* TRAINEE */}
+      {/* ================================================= */}
 
       <Route
         path="/trainee"
@@ -289,11 +355,9 @@ function App() {
       />
 
 
-      {/* =================================================
-          TRAINEE MY TRAINING
-
-          NO TRAINEE ID
-      ================================================= */}
+      {/* ================================================= */}
+      {/* TRAINEE MY TRAINING */}
+      {/* ================================================= */}
 
       <Route
         path="/my-training"
@@ -308,9 +372,9 @@ function App() {
         }
       />
 
+
       <Route
         path="/my-training/:programmeId"
-
         element={
           <ProtectedRoute
             allowedRoles={[
@@ -323,30 +387,27 @@ function App() {
       />
 
 
-      {/* =================================================
-          ROOT
-      ================================================= */}
+      {/* ================================================= */}
+      {/* ROOT */}
+      {/* ================================================= */}
 
       <Route
         path="/"
         element={
-          <Navigate
-            to="/login"
-            replace
-          />
+          <HomeRedirect />
         }
       />
 
 
-      {/* =================================================
-          UNKNOWN
-      ================================================= */}
+      {/* ================================================= */}
+      {/* UNKNOWN ROUTE */}
+      {/* ================================================= */}
 
       <Route
         path="*"
         element={
           <Navigate
-            to="/login"
+            to="/"
             replace
           />
         }

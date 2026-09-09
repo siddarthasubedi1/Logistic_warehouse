@@ -1,208 +1,352 @@
-import { useNavigate } from "react-router-dom";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
+
+import {
+    useNavigate,
+} from "react-router-dom";
+
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
+import ActionButton from "../../components/ui/ActionButton";
+import FeedbackAlert from "../../components/ui/FeedbackAlert";
+import LoadingCard from "../../components/ui/LoadingCard";
+import StatusBadge from "../../components/ui/StatusBadge";
 
-const roles = [
+import api from "../../services/api";
+
+import {
+    getApiErrorMessage,
+    parseArrayResponse,
+} from "../../utils/training";
+
+
+// ======================================================
+// SYSTEM ROLE DEFINITIONS
+// ======================================================
+
+const ROLE_DEFINITIONS = [
     {
         id: "administrator",
         name: "Administrator",
         type: "System Role",
+
         description:
             "Full system access and administrative control.",
-        users: 1,
+
         permissions: 10,
-        iconStyle:
-            "bg-purple-500/20 text-purple-300",
     },
 
     {
         id: "trainer",
         name: "Trainer",
         type: "Custom Role",
+
         description:
-            "Manage assigned training modules and trainee progress.",
-        users: 1,
+            "Manage assigned training programmes and authorised learning content.",
+
         permissions: 6,
-        iconStyle:
-            "bg-blue-500/20 text-blue-300",
     },
 
     {
         id: "trainee",
         name: "Trainee",
         type: "System Role",
+
         description:
-            "Access assigned training and complete tasks.",
-        users: 1,
+            "Access assigned training programmes and learning content.",
+
         permissions: 3,
-        iconStyle:
-            "bg-emerald-500/20 text-emerald-300",
     },
 ];
 
 
-const permissions = [
+const PERMISSION_MATRIX = [
     {
-        category: "User Management",
-        permission: "View Users",
-        description: "View list of users",
-        admin: true,
-        trainer: false,
-        trainee: false,
-    },
+        permission:
+            "View Users",
 
-    {
-        category: "User Management",
-        permission: "Create User",
         description:
-            "Create Trainer or Trainee accounts",
-        admin: true,
-        trainer: false,
-        trainee: false,
+            "View Trainer and Trainee accounts.",
+
+        administrator:
+            true,
+
+        trainer:
+            false,
+
+        trainee:
+            false,
     },
 
     {
-        category: "User Management",
-        permission: "Edit User",
-        description: "Edit user information",
-        admin: true,
-        trainer: false,
-        trainee: false,
-    },
+        permission:
+            "Create User",
 
-    {
-        category: "User Management",
-        permission: "Deactivate User",
         description:
-            "Deactivate or reactivate user accounts",
-        admin: true,
-        trainer: false,
-        trainee: false,
+            "Create Trainer and Trainee accounts.",
+
+        administrator:
+            true,
+
+        trainer:
+            false,
+
+        trainee:
+            false,
     },
 
     {
-        category: "User Management",
-        permission: "Delete User",
+        permission:
+            "Manage User Status",
+
         description:
-            "Permanently remove user accounts",
-        admin: true,
-        trainer: false,
-        trainee: false,
+            "Deactivate, reactivate or delete users.",
+
+        administrator:
+            true,
+
+        trainer:
+            false,
+
+        trainee:
+            false,
     },
 
     {
-        category: "User Management",
-        permission: "Reset Password",
+        permission:
+            "Reset User Password",
+
         description:
-            "Reset Trainer or Trainee passwords",
-        admin: true,
-        trainer: false,
-        trainee: false,
+            "Generate a new temporary password.",
+
+        administrator:
+            true,
+
+        trainer:
+            false,
+
+        trainee:
+            false,
     },
 
     {
-        category: "Training Management",
-        permission: "Manage Training",
+        permission:
+            "Manage Training Programmes",
+
         description:
-            "Create and manage training modules",
-        admin: true,
-        trainer: true,
-        trainee: false,
+            "Create or update training programmes.",
+
+        administrator:
+            true,
+
+        trainer:
+            true,
+
+        trainee:
+            false,
     },
 
     {
-        category: "Training Management",
-        permission: "View Training",
+        permission:
+            "Manage Learning Sections",
+
         description:
-            "View assigned training modules",
-        admin: true,
-        trainer: true,
-        trainee: true,
+            "Create and maintain programme learning content.",
+
+        administrator:
+            true,
+
+        trainer:
+            true,
+
+        trainee:
+            false,
     },
 
     {
-        category: "Progress",
-        permission: "View Trainee Progress",
+        permission:
+            "Assign Training",
+
         description:
-            "View trainee progress and scores",
-        admin: true,
-        trainer: true,
-        trainee: false,
+            "Assign programmes to Trainees.",
+
+        administrator:
+            true,
+
+        trainer:
+            false,
+
+        trainee:
+            false,
     },
 
     {
-        category: "Profile",
-        permission: "Manage Own Profile",
+        permission:
+            "View Assigned Training",
+
         description:
-            "View and update own profile",
-        admin: true,
-        trainer: true,
-        trainee: true,
+            "Access available training programmes.",
+
+        administrator:
+            true,
+
+        trainer:
+            true,
+
+        trainee:
+            true,
+    },
+
+    {
+        permission:
+            "View Own Profile",
+
+        description:
+            "Access personal account information.",
+
+        administrator:
+            true,
+
+        trainer:
+            true,
+
+        trainee:
+            true,
+    },
+
+    {
+        permission:
+            "Access Own Dashboard",
+
+        description:
+            "Access the dashboard allowed for the current role.",
+
+        administrator:
+            true,
+
+        trainer:
+            true,
+
+        trainee:
+            true,
     },
 ];
-
-
-function PermissionIcon({ allowed }) {
-    if (allowed) {
-        return (
-            <div className="flex justify-center">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-white">
-                    ✓
-                </span>
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex justify-center">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">
-                ×
-            </span>
-        </div>
-    );
-}
-
-
-function RoleIcon({ role }) {
-    return (
-        <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${role.iconStyle}`}
-        >
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-6 w-6"
-            >
-                <circle
-                    cx="12"
-                    cy="8"
-                    r="3"
-                />
-
-                <path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6" />
-
-                <path d="M18 4v5" />
-
-                <path d="M15.5 6.5h5" />
-            </svg>
-        </div>
-    );
-}
 
 
 function RolesPermissionsPage() {
-    const navigate = useNavigate();
+    const navigate =
+        useNavigate();
 
 
-    const handleViewDetails = (
-        roleId
-    ) => {
-        navigate(
-            `/admin/roles/${roleId}`
-        );
-    };
+    const [
+        users,
+        setUsers,
+    ] = useState([]);
+
+
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
+
+
+    const [
+        errorMessage,
+        setErrorMessage,
+    ] = useState("");
+
+
+    // ======================================================
+    // LOAD CREATED USERS
+    // ======================================================
+
+    const loadUsers =
+        useCallback(async () => {
+            try {
+                setLoading(true);
+
+                setErrorMessage("");
+
+
+                const response =
+                    await api.get(
+                        "/admin/users"
+                    );
+
+
+                setUsers(
+                    parseArrayResponse(
+                        response.data,
+                        "users"
+                    )
+                );
+
+            } catch (error) {
+                console.error(
+                    "Load role users error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to load role information."
+                    )
+                );
+
+            } finally {
+                setLoading(false);
+            }
+        }, []);
+
+
+    useEffect(() => {
+        loadUsers();
+    }, [
+        loadUsers,
+    ]);
+
+
+    // ======================================================
+    // ROLE CARDS WITH CURRENT USER COUNTS
+    // ======================================================
+
+    const roles =
+        useMemo(() => {
+            return ROLE_DEFINITIONS.map(
+                (role) => {
+                    const actualRole =
+                        role.id ===
+                            "administrator"
+                            ? "admin"
+                            : role.id;
+
+
+                    const count =
+                        actualRole ===
+                            "admin"
+                            ? 1
+                            : users.filter(
+                                (user) =>
+                                    user.role ===
+                                    actualRole
+                            ).length;
+
+
+                    return {
+                        ...role,
+                        users: count,
+                    };
+                }
+            );
+        }, [
+            users,
+        ]);
 
 
     return (
@@ -210,355 +354,328 @@ function RolesPermissionsPage() {
             role="admin"
             showHeader={false}
         >
-            <main className="min-h-screen bg-[#071523] px-6 py-6 text-white">
+            <div className="space-y-6">
 
-                {/* PAGE HEADER */}
+                {/* ================================================= */}
+                {/* HEADER */}
+                {/* ================================================= */}
 
-                <div className="mb-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-                    <h1 className="text-2xl font-bold">
-                        Roles & Permissions
-                    </h1>
-
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                navigate(
-                                    "/admin"
-                                )
-                            }
-                            className="text-blue-400 transition hover:text-blue-300"
-                        >
-                            Dashboard
-                        </button>
-
-
-                        <span>
-                            ›
-                        </span>
-
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                navigate(
-                                    "/admin/users"
-                                )
-                            }
-                            className="text-blue-400 transition hover:text-blue-300"
-                        >
-                            User Management
-                        </button>
-
-
-                        <span>
-                            ›
-                        </span>
-
-
-                        <span>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">
                             Roles & Permissions
-                        </span>
+                        </h1>
 
+
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                            Review access permissions for Administrator,
+                            Trainer and Trainee roles.
+                        </p>
                     </div>
+
+
+                    <ActionButton
+                        variant="secondary"
+                        onClick={() =>
+                            navigate(
+                                "/admin/users"
+                            )
+                        }
+                    >
+                        ← Manage Users
+                    </ActionButton>
 
                 </div>
 
 
-                {/* SYSTEM ROLES */}
-
-                <section className="rounded-xl border border-white/10 bg-[#0b1d2d] p-5 shadow-xl">
-
-                    <div className="mb-5">
-
-                        <h2 className="text-base font-semibold">
-                            System Roles
-                        </h2>
-
-                        <p className="mt-1 text-xs text-slate-400">
-                            Manage user roles and their permissions.
-                        </p>
-
-                    </div>
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        errorMessage
+                    }
+                />
 
 
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {loading ? (
+                    <LoadingCard
+                        message="Loading role information..."
+                    />
+                ) : (
+                    <>
+                        {/* ================================================= */}
+                        {/* ROLE CARDS */}
+                        {/* ================================================= */}
 
-                        {roles.map(
-                            (role) => (
-                                <article
-                                    key={
-                                        role.id
-                                    }
-                                    className="rounded-xl border border-white/10 bg-[#102536] p-4 transition duration-200 hover:-translate-y-[1px] hover:border-blue-500/40"
-                                >
+                        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
-                                    {/* ROLE TOP */}
+                            <div>
+                                <h2 className="text-base font-bold text-slate-900">
+                                    System Roles
+                                </h2>
 
-                                    <div className="flex items-start gap-3">
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Select a role to view its permission details.
+                                </p>
+                            </div>
 
-                                        <RoleIcon
-                                            role={
-                                                role
+
+                            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
+                                {roles.map(
+                                    (role) => (
+                                        <article
+                                            key={
+                                                role.id
                                             }
-                                        />
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+
+                                                <div>
+                                                    <p className="text-base font-bold text-slate-900">
+                                                        {role.name}
+                                                    </p>
+
+                                                    <p className="mt-1 text-[11px] font-semibold text-blue-600">
+                                                        {role.type}
+                                                    </p>
+                                                </div>
 
 
-                                        <div className="min-w-0 flex-1">
-
-                                            <div className="flex flex-wrap items-center gap-2">
-
-                                                <h3 className="font-semibold text-white">
-                                                    {
-                                                        role.name
-                                                    }
-                                                </h3>
-
-
-                                                <span className="rounded bg-blue-500/20 px-2 py-[2px] text-[10px] text-blue-300">
-                                                    {
-                                                        role.type
-                                                    }
-                                                </span>
+                                                <StatusBadge
+                                                    status="active"
+                                                />
 
                                             </div>
 
 
-                                            <p className="mt-2 min-h-[40px] text-xs leading-5 text-slate-400">
-                                                {
-                                                    role.description
-                                                }
+                                            <p className="mt-4 min-h-[40px] text-xs leading-5 text-slate-500">
+                                                {role.description}
                                             </p>
 
-                                        </div>
 
-                                    </div>
+                                            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4">
 
-
-                                    {/* ROLE INFORMATION */}
-
-                                    <div className="mt-5 space-y-3 border-t border-white/10 pt-4 text-xs">
-
-                                        <div className="flex items-center justify-between">
-
-                                            <span className="text-slate-400">
-                                                Users
-                                            </span>
-
-                                            <span className="font-semibold text-white">
-                                                {
-                                                    role.users
-                                                }
-                                            </span>
-
-                                        </div>
-
-
-                                        <div className="flex items-center justify-between">
-
-                                            <span className="text-slate-400">
-                                                Permissions
-                                            </span>
-
-                                            <span className="font-semibold text-white">
-                                                {
-                                                    role.permissions
-                                                }
-                                            </span>
-
-                                        </div>
-
-
-                                        <div className="flex items-center justify-between">
-
-                                            <span className="text-slate-400">
-                                                Status
-                                            </span>
-
-                                            <span className="rounded bg-emerald-500/20 px-2 py-[2px] text-emerald-300">
-                                                Active
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    {/* VIEW DETAILS */}
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleViewDetails(
-                                                role.id
-                                            )
-                                        }
-                                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-500/30 px-4 py-2.5 text-xs font-semibold text-blue-300 transition hover:border-blue-400 hover:bg-blue-500/10 hover:text-blue-200"
-                                    >
-                                        View Details
-
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            className="h-4 w-4"
-                                        >
-                                            <path d="m9 18 6-6-6-6" />
-                                        </svg>
-
-                                    </button>
-
-                                </article>
-                            )
-                        )}
-
-                    </div>
-
-                </section>
-
-
-                {/* PERMISSIONS OVERVIEW */}
-
-                <section className="mt-6 rounded-xl border border-white/10 bg-[#0b1d2d] p-5 shadow-xl">
-
-                    <div className="mb-5">
-
-                        <h2 className="text-base font-semibold">
-                            Permissions Overview
-                        </h2>
-
-                        <p className="mt-1 text-xs text-slate-400">
-                            View what each role can access and modify.
-                        </p>
-
-                    </div>
-
-
-                    <div className="overflow-x-auto rounded-lg border border-white/10">
-
-                        <table className="min-w-full text-left text-xs">
-
-                            <thead className="bg-[#102536] text-slate-300">
-
-                                <tr>
-
-                                    <th className="px-4 py-3 font-medium">
-                                        Permission
-                                    </th>
-
-                                    <th className="px-4 py-3 font-medium">
-                                        Description
-                                    </th>
-
-                                    <th className="px-4 py-3 text-center font-medium">
-                                        Administrator
-                                    </th>
-
-                                    <th className="px-4 py-3 text-center font-medium">
-                                        Trainer
-                                    </th>
-
-                                    <th className="px-4 py-3 text-center font-medium">
-                                        Trainee
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                                {permissions.map(
-                                    (
-                                        permission,
-                                        index
-                                    ) => (
-                                        <tr
-                                            key={`${permission.category}-${permission.permission}`}
-                                            className={`border-t border-white/10 ${index %
-                                                    2 ===
-                                                    0
-                                                    ? "bg-[#0b1d2d]"
-                                                    : "bg-[#0d2132]"
-                                                }`}
-                                        >
-
-                                            <td className="px-4 py-3">
-
-                                                <p className="font-medium text-white">
-                                                    {
-                                                        permission.permission
-                                                    }
-                                                </p>
-
-
-                                                <p className="mt-1 text-[10px] text-blue-300">
-                                                    {
-                                                        permission.category
-                                                    }
-                                                </p>
-
-                                            </td>
-
-
-                                            <td className="px-4 py-3 text-slate-400">
-                                                {
-                                                    permission.description
-                                                }
-                                            </td>
-
-
-                                            <td className="px-4 py-3">
-
-                                                <PermissionIcon
-                                                    allowed={
-                                                        permission.admin
+                                                <RoleStatistic
+                                                    label="Users"
+                                                    value={
+                                                        role.users
                                                     }
                                                 />
 
-                                            </td>
 
-
-                                            <td className="px-4 py-3">
-
-                                                <PermissionIcon
-                                                    allowed={
-                                                        permission.trainer
+                                                <RoleStatistic
+                                                    label="Permissions"
+                                                    value={
+                                                        role.permissions
                                                     }
                                                 />
 
-                                            </td>
+                                            </div>
 
 
-                                            <td className="px-4 py-3">
+                                            <div className="mt-5 flex gap-2">
 
-                                                <PermissionIcon
-                                                    allowed={
-                                                        permission.trainee
+                                                <ActionButton
+                                                    variant="secondary"
+                                                    className="flex-1 justify-center"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/admin/roles/${role.id}`
+                                                        )
                                                     }
-                                                />
+                                                >
+                                                    View Details
+                                                </ActionButton>
 
-                                            </td>
 
-                                        </tr>
+                                                <ActionButton
+                                                    variant="primary"
+                                                    className="flex-1 justify-center"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/admin/roles/${role.id}/edit`
+                                                        )
+                                                    }
+                                                >
+                                                    Edit
+                                                </ActionButton>
+
+                                            </div>
+
+                                        </article>
                                     )
                                 )}
 
-                            </tbody>
+                            </div>
 
-                        </table>
+                        </section>
 
-                    </div>
 
-                </section>
+                        {/* ================================================= */}
+                        {/* PERMISSION MATRIX */}
+                        {/* ================================================= */}
 
-            </main>
+                        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+
+                            <div className="border-b border-slate-200 p-5">
+                                <h2 className="text-base font-bold text-slate-900">
+                                    Permission Overview
+                                </h2>
+
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Current high-level access rules for each role.
+                                </p>
+                            </div>
+
+
+                            <div className="overflow-x-auto">
+
+                                <table className="min-w-[760px] w-full">
+
+                                    <thead className="bg-slate-50">
+                                        <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+
+                                            <th className="px-5 py-3">
+                                                Permission
+                                            </th>
+
+                                            <th className="px-5 py-3 text-center">
+                                                Administrator
+                                            </th>
+
+                                            <th className="px-5 py-3 text-center">
+                                                Trainer
+                                            </th>
+
+                                            <th className="px-5 py-3 text-center">
+                                                Trainee
+                                            </th>
+
+                                        </tr>
+                                    </thead>
+
+
+                                    <tbody className="divide-y divide-slate-100">
+
+                                        {PERMISSION_MATRIX.map(
+                                            (
+                                                permission
+                                            ) => (
+                                                <tr
+                                                    key={
+                                                        permission.permission
+                                                    }
+                                                >
+                                                    <td className="px-5 py-4">
+
+                                                        <p className="text-xs font-semibold text-slate-800">
+                                                            {permission.permission}
+                                                        </p>
+
+
+                                                        <p className="mt-1 text-[11px] text-slate-500">
+                                                            {permission.description}
+                                                        </p>
+
+                                                    </td>
+
+
+                                                    <PermissionCell
+                                                        allowed={
+                                                            permission.administrator
+                                                        }
+                                                    />
+
+
+                                                    <PermissionCell
+                                                        allowed={
+                                                            permission.trainer
+                                                        }
+                                                    />
+
+
+                                                    <PermissionCell
+                                                        allowed={
+                                                            permission.trainee
+                                                        }
+                                                    />
+
+                                                </tr>
+                                            )
+                                        )}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </section>
+                    </>
+                )}
+
+            </div>
         </DashboardLayout>
+    );
+}
+
+
+// ======================================================
+// ROLE STATISTIC
+// ======================================================
+
+function RoleStatistic({
+    label,
+    value,
+}) {
+    return (
+        <div>
+            <p className="text-lg font-bold text-slate-800">
+                {value}
+            </p>
+
+            <p className="text-[10px] text-slate-500">
+                {label}
+            </p>
+        </div>
+    );
+}
+
+
+// ======================================================
+// PERMISSION CHECK
+// ======================================================
+
+function PermissionCell({
+    allowed,
+}) {
+    return (
+        <td className="px-5 py-4 text-center">
+
+            <span
+                className={`
+                    inline-flex
+                    h-6
+                    w-6
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-xs
+                    font-bold
+                    ${allowed
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-red-100 text-red-600"
+                    }
+                `}
+            >
+                {allowed
+                    ? "✓"
+                    : "×"}
+            </span>
+
+        </td>
     );
 }
 

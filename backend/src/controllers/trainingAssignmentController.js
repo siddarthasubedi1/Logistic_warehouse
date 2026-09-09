@@ -275,6 +275,15 @@ const createTrainingAssignment =
             // ==================================================
             // CHECK BROAD TRAINING ELIGIBILITY
             // ==================================================
+            //
+            // assignedTrainingSections is intentionally kept.
+            //
+            // It is NOT the specific programme assignment.
+            //
+            // It defines which broad training types the Trainee
+            // is eligible to receive.
+            //
+            // ==================================================
 
             const assignedTrainingSections =
                 Array.isArray(
@@ -363,6 +372,10 @@ const createTrainingAssignment =
             let assignment;
 
 
+            // ==================================================
+            // REUSE PREVIOUS ASSIGNMENT
+            // ==================================================
+
             if (
                 previousAssignment
             ) {
@@ -383,6 +396,11 @@ const createTrainingAssignment =
                     previousAssignment;
 
             } else {
+
+                // ==============================================
+                // CREATE NEW ASSIGNMENT
+                // ==============================================
+
                 assignment =
                     await TrainingAssignment
                         .create({
@@ -441,6 +459,10 @@ const createTrainingAssignment =
                 },
             });
 
+
+            // ==================================================
+            // POPULATED RESPONSE
+            // ==================================================
 
             const populatedAssignment =
                 await populateAssignment(
@@ -584,6 +606,10 @@ const deactivateTrainingAssignment =
                 req.params;
 
 
+            // ==================================================
+            // VALID ID
+            // ==================================================
+
             if (
                 !isValidObjectId(
                     assignmentId
@@ -600,6 +626,10 @@ const deactivateTrainingAssignment =
                     });
             }
 
+
+            // ==================================================
+            // FIND ASSIGNMENT
+            // ==================================================
 
             const assignment =
                 await TrainingAssignment
@@ -623,6 +653,10 @@ const deactivateTrainingAssignment =
             }
 
 
+            // ==================================================
+            // ALREADY INACTIVE
+            // ==================================================
+
             if (
                 assignment.status ===
                 "inactive"
@@ -639,12 +673,20 @@ const deactivateTrainingAssignment =
             }
 
 
+            // ==================================================
+            // DEACTIVATE
+            // ==================================================
+
             assignment.status =
                 "inactive";
 
 
             await assignment.save();
 
+
+            // ==================================================
+            // LOAD RELATED DATA FOR AUDIT
+            // ==================================================
 
             const trainee =
                 await User.findById(
@@ -658,6 +700,10 @@ const deactivateTrainingAssignment =
                         assignment.programme
                     );
 
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
 
             await writeAuditLog({
                 req,
@@ -690,6 +736,10 @@ const deactivateTrainingAssignment =
                 },
             });
 
+
+            // ==================================================
+            // POPULATED RESPONSE
+            // ==================================================
 
             const populatedAssignment =
                 await populateAssignment(
@@ -744,6 +794,10 @@ const reactivateTrainingAssignment =
                 req.params;
 
 
+            // ==================================================
+            // VALID ASSIGNMENT ID
+            // ==================================================
+
             if (
                 !isValidObjectId(
                     assignmentId
@@ -760,6 +814,10 @@ const reactivateTrainingAssignment =
                     });
             }
 
+
+            // ==================================================
+            // ASSIGNMENT
+            // ==================================================
 
             const assignment =
                 await TrainingAssignment
@@ -783,6 +841,10 @@ const reactivateTrainingAssignment =
             }
 
 
+            // ==================================================
+            // ALREADY ACTIVE
+            // ==================================================
+
             if (
                 assignment.status ===
                 "active"
@@ -798,6 +860,10 @@ const reactivateTrainingAssignment =
                     });
             }
 
+
+            // ==================================================
+            // PROGRAMME
+            // ==================================================
 
             const programme =
                 await TrainingProgramme
@@ -822,6 +888,10 @@ const reactivateTrainingAssignment =
                     });
             }
 
+
+            // ==================================================
+            // TRAINEE
+            // ==================================================
 
             const trainee =
                 await User.findById(
@@ -849,6 +919,52 @@ const reactivateTrainingAssignment =
                     });
             }
 
+
+            // ==================================================
+            // CHECK TRAINEE ELIGIBILITY AGAIN
+            // ==================================================
+            //
+            // The Trainee may have had their broad training
+            // eligibility changed while this assignment was
+            // inactive.
+            //
+            // Therefore we must validate it again before
+            // reactivation.
+            //
+            // ==================================================
+
+            const assignedTrainingSections =
+                Array.isArray(
+                    trainee
+                        .assignedTrainingSections
+                )
+                    ? trainee
+                        .assignedTrainingSections
+                    : [];
+
+
+            if (
+                !assignedTrainingSections
+                    .includes(
+                        programme
+                            .programmeType
+                    )
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        code:
+                            "TRAINEE_NOT_ELIGIBLE_FOR_PROGRAMME",
+
+                        message:
+                            "This Trainee is no longer eligible for this training programme type.",
+                    });
+            }
+
+
+            // ==================================================
+            // DUPLICATE ACTIVE ASSIGNMENT
+            // ==================================================
 
             const duplicate =
                 await TrainingAssignment
@@ -884,6 +1000,10 @@ const reactivateTrainingAssignment =
             }
 
 
+            // ==================================================
+            // REACTIVATE
+            // ==================================================
+
             assignment.status =
                 "active";
 
@@ -896,6 +1016,10 @@ const reactivateTrainingAssignment =
 
             await assignment.save();
 
+
+            // ==================================================
+            // AUDIT LOG
+            // ==================================================
 
             await writeAuditLog({
                 req,
@@ -926,6 +1050,10 @@ const reactivateTrainingAssignment =
                 },
             });
 
+
+            // ==================================================
+            // POPULATED RESPONSE
+            // ==================================================
 
             const populatedAssignment =
                 await populateAssignment(
@@ -964,98 +1092,20 @@ const reactivateTrainingAssignment =
 
 
 // ======================================================
-// MY TRAINING
-// TRAINEE ONLY
-// ======================================================
-
-const getMyTraining =
-    async (
-        req,
-        res
-    ) => {
-        try {
-            const assignments =
-                await TrainingAssignment
-                    .find({
-                        trainee:
-                            req.user.id,
-
-                        status:
-                            "active",
-                    })
-                    .sort({
-                        assignedAt:
-                            -1,
-                    })
-                    .populate({
-                        path:
-                            "programme",
-
-                        match: {
-                            status:
-                                "active",
-                        },
-
-                        select:
-                            "programmeType title description passMark status owner createdAt updatedAt",
-
-                        populate: {
-                            path:
-                                "owner",
-
-                            select:
-                                "firstName lastName username",
-                        },
-                    })
-                    .populate(
-                        "assignedBy",
-                        "firstName lastName username role"
-                    );
-
-
-            /*
-                If a programme was later deactivated,
-                populate returns programme:null.
-
-                Do not show that programme to the Trainee.
-            */
-
-            const availableAssignments =
-                assignments.filter(
-                    (assignment) =>
-                        assignment.programme
-                );
-
-
-            return res
-                .status(200)
-                .json({
-                    assignments:
-                        availableAssignments,
-                });
-
-        } catch (error) {
-            console.error(
-                "Get my training error:",
-                error
-            );
-
-
-            return res
-                .status(500)
-                .json({
-                    code:
-                        "MY_TRAINING_LOAD_FAILED",
-
-                    message:
-                        "Unable to load your assigned training programmes.",
-                });
-        }
-    };
-
-
-// ======================================================
 // EXPORTS
+// ======================================================
+//
+// Trainee My Training functions are intentionally NOT
+// exported from this controller.
+//
+// Trainee learning is handled by:
+//
+// controllers/myTrainingController.js
+//
+// through:
+//
+// /api/my-training
+//
 // ======================================================
 
 module.exports = {
@@ -1063,5 +1113,4 @@ module.exports = {
     getTrainingAssignments,
     deactivateTrainingAssignment,
     reactivateTrainingAssignment,
-    getMyTraining,
 };

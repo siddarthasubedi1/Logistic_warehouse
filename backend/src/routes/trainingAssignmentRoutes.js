@@ -1,32 +1,58 @@
 const express =
     require("express");
 
+
 const router =
     express.Router();
 
 
+// ======================================================
+// MIDDLEWARE
+// ======================================================
+
 const authenticate =
     require("../middleware/authenticate");
+
 
 const authorize =
     require("../middleware/authorize");
 
+
 const checkActiveStatus =
     require("../middleware/checkActiveStatus");
 
+
+// ======================================================
+// CONTROLLER
+// ======================================================
 
 const {
     createTrainingAssignment,
     getTrainingAssignments,
     deactivateTrainingAssignment,
     reactivateTrainingAssignment,
-    getMyTraining,
 } =
-    require("../controllers/trainingAssignmentController");
+    require(
+        "../controllers/trainingAssignmentController"
+    );
 
 
 // ======================================================
 // COMMON SECURITY
+// ======================================================
+//
+// Every route below requires:
+//
+// - Valid login token
+// - Active user account
+//
+// Training Assignment management is Administrator-only.
+//
+// Trainee learning access is NOT handled here anymore.
+// Trainee learning uses:
+//
+// /api/my-training
+//
 // ======================================================
 
 router.use(
@@ -36,26 +62,11 @@ router.use(
 
 
 // ======================================================
-// TRAINEE - MY TRAINING
+// ADMIN - GET ALL TRAINING ASSIGNMENTS
 //
-// IMPORTANT:
+// GET
+// /api/training-assignments
 //
-// Put this before /:assignmentId routes.
-// ======================================================
-
-router.get(
-    "/my-training",
-
-    authorize(
-        "trainee"
-    ),
-
-    getMyTraining
-);
-
-
-// ======================================================
-// ADMIN - GET ASSIGNMENTS
 // ======================================================
 
 router.get(
@@ -70,10 +81,18 @@ router.get(
 
 
 // ======================================================
-// ADMIN - CREATE ASSIGNMENT
+// ADMIN - CREATE TRAINING ASSIGNMENT
 //
-// traineeId is in request body.
-// NO user ID in URL.
+// POST
+// /api/training-assignments
+//
+// BODY:
+//
+// {
+//     programmeId,
+//     traineeId
+// }
+//
 // ======================================================
 
 router.post(
@@ -88,7 +107,11 @@ router.post(
 
 
 // ======================================================
-// ADMIN - REACTIVATE
+// ADMIN - REACTIVATE TRAINING ASSIGNMENT
+//
+// PATCH
+// /api/training-assignments/:assignmentId/reactivate
+//
 // ======================================================
 
 router.patch(
@@ -103,7 +126,11 @@ router.patch(
 
 
 // ======================================================
-// ADMIN - DEACTIVATE
+// ADMIN - DEACTIVATE TRAINING ASSIGNMENT
+//
+// PATCH
+// /api/training-assignments/:assignmentId/deactivate
+//
 // ======================================================
 
 router.patch(
@@ -116,6 +143,10 @@ router.patch(
     deactivateTrainingAssignment
 );
 
+
+// ======================================================
+// EXPORT
+// ======================================================
 
 module.exports =
     router;

@@ -3,6 +3,12 @@ import {
     useLocation,
 } from "react-router-dom";
 
+import {
+    clearAuthSession,
+    getAccessToken,
+    getSessionUser,
+} from "../utils/session";
+
 
 function ProtectedRoute({
     children,
@@ -13,37 +19,15 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // AUTH DATA
+    // AUTH SESSION
     // ======================================================
 
     const accessToken =
-        sessionStorage.getItem(
-            "accessToken"
-        );
+        getAccessToken();
 
 
-    const storedUser =
-        sessionStorage.getItem(
-            "user"
-        );
-
-
-    // ======================================================
-    // PARSE USER
-    // ======================================================
-
-    const user = (() => {
-        try {
-            return storedUser
-                ? JSON.parse(
-                    storedUser
-                )
-                : null;
-
-        } catch {
-            return null;
-        }
-    })();
+    const user =
+        getSessionUser();
 
 
     // ======================================================
@@ -68,53 +52,13 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // INVALID USER ROLE
+    // INVALID ROLE
     // ======================================================
 
     if (!user.role) {
-        sessionStorage.removeItem(
-            "accessToken"
-        );
+        clearAuthSession();
 
 
-        sessionStorage.removeItem(
-            "user"
-        );
-
-
-        return (
-            <Navigate
-                to="/login"
-                replace
-            />
-        );
-    }
-
-
-    // ======================================================
-    // MANDATORY PASSWORD CHANGE
-    //
-    // IMPORTANT:
-    //
-    // ONLY TRAINER + TRAINEE.
-    //
-    // ADMIN DOES NOT ENTER THIS CONDITION.
-    // ======================================================
-
-    const requiresForcedPasswordChange =
-        [
-            "trainer",
-            "trainee",
-        ].includes(
-            user.role
-        ) &&
-        user.mustChangePassword ===
-        true;
-
-
-    if (
-        requiresForcedPasswordChange
-    ) {
         return (
             <Navigate
                 to="/login"
@@ -129,17 +73,17 @@ function ProtectedRoute({
     // ======================================================
 
     if (
-        user.status ===
-        "deactivated"
+        [
+            "deactivated",
+            "inactive",
+        ].includes(
+            String(
+                user.status ||
+                ""
+            ).toLowerCase()
+        )
     ) {
-        sessionStorage.removeItem(
-            "accessToken"
-        );
-
-
-        sessionStorage.removeItem(
-            "user"
-        );
+        clearAuthSession();
 
 
         return (
@@ -152,7 +96,44 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // ROLE BASED ACCESS
+    // FORCED PASSWORD CHANGE
+    // ======================================================
+    //
+    // Only Trainer and Trainee use the temporary-password
+    // first-login policy.
+    //
+    // Admin is never blocked by this condition.
+    // ======================================================
+
+    const requiresPasswordChange =
+        [
+            "trainer",
+            "trainee",
+        ].includes(
+            user.role
+        ) &&
+        user.mustChangePassword ===
+        true;
+
+
+    if (
+        requiresPasswordChange
+    ) {
+        return (
+            <Navigate
+                to="/login"
+                replace
+                state={{
+                    passwordChangeRequired:
+                        true,
+                }}
+            />
+        );
+    }
+
+
+    // ======================================================
+    // ROLE ACCESS
     // ======================================================
 
     if (

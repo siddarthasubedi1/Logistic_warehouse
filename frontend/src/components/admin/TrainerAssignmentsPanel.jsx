@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
     useState,
@@ -6,19 +7,36 @@ import {
 
 import api from "../../services/api";
 
+import ActionButton from "../ui/ActionButton";
+import FeedbackAlert from "../ui/FeedbackAlert";
+import LoadingCard from "../ui/LoadingCard";
+import StatusBadge from "../ui/StatusBadge";
+
+import {
+    getApiErrorMessage,
+    getUserDisplayName,
+    parseArrayResponse,
+} from "../../utils/training";
+
 
 const TRAINING_SECTIONS = [
     {
-        id: "manual-handling",
-        name: "Manual Handling",
+        id:
+            "manual-handling",
+
+        name:
+            "Manual Handling",
 
         description:
             "Safe lifting, carrying and manual handling procedures.",
     },
 
     {
-        id: "working-at-height",
-        name: "Working at Height",
+        id:
+            "working-at-height",
+
+        name:
+            "Working at Height",
 
         description:
             "Safety procedures for working at elevated locations.",
@@ -64,26 +82,25 @@ function TrainerAssignmentsPanel() {
 
 
     const [
-        error,
-        setError,
+        errorMessage,
+        setErrorMessage,
     ] = useState("");
 
 
     const [
-        message,
-        setMessage,
+        successMessage,
+        setSuccessMessage,
     ] = useState("");
 
 
     // ======================================================
-    // LOAD TRAINERS + TRAINEES
+    // LOAD USERS
     // ======================================================
 
     const loadUsers =
-        async () => {
+        useCallback(async () => {
             try {
                 setLoading(true);
-                setError("");
 
 
                 const response =
@@ -93,12 +110,10 @@ function TrainerAssignmentsPanel() {
 
 
                 const responseUsers =
-                    Array.isArray(
-                        response.data
-                    )
-                        ? response.data
-                        : response.data
-                            ?.users || [];
+                    parseArrayResponse(
+                        response.data,
+                        "users"
+                    );
 
 
                 const manageableUsers =
@@ -120,16 +135,16 @@ function TrainerAssignmentsPanel() {
 
             } catch (error) {
                 console.error(
-                    "Load users error:",
+                    "Load training access users error:",
                     error
                 );
 
 
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to load Trainers and Trainees."
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to load Trainers and Trainees."
+                    )
                 );
 
 
@@ -138,16 +153,18 @@ function TrainerAssignmentsPanel() {
             } finally {
                 setLoading(false);
             }
-        };
+        }, []);
 
 
     useEffect(() => {
         loadUsers();
-    }, []);
+    }, [
+        loadUsers,
+    ]);
 
 
     // ======================================================
-    // FILTER USERS
+    // FILTER
     // ======================================================
 
     const filteredUsers =
@@ -165,7 +182,6 @@ function TrainerAssignmentsPanel() {
                     user.role ===
                     roleFilter
             );
-
         }, [
             users,
             roleFilter,
@@ -173,21 +189,31 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // CURRENT USER
+    // SELECTED USER
     // ======================================================
 
     const selectedUser =
-        users.find(
-            (user) =>
-                String(user._id) ===
-                String(
-                    selectedUserId
-                )
+        useMemo(
+            () =>
+                users.find(
+                    (user) =>
+                        String(
+                            user._id
+                        ) ===
+                        String(
+                            selectedUserId
+                        )
+                ) ||
+                null,
+            [
+                users,
+                selectedUserId,
+            ]
         );
 
 
     // ======================================================
-    // ROLE FILTER CHANGE
+    // FILTER CHANGE
     // ======================================================
 
     const handleRoleFilterChange = (
@@ -198,18 +224,10 @@ function TrainerAssignmentsPanel() {
         );
 
 
-        setSelectedUserId(
-            ""
-        );
-
-
-        setSelectedSections(
-            []
-        );
-
-
-        setError("");
-        setMessage("");
+        setSelectedUserId("");
+        setSelectedSections([]);
+        setErrorMessage("");
+        setSuccessMessage("");
     };
 
 
@@ -229,17 +247,8 @@ function TrainerAssignmentsPanel() {
         );
 
 
-        setMessage("");
-        setError("");
-
-
-        if (!userId) {
-            setSelectedSections(
-                []
-            );
-
-            return;
-        }
+        setErrorMessage("");
+        setSuccessMessage("");
 
 
         const user =
@@ -263,73 +272,80 @@ function TrainerAssignmentsPanel() {
         }
 
 
+        // Trainee must always have both broad sections.
+        if (
+            user.role ===
+            "trainee"
+        ) {
+            setSelectedSections(
+                TRAINING_SECTIONS.map(
+                    (section) =>
+                        section.id
+                )
+            );
+
+            return;
+        }
+
+
         setSelectedSections(
-            user.role === "trainee"
-                ? TRAINING_SECTIONS.map(
-                    (section) => section.id
-                )
-                : Array.isArray(
-                    user
-                        .assignedTrainingSections
-                )
-                    ? user
-                        .assignedTrainingSections
-                    : []
+            Array.isArray(
+                user.assignedTrainingSections
+            )
+                ? user.assignedTrainingSections
+                : []
         );
     };
 
 
     // ======================================================
-    // TOGGLE SECTION
+    // TOGGLE TRAINER SECTION
     // ======================================================
 
     const toggleTrainingSection = (
         sectionId
     ) => {
         if (
-            selectedUser?.role === "trainee"
+            selectedUser?.role !==
+            "trainer"
         ) {
             return;
         }
 
 
+        setErrorMessage("");
+        setSuccessMessage("");
+
+
         setSelectedSections(
-            (current) => {
-                if (
-                    current.includes(
-                        sectionId
-                    )
-                ) {
-                    return current.filter(
+            (current) =>
+                current.includes(
+                    sectionId
+                )
+                    ? current.filter(
                         (item) =>
                             item !==
                             sectionId
-                    );
-                }
-
-
-                return [
-                    ...current,
-                    sectionId,
-                ];
-            }
+                    )
+                    : [
+                        ...current,
+                        sectionId,
+                    ]
         );
-
-
-        setError("");
-        setMessage("");
     };
 
 
     // ======================================================
-    // SAVE ASSIGNMENT
+    // SAVE
     // ======================================================
 
-    const saveAssignments =
+    const handleSave =
         async () => {
-            if (!selectedUserId) {
-                setError(
-                    "Please select a Trainer or Trainee."
+            if (
+                !selectedUser?._id
+            ) {
+                setErrorMessage(
+                    "Please select a user."
                 );
 
                 return;
@@ -337,38 +353,50 @@ function TrainerAssignmentsPanel() {
 
 
             if (
+                selectedUser.role ===
+                "trainer" &&
                 selectedSections.length ===
                 0
             ) {
-                setError(
-                    "Please select at least one training section."
+                setErrorMessage(
+                    "Please select at least one training section for the Trainer."
                 );
 
                 return;
             }
 
 
+            const sections =
+                selectedUser.role ===
+                    "trainee"
+                    ? TRAINING_SECTIONS.map(
+                        (section) =>
+                            section.id
+                    )
+                    : selectedSections;
+
+
             try {
                 setSaving(true);
 
-                setError("");
-                setMessage("");
+                setErrorMessage("");
+                setSuccessMessage("");
 
 
                 const response =
                     await api.patch(
-                        `/admin/users/${selectedUserId}/training-sections`,
+                        `/admin/users/${selectedUser._id}/training-sections`,
                         {
                             trainingSections:
-                                selectedSections,
+                                sections,
                         }
                     );
 
 
-                setMessage(
+                setSuccessMessage(
                     response.data
                         ?.message ||
-                    "Training assignment updated successfully."
+                    "Training access updated successfully."
                 );
 
 
@@ -383,35 +411,43 @@ function TrainerAssignmentsPanel() {
                                 user._id
                             ) ===
                             String(
-                                selectedUserId
+                                selectedUser._id
                             )
                     );
 
 
-                if (refreshedUser) {
+                if (
+                    refreshedUser
+                ) {
                     setSelectedSections(
-                        Array.isArray(
-                            refreshedUser
-                                .assignedTrainingSections
-                        )
-                            ? refreshedUser
-                                .assignedTrainingSections
-                            : []
+                        refreshedUser.role ===
+                            "trainee"
+                            ? TRAINING_SECTIONS.map(
+                                (section) =>
+                                    section.id
+                            )
+                            : Array.isArray(
+                                refreshedUser
+                                    .assignedTrainingSections
+                            )
+                                ? refreshedUser
+                                    .assignedTrainingSections
+                                : []
                     );
                 }
 
             } catch (error) {
                 console.error(
-                    "Save training assignment error:",
+                    "Update training access error:",
                     error
                 );
 
 
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to update training assignment."
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to update training access."
+                    )
                 );
 
             } finally {
@@ -420,419 +456,319 @@ function TrainerAssignmentsPanel() {
         };
 
 
-    // ======================================================
-    // SECTION NAME
-    // ======================================================
-
-    const getSectionName = (
-        sectionId
-    ) => {
-        const section =
-            TRAINING_SECTIONS.find(
-                (item) =>
-                    item.id ===
-                    sectionId
-            );
-
-
-        return (
-            section?.name ||
-            sectionId
-        );
-    };
-
-
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
 
+            {/* ================================================= */}
             {/* HEADER */}
+            {/* ================================================= */}
 
-            <div className="border-b border-slate-200 px-6 py-5">
+            <div className="border-b border-slate-200 p-5">
 
-                <div className="flex items-start gap-3">
-
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-5 w-5"
-                        >
-                            <circle
-                                cx="9"
-                                cy="7"
-                                r="3"
-                            />
-
-                            <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                            <path d="M18 5v8" />
-
-                            <path d="M14 9h8" />
-                        </svg>
-
-                    </div>
+                <h2 className="text-base font-bold text-slate-900">
+                    Training Area Access
+                </h2>
 
 
-                    <div>
-
-                        <h2 className="text-lg font-bold text-slate-900">
-                            Trainer & Trainee Training Assignments
-                        </h2>
-
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            Trainers can have one or both sections. Trainees always receive both sections automatically.
-                        </p>
-
-                    </div>
-
-                </div>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Trainers can receive one or both broad training areas.
+                    Trainees receive both automatically.
+                </p>
 
             </div>
 
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-5 p-5">
 
-                {/* ERROR */}
-
-                {error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {error}
-                    </div>
-                )}
-
-
-                {/* SUCCESS */}
-
-                {message && (
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                        {message}
-                    </div>
-                )}
+                <FeedbackAlert
+                    type="success"
+                    message={
+                        successMessage
+                    }
+                    onClose={() =>
+                        setSuccessMessage(
+                            ""
+                        )
+                    }
+                />
 
 
-                {/* FILTER + SELECT USER */}
-
-                <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
-
-                    {/* ROLE FILTER */}
-
-                    <div>
-
-                        <label className="mb-2 block text-sm font-semibold text-slate-800">
-                            User Type
-                        </label>
-
-
-                        <select
-                            value={
-                                roleFilter
-                            }
-                            onChange={
-                                handleRoleFilterChange
-                            }
-                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                        >
-                            <option value="all">
-                                All Users
-                            </option>
-
-                            <option value="trainer">
-                                Trainers
-                            </option>
-
-                            <option value="trainee">
-                                Trainees
-                            </option>
-                        </select>
-
-                    </div>
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        errorMessage
+                    }
+                    onClose={() =>
+                        setErrorMessage(
+                            ""
+                        )
+                    }
+                />
 
 
-                    {/* SELECT USER */}
+                {loading ? (
+                    <LoadingCard
+                        message="Loading users..."
+                    />
+                ) : (
+                    <>
+                        {/* ================================================= */}
+                        {/* USER SELECT */}
+                        {/* ================================================= */}
 
-                    <div>
+                        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
 
-                        <label className="mb-2 block text-sm font-semibold text-slate-800">
-                            Select Trainer or Trainee
-                        </label>
-
-
-                        <select
-                            value={
-                                selectedUserId
-                            }
-                            onChange={
-                                handleUserChange
-                            }
-                            disabled={
-                                loading
-                            }
-                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
-                        >
-
-                            <option value="">
-
-                                {loading
-                                    ? "Loading users..."
-                                    : "Select a user"}
-
-                            </option>
+                            <label className="block">
+                                <span className="text-xs font-semibold text-slate-700">
+                                    User Type
+                                </span>
 
 
-                            {filteredUsers.map(
-                                (user) => (
-                                    <option
-                                        key={
-                                            user._id
+                                <select
+                                    value={
+                                        roleFilter
+                                    }
+                                    onChange={
+                                        handleRoleFilterChange
+                                    }
+                                    className={inputClass}
+                                >
+                                    <option value="all">
+                                        All Users
+                                    </option>
+
+                                    <option value="trainer">
+                                        Trainers
+                                    </option>
+
+                                    <option value="trainee">
+                                        Trainees
+                                    </option>
+                                </select>
+                            </label>
+
+
+                            <label className="block">
+                                <span className="text-xs font-semibold text-slate-700">
+                                    Select User
+                                </span>
+
+
+                                <select
+                                    value={
+                                        selectedUserId
+                                    }
+                                    onChange={
+                                        handleUserChange
+                                    }
+                                    className={inputClass}
+                                >
+                                    <option value="">
+                                        Select Trainer or Trainee
+                                    </option>
+
+
+                                    {filteredUsers.map(
+                                        (user) => (
+                                            <option
+                                                key={
+                                                    user._id
+                                                }
+                                                value={
+                                                    user._id
+                                                }
+                                            >
+                                                {getUserDisplayName(
+                                                    user,
+                                                    user.username
+                                                )}
+                                                {" — "}
+                                                {user.role}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+                            </label>
+
+                        </div>
+
+
+                        {/* ================================================= */}
+                        {/* SELECTED USER */}
+                        {/* ================================================= */}
+
+                        {selectedUser && (
+                            <>
+                                <div className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900">
+                                            {getUserDisplayName(
+                                                selectedUser,
+                                                "Selected user"
+                                            )}
+                                        </p>
+
+
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            {selectedUser.username ||
+                                                selectedUser.email}
+                                        </p>
+                                    </div>
+
+
+                                    <div className="flex gap-2">
+
+                                        <StatusBadge
+                                            status={
+                                                selectedUser.role
+                                            }
+                                        />
+
+
+                                        <StatusBadge
+                                            status={
+                                                selectedUser.status
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* ================================================= */}
+                                {/* SECTIONS */}
+                                {/* ================================================= */}
+
+                                <div>
+
+                                    <h3 className="text-sm font-bold text-slate-900">
+                                        Training Areas
+                                    </h3>
+
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        {selectedUser.role ===
+                                            "trainee"
+                                            ? "Both areas are automatically required for Trainees."
+                                            : "Select one or both areas for this Trainer."}
+                                    </p>
+
+
+                                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+
+                                        {TRAINING_SECTIONS.map(
+                                            (section) => {
+                                                const selected =
+                                                    selectedSections.includes(
+                                                        section.id
+                                                    );
+
+
+                                                return (
+                                                    <button
+                                                        key={
+                                                            section.id
+                                                        }
+                                                        type="button"
+                                                        disabled={
+                                                            selectedUser.role ===
+                                                            "trainee"
+                                                        }
+                                                        onClick={() =>
+                                                            toggleTrainingSection(
+                                                                section.id
+                                                            )
+                                                        }
+                                                        className={`
+                                                            rounded-xl
+                                                            border
+                                                            p-4
+                                                            text-left
+                                                            transition
+                                                            ${selected
+                                                                ? "border-blue-400 bg-blue-50"
+                                                                : "border-slate-200 bg-white hover:border-blue-300"
+                                                            }
+                                                            ${selectedUser.role ===
+                                                                "trainee"
+                                                                ? "cursor-not-allowed"
+                                                                : ""
+                                                            }
+                                                        `}
+                                                    >
+                                                        <div className="flex items-start gap-3">
+
+                                                            <span
+                                                                className={`
+                                                                    flex
+                                                                    h-5
+                                                                    w-5
+                                                                    shrink-0
+                                                                    items-center
+                                                                    justify-center
+                                                                    rounded
+                                                                    border
+                                                                    text-[10px]
+                                                                    font-bold
+                                                                    ${selected
+                                                                        ? "border-blue-600 bg-blue-600 text-white"
+                                                                        : "border-slate-300"
+                                                                    }
+                                                                `}
+                                                            >
+                                                                {selected
+                                                                    ? "✓"
+                                                                    : ""}
+                                                            </span>
+
+
+                                                            <div>
+                                                                <p className="text-xs font-bold text-slate-800">
+                                                                    {section.name}
+                                                                </p>
+
+
+                                                                <p className="mt-1 text-[11px] leading-5 text-slate-500">
+                                                                    {section.description}
+                                                                </p>
+                                                            </div>
+
+                                                        </div>
+                                                    </button>
+                                                );
+                                            }
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div className="flex justify-end">
+
+                                    <ActionButton
+                                        variant="primary"
+                                        disabled={
+                                            saving ||
+                                            selectedUser.status !==
+                                            "active"
                                         }
-                                        value={
-                                            user._id
+                                        onClick={
+                                            handleSave
                                         }
                                     >
-                                        {user.firstName}{" "}
-                                        {user.lastName}
-                                        {" — "}
-                                        {user.role ===
-                                            "trainer"
-                                            ? "Trainer"
-                                            : "Trainee"}
-                                        {user.username
-                                            ? ` — ${user.username}`
-                                            : ""}
-                                    </option>
-                                )
-                            )}
+                                        {saving
+                                            ? "Saving..."
+                                            : "Save Training Access"}
+                                    </ActionButton>
 
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                {/* SELECTED USER */}
-
-                {selectedUser && (
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-
-                        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-
-                            <div>
-
-                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                                    Selected User
-                                </p>
-
-
-                                <p className="mt-2 text-base font-bold text-slate-900">
-                                    {selectedUser.firstName}{" "}
-                                    {selectedUser.lastName}
-                                </p>
-
-
-                                <p className="mt-1 text-sm text-slate-500">
-                                    {selectedUser.username}
-                                </p>
-
-                            </div>
-
-
-                            <div className="flex flex-wrap gap-2">
-
-                                <span className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold capitalize text-blue-700">
-                                    {selectedUser.role}
-                                </span>
-
-
-                                <span
-                                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedUser.status ===
-                                        "active"
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-red-100 text-red-700"
-                                        }`}
-                                >
-                                    {selectedUser.status}
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-                )}
-
-
-                {/* TRAINING SECTIONS */}
-
-                {selectedUser && (
-                    <div>
-
-                        <div>
-
-                            <h3 className="text-sm font-bold text-slate-900">
-                                Assigned Training Sections
-                            </h3>
-
-
-                            <p className="mt-1 text-xs leading-5 text-slate-500">
-                                {selectedUser.role === "trainer"
-                                    ? "Select one or both sections for this Trainer."
-                                    : "Both sections are required for Trainees and are selected automatically."}
-                            </p>
-
-                        </div>
-
-
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
-
-                            {TRAINING_SECTIONS.map(
-                                (section) => {
-                                    const selected =
-                                        selectedSections.includes(
-                                            section.id
-                                        );
-
-
-                                    return (
-                                        <button
-                                            key={
-                                                section.id
-                                            }
-                                            type="button"
-                                            onClick={() =>
-                                                toggleTrainingSection(
-                                                    section.id
-                                                )
-                                            }
-                                            disabled={
-                                                selectedUser.role === "trainee"
-                                            }
-                                            className={`rounded-xl border p-5 text-left transition ${selected
-                                                ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
-                                                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"
-                                                } ${selectedUser.role === "trainee"
-                                                    ? "cursor-not-allowed opacity-80"
-                                                    : ""
-                                                }`}
-                                        >
-
-                                            <div className="flex items-start gap-3">
-
-                                                {/* CHECKBOX */}
-
-                                                <div
-                                                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${selected
-                                                        ? "border-blue-600 bg-blue-600 text-white"
-                                                        : "border-slate-300 bg-white"
-                                                        }`}
-                                                >
-                                                    {selected && (
-                                                        <span className="text-xs font-bold">
-                                                            ✓
-                                                        </span>
-                                                    )}
-                                                </div>
-
-
-                                                <div>
-
-                                                    <p className="font-semibold text-slate-900">
-                                                        {section.name}
-                                                    </p>
-
-
-                                                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                                                        {section.description}
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                        </button>
-                                    );
-                                }
-                            )}
-
-                        </div>
-
-                    </div>
-                )}
-
-
-                {/* SUMMARY */}
-
-                {selectedUser && (
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-
-                        <p className="text-sm font-semibold text-slate-900">
-                            Current Selection
-                        </p>
-
-
-                        {selectedSections.length ===
-                            0 ? (
-                            <p className="mt-2 text-sm text-slate-500">
-                                No training section selected.
-                            </p>
-                        ) : (
-                            <div className="mt-3 flex flex-wrap gap-2">
-
-                                {selectedSections.map(
-                                    (sectionId) => (
-                                        <span
-                                            key={
-                                                sectionId
-                                            }
-                                            className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-                                        >
-                                            {getSectionName(
-                                                sectionId
-                                            )}
-                                        </span>
-                                    )
-                                )}
-
-                            </div>
+                                </div>
+                            </>
                         )}
-
-                    </div>
-                )}
-
-
-                {/* SAVE */}
-
-                {selectedUser && (
-                    <div className="flex justify-end">
-
-                        <button
-                            type="button"
-                            onClick={
-                                saveAssignments
-                            }
-                            disabled={
-                                saving ||
-                                selectedSections.length ===
-                                0 ||
-                                selectedUser.status !==
-                                "active"
-                            }
-                            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {saving
-                                ? "Saving..."
-                                : "Save Training Assignment"}
-                        </button>
-
-                    </div>
+                    </>
                 )}
 
             </div>
@@ -840,6 +776,24 @@ function TrainerAssignmentsPanel() {
         </section>
     );
 }
+
+
+const inputClass = `
+    mt-2
+    w-full
+    rounded-lg
+    border
+    border-slate-300
+    bg-white
+    px-3
+    py-2.5
+    text-sm
+    text-slate-800
+    outline-none
+    focus:border-blue-500
+    focus:ring-2
+    focus:ring-blue-100
+`;
 
 
 export default TrainerAssignmentsPanel;

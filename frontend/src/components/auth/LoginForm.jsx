@@ -10,6 +10,47 @@ import api from "../../services/api";
 
 import PasswordInput from "./PasswordInput";
 
+import FeedbackAlert from "../ui/FeedbackAlert";
+
+import {
+    clearAuthSession,
+} from "../../utils/session";
+
+
+// ======================================================
+// DASHBOARD BY ROLE
+// ======================================================
+
+function getDashboardPath(
+    role
+) {
+    if (
+        role ===
+        "admin"
+    ) {
+        return "/admin";
+    }
+
+
+    if (
+        role ===
+        "trainer"
+    ) {
+        return "/trainer";
+    }
+
+
+    if (
+        role ===
+        "trainee"
+    ) {
+        return "/trainee";
+    }
+
+
+    return null;
+}
+
 
 function LoginForm({
     onForgotPassword,
@@ -55,42 +96,13 @@ function LoginForm({
 
 
     // ======================================================
-    // DASHBOARD PATH
-    // ======================================================
-
-    const getDashboardPath =
-        (role) => {
-            if (
-                role === "admin"
-            ) {
-                return "/admin";
-            }
-
-
-            if (
-                role === "trainer"
-            ) {
-                return "/trainer";
-            }
-
-
-            if (
-                role === "trainee"
-            ) {
-                return "/trainee";
-            }
-
-
-            return null;
-        };
-
-
-    // ======================================================
     // LOGIN
     // ======================================================
 
     const handleSubmit =
-        async (event) => {
+        async (
+            event
+        ) => {
             event.preventDefault();
 
 
@@ -116,6 +128,10 @@ function LoginForm({
                 setError("");
 
 
+                // Remove an old broken session before a new login.
+                clearAuthSession();
+
+
                 const response =
                     await api.post(
                         "/auth/login",
@@ -135,6 +151,10 @@ function LoginForm({
                     response.data;
 
 
+                // ==================================================
+                // VALIDATE LOGIN RESPONSE
+                // ==================================================
+
                 if (
                     !accessToken ||
                     !user
@@ -147,8 +167,17 @@ function LoginForm({
                 }
 
 
+                if (!user.role) {
+                    setError(
+                        "Your account does not have a valid role."
+                    );
+
+                    return;
+                }
+
+
                 // ==================================================
-                // SAVE LOGIN
+                // SAVE SESSION
                 // ==================================================
 
                 sessionStorage.setItem(
@@ -166,16 +195,15 @@ function LoginForm({
 
 
                 // ==================================================
-                // PASSWORD CHANGE REQUIRED
+                // FIRST LOGIN PASSWORD CHANGE
+                // ==================================================
                 //
-                // IMPORTANT:
+                // Only Trainer and Trainee.
                 //
-                // ONLY TRAINER AND TRAINEE.
-                //
-                // ADMIN WILL NEVER ENTER THIS BLOCK.
+                // Admin goes directly to Admin Dashboard.
                 // ==================================================
 
-                const requiresForcedPasswordChange =
+                const requiresPasswordChange =
                     [
                         "trainer",
                         "trainee",
@@ -187,7 +215,7 @@ function LoginForm({
 
 
                 if (
-                    requiresForcedPasswordChange
+                    requiresPasswordChange
                 ) {
                     if (
                         typeof onPasswordChangeRequired ===
@@ -205,11 +233,6 @@ function LoginForm({
 
                 // ==================================================
                 // NORMAL LOGIN
-                //
-                // Admin directly enters Admin dashboard.
-                //
-                // Trainer/Trainee who already changed password
-                // enter their dashboard normally.
                 // ==================================================
 
                 const dashboardPath =
@@ -218,23 +241,13 @@ function LoginForm({
                     );
 
 
-                if (
-                    !dashboardPath
-                ) {
-                    sessionStorage.removeItem(
-                        "accessToken"
-                    );
-
-
-                    sessionStorage.removeItem(
-                        "user"
-                    );
+                if (!dashboardPath) {
+                    clearAuthSession();
 
 
                     setError(
                         "Your account role is not authorised."
                     );
-
 
                     return;
                 }
@@ -255,8 +268,11 @@ function LoginForm({
                 );
 
 
+                clearAuthSession();
+
+
                 // ==================================================
-                // DEACTIVATED ACCOUNT
+                // DEACTIVATED
                 // ==================================================
 
                 if (
@@ -297,7 +313,7 @@ function LoginForm({
 
 
                 // ==================================================
-                // TOO MANY ATTEMPTS
+                // RATE LIMIT
                 // ==================================================
 
                 if (
@@ -330,16 +346,14 @@ function LoginForm({
         };
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <section className="flex min-h-[680px] items-center justify-center bg-white px-6 py-10 sm:px-10 lg:px-14">
 
             <div className="w-full max-w-[410px]">
 
+                {/* ================================================= */}
                 {/* MOBILE BRAND */}
+                {/* ================================================= */}
 
                 <div className="mb-10 lg:hidden">
 
@@ -358,13 +372,15 @@ function LoginForm({
                 </div>
 
 
+                {/* ================================================= */}
                 {/* TITLE */}
+                {/* ================================================= */}
 
                 <div>
 
-                    <h2 className="text-[27px] font-bold text-[#172033]">
+                    <h1 className="text-[27px] font-bold text-[#172033]">
                         Welcome Back
-                    </h2>
+                    </h1>
 
 
                     <p className="mt-2 text-[12px] leading-5 text-slate-500">
@@ -374,57 +390,25 @@ function LoginForm({
                 </div>
 
 
+                {/* ================================================= */}
                 {/* ERROR */}
+                {/* ================================================= */}
 
-                {error && (
-                    <div className="mt-6 flex gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                <div className="mt-6">
 
-                        <div className="mt-[1px] shrink-0 text-red-500">
+                    <FeedbackAlert
+                        type="error"
+                        message={
+                            error
+                        }
+                    />
 
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="9"
-                                />
-
-                                <path d="M12 7v6" />
-
-                                <circle
-                                    cx="12"
-                                    cy="17"
-                                    r=".7"
-                                    fill="currentColor"
-                                />
-                            </svg>
-
-                        </div>
+                </div>
 
 
-                        <div>
-
-                            <p className="text-[11px] font-semibold text-red-600">
-                                Login Failed
-                            </p>
-
-
-                            <p className="mt-1 text-[10px] leading-4 text-red-500">
-                                {error}
-                            </p>
-
-                        </div>
-
-                    </div>
-                )}
-
-
-                {/* LOGIN FORM */}
+                {/* ================================================= */}
+                {/* FORM */}
+                {/* ================================================= */}
 
                 <form
                     onSubmit={
@@ -433,8 +417,7 @@ function LoginForm({
                     className="mt-7"
                 >
 
-                    {/* USERNAME */}
-
+                    {/* Username */}
                     <div>
 
                         <label
@@ -454,7 +437,7 @@ function LoginForm({
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="1.8"
-                                    className="h-[18px] w-[18px]"
+                                    className="h-4 w-4"
                                 >
                                     <circle
                                         cx="12"
@@ -462,7 +445,7 @@ function LoginForm({
                                         r="4"
                                     />
 
-                                    <path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6" />
+                                    <path d="M4 21c.7-5 3.4-7 8-7s7.3 2 8 7" />
                                 </svg>
 
                             </div>
@@ -478,53 +461,72 @@ function LoginForm({
                                     event
                                 ) => {
                                     setUsername(
-                                        event.target
-                                            .value
+                                        event.target.value
                                     );
 
                                     clearError();
                                 }}
+                                autoComplete="username"
                                 disabled={
                                     loading
                                 }
-                                autoComplete="username"
                                 placeholder="Enter your username"
-                                className={`h-[48px] w-full rounded-lg border bg-white pl-11 pr-11 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 ${error
-                                    ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
-                                    : username
-                                        ? "border-emerald-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                                        : "border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                                    }`}
+                                className="
+                                    w-full
+                                    rounded-xl
+                                    border
+                                    border-slate-300
+                                    py-3
+                                    pl-11
+                                    pr-4
+                                    text-sm
+                                    outline-none
+                                    transition
+                                    focus:border-blue-500
+                                    focus:ring-2
+                                    focus:ring-blue-100
+                                    disabled:bg-slate-100
+                                "
                             />
-
-
-                            {username &&
-                                !error && (
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-emerald-500">
-
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            className="h-4 w-4"
-                                        >
-                                            <path d="m7 12 3 3 7-7" />
-                                        </svg>
-
-                                    </div>
-                                )}
 
                         </div>
 
                     </div>
 
 
-                    {/* PASSWORD */}
-
+                    {/* Password */}
                     <div className="mt-5">
 
+                        <div className="flex items-center justify-between">
+
+                            <label
+                                htmlFor="password"
+                                className="text-[11px] font-semibold text-slate-700"
+                            >
+
+                            </label>
+
+
+                            {onForgotPassword && (
+                                <button
+                                    type="button"
+                                    onClick={
+                                        onForgotPassword
+                                    }
+                                    disabled={
+                                        loading
+                                    }
+                                    className="text-[10px] font-semibold text-blue-600 hover:text-blue-700"
+                                >
+                                    Forgot password?
+                                </button>
+                            )}
+
+                        </div>
+
+
                         <PasswordInput
+                            id="password"
                             value={
                                 password
                             }
@@ -532,73 +534,61 @@ function LoginForm({
                                 event
                             ) => {
                                 setPassword(
-                                    event.target
-                                        .value
+                                    event.target.value
                                 );
 
                                 clearError();
                             }}
-                            error={
-                                Boolean(
-                                    error
-                                )
-                            }
                             disabled={
                                 loading
                             }
+                            autoComplete="current-password"
+                            placeholder="Enter your password"
                         />
 
                     </div>
 
 
-                    {/* FORGOT PASSWORD */}
-
-                    <div className="mt-3 flex justify-end">
-
-                        <button
-                            type="button"
-                            onClick={
-                                onForgotPassword
-                            }
-                            disabled={
-                                loading
-                            }
-                            className="text-[10px] font-semibold text-blue-600 transition hover:text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            Forgot Password?
-                        </button>
-
-                    </div>
-
-
-                    {/* LOGIN BUTTON */}
-
+                    {/* Login button */}
                     <button
                         type="submit"
                         disabled={
                             loading
                         }
-                        className="mt-6 flex h-[48px] w-full items-center justify-center rounded-lg bg-[#1769e0] text-[12px] font-semibold text-white transition hover:bg-[#0f5dc9] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="
+                            mt-7
+                            w-full
+                            rounded-xl
+                            bg-blue-600
+                            px-5
+                            py-3
+                            text-sm
+                            font-bold
+                            text-white
+                            transition
+                            hover:bg-blue-700
+                            disabled:cursor-not-allowed
+                            disabled:opacity-50
+                        "
                     >
                         {loading
-                            ? "Signing in..."
-                            : "Login"}
+                            ? "Signing In..."
+                            : "Sign In"}
                     </button>
 
                 </form>
 
 
-                {/* HELP */}
+                {/* ================================================= */}
+                {/* SECURITY MESSAGE */}
+                {/* ================================================= */}
 
-                <div className="mt-8 border-t border-slate-100 pt-6 text-center">
+                <div className="mt-7 rounded-xl bg-slate-50 px-4 py-3">
 
-                    <p className="text-[10px] text-slate-400">
-                        Having trouble signing in?
-                    </p>
-
-
-                    <p className="mt-1 text-[10px] font-semibold text-blue-600">
-                        Contact your Administrator
+                    <p className="text-center text-[10px] leading-5 text-slate-500">
+                        Trainer and Trainee accounts using a temporary
+                        administrator-generated password must change it
+                        before accessing their dashboard.
                     </p>
 
                 </div>

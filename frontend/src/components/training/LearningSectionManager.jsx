@@ -11,43 +11,73 @@ import {
 
 import api from "../../services/api";
 
+import LearningSectionForm from "./LearningSectionForm";
+import LearningSectionTable from "./LearningSectionTable";
 
-const EMPTY_FORM = {
-    title: "",
-    content: "",
-    imageUrl: "",
-    imageAltText: "",
-    status: "active",
-};
+import ActionButton from "../ui/ActionButton";
+import EmptyState from "../ui/EmptyState";
+import FeedbackAlert from "../ui/FeedbackAlert";
+import LoadingCard from "../ui/LoadingCard";
+import StatusBadge from "../ui/StatusBadge";
+
+import {
+    formatProgrammeType,
+    getApiErrorMessage,
+    parseArrayResponse,
+    sortLearningSections,
+} from "../../utils/training";
 
 
-function StatusBadge({
-    status,
-}) {
-    return (
-        <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${status ===
-                "active"
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-slate-100 text-slate-600"
-                }`}
-        >
-            {status}
-        </span>
-    );
-}
+// ======================================================
+// ALLOWED SECTION STATUSES
+// ======================================================
 
+const SECTION_STATUSES = [
+    "active",
+    "inactive",
+];
+
+
+// ======================================================
+// INITIAL FORM DATA
+// ======================================================
+
+const getInitialFormData =
+    () => ({
+        title:
+            "",
+
+        content:
+            "",
+
+        imageUrl:
+            "",
+
+        imageAltText:
+            "",
+
+        status:
+            "active",
+    });
+
+
+// ======================================================
+// LEARNING SECTION MANAGER
+// ======================================================
 
 function LearningSectionManager() {
-    const {
-        programmeId,
-    } =
-        useParams();
-
-
     const navigate =
         useNavigate();
 
+
+    const {
+        programmeId,
+    } = useParams();
+
+
+    // ======================================================
+    // PROGRAMME
+    // ======================================================
 
     const [
         programme,
@@ -55,17 +85,19 @@ function LearningSectionManager() {
     ] = useState(null);
 
 
+    // ======================================================
+    // SECTIONS
+    // ======================================================
+
     const [
         sections,
         setSections,
     ] = useState([]);
 
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
+    // ======================================================
+    // FORM
+    // ======================================================
 
     const [
         showForm,
@@ -80,6 +112,24 @@ function LearningSectionManager() {
 
 
     const [
+        formData,
+        setFormData,
+    ] = useState(
+        getInitialFormData()
+    );
+
+
+    // ======================================================
+    // LOADING STATE
+    // ======================================================
+
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
+
+
+    const [
         saving,
         setSaving,
     ] = useState(false);
@@ -91,91 +141,118 @@ function LearningSectionManager() {
     ] = useState("");
 
 
-    const [
-        reordering,
-        setReordering,
-    ] = useState(false);
-
+    // ======================================================
+    // FEEDBACK
+    // ======================================================
 
     const [
-        formData,
-        setFormData,
-    ] = useState({
-        ...EMPTY_FORM,
-    });
-
-
-    const [
-        message,
-        setMessage,
+        errorMessage,
+        setErrorMessage,
     ] = useState("");
 
 
     const [
-        error,
-        setError,
+        successMessage,
+        setSuccessMessage,
     ] = useState("");
 
 
-    // ==================================================
-    // LOAD
-    // ==================================================
+    // ======================================================
+    // CLEAR FEEDBACK
+    // ======================================================
+
+    const clearFeedback = () => {
+        setErrorMessage("");
+        setSuccessMessage("");
+    };
+
+
+    // ======================================================
+    // LOAD PROGRAMME
+    // ======================================================
 
     const loadProgramme =
-        useCallback(
-            async () => {
-                const response =
-                    await api.get(
-                        `/training-programmes/${programmeId}`
-                    );
-
-
-                setProgramme(
-                    response.data
-                        ?.programme ||
-                    response.data
+        useCallback(async () => {
+            const response =
+                await api.get(
+                    `/training-programmes/${programmeId}`
                 );
-            },
-            [
-                programmeId,
-            ]
-        );
 
+
+            const loadedProgramme =
+                response.data?.programme ||
+                response.data ||
+                null;
+
+
+            setProgramme(
+                loadedProgramme
+            );
+
+
+            return loadedProgramme;
+
+        }, [
+            programmeId,
+        ]);
+
+
+    // ======================================================
+    // LOAD SECTIONS
+    // ======================================================
 
     const loadSections =
-        useCallback(
+        useCallback(async () => {
+            const response =
+                await api.get(
+                    `/training-programmes/${programmeId}/sections`
+                );
+
+
+            const responseSections =
+                parseArrayResponse(
+                    response.data,
+                    "sections"
+                );
+
+
+            const sortedSections =
+                sortLearningSections(
+                    responseSections
+                );
+
+
+            setSections(
+                sortedSections
+            );
+
+
+            return sortedSections;
+
+        }, [
+            programmeId,
+        ]);
+
+
+    // ======================================================
+    // INITIAL PAGE LOAD
+    // ======================================================
+
+    useEffect(() => {
+        let active =
+            true;
+
+
+        const loadPage =
             async () => {
-                const response =
-                    await api.get(
-                        `/training-programmes/${programmeId}/sections`
+                try {
+                    setLoading(
+                        true
                     );
 
 
-                const list =
-                    response.data
-                        ?.sections ||
-                    [];
+                    clearFeedback();
 
-
-                setSections(
-                    [...list].sort(
-                        (a, b) =>
-                            a.order -
-                            b.order
-                    )
-                );
-            },
-            [
-                programmeId,
-            ]
-        );
-
-
-    useEffect(() => {
-        const load =
-            async () => {
-                try {
-                    setLoading(true);
 
                     await Promise.all([
                         loadProgramme(),
@@ -183,20 +260,38 @@ function LearningSectionManager() {
                     ]);
 
                 } catch (error) {
-                    setError(
-                        error.response
-                            ?.data
-                            ?.message ||
-                        "Unable to load learning sections."
+                    console.error(
+                        "Learning section load error:",
+                        error
                     );
 
+
+                    if (active) {
+                        setErrorMessage(
+                            getApiErrorMessage(
+                                error,
+                                "Unable to load programme sections."
+                            )
+                        );
+                    }
+
                 } finally {
-                    setLoading(false);
+                    if (active) {
+                        setLoading(
+                            false
+                        );
+                    }
                 }
             };
 
 
-        load();
+        loadPage();
+
+
+        return () => {
+            active =
+                false;
+        };
 
     }, [
         loadProgramme,
@@ -204,212 +299,449 @@ function LearningSectionManager() {
     ]);
 
 
-    // ==================================================
-    // FORM
-    // ==================================================
+    // ======================================================
+    // FORM CHANGE
+    // ======================================================
 
-    const resetForm =
-        () => {
-            setEditingSection(
-                null
+    const handleChange = (
+        event
+    ) => {
+        const {
+            name,
+            value,
+        } = event.target;
+
+
+        clearFeedback();
+
+
+        setFormData(
+            (current) => ({
+                ...current,
+
+                [name]:
+                    value,
+            })
+        );
+    };
+
+
+    // ======================================================
+    // RESET FORM
+    // ======================================================
+
+    const resetForm = () => {
+        setEditingSection(
+            null
+        );
+
+
+        setFormData(
+            getInitialFormData()
+        );
+
+
+        setShowForm(
+            false
+        );
+    };
+
+
+    // ======================================================
+    // ADD SECTION
+    // ======================================================
+
+    const handleAddSection = () => {
+        clearFeedback();
+
+
+        if (
+            programme?.status ===
+            "inactive"
+        ) {
+            setErrorMessage(
+                "Learning sections cannot be added while the training programme is inactive."
             );
 
-
-            setFormData({
-                ...EMPTY_FORM,
-            });
-        };
+            return;
+        }
 
 
-    const openCreate =
-        () => {
-            resetForm();
-
-            setShowForm(true);
-
-            setMessage("");
-
-            setError("");
-        };
+        setEditingSection(
+            null
+        );
 
 
-    const openEdit =
-        (section) => {
-            setEditingSection(
-                section
+        setFormData(
+            getInitialFormData()
+        );
+
+
+        setShowForm(
+            true
+        );
+
+
+        window.scrollTo({
+            top:
+                0,
+
+            behavior:
+                "smooth",
+        });
+    };
+
+
+    // ======================================================
+    // EDIT SECTION
+    // ======================================================
+
+    const handleEditSection = (
+        section
+    ) => {
+        if (
+            !section?._id
+        ) {
+            return;
+        }
+
+
+        clearFeedback();
+
+
+        if (
+            programme?.status ===
+            "inactive"
+        ) {
+            setErrorMessage(
+                "Learning sections cannot be edited while the training programme is inactive."
             );
 
-
-            setFormData({
-                title:
-                    section.title ||
-                    "",
-
-                content:
-                    section.content ||
-                    "",
-
-                imageUrl:
-                    section.imageUrl ||
-                    "",
-
-                imageAltText:
-                    section.imageAltText ||
-                    "",
-
-                status:
-                    section.status ||
-                    "active",
-            });
+            return;
+        }
 
 
-            setShowForm(true);
-        };
+        setEditingSection(
+            section
+        );
 
 
-    const closeForm =
-        () => {
-            setShowForm(false);
+        setFormData({
+            title:
+                section.title ||
+                "",
 
-            resetForm();
-        };
+            content:
+                section.content ||
+                "",
+
+            imageUrl:
+                section.imageUrl ||
+                "",
+
+            imageAltText:
+                section.imageAltText ||
+                "",
+
+            status:
+                section.status ||
+                "active",
+        });
 
 
-    // ==================================================
-    // SAVE
-    // ==================================================
+        setShowForm(
+            true
+        );
+
+
+        window.scrollTo({
+            top:
+                0,
+
+            behavior:
+                "smooth",
+        });
+    };
+
+
+    // ======================================================
+    // VALIDATE FORM
+    // ======================================================
+
+    const validateForm = () => {
+        const title =
+            formData
+                .title
+                .trim();
+
+
+        const content =
+            formData
+                .content
+                .trim();
+
+
+        const imageUrl =
+            formData
+                .imageUrl
+                .trim();
+
+
+        const imageAltText =
+            formData
+                .imageAltText
+                .trim();
+
+
+        // ------------------------------------------
+        // TITLE
+        // ------------------------------------------
+
+        if (
+            title.length <
+            2 ||
+            title.length >
+            150
+        ) {
+            return (
+                "Learning section title must be between 2 and 150 characters."
+            );
+        }
+
+
+        // ------------------------------------------
+        // CONTENT
+        // ------------------------------------------
+
+        if (!content) {
+            return (
+                "Learning section content is required."
+            );
+        }
+
+
+        // ------------------------------------------
+        // IMAGE ALT TEXT LENGTH
+        // ------------------------------------------
+
+        if (
+            imageAltText.length >
+            250
+        ) {
+            return (
+                "Image alternative text cannot exceed 250 characters."
+            );
+        }
+
+
+        // ------------------------------------------
+        // IMAGE REQUIRES ALT TEXT
+        // ------------------------------------------
+
+        if (
+            imageUrl &&
+            !imageAltText
+        ) {
+            return (
+                "Alternative text is required when the learning section contains an image."
+            );
+        }
+
+
+        // ------------------------------------------
+        // STATUS
+        // ------------------------------------------
+
+        if (
+            !SECTION_STATUSES.includes(
+                formData.status
+            )
+        ) {
+            return (
+                "Learning section status must be active or inactive."
+            );
+        }
+
+
+        return "";
+    };
+
+
+    // ======================================================
+    // SAVE SECTION
+    // ======================================================
 
     const handleSubmit =
-        async (event) => {
+        async (
+            event
+        ) => {
             event.preventDefault();
 
 
+            clearFeedback();
+
+
             if (
-                !formData.title.trim()
+                programme?.status ===
+                "inactive"
             ) {
-                setError(
-                    "Section title is required."
+                setErrorMessage(
+                    "Learning sections cannot be changed while the training programme is inactive."
                 );
 
                 return;
             }
 
 
+            const validationError =
+                validateForm();
+
+
             if (
-                !formData.content.trim()
+                validationError
             ) {
-                setError(
-                    "Section content is required."
+                setErrorMessage(
+                    validationError
                 );
 
                 return;
             }
 
 
-            if (
-                formData.imageUrl.trim() &&
-                !formData.imageAltText.trim()
-            ) {
-                setError(
-                    "Image alt text is required when an image URL is used."
-                );
+            const payload = {
+                title:
+                    formData
+                        .title
+                        .trim(),
 
-                return;
-            }
+                content:
+                    formData
+                        .content
+                        .trim(),
+
+                imageUrl:
+                    formData
+                        .imageUrl
+                        .trim(),
+
+                imageAltText:
+                    formData
+                        .imageAltText
+                        .trim(),
+
+                status:
+                    formData.status,
+            };
 
 
             try {
-                setSaving(true);
-
-                setError("");
-
-                setMessage("");
+                setSaving(
+                    true
+                );
 
 
-                const payload = {
-                    title:
-                        formData
-                            .title
-                            .trim(),
-
-                    content:
-                        formData
-                            .content
-                            .trim(),
-
-                    imageUrl:
-                        formData
-                            .imageUrl
-                            .trim(),
-
-                    imageAltText:
-                        formData
-                            .imageAltText
-                            .trim(),
-
-                    status:
-                        formData.status,
-                };
-
+                // ------------------------------------------
+                // UPDATE
+                // ------------------------------------------
 
                 if (
                     editingSection
                 ) {
-                    await api.patch(
-                        `/training-programmes/${programmeId}/sections/${editingSection._id}`,
-                        payload
-                    );
+                    const response =
+                        await api.patch(
+                            `/training-programmes/${programmeId}/sections/${editingSection._id}`,
+                            payload
+                        );
 
 
-                    setMessage(
+                    setSuccessMessage(
+                        response.data?.message ||
                         "Learning section updated successfully."
                     );
 
                 } else {
-                    await api.post(
-                        `/training-programmes/${programmeId}/sections`,
-                        payload
-                    );
+
+                    // --------------------------------------
+                    // CREATE
+                    // --------------------------------------
+
+                    const response =
+                        await api.post(
+                            `/training-programmes/${programmeId}/sections`,
+                            payload
+                        );
 
 
-                    setMessage(
+                    setSuccessMessage(
+                        response.data?.message ||
                         "Learning section created successfully."
                     );
                 }
 
 
+                resetForm();
+
+
                 await loadSections();
 
-
-                closeForm();
-
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to save learning section."
+                console.error(
+                    "Save learning section error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to save the learning section."
+                    )
                 );
 
             } finally {
-                setSaving(false);
+                setSaving(
+                    false
+                );
             }
         };
 
 
-    // ==================================================
-    // DEACTIVATE
-    // ==================================================
+    // ======================================================
+    // DEACTIVATE SECTION
+    // ======================================================
 
-    const deactivate =
-        async (section) => {
+    const handleDeactivate =
+        async (
+            section
+        ) => {
             if (
-                !window.confirm(
-                    `Deactivate "${section.title}"?`
-                )
+                !section?._id
             ) {
                 return;
             }
+
+
+            if (
+                processingId
+            ) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    `Deactivate "${section.title}"?`
+                );
+
+
+            if (
+                !confirmed
+            ) {
+                return;
+            }
+
+
+            clearFeedback();
 
 
             try {
@@ -418,50 +750,73 @@ function LearningSectionManager() {
                 );
 
 
-                setMessage("");
-
-                setError("");
-
-
-                await api.delete(
-                    `/training-programmes/${programmeId}/sections/${section._id}`
-                );
+                const response =
+                    await api.delete(
+                        `/training-programmes/${programmeId}/sections/${section._id}`
+                    );
 
 
-                setMessage(
+                setSuccessMessage(
+                    response.data?.message ||
                     "Learning section deactivated successfully."
                 );
 
 
+                if (
+                    editingSection?._id ===
+                    section._id
+                ) {
+                    resetForm();
+                }
+
+
                 await loadSections();
 
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to deactivate section."
+                console.error(
+                    "Deactivate learning section error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to deactivate this learning section."
+                    )
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
 
-    // ==================================================
-    // REACTIVATE
-    // ==================================================
+    // ======================================================
+    // REACTIVATE SECTION
+    // ======================================================
 
-    const reactivate =
-        async (section) => {
+    const handleReactivate =
+        async (
+            section
+        ) => {
             if (
-                !window.confirm(
-                    `Reactivate "${section.title}"?`
-                )
+                !section?._id
             ) {
                 return;
             }
+
+
+            if (
+                processingId
+            ) {
+                return;
+            }
+
+
+            clearFeedback();
 
 
             try {
@@ -470,17 +825,14 @@ function LearningSectionManager() {
                 );
 
 
-                setMessage("");
-
-                setError("");
-
-
-                await api.patch(
-                    `/training-programmes/${programmeId}/sections/${section._id}/reactivate`
-                );
+                const response =
+                    await api.patch(
+                        `/training-programmes/${programmeId}/sections/${section._id}/reactivate`
+                    );
 
 
-                setMessage(
+                setSuccessMessage(
+                    response.data?.message ||
                     "Learning section reactivated successfully."
                 );
 
@@ -488,537 +840,579 @@ function LearningSectionManager() {
                 await loadSections();
 
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to reactivate section."
+                console.error(
+                    "Reactivate learning section error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to reactivate this learning section."
+                    )
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
 
-    // ==================================================
-    // REORDER
-    // ==================================================
+    // ======================================================
+    // REORDER SECTIONS
+    // ======================================================
 
-    const reorder =
-        async (newSections) => {
-            try {
-                setReordering(true);
-
-
-                await api.put(
-                    `/training-programmes/${programmeId}/sections/reorder`,
-                    {
-                        sectionIds:
-                            newSections.map(
-                                (section) =>
-                                    section._id
-                            ),
-                    }
-                );
-
-
-                await loadSections();
-
-
-                setMessage(
-                    "Section order updated successfully."
-                );
-
-            } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to reorder sections."
-                );
-
-
-                await loadSections();
-
-            } finally {
-                setReordering(false);
-            }
-        };
-
-
-    const moveUp =
-        async (index) => {
+    const reorderSections =
+        async (
+            reorderedSections
+        ) => {
             if (
-                index ===
+                processingId
+            ) {
+                return;
+            }
+
+
+            if (
+                programme?.status ===
+                "inactive"
+            ) {
+                setErrorMessage(
+                    "Learning sections cannot be reordered while the training programme is inactive."
+                );
+
+                return;
+            }
+
+
+            if (
+                !Array.isArray(
+                    reorderedSections
+                ) ||
+                reorderedSections.length ===
                 0
             ) {
                 return;
             }
 
 
-            const newSections =
-                [...sections];
+            clearFeedback();
 
 
-            [
-                newSections[
-                index - 1
-                ],
+            // Keep previous order so it can be restored
+            // visually if the API request fails.
+            const previousSections =
+                sections;
 
-                newSections[
-                index
-                ],
-            ] = [
-                    newSections[
-                    index
-                    ],
 
-                    newSections[
-                    index - 1
-                    ],
-                ];
+            // Update the displayed order immediately.
+            const optimisticSections =
+                reorderedSections.map(
+                    (
+                        section,
+                        index
+                    ) => ({
+                        ...section,
+
+                        order:
+                            index +
+                            1,
+                    })
+                );
 
 
             setSections(
-                newSections
+                optimisticSections
             );
 
 
-            await reorder(
-                newSections
-            );
-        };
+            try {
+                setProcessingId(
+                    "reorder"
+                );
 
 
-    const moveDown =
-        async (index) => {
-            if (
-                index ===
-                sections.length -
-                1
-            ) {
-                return;
+                const response =
+                    await api.put(
+                        `/training-programmes/${programmeId}/sections/reorder`,
+                        {
+                            sectionIds:
+                                reorderedSections.map(
+                                    (
+                                        section
+                                    ) =>
+                                        section._id
+                                ),
+                        }
+                    );
+
+
+                setSuccessMessage(
+                    response.data?.message ||
+                    "Learning section order updated successfully."
+                );
+
+
+                await loadSections();
+
+            } catch (error) {
+                console.error(
+                    "Reorder learning sections error:",
+                    error
+                );
+
+
+                // Restore the previous display order.
+                setSections(
+                    previousSections
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to reorder learning sections."
+                    )
+                );
+
+
+                // Reload server state so frontend and
+                // backend remain synchronized.
+                try {
+                    await loadSections();
+
+                } catch (reloadError) {
+                    console.error(
+                        "Reload sections after reorder error:",
+                        reloadError
+                    );
+                }
+
+            } finally {
+                setProcessingId(
+                    ""
+                );
             }
-
-
-            const newSections =
-                [...sections];
-
-
-            [
-                newSections[
-                index
-                ],
-
-                newSections[
-                index + 1
-                ],
-            ] = [
-                    newSections[
-                    index + 1
-                    ],
-
-                    newSections[
-                    index
-                    ],
-                ];
-
-
-            setSections(
-                newSections
-            );
-
-
-            await reorder(
-                newSections
-            );
         };
 
 
-    if (loading) {
+    // ======================================================
+    // MOVE UP
+    // ======================================================
+
+    const handleMoveUp = (
+        section,
+        index
+    ) => {
+        if (
+            !section?._id ||
+            index <=
+            0 ||
+            processingId
+        ) {
+            return;
+        }
+
+
+        const reordered =
+            [
+                ...sections,
+            ];
+
+
+        [
+            reordered[
+            index -
+            1
+            ],
+            reordered[
+            index
+            ],
+        ] = [
+                reordered[
+                index
+                ],
+                reordered[
+                index -
+                1
+                ],
+            ];
+
+
+        reorderSections(
+            reordered
+        );
+    };
+
+
+    // ======================================================
+    // MOVE DOWN
+    // ======================================================
+
+    const handleMoveDown = (
+        section,
+        index
+    ) => {
+        if (
+            !section?._id ||
+            index >=
+            sections.length -
+            1 ||
+            processingId
+        ) {
+            return;
+        }
+
+
+        const reordered =
+            [
+                ...sections,
+            ];
+
+
+        [
+            reordered[
+            index +
+            1
+            ],
+            reordered[
+            index
+            ],
+        ] = [
+                reordered[
+                index
+                ],
+                reordered[
+                index +
+                1
+                ],
+            ];
+
+
+        reorderSections(
+            reordered
+        );
+    };
+
+
+    // ======================================================
+    // LOADING
+    // ======================================================
+
+    if (
+        loading
+    ) {
         return (
-            <div className="p-10 text-center text-sm">
-                Loading sections...
-            </div>
+            <LoadingCard
+                message="Loading learning sections..."
+            />
         );
     }
 
 
-    return (
-        <div className="space-y-5">
+    // ======================================================
+    // PROGRAMME NOT FOUND
+    // ======================================================
 
-            <button
-                type="button"
-                onClick={
-                    () =>
-                        navigate(
-                            "/training-programmes"
-                        )
+    if (
+        !programme
+    ) {
+        return (
+            <EmptyState
+                title="Programme not found."
+                description="The requested training programme could not be loaded."
+                action={
+                    <ActionButton
+                        variant="primary"
+                        onClick={() =>
+                            navigate(
+                                "/training-programmes"
+                            )
+                        }
+                    >
+                        Back to Programmes
+                    </ActionButton>
                 }
-                className="text-xs font-semibold text-blue-600"
+            />
+        );
+    }
+
+
+    const programmeInactive =
+        programme.status ===
+        "inactive";
+
+
+    // ======================================================
+    // PAGE
+    // ======================================================
+
+    return (
+        <div className="space-y-6">
+
+            {/* ================================================= */}
+            {/* PROGRAMME HEADER */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    p-5
+                    shadow-sm
+                "
             >
-                ← Back to Training Programmes
-            </button>
-
-
-            <section className="rounded-xl border bg-white p-5 shadow-sm">
-
-                <div className="flex justify-between gap-4">
+                <div
+                    className="
+                        flex
+                        flex-col
+                        gap-4
+                        sm:flex-row
+                        sm:items-start
+                        sm:justify-between
+                    "
+                >
 
                     <div>
 
-                        <h2 className="text-xl font-bold">
-                            {
-                                programme
-                                    ?.title ||
-                                "Learning Sections"
-                            }
+                        <div className="flex flex-wrap items-center gap-2">
+
+                            <p
+                                className="
+                                    text-xs
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-blue-600
+                                "
+                            >
+                                {formatProgrammeType(
+                                    programme.programmeType
+                                )}
+                            </p>
+
+
+                            <StatusBadge
+                                status={
+                                    programme.status
+                                }
+                            />
+
+                        </div>
+
+
+                        <h2
+                            className="
+                                mt-2
+                                text-xl
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            {programme.title}
                         </h2>
 
-                        <p className="mt-2 text-xs text-slate-500">
-                            {
-                                programme
-                                    ?.description
-                            }
+
+                        {programme.description && (
+                            <p
+                                className="
+                                    mt-2
+                                    max-w-3xl
+                                    text-xs
+                                    leading-5
+                                    text-slate-500
+                                "
+                            >
+                                {programme.description}
+                            </p>
+                        )}
+
+
+                        <p className="mt-3 text-xs font-medium text-slate-500">
+                            {sections.length}{" "}
+                            {sections.length ===
+                                1
+                                ? "learning section"
+                                : "learning sections"}
                         </p>
 
                     </div>
 
 
-                    <button
-                        type="button"
-                        onClick={
-                            openCreate
-                        }
-                        disabled={
-                            programme
-                                ?.status ===
-                            "inactive"
-                        }
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white disabled:bg-slate-300"
-                    >
-                        + Add Section
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+
+                        <ActionButton
+                            variant="secondary"
+                            onClick={() =>
+                                navigate(
+                                    "/training-programmes"
+                                )
+                            }
+                        >
+                            ← Back
+                        </ActionButton>
+
+
+                        {!programmeInactive && (
+                            <ActionButton
+                                variant="primary"
+                                onClick={
+                                    handleAddSection
+                                }
+                                disabled={
+                                    saving ||
+                                    Boolean(
+                                        processingId
+                                    )
+                                }
+                            >
+                                + Add Section
+                            </ActionButton>
+                        )}
+
+                    </div>
 
                 </div>
 
             </section>
 
 
-            {
-                message && (
-                    <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700">
-                        {message}
-                    </div>
-                )
-            }
+            {/* ================================================= */}
+            {/* INACTIVE PROGRAMME NOTICE */}
+            {/* ================================================= */}
+
+            {programmeInactive && (
+                <FeedbackAlert
+                    type="warning"
+                    message="This training programme is inactive. New sections cannot be added and existing sections cannot be edited or reordered until the programme is reactivated."
+                />
+            )}
 
 
-            {
-                error && (
-                    <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700">
-                        {error}
-                    </div>
-                )
-            }
+            {/* ================================================= */}
+            {/* SUCCESS */}
+            {/* ================================================= */}
 
-
-            {
-                showForm && (
-                    <section className="rounded-xl border bg-white p-5">
-
-                        <form
-                            onSubmit={
-                                handleSubmit
-                            }
-                            className="space-y-4"
-                        >
-
-                            <input
-                                type="text"
-                                placeholder="Section title"
-                                value={
-                                    formData.title
-                                }
-                                onChange={
-                                    (event) =>
-                                        setFormData({
-                                            ...formData,
-
-                                            title:
-                                                event.target
-                                                    .value,
-                                        })
-                                }
-                                className="w-full rounded-lg border px-3 py-2"
-                            />
-
-
-                            <textarea
-                                rows="8"
-                                placeholder="Learning content"
-                                value={
-                                    formData.content
-                                }
-                                onChange={
-                                    (event) =>
-                                        setFormData({
-                                            ...formData,
-
-                                            content:
-                                                event.target
-                                                    .value,
-                                        })
-                                }
-                                className="w-full rounded-lg border px-3 py-2"
-                            />
-
-
-                            <input
-                                type="text"
-                                placeholder="Image URL"
-                                value={
-                                    formData.imageUrl
-                                }
-                                onChange={
-                                    (event) =>
-                                        setFormData({
-                                            ...formData,
-
-                                            imageUrl:
-                                                event.target
-                                                    .value,
-                                        })
-                                }
-                                className="w-full rounded-lg border px-3 py-2"
-                            />
-
-
-                            <input
-                                type="text"
-                                placeholder="Image alt text"
-                                value={
-                                    formData
-                                        .imageAltText
-                                }
-                                onChange={
-                                    (event) =>
-                                        setFormData({
-                                            ...formData,
-
-                                            imageAltText:
-                                                event.target
-                                                    .value,
-                                        })
-                                }
-                                className="w-full rounded-lg border px-3 py-2"
-                            />
-
-
-                            <div className="flex justify-end gap-2">
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        closeForm
-                                    }
-                                    className="rounded-lg border px-4 py-2 text-xs"
-                                >
-                                    Cancel
-                                </button>
-
-
-                                <button
-                                    type="submit"
-                                    disabled={
-                                        saving
-                                    }
-                                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white"
-                                >
-                                    {
-                                        saving
-                                            ? "Saving..."
-                                            : editingSection
-                                                ? "Save Changes"
-                                                : "Add Section"
-                                    }
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </section>
-                )
-            }
-
-
-            <section className="divide-y rounded-xl border bg-white">
-
-                {
-                    sections.map(
-                        (
-                            section,
-                            index
-                        ) => (
-                            <div
-                                key={
-                                    section._id
-                                }
-                                className="p-5"
-                            >
-
-                                <div className="flex justify-between gap-4">
-
-                                    <div className="flex-1">
-
-                                        <div className="flex items-center gap-3">
-
-                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-                                                {
-                                                    section.order
-                                                }
-                                            </span>
-
-
-                                            <h3 className="font-bold">
-                                                {
-                                                    section.title
-                                                }
-                                            </h3>
-
-
-                                            <StatusBadge
-                                                status={
-                                                    section.status
-                                                }
-                                            />
-
-                                        </div>
-
-
-                                        <p className="mt-3 whitespace-pre-line text-xs leading-6 text-slate-600">
-                                            {
-                                                section.content
-                                            }
-                                        </p>
-
-                                    </div>
-
-
-                                    <div className="flex items-start gap-2">
-
-                                        <button
-                                            type="button"
-                                            disabled={
-                                                index ===
-                                                0 ||
-                                                reordering
-                                            }
-                                            onClick={
-                                                () =>
-                                                    moveUp(
-                                                        index
-                                                    )
-                                            }
-                                            className="rounded border px-2 py-1"
-                                        >
-                                            ↑
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            disabled={
-                                                index ===
-                                                sections.length -
-                                                1 ||
-                                                reordering
-                                            }
-                                            onClick={
-                                                () =>
-                                                    moveDown(
-                                                        index
-                                                    )
-                                            }
-                                            className="rounded border px-2 py-1"
-                                        >
-                                            ↓
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            disabled={
-                                                programme
-                                                    ?.status ===
-                                                "inactive"
-                                            }
-                                            onClick={
-                                                () =>
-                                                    openEdit(
-                                                        section
-                                                    )
-                                            }
-                                            className="rounded bg-blue-50 px-3 py-1.5 text-[10px] font-semibold text-blue-700"
-                                        >
-                                            Edit
-                                        </button>
-
-
-                                        {
-                                            section.status ===
-                                                "inactive"
-                                                ? (
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            processingId ===
-                                                            section._id ||
-                                                            programme
-                                                                ?.status ===
-                                                            "inactive"
-                                                        }
-                                                        onClick={
-                                                            () =>
-                                                                reactivate(
-                                                                    section
-                                                                )
-                                                        }
-                                                        className="rounded bg-emerald-600 px-3 py-1.5 text-[10px] font-semibold text-white disabled:bg-slate-300"
-                                                    >
-                                                        Reactivate
-                                                    </button>
-                                                )
-                                                : (
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            processingId ===
-                                                            section._id
-                                                        }
-                                                        onClick={
-                                                            () =>
-                                                                deactivate(
-                                                                    section
-                                                                )
-                                                        }
-                                                        className="rounded bg-red-50 px-3 py-1.5 text-[10px] font-semibold text-red-700"
-                                                    >
-                                                        Deactivate
-                                                    </button>
-                                                )
-                                        }
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        )
+            <FeedbackAlert
+                type="success"
+                message={
+                    successMessage
+                }
+                onClose={() =>
+                    setSuccessMessage(
+                        ""
                     )
                 }
+            />
+
+
+            {/* ================================================= */}
+            {/* ERROR */}
+            {/* ================================================= */}
+
+            <FeedbackAlert
+                type="error"
+                message={
+                    errorMessage
+                }
+                onClose={() =>
+                    setErrorMessage(
+                        ""
+                    )
+                }
+            />
+
+
+            {/* ================================================= */}
+            {/* SECTION FORM */}
+            {/* ================================================= */}
+
+            {showForm &&
+                !programmeInactive && (
+                    <LearningSectionForm
+                        formData={
+                            formData
+                        }
+                        editingSection={
+                            editingSection
+                        }
+                        saving={
+                            saving
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        onSubmit={
+                            handleSubmit
+                        }
+                        onCancel={
+                            resetForm
+                        }
+                    />
+                )}
+
+
+            {/* ================================================= */}
+            {/* LEARNING SECTION TABLE */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+
+                <div className="border-b border-slate-200 p-5">
+
+                    <h3 className="text-base font-bold text-slate-900">
+                        Learning Sections
+                    </h3>
+
+
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Add learning content and control the order in
+                        which Trainees move through the programme.
+                    </p>
+
+                </div>
+
+
+                <LearningSectionTable
+                    sections={
+                        sections
+                    }
+                    processingId={
+                        processingId
+                    }
+                    programmeInactive={
+                        programmeInactive
+                    }
+                    onEdit={
+                        handleEditSection
+                    }
+                    onDeactivate={
+                        handleDeactivate
+                    }
+                    onReactivate={
+                        handleReactivate
+                    }
+                    onMoveUp={
+                        handleMoveUp
+                    }
+                    onMoveDown={
+                        handleMoveDown
+                    }
+                />
 
             </section>
 

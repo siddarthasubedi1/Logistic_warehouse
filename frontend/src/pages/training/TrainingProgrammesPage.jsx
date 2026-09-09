@@ -1,31 +1,21 @@
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
+import TrainingManagementShell from "../../components/training/TrainingManagementShell";
 import TrainingProgrammeManager from "../../components/training/TrainingProgrammeManager";
 
-
-function getStoredUser() {
-    try {
-        const storedUser =
-            sessionStorage.getItem(
-                "user"
-            );
-
-
-        return storedUser
-            ? JSON.parse(
-                storedUser
-            )
-            : null;
-
-    } catch {
-        return null;
-    }
-}
+import {
+    getSessionUser,
+} from "../../utils/session";
 
 
 function TrainingProgrammesPage() {
+
+    // ======================================================
+    // CURRENT USER
+    // ======================================================
+
     const user =
-        getStoredUser();
+        getSessionUser();
 
 
     const role =
@@ -33,36 +23,63 @@ function TrainingProgrammesPage() {
         "";
 
 
+    // ======================================================
+    // ROLE CHECK
+    // ======================================================
+
+    const isAdmin =
+        role ===
+        "admin";
+
+
+    const isTrainer =
+        role ===
+        "trainer";
+
+
+    // ======================================================
+    // PAGE DESCRIPTION
+    // ======================================================
+
+    let description =
+        "Manage workplace safety training programmes.";
+
+
+    if (isAdmin) {
+        description =
+            "Create and manage training programmes, assign programme owners, and authorize Trainers.";
+    }
+
+
+    if (isTrainer) {
+        description =
+            "Create and manage the training programmes that you are authorized to work with.";
+    }
+
+
+    // ======================================================
+    // PAGE
+    // ======================================================
+
     return (
         <DashboardLayout
             role={
                 role
             }
-
-            title="Training Programmes"
-
-            subtitle={
-                role ===
-                    "admin"
-                    ? "Create and manage workplace safety training programmes."
-                    : "Create and manage the training programmes available to you."
-            }
-
-            user={
-                user
-            }
+            showHeader={false}
         >
-
-            <div className="p-5 lg:p-6">
-
+            <TrainingManagementShell
+                title="Training Programmes"
+                description={
+                    description
+                }
+            >
                 <TrainingProgrammeManager
                     role={
                         role
                     }
                 />
-
-            </div>
-
+            </TrainingManagementShell>
         </DashboardLayout>
     );
 }

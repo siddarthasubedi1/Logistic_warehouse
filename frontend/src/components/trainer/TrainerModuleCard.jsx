@@ -1,37 +1,95 @@
-import { useNavigate } from "react-router-dom";
+import {
+    useNavigate,
+} from "react-router-dom";
 
 import boxLift from "../../images/box-lift.jpg";
+import heightImage from "../../images/hight.jpg";
 
 
-const TRAINING_MODULES = {
+// ======================================================
+// TRAINING AREAS
+// ======================================================
+//
+// assignedTrainingSections defines which broad training
+// areas the Trainer is allowed to work with.
+//
+// Actual Sprint 2 programme management happens through:
+//
+// /training-programmes
+//
+// ======================================================
+
+const TRAINING_AREAS = {
+
     "manual-handling": {
-        id: "manual-handling",
-        title: "Manual Handling",
+        id:
+            "manual-handling",
+
+        title:
+            "Manual Handling",
+
         description:
-            "Safe techniques for lifting, carrying, and moving loads in the workplace.",
-        lessons: 10,
-        image: boxLift,
+            "Create and manage Manual Handling training programmes and learning sections.",
+
+        image:
+            boxLift,
     },
 
+
     "working-at-height": {
-        id: "working-at-height",
-        title: "Working at Height",
+        id:
+            "working-at-height",
+
+        title:
+            "Working at Height",
+
         description:
-            "Safe working practices for elevated areas, ladders, platforms, and fall prevention.",
-        lessons: 8,
-        image: boxLift,
+            "Create and manage Working at Height training programmes and learning sections.",
+
+        image:
+            heightImage,
     },
 };
 
 
+// ======================================================
+// EMPTY ASSIGNMENT
+// ======================================================
+
 function EmptyAssignment() {
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+            "
+        >
 
-            <div className="flex items-start gap-4">
+            <div
+                className="
+                    flex
+                    items-start
+                    gap-4
+                "
+            >
 
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-
+                <div
+                    className="
+                        flex
+                        h-11
+                        w-11
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-amber-50
+                        text-amber-600
+                    "
+                >
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -49,19 +107,32 @@ function EmptyAssignment() {
 
                         <path d="M12 17h.01" />
                     </svg>
-
                 </div>
 
 
                 <div>
 
-                    <h2 className="text-sm font-bold text-slate-900">
-                        No Training Section Assigned
+                    <h2
+                        className="
+                            text-sm
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        No Training Area Assigned
                     </h2>
 
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                        You have not been assigned to a training section yet.
-                        Please contact the Administrator.
+
+                    <p
+                        className="
+                            mt-2
+                            text-xs
+                            leading-5
+                            text-slate-500
+                        "
+                    >
+                        You do not currently have permission to manage
+                        a training area. Please contact the Administrator.
                     </p>
 
                 </div>
@@ -73,87 +144,170 @@ function EmptyAssignment() {
 }
 
 
-function ModuleCard({
-    module,
+// ======================================================
+// TRAINING AREA CARD
+// ======================================================
+
+function TrainingAreaCard({
+    area,
 }) {
     const navigate =
         useNavigate();
 
 
-    const handleOpenModule = () => {
-        navigate(
-            `/trainer/training/${module.id}`
-        );
-    };
+    // ==================================================
+    // OPEN PROGRAMME MANAGEMENT
+    // ==================================================
+    //
+    // Trainer and Admin intentionally use the same
+    // Sprint 2 route.
+    //
+    // Backend authorization decides which programmes
+    // the Trainer can see/manage.
+    //
+    // ==================================================
+
+    const handleOpenProgrammes =
+        () => {
+            navigate(
+                "/training-programmes"
+            );
+        };
 
 
     return (
-        <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+        <article
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-4
+                shadow-sm
+                transition
+                hover:border-blue-300
+                hover:shadow-md
+            "
+        >
 
-            <div className="flex items-center justify-between gap-3">
+            {/* ================================================= */}
+            {/* IMAGE */}
+            {/* ================================================= */}
 
-                <h2 className="text-[13px] font-bold text-slate-900">
-                    {module.title}
-                </h2>
+            <img
+                src={
+                    area.image
+                }
+                alt={
+                    area.title
+                }
+                className="
+                    h-36
+                    w-full
+                    rounded-lg
+                    object-cover
+                "
+            />
 
+
+            {/* ================================================= */}
+            {/* CONTENT */}
+            {/* ================================================= */}
+
+            <div className="mt-4">
+
+                <div
+                    className="
+                        flex
+                        items-start
+                        justify-between
+                        gap-3
+                    "
+                >
+
+                    <div>
+
+                        <p
+                            className="
+                                text-[9px]
+                                font-semibold
+                                uppercase
+                                tracking-wide
+                                text-blue-600
+                            "
+                        >
+                            Assigned Training Area
+                        </p>
+
+
+                        <h2
+                            className="
+                                mt-1
+                                text-sm
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            {area.title}
+                        </h2>
+
+                    </div>
+
+
+                    <span
+                        className="
+                            rounded-full
+                            bg-emerald-50
+                            px-2.5
+                            py-1
+                            text-[9px]
+                            font-semibold
+                            text-emerald-700
+                        "
+                    >
+                        Assigned
+                    </span>
+
+                </div>
+
+
+                <p
+                    className="
+                        mt-3
+                        text-xs
+                        leading-5
+                        text-slate-500
+                    "
+                >
+                    {area.description}
+                </p>
+
+
+                {/* ================================================= */}
+                {/* ACTION */}
+                {/* ================================================= */}
 
                 <button
                     type="button"
                     onClick={
-                        handleOpenModule
+                        handleOpenProgrammes
                     }
-                    className="rounded border border-blue-200 px-3 py-1.5 text-[9px] font-semibold text-blue-600 transition hover:bg-blue-50"
+                    className="
+                        mt-4
+                        w-full
+                        rounded-lg
+                        bg-blue-600
+                        px-4
+                        py-2.5
+                        text-xs
+                        font-semibold
+                        text-white
+                        transition
+                        hover:bg-blue-700
+                    "
                 >
-                    View Module
+                    Manage Training Programmes
                 </button>
-
-            </div>
-
-
-            <div className="mt-4 flex gap-4">
-
-                <img
-                    src={module.image}
-                    alt={module.title}
-                    className="h-[82px] w-[105px] rounded-lg object-cover"
-                />
-
-
-                <div className="min-w-0 flex-1">
-
-                    <p className="text-[9px] leading-4 text-slate-500">
-                        {module.description}
-                    </p>
-
-
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-
-                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-semibold text-emerald-600">
-                            Assigned
-                        </span>
-
-
-                        <div className="flex items-center gap-1 text-[8px] text-slate-500">
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.7"
-                                className="h-3.5 w-3.5"
-                            >
-                                <path d="M4 5h6v14H4z" />
-                                <path d="M14 5h6v14h-6z" />
-                            </svg>
-
-
-                            {module.lessons} Lessons
-
-                        </div>
-
-                    </div>
-
-                </div>
 
             </div>
 
@@ -162,22 +316,39 @@ function ModuleCard({
 }
 
 
+// ======================================================
+// TRAINER MODULE CARD
+// ======================================================
+
 function TrainerModuleCard({
     assignedTrainingSections = [],
 }) {
-    const assignedModules =
+
+    // ==================================================
+    // GET ASSIGNED AREAS
+    // ==================================================
+
+    const assignedAreas =
         assignedTrainingSections
             .map(
-                (sectionId) =>
-                    TRAINING_MODULES[
+                (
+                    sectionId
+                ) =>
+                    TRAINING_AREAS[
                     sectionId
                     ]
             )
-            .filter(Boolean);
+            .filter(
+                Boolean
+            );
 
+
+    // ==================================================
+    // EMPTY
+    // ==================================================
 
     if (
-        assignedModules.length ===
+        assignedAreas.length ===
         0
     ) {
         return (
@@ -186,53 +357,113 @@ function TrainerModuleCard({
     }
 
 
-    return (
-        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    // ==================================================
+    // UI
+    // ==================================================
 
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    return (
+        <section
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+            "
+        >
+
+            {/* ================================================= */}
+            {/* HEADER */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    mb-5
+                    flex
+                    flex-wrap
+                    items-center
+                    justify-between
+                    gap-3
+                "
+            >
 
                 <div>
 
-                    <h2 className="text-[13px] font-bold text-slate-900">
-                        My Training Sections
+                    <h2
+                        className="
+                            text-sm
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        My Training Areas
                     </h2>
 
 
-                    <p className="mt-1 text-[9px] text-slate-500">
-                        Training sections assigned by the Administrator.
+                    <p
+                        className="
+                            mt-1
+                            text-xs
+                            text-slate-500
+                        "
+                    >
+                        These training areas determine which programmes
+                        you are allowed to create and manage.
                     </p>
 
                 </div>
 
 
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-[9px] font-semibold text-blue-700">
+                <span
+                    className="
+                        rounded-full
+                        bg-blue-50
+                        px-3
+                        py-1.5
+                        text-[10px]
+                        font-semibold
+                        text-blue-700
+                    "
+                >
+                    {assignedAreas.length}{" "}
 
-                    {assignedModules.length}{" "}
-
-                    {assignedModules.length === 1
-                        ? "Section"
-                        : "Sections"}
-
+                    {assignedAreas.length ===
+                        1
+                        ? "Area"
+                        : "Areas"}
                 </span>
 
             </div>
 
 
+            {/* ================================================= */}
+            {/* CARDS */}
+            {/* ================================================= */}
+
             <div
-                className={`grid gap-4 ${assignedModules.length > 1
-                    ? "lg:grid-cols-2"
-                    : "grid-cols-1"
-                    }`}
+                className={`
+                    grid
+                    gap-4
+
+                    ${assignedAreas.length >
+                        1
+                        ? "md:grid-cols-2"
+                        : "grid-cols-1"
+                    }
+                `}
             >
 
-                {assignedModules.map(
-                    (module) => (
-                        <ModuleCard
+                {assignedAreas.map(
+                    (
+                        area
+                    ) => (
+                        <TrainingAreaCard
                             key={
-                                module.id
+                                area.id
                             }
-                            module={
-                                module
+                            area={
+                                area
                             }
                         />
                     )

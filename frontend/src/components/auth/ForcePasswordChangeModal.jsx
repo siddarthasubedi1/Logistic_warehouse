@@ -4,6 +4,17 @@ import {
 
 import api from "../../services/api";
 
+import ActionButton from "../ui/ActionButton";
+import FeedbackAlert from "../ui/FeedbackAlert";
+
+import {
+    clearAuthSession,
+} from "../../utils/session";
+
+import {
+    getUserDisplayName,
+} from "../../utils/training";
+
 
 function ForcePasswordChangeModal({
     user,
@@ -50,11 +61,18 @@ function ForcePasswordChangeModal({
     // ======================================================
 
     const handleSubmit =
-        async (event) => {
+        async (
+            event
+        ) => {
             event.preventDefault();
+
 
             setError("");
 
+
+            // ==================================================
+            // REQUIRED
+            // ==================================================
 
             if (
                 !currentPassword ||
@@ -69,6 +87,10 @@ function ForcePasswordChangeModal({
             }
 
 
+            // ==================================================
+            // PASSWORD LENGTH
+            // ==================================================
+
             if (
                 newPassword.length <
                 12
@@ -81,6 +103,10 @@ function ForcePasswordChangeModal({
             }
 
 
+            // ==================================================
+            // MATCH
+            // ==================================================
+
             if (
                 newPassword !==
                 confirmPassword
@@ -92,6 +118,10 @@ function ForcePasswordChangeModal({
                 return;
             }
 
+
+            // ==================================================
+            // MUST BE DIFFERENT
+            // ==================================================
 
             if (
                 newPassword ===
@@ -109,6 +139,10 @@ function ForcePasswordChangeModal({
                 setLoading(true);
 
 
+                // ==================================================
+                // BACKEND CHANGE PASSWORD
+                // ==================================================
+
                 await api.post(
                     "/auth/change-password",
                     {
@@ -118,35 +152,22 @@ function ForcePasswordChangeModal({
                 );
 
 
-                /*
-                    Password change increments authVersion on
-                    the backend, so the old access token must
-                    now be discarded.
-                */
+                // ==================================================
+                // REMOVE OLD SESSION
+                // ==================================================
+                //
+                // Backend invalidates the old authenticated session
+                // when the password changes.
+                //
+                // User must login again using the new password.
+                // ==================================================
 
-                sessionStorage.removeItem(
-                    "accessToken"
-                );
-
-
-                sessionStorage.removeItem(
-                    "user"
-                );
+                clearAuthSession();
 
 
-                setCurrentPassword(
-                    ""
-                );
-
-
-                setNewPassword(
-                    ""
-                );
-
-
-                setConfirmPassword(
-                    ""
-                );
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
 
 
                 setCompleted(
@@ -154,6 +175,12 @@ function ForcePasswordChangeModal({
                 );
 
             } catch (error) {
+                console.error(
+                    "Forced password change error:",
+                    error
+                );
+
+
                 setError(
                     error.response
                         ?.data
@@ -168,7 +195,7 @@ function ForcePasswordChangeModal({
 
 
     // ======================================================
-    // SUCCESS
+    // SUCCESS SCREEN
     // ======================================================
 
     if (completed) {
@@ -198,19 +225,24 @@ function ForcePasswordChangeModal({
 
 
                     <p className="mt-2 text-center text-sm leading-6 text-slate-500">
-                        Your temporary password is no longer valid. Please log in again using your new password.
+                        Your temporary password is no longer valid.
+                        Please log in again using your new password.
                     </p>
 
 
-                    <button
-                        type="button"
-                        onClick={
-                            onCompleted
-                        }
-                        className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
-                    >
-                        Back to Login
-                    </button>
+                    <div className="mt-6 flex justify-center">
+
+                        <ActionButton
+                            variant="primary"
+                            className="w-full justify-center"
+                            onClick={
+                                onCompleted
+                            }
+                        >
+                            Back to Login
+                        </ActionButton>
+
+                    </div>
 
                 </div>
 
@@ -220,7 +252,7 @@ function ForcePasswordChangeModal({
 
 
     // ======================================================
-    // REQUIRED PASSWORD MODAL
+    // REQUIRED PASSWORD CHANGE
     // ======================================================
 
     return (
@@ -228,7 +260,9 @@ function ForcePasswordChangeModal({
 
             <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
 
+                {/* ================================================= */}
                 {/* HEADER */}
+                {/* ================================================= */}
 
                 <div className="border-b border-slate-200 px-6 py-5">
 
@@ -265,7 +299,10 @@ function ForcePasswordChangeModal({
 
 
                             <p className="mt-1 text-sm leading-5 text-slate-500">
-                                You are using a temporary password generated by the administrator. You must create a new password before accessing your account.
+                                You are using a temporary password
+                                generated by the administrator. Create
+                                a new password before accessing your
+                                dashboard.
                             </p>
 
                         </div>
@@ -275,6 +312,10 @@ function ForcePasswordChangeModal({
                 </div>
 
 
+                {/* ================================================= */}
+                {/* FORM */}
+                {/* ================================================= */}
+
                 <form
                     onSubmit={
                         handleSubmit
@@ -282,18 +323,20 @@ function ForcePasswordChangeModal({
                     className="space-y-5 p-6"
                 >
 
-                    {/* USER INFO */}
-
+                    {/* User */}
                     <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
 
-                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-500">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-500">
                             Account
                         </p>
 
 
                         <p className="mt-1 text-sm font-bold text-slate-900">
-                            {user?.firstName}{" "}
-                            {user?.lastName}
+                            {getUserDisplayName(
+                                user,
+                                user?.username ||
+                                "User"
+                            )}
                         </p>
 
 
@@ -306,139 +349,106 @@ function ForcePasswordChangeModal({
                     </div>
 
 
-                    {/* ERROR */}
-
-                    {error && (
-                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                            {error}
-                        </div>
-                    )}
-
-
-                    {/* CURRENT PASSWORD */}
-
-                    <div>
-
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">
-                            Current Temporary Password
-                        </label>
+                    {/* Error */}
+                    <FeedbackAlert
+                        type="error"
+                        message={
+                            error
+                        }
+                    />
 
 
-                        <input
-                            type="password"
-                            value={
-                                currentPassword
-                            }
-                            onChange={(
-                                event
-                            ) => {
-                                setCurrentPassword(
-                                    event.target
-                                        .value
-                                );
+                    {/* Current password */}
+                    <PasswordField
+                        label="Current Temporary Password"
+                        value={
+                            currentPassword
+                        }
+                        onChange={(
+                            event
+                        ) => {
+                            setCurrentPassword(
+                                event.target.value
+                            );
 
-                                setError("");
-                            }}
-                            autoComplete="current-password"
-                            disabled={
-                                loading
-                            }
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
-                        />
-
-                    </div>
-
-
-                    {/* NEW PASSWORD */}
-
-                    <div>
-
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">
-                            New Password
-                        </label>
-
-
-                        <input
-                            type="password"
-                            value={
-                                newPassword
-                            }
-                            onChange={(
-                                event
-                            ) => {
-                                setNewPassword(
-                                    event.target
-                                        .value
-                                );
-
-                                setError("");
-                            }}
-                            autoComplete="new-password"
-                            disabled={
-                                loading
-                            }
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
-                        />
-
-
-                        <p className="mt-2 text-xs text-slate-500">
-                            Use at least 12 characters and do not reuse the temporary password.
-                        </p>
-
-                    </div>
-
-
-                    {/* CONFIRM PASSWORD */}
-
-                    <div>
-
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">
-                            Confirm New Password
-                        </label>
-
-
-                        <input
-                            type="password"
-                            value={
-                                confirmPassword
-                            }
-                            onChange={(
-                                event
-                            ) => {
-                                setConfirmPassword(
-                                    event.target
-                                        .value
-                                );
-
-                                setError("");
-                            }}
-                            autoComplete="new-password"
-                            disabled={
-                                loading
-                            }
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
-                        />
-
-                    </div>
-
-
-                    {/* SUBMIT */}
-
-                    <button
-                        type="submit"
+                            setError("");
+                        }}
+                        autoComplete="current-password"
                         disabled={
                             loading
                         }
-                        className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+
+
+                    {/* New password */}
+                    <PasswordField
+                        label="New Password"
+                        value={
+                            newPassword
+                        }
+                        onChange={(
+                            event
+                        ) => {
+                            setNewPassword(
+                                event.target.value
+                            );
+
+                            setError("");
+                        }}
+                        autoComplete="new-password"
+                        disabled={
+                            loading
+                        }
+                    />
+
+
+                    <p className="-mt-3 text-[11px] leading-5 text-slate-500">
+                        Use at least 12 characters and do not reuse
+                        your temporary password.
+                    </p>
+
+
+                    {/* Confirm */}
+                    <PasswordField
+                        label="Confirm New Password"
+                        value={
+                            confirmPassword
+                        }
+                        onChange={(
+                            event
+                        ) => {
+                            setConfirmPassword(
+                                event.target.value
+                            );
+
+                            setError("");
+                        }}
+                        autoComplete="new-password"
+                        disabled={
+                            loading
+                        }
+                    />
+
+
+                    {/* Submit */}
+                    <ActionButton
+                        type="submit"
+                        variant="primary"
+                        disabled={
+                            loading
+                        }
+                        className="w-full justify-center py-3"
                     >
                         {loading
                             ? "Changing Password..."
                             : "Change Password"}
-                    </button>
+                    </ActionButton>
 
 
-                    <p className="text-center text-xs leading-5 text-slate-400">
-                        This window cannot be skipped. Dashboard access remains blocked until the password is changed.
+                    <p className="text-center text-[11px] leading-5 text-slate-400">
+                        This step cannot be skipped. Trainer and
+                        Trainee dashboard access stays blocked until
+                        the temporary password is changed.
                     </p>
 
                 </form>
@@ -446,6 +456,61 @@ function ForcePasswordChangeModal({
             </div>
 
         </div>
+    );
+}
+
+
+// ======================================================
+// PASSWORD FIELD
+// ======================================================
+
+function PasswordField({
+    label,
+    value,
+    onChange,
+    autoComplete,
+    disabled,
+}) {
+    return (
+        <label className="block">
+
+            <span className="mb-2 block text-sm font-semibold text-slate-700">
+                {label}
+            </span>
+
+
+            <input
+                type="password"
+                value={
+                    value
+                }
+                onChange={
+                    onChange
+                }
+                autoComplete={
+                    autoComplete
+                }
+                disabled={
+                    disabled
+                }
+                className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-slate-300
+                    px-4
+                    py-3
+                    text-sm
+                    outline-none
+                    transition
+                    focus:border-blue-500
+                    focus:ring-2
+                    focus:ring-blue-100
+                    disabled:bg-slate-100
+                "
+            />
+
+        </label>
     );
 }
 

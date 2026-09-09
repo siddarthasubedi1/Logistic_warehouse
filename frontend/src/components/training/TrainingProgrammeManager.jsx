@@ -11,6 +11,25 @@ import {
 
 import api from "../../services/api";
 
+import TrainingProgrammeForm from "./TrainingProgrammeForm";
+import TrainingProgrammeFilters from "./TrainingProgrammeFilters";
+import TrainingProgrammeTable from "./TrainingProgrammeTable";
+
+import ActionButton from "../ui/ActionButton";
+import FeedbackAlert from "../ui/FeedbackAlert";
+import LoadingCard from "../ui/LoadingCard";
+
+import {
+    formatProgrammeType,
+    getApiErrorMessage,
+    getUserDisplayName,
+    parseArrayResponse,
+} from "../../utils/training";
+
+
+// ======================================================
+// PROGRAMME TYPES
+// ======================================================
 
 const PROGRAMME_TYPES = [
     {
@@ -31,132 +50,45 @@ const PROGRAMME_TYPES = [
 ];
 
 
+// ======================================================
+// PROGRAMME STATUS
+// ======================================================
+
 const PROGRAMME_STATUSES = [
-    {
-        value:
-            "draft",
-
-        label:
-            "Draft",
-    },
-
-    {
-        value:
-            "active",
-
-        label:
-            "Active",
-    },
-
-    {
-        value:
-            "inactive",
-
-        label:
-            "Inactive",
-    },
+    "draft",
+    "active",
+    "inactive",
 ];
 
 
-const EMPTY_FORM = {
-    programmeType:
-        "manual-handling",
-
-    title:
-        "",
-
-    description:
-        "",
-
-    ownerId:
-        "",
-
-    authorizedTrainers:
-        [],
-
-    passMark:
-        80,
-
-    status:
-        "draft",
-};
-
-
 // ======================================================
-// HELPERS
+// INITIAL FORM
 // ======================================================
 
-function getProgrammeTypeLabel(
-    value
-) {
-    return (
-        PROGRAMME_TYPES.find(
-            (item) =>
-                item.value ===
-                value
-        )?.label ||
-        value
-    );
-}
+const getInitialFormData =
+    () => ({
+        programmeType:
+            "",
 
+        title:
+            "",
 
-function getUserName(
-    user
-) {
-    if (!user) {
-        return "Unknown Trainer";
-    }
+        description:
+            "",
 
+        passMark:
+            70,
 
-    const fullName =
-        `${user.firstName || ""} ${user.lastName || ""}`
-            .trim();
+        status:
+            "draft",
 
+        ownerId:
+            "",
 
-    return (
-        fullName ||
-        user.username ||
-        user.email ||
-        "Trainer"
-    );
-}
+        authorizedTrainers:
+            [],
+    });
 
-
-function StatusBadge({
-    status,
-}) {
-    const styles = {
-        active:
-            "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
-
-        draft:
-            "bg-amber-50 text-amber-700 ring-amber-600/20",
-
-        inactive:
-            "bg-slate-100 text-slate-600 ring-slate-500/20",
-    };
-
-
-    return (
-        <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ring-1 ring-inset ${styles[
-                status
-            ] ||
-                styles.inactive
-                }`}
-        >
-            {
-                status ||
-                "unknown"
-            }
-        </span>
-    );
-}
-
-
-// ======================================================
-// COMPONENT
-// ======================================================
 
 function TrainingProgrammeManager({
     role,
@@ -165,16 +97,33 @@ function TrainingProgrammeManager({
         useNavigate();
 
 
+    // ======================================================
+    // ROLE
+    // ======================================================
+
     const isAdmin =
         role ===
         "admin";
 
+
+    const isTrainer =
+        role ===
+        "trainer";
+
+
+    // ======================================================
+    // PROGRAMMES
+    // ======================================================
 
     const [
         programmes,
         setProgrammes,
     ] = useState([]);
 
+
+    // ======================================================
+    // TRAINERS
+    // ======================================================
 
     const [
         trainers,
@@ -183,10 +132,60 @@ function TrainingProgrammeManager({
 
 
     const [
-        currentUser,
-        setCurrentUser,
+        currentTrainer,
+        setCurrentTrainer,
     ] = useState(null);
 
+
+    // ======================================================
+    // FORM
+    // ======================================================
+
+    const [
+        showForm,
+        setShowForm,
+    ] = useState(false);
+
+
+    const [
+        editingProgramme,
+        setEditingProgramme,
+    ] = useState(null);
+
+
+    const [
+        formData,
+        setFormData,
+    ] = useState(
+        getInitialFormData()
+    );
+
+
+    // ======================================================
+    // FILTERS
+    // ======================================================
+
+    const [
+        searchTerm,
+        setSearchTerm,
+    ] = useState("");
+
+
+    const [
+        typeFilter,
+        setTypeFilter,
+    ] = useState("all");
+
+
+    const [
+        statusFilter,
+        setStatusFilter,
+    ] = useState("all");
+
+
+    // ======================================================
+    // LOADING
+    // ======================================================
 
     const [
         loading,
@@ -206,95 +205,87 @@ function TrainingProgrammeManager({
     ] = useState("");
 
 
+    // ======================================================
+    // FEEDBACK
+    // ======================================================
+
     const [
-        error,
-        setError,
+        errorMessage,
+        setErrorMessage,
     ] = useState("");
 
 
     const [
-        message,
-        setMessage,
+        successMessage,
+        setSuccessMessage,
     ] = useState("");
 
 
-    const [
-        showForm,
-        setShowForm,
-    ] = useState(false);
+    // ======================================================
+    // CLEAR FEEDBACK
+    // ======================================================
+
+    const clearFeedback = () => {
+        setErrorMessage("");
+        setSuccessMessage("");
+    };
 
 
-    const [
-        editingProgramme,
-        setEditingProgramme,
-    ] = useState(null);
-
-
-    const [
-        formData,
-        setFormData,
-    ] = useState({
-        ...EMPTY_FORM,
-    });
-
-
-    const [
-        search,
-        setSearch,
-    ] = useState("");
-
-
-    const [
-        typeFilter,
-        setTypeFilter,
-    ] = useState("all");
-
-
-    const [
-        statusFilter,
-        setStatusFilter,
-    ] = useState("all");
-
-
-    // ==================================================
+    // ======================================================
     // LOAD PROGRAMMES
-    // ==================================================
+    // ======================================================
 
     const loadProgrammes =
-        useCallback(
-            async () => {
+        useCallback(async () => {
+            try {
                 const response =
                     await api.get(
                         "/training-programmes"
                     );
 
 
+                const programmeList =
+                    parseArrayResponse(
+                        response.data,
+                        "programmes"
+                    );
+
+
                 setProgrammes(
-                    Array.isArray(
-                        response.data
-                    )
-                        ? response.data
-                        : response.data
-                            ?.programmes ||
-                        []
+                    programmeList
                 );
-            },
-            []
-        );
+
+            } catch (error) {
+                console.error(
+                    "Load programmes error:",
+                    error
+                );
 
 
-    // ==================================================
-    // LOAD TRAINERS
-    // ==================================================
-
-    const loadTrainers =
-        useCallback(
-            async () => {
-                if (!isAdmin) {
-                    return;
-                }
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to load training programmes."
+                    )
+                );
+            }
+        }, []);
 
 
+    // ======================================================
+    // LOAD ADMIN TRAINERS
+    // ======================================================
+
+    const loadAdminTrainers =
+        useCallback(async () => {
+            if (!isAdmin) {
+                setTrainers([]);
+
+                return;
+            }
+
+
+            try {
                 const response =
                     await api.get(
                         "/admin/users"
@@ -302,69 +293,134 @@ function TrainingProgrammeManager({
 
 
                 const users =
-                    Array.isArray(
-                        response.data
-                    )
-                        ? response.data
-                        : response.data
-                            ?.users ||
-                        [];
+                    parseArrayResponse(
+                        response.data,
+                        "users"
+                    );
+
+
+                /*
+                    /admin/users already returns accounts whose
+                    accountStatus is "created".
+
+                    We additionally keep only:
+                    - Trainer
+                    - active account
+                */
+
+                const trainerUsers =
+                    users.filter(
+                        (user) => {
+                            const status =
+                                String(
+                                    user.status ||
+                                    ""
+                                )
+                                    .trim()
+                                    .toLowerCase();
+
+
+                            const accountStatus =
+                                String(
+                                    user.accountStatus ||
+                                    ""
+                                )
+                                    .trim()
+                                    .toLowerCase();
+
+
+                            return (
+                                user.role ===
+                                "trainer" &&
+                                status ===
+                                "active" &&
+                                (
+                                    !accountStatus ||
+                                    accountStatus ===
+                                    "created"
+                                )
+                            );
+                        }
+                    );
 
 
                 setTrainers(
-                    users.filter(
-                        (user) =>
-                            user.role ===
-                            "trainer" &&
-                            user.status ===
-                            "active" &&
-                            user.accountStatus ===
-                            "created"
+                    trainerUsers
+                );
+
+            } catch (error) {
+                console.error(
+                    "Load Trainers error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to load Trainers."
                     )
                 );
-            },
-            [
-                isAdmin,
-            ]
-        );
+            }
+        }, [
+            isAdmin,
+        ]);
 
 
-    // ==================================================
-    // CURRENT TRAINER
-    // ==================================================
+    // ======================================================
+    // LOAD CURRENT TRAINER
+    // ======================================================
 
-    const loadCurrentUser =
-        useCallback(
-            async () => {
-                if (isAdmin) {
-                    return;
-                }
+    const loadCurrentTrainer =
+        useCallback(async () => {
+            if (!isTrainer) {
+                setCurrentTrainer(
+                    null
+                );
+
+                return;
+            }
 
 
+            try {
                 const response =
                     await api.get(
                         "/users/me"
                     );
 
 
-                setCurrentUser(
+                setCurrentTrainer(
                     response.data
                         ?.user ||
+                    response.data ||
                     null
                 );
-            },
-            [
-                isAdmin,
-            ]
-        );
+
+            } catch (error) {
+                console.error(
+                    "Load current Trainer error:",
+                    error
+                );
 
 
-    // ==================================================
-    // PAGE
-    // ==================================================
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to load Trainer profile."
+                    )
+                );
+            }
+        }, [
+            isTrainer,
+        ]);
 
-    const loadPage =
-        useCallback(
+
+    // ======================================================
+    // INITIAL LOAD
+    // ======================================================
+
+    useEffect(() => {
+        const loadPage =
             async () => {
                 try {
                     setLoading(
@@ -372,373 +428,285 @@ function TrainingProgrammeManager({
                     );
 
 
-                    setError(
-                        ""
-                    );
+                    clearFeedback();
 
 
                     await Promise.all([
                         loadProgrammes(),
-                        loadTrainers(),
-                        loadCurrentUser(),
+                        loadAdminTrainers(),
+                        loadCurrentTrainer(),
                     ]);
-
-                } catch (error) {
-                    console.error(
-                        "Load programme page error:",
-                        error
-                    );
-
-
-                    setError(
-                        error.response
-                            ?.data
-                            ?.message ||
-                        "Unable to load training programmes."
-                    );
 
                 } finally {
                     setLoading(
                         false
                     );
                 }
-            },
-            [
-                loadProgrammes,
-                loadTrainers,
-                loadCurrentUser,
-            ]
-        );
+            };
 
 
-    useEffect(() => {
         loadPage();
+
     }, [
-        loadPage,
+        loadProgrammes,
+        loadAdminTrainers,
+        loadCurrentTrainer,
     ]);
 
 
-    // ==================================================
-    // AVAILABLE TYPES
-    // ==================================================
+    // ======================================================
+    // TRAINER PROGRAMME TYPES
+    // ======================================================
 
-    const availableProgrammeTypes =
-        useMemo(
-            () => {
-                if (isAdmin) {
-                    return PROGRAMME_TYPES;
-                }
-
-
-                const assigned =
-                    Array.isArray(
-                        currentUser
-                            ?.assignedTrainingSections
-                    )
-                        ? currentUser
-                            .assignedTrainingSections
-                        : [];
+    const trainerProgrammeTypes =
+        useMemo(() => {
+            if (!isTrainer) {
+                return PROGRAMME_TYPES;
+            }
 
 
-                return PROGRAMME_TYPES.filter(
-                    (type) =>
-                        assigned.includes(
-                            type.value
-                        )
-                );
-            },
-            [
-                isAdmin,
-                currentUser,
-            ]
-        );
-
-
-    // ==================================================
-    // OWNER TRAINERS
-    // ==================================================
-
-    const eligibleOwnerTrainers =
-        useMemo(
-            () =>
-                trainers.filter(
-                    (trainer) =>
-                        Array.isArray(
-                            trainer
-                                .assignedTrainingSections
-                        ) &&
-                        trainer
-                            .assignedTrainingSections
-                            .includes(
-                                formData
-                                    .programmeType
-                            )
-                ),
-            [
-                trainers,
-                formData.programmeType,
-            ]
-        );
-
-
-    const eligibleAuthorizedTrainers =
-        useMemo(
-            () =>
-                eligibleOwnerTrainers.filter(
-                    (trainer) =>
-                        String(
-                            trainer._id
-                        ) !==
-                        String(
-                            formData.ownerId
-                        )
-                ),
-            [
-                eligibleOwnerTrainers,
-                formData.ownerId,
-            ]
-        );
-
-
-    // ==================================================
-    // FILTER
-    // ==================================================
-
-    const filteredProgrammes =
-        useMemo(
-            () => {
-                const value =
-                    search
-                        .trim()
-                        .toLowerCase();
-
-
-                return programmes.filter(
-                    (programme) => {
-                        if (
-                            typeFilter !==
-                            "all" &&
-                            programme
-                                .programmeType !==
-                            typeFilter
-                        ) {
-                            return false;
-                        }
-
-
-                        if (
-                            statusFilter !==
-                            "all" &&
-                            programme.status !==
-                            statusFilter
-                        ) {
-                            return false;
-                        }
-
-
-                        if (!value) {
-                            return true;
-                        }
-
-
-                        const text =
-                            [
-                                programme.title,
-                                programme.description,
-
-                                getProgrammeTypeLabel(
-                                    programme
-                                        .programmeType
-                                ),
-
-                                getUserName(
-                                    programme.owner
-                                ),
-                            ]
-                                .join(" ")
-                                .toLowerCase();
-
-
-                        return text.includes(
-                            value
-                        );
-                    }
-                );
-            },
-            [
-                programmes,
-                search,
-                typeFilter,
-                statusFilter,
-            ]
-        );
-
-
-    // ==================================================
-    // FORM
-    // ==================================================
-
-    const resetForm =
-        () => {
-            setEditingProgramme(
-                null
-            );
-
-
-            setFormData({
-                ...EMPTY_FORM,
-
-                programmeType:
-                    availableProgrammeTypes[
-                        0
-                    ]?.value ||
-                    "manual-handling",
-            });
-        };
-
-
-    const openCreateForm =
-        () => {
-            resetForm();
-
-            setError("");
-
-            setMessage("");
-
-            setShowForm(true);
-        };
-
-
-    const openEditForm =
-        (programme) => {
-            const ownerId =
-                typeof programme.owner ===
-                    "object"
-                    ? programme.owner
-                        ?._id ||
-                    ""
-                    : programme.owner ||
-                    "";
-
-
-            const authorizedTrainers =
+            const assignedSections =
                 Array.isArray(
-                    programme
-                        .authorizedTrainers
+                    currentTrainer
+                        ?.assignedTrainingSections
                 )
-                    ? programme
-                        .authorizedTrainers
-                        .map(
-                            (trainer) =>
-                                typeof trainer ===
-                                    "object"
-                                    ? trainer
-                                        ?._id
-                                    : trainer
-                        )
-                        .filter(Boolean)
+                    ? currentTrainer
+                        .assignedTrainingSections
                     : [];
 
 
-            setEditingProgramme(
-                programme
+            return PROGRAMME_TYPES.filter(
+                (programmeType) =>
+                    assignedSections.includes(
+                        programmeType.value
+                    )
             );
 
-
-            setFormData({
-                programmeType:
-                    programme
-                        .programmeType,
-
-                title:
-                    programme.title ||
-                    "",
-
-                description:
-                    programme
-                        .description ||
-                    "",
-
-                ownerId,
-
-                authorizedTrainers,
-
-                passMark:
-                    programme
-                        .passMark ??
-                    80,
-
-                status:
-                    programme.status ||
-                    "draft",
-            });
+        }, [
+            isTrainer,
+            currentTrainer,
+        ]);
 
 
-            setError("");
-
-            setMessage("");
-
-            setShowForm(true);
-        };
+    const availableProgrammeTypes =
+        isTrainer
+            ? trainerProgrammeTypes
+            : PROGRAMME_TYPES;
 
 
-    const closeForm =
-        () => {
-            setShowForm(false);
+    // ======================================================
+    // ELIGIBLE OWNER TRAINERS
+    // ======================================================
 
-            resetForm();
-        };
-
-
-    // ==================================================
-    // CHANGE
-    // ==================================================
-
-    const handleInputChange =
-        (event) => {
-            const {
-                name,
-                value,
-            } =
-                event.target;
+    const eligibleOwnerTrainers =
+        useMemo(() => {
+            if (!isAdmin) {
+                return [];
+            }
 
 
             if (
-                name ===
-                "programmeType"
+                !formData.programmeType
             ) {
-                setFormData(
-                    (current) => ({
+                return trainers;
+            }
+
+
+            return trainers.filter(
+                (trainer) =>
+                    Array.isArray(
+                        trainer
+                            .assignedTrainingSections
+                    ) &&
+                    trainer
+                        .assignedTrainingSections
+                        .includes(
+                            formData.programmeType
+                        )
+            );
+
+        }, [
+            isAdmin,
+            trainers,
+            formData.programmeType,
+        ]);
+
+
+    // ======================================================
+    // ELIGIBLE AUTHORISED TRAINERS
+    // ======================================================
+
+    const eligibleAuthorizedTrainers =
+        useMemo(() => {
+            if (!isAdmin) {
+                return [];
+            }
+
+
+            return eligibleOwnerTrainers.filter(
+                (trainer) =>
+                    String(
+                        trainer._id
+                    ) !==
+                    String(
+                        formData.ownerId
+                    )
+            );
+
+        }, [
+            isAdmin,
+            eligibleOwnerTrainers,
+            formData.ownerId,
+        ]);
+
+
+    // ======================================================
+    // FILTER PROGRAMMES
+    // ======================================================
+
+    const filteredProgrammes =
+        useMemo(() => {
+            const query =
+                searchTerm
+                    .trim()
+                    .toLowerCase();
+
+
+            return programmes.filter(
+                (programme) => {
+
+                    // ------------------------------------------
+                    // TYPE FILTER
+                    // ------------------------------------------
+
+                    if (
+                        typeFilter !==
+                        "all" &&
+                        programme.programmeType !==
+                        typeFilter
+                    ) {
+                        return false;
+                    }
+
+
+                    // ------------------------------------------
+                    // STATUS FILTER
+                    // ------------------------------------------
+
+                    if (
+                        statusFilter !==
+                        "all" &&
+                        programme.status !==
+                        statusFilter
+                    ) {
+                        return false;
+                    }
+
+
+                    // ------------------------------------------
+                    // SEARCH
+                    // ------------------------------------------
+
+                    if (!query) {
+                        return true;
+                    }
+
+
+                    const owner =
+                        programme.ownerTrainer ||
+                        programme.owner ||
+                        programme.trainer;
+
+
+                    const searchableText =
+                        [
+                            programme.title,
+
+                            programme.description,
+
+                            formatProgrammeType(
+                                programme.programmeType
+                            ),
+
+                            getUserDisplayName(
+                                owner,
+                                ""
+                            ),
+
+                            programme.status,
+                        ]
+                            .filter(
+                                Boolean
+                            )
+                            .join(" ")
+                            .toLowerCase();
+
+
+                    return searchableText.includes(
+                        query
+                    );
+                }
+            );
+
+        }, [
+            programmes,
+            searchTerm,
+            typeFilter,
+            statusFilter,
+        ]);
+
+
+    // ======================================================
+    // INPUT CHANGE
+    // ======================================================
+
+    const handleInputChange = (
+        event
+    ) => {
+        const {
+            name,
+            value,
+        } = event.target;
+
+
+        clearFeedback();
+
+
+        setFormData(
+            (current) => {
+
+                // ------------------------------------------
+                // PROGRAMME TYPE CHANGE
+                // ------------------------------------------
+
+                if (
+                    name ===
+                    "programmeType"
+                ) {
+                    return {
                         ...current,
 
                         programmeType:
                             value,
 
                         ownerId:
-                            isAdmin
-                                ? ""
-                                : current
-                                    .ownerId,
+                            "",
 
                         authorizedTrainers:
-                            isAdmin
-                                ? []
-                                : current
-                                    .authorizedTrainers,
-                    })
-                );
+                            [],
+                    };
+                }
 
 
-                return;
-            }
+                // ------------------------------------------
+                // OWNER CHANGE
+                // ------------------------------------------
 
-
-            if (
-                name ===
-                "ownerId"
-            ) {
-                setFormData(
-                    (current) => ({
+                if (
+                    name ===
+                    "ownerId"
+                ) {
+                    return {
                         ...current,
 
                         ownerId:
@@ -748,123 +716,395 @@ function TrainingProgrammeManager({
                             current
                                 .authorizedTrainers
                                 .filter(
-                                    (id) =>
-                                        id !==
-                                        value
+                                    (trainerId) =>
+                                        String(
+                                            trainerId
+                                        ) !==
+                                        String(
+                                            value
+                                        )
                                 ),
-                    })
-                );
+                    };
+                }
 
 
-                return;
-            }
-
-
-            setFormData(
-                (current) => ({
+                return {
                     ...current,
 
                     [name]:
                         value,
-                })
-            );
-        };
+                };
+            }
+        );
+    };
 
 
-    const toggleAuthorizedTrainer =
-        (trainerId) => {
-            setFormData(
-                (current) => ({
+    // ======================================================
+    // AUTHORISED TRAINER
+    // ======================================================
+
+    const handleToggleAuthorizedTrainer = (
+        trainerId
+    ) => {
+        clearFeedback();
+
+
+        setFormData(
+            (current) => {
+                const selected =
+                    current
+                        .authorizedTrainers;
+
+
+                if (
+                    selected.includes(
+                        trainerId
+                    )
+                ) {
+                    return {
+                        ...current,
+
+                        authorizedTrainers:
+                            selected.filter(
+                                (id) =>
+                                    id !==
+                                    trainerId
+                            ),
+                    };
+                }
+
+
+                return {
                     ...current,
 
-                    authorizedTrainers:
-                        current
-                            .authorizedTrainers
-                            .includes(
-                                trainerId
-                            )
-                            ? current
-                                .authorizedTrainers
-                                .filter(
-                                    (id) =>
-                                        id !==
-                                        trainerId
-                                )
-                            : [
-                                ...current
-                                    .authorizedTrainers,
+                    authorizedTrainers: [
+                        ...selected,
+                        trainerId,
+                    ],
+                };
+            }
+        );
+    };
 
-                                trainerId,
-                            ],
-                })
+
+    // ======================================================
+    // RESET FORM
+    // ======================================================
+
+    const resetForm = () => {
+        setFormData(
+            getInitialFormData()
+        );
+
+
+        setEditingProgramme(
+            null
+        );
+
+
+        setShowForm(
+            false
+        );
+    };
+
+
+    // ======================================================
+    // CREATE FORM
+    // ======================================================
+
+    const handleCreateProgramme =
+        () => {
+            clearFeedback();
+
+
+            setEditingProgramme(
+                null
+            );
+
+
+            setFormData(
+                getInitialFormData()
+            );
+
+
+            setShowForm(
+                true
             );
         };
 
 
-    // ==================================================
-    // SAVE
-    // ==================================================
+    // ======================================================
+    // EDIT PROGRAMME
+    // ======================================================
+
+    const handleEditProgramme = (
+        programme
+    ) => {
+        clearFeedback();
+
+
+        const owner =
+            programme.ownerTrainer ||
+            programme.owner ||
+            programme.trainer;
+
+
+        const authorized =
+            Array.isArray(
+                programme.authorizedTrainers
+            )
+                ? programme
+                    .authorizedTrainers
+                    .map(
+                        (trainer) =>
+                            typeof trainer ===
+                                "string"
+                                ? trainer
+                                : trainer._id
+                    )
+                    .filter(
+                        Boolean
+                    )
+                : [];
+
+
+        setEditingProgramme(
+            programme
+        );
+
+
+        setFormData({
+            programmeType:
+                programme.programmeType ||
+                "",
+
+            title:
+                programme.title ||
+                "",
+
+            description:
+                programme.description ||
+                "",
+
+            passMark:
+                programme.passMark ??
+                70,
+
+            status:
+                programme.status ||
+                "draft",
+
+            ownerId:
+                owner?._id ||
+                owner ||
+                "",
+
+            authorizedTrainers:
+                authorized,
+        });
+
+
+        setShowForm(
+            true
+        );
+
+
+        window.scrollTo({
+            top:
+                0,
+
+            behavior:
+                "smooth",
+        });
+    };
+
+
+    // ======================================================
+    // VALIDATE FORM
+    // ======================================================
+
+    const validateForm = () => {
+
+        // ------------------------------------------
+        // PROGRAMME TYPE
+        // ------------------------------------------
+
+        if (
+            !PROGRAMME_TYPES.some(
+                (type) =>
+                    type.value ===
+                    formData.programmeType
+            )
+        ) {
+            return (
+                "Please select a valid programme type."
+            );
+        }
+
+
+        // ------------------------------------------
+        // TITLE
+        // ------------------------------------------
+
+        const title =
+            formData.title.trim();
+
+
+        if (
+            title.length <
+            3 ||
+            title.length >
+            150
+        ) {
+            return (
+                "Programme title must be between 3 and 150 characters."
+            );
+        }
+
+
+        // ------------------------------------------
+        // DESCRIPTION
+        // ------------------------------------------
+
+        const description =
+            formData
+                .description
+                .trim();
+
+
+        if (
+            description.length <
+            10 ||
+            description.length >
+            3000
+        ) {
+            return (
+                "Programme description must be between 10 and 3000 characters."
+            );
+        }
+
+
+        // ------------------------------------------
+        // PASS MARK
+        // ------------------------------------------
+
+        const passMark =
+            Number(
+                formData.passMark
+            );
+
+
+        if (
+            !Number.isFinite(
+                passMark
+            ) ||
+            passMark <
+            0 ||
+            passMark >
+            100
+        ) {
+            return (
+                "Pass mark must be a number between 0 and 100."
+            );
+        }
+
+
+        // ------------------------------------------
+        // STATUS
+        // ------------------------------------------
+
+        if (
+            !PROGRAMME_STATUSES.includes(
+                formData.status
+            )
+        ) {
+            return (
+                "Please select a valid programme status."
+            );
+        }
+
+
+        // ------------------------------------------
+        // ADMIN OWNER
+        // ------------------------------------------
+
+        if (
+            isAdmin &&
+            !formData.ownerId
+        ) {
+            return (
+                "Please select an owner Trainer."
+            );
+        }
+
+
+        // ------------------------------------------
+        // ADMIN OWNER MUST BE ELIGIBLE
+        // ------------------------------------------
+
+        if (
+            isAdmin &&
+            !eligibleOwnerTrainers.some(
+                (trainer) =>
+                    String(
+                        trainer._id
+                    ) ===
+                    String(
+                        formData.ownerId
+                    )
+            )
+        ) {
+            return (
+                "The selected owner Trainer is not assigned to this training area."
+            );
+        }
+
+
+        // ------------------------------------------
+        // TRAINER PROGRAMME ACCESS
+        // ------------------------------------------
+
+        if (
+            isTrainer &&
+            !availableProgrammeTypes.some(
+                (type) =>
+                    type.value ===
+                    formData.programmeType
+            )
+        ) {
+            return (
+                "You are not assigned to this training area."
+            );
+        }
+
+
+        return "";
+    };
+
+
+    // ======================================================
+    // SUBMIT
+    // ======================================================
 
     const handleSubmit =
-        async (event) => {
+        async (
+            event
+        ) => {
             event.preventDefault();
 
 
-            if (
-                !formData
-                    .title
-                    .trim()
-            ) {
-                setError(
-                    "Programme title is required."
-                );
+            clearFeedback();
 
-                return;
-            }
+
+            const validationError =
+                validateForm();
 
 
             if (
-                !formData
-                    .description
-                    .trim()
+                validationError
             ) {
-                setError(
-                    "Programme description is required."
-                );
-
-                return;
-            }
-
-
-            if (
-                isAdmin &&
-                !formData.ownerId
-            ) {
-                setError(
-                    "Please select a programme owner."
-                );
-
-                return;
-            }
-
-
-            const passMark =
-                Number(
-                    formData.passMark
-                );
-
-
-            if (
-                Number.isNaN(
-                    passMark
-                ) ||
-                passMark <
-                0 ||
-                passMark >
-                100
-            ) {
-                setError(
-                    "Pass mark must be between 0 and 100."
+                setErrorMessage(
+                    validationError
                 );
 
                 return;
@@ -872,17 +1112,14 @@ function TrainingProgrammeManager({
 
 
             try {
-                setSaving(true);
-
-                setError("");
-
-                setMessage("");
+                setSaving(
+                    true
+                );
 
 
                 const payload = {
                     programmeType:
-                        formData
-                            .programmeType,
+                        formData.programmeType,
 
                     title:
                         formData
@@ -894,14 +1131,23 @@ function TrainingProgrammeManager({
                             .description
                             .trim(),
 
-                    passMark,
+                    passMark:
+                        Number(
+                            formData.passMark
+                        ),
 
                     status:
                         formData.status,
                 };
 
 
-                if (isAdmin) {
+                // ------------------------------------------
+                // ADMIN OWNERSHIP
+                // ------------------------------------------
+
+                if (
+                    isAdmin
+                ) {
                     payload.ownerId =
                         formData.ownerId;
 
@@ -912,85 +1158,118 @@ function TrainingProgrammeManager({
                 }
 
 
+                // ------------------------------------------
+                // UPDATE
+                // ------------------------------------------
+
                 if (
                     editingProgramme
                 ) {
-                    await api.patch(
-                        `/training-programmes/${editingProgramme._id}`,
-                        payload
-                    );
+                    const response =
+                        await api.patch(
+                            `/training-programmes/${editingProgramme._id}`,
+                            payload
+                        );
 
 
-                    setMessage(
+                    setSuccessMessage(
+                        response.data
+                            ?.message ||
                         "Training programme updated successfully."
                     );
 
                 } else {
-                    await api.post(
-                        "/training-programmes",
-                        payload
-                    );
+
+                    // --------------------------------------
+                    // CREATE
+                    // --------------------------------------
+
+                    const response =
+                        await api.post(
+                            "/training-programmes",
+                            payload
+                        );
 
 
-                    setMessage(
+                    setSuccessMessage(
+                        response.data
+                            ?.message ||
                         "Training programme created successfully."
                     );
                 }
 
 
-                await loadProgrammes();
-
-
-                setShowForm(false);
-
                 resetForm();
 
+
+                await loadProgrammes();
+
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to save training programme."
+                console.error(
+                    "Save programme error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to save the training programme."
+                    )
                 );
 
             } finally {
-                setSaving(false);
+                setSaving(
+                    false
+                );
             }
         };
 
 
-    // ==================================================
+    // ======================================================
     // DEACTIVATE
-    // ==================================================
+    // ======================================================
 
     const handleDeactivate =
-        async (programme) => {
+        async (
+            programme
+        ) => {
             if (
-                !window.confirm(
-                    `Deactivate "${programme.title}"?`
-                )
+                !programme?._id
             ) {
                 return;
             }
 
 
+            const confirmed =
+                window.confirm(
+                    `Deactivate "${programme.title}"?`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            clearFeedback();
+
+
+            setProcessingId(
+                programme._id
+            );
+
+
             try {
-                setProcessingId(
-                    programme._id
-                );
+                const response =
+                    await api.delete(
+                        `/training-programmes/${programme._id}`
+                    );
 
 
-                setError("");
-
-                setMessage("");
-
-
-                await api.delete(
-                    `/training-programmes/${programme._id}`
-                );
-
-
-                setMessage(
+                setSuccessMessage(
+                    response.data
+                        ?.message ||
                     "Training programme deactivated successfully."
                 );
 
@@ -998,51 +1277,60 @@ function TrainingProgrammeManager({
                 await loadProgrammes();
 
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to deactivate training programme."
+                console.error(
+                    "Deactivate programme error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to deactivate this programme."
+                    )
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
 
-    // ==================================================
+    // ======================================================
     // REACTIVATE
-    // ==================================================
+    // ======================================================
 
     const handleReactivate =
-        async (programme) => {
+        async (
+            programme
+        ) => {
             if (
-                !window.confirm(
-                    `Reactivate "${programme.title}"?`
-                )
+                !programme?._id
             ) {
                 return;
             }
 
 
+            clearFeedback();
+
+
+            setProcessingId(
+                programme._id
+            );
+
+
             try {
-                setProcessingId(
-                    programme._id
-                );
+                const response =
+                    await api.patch(
+                        `/training-programmes/${programme._id}/reactivate`
+                    );
 
 
-                setError("");
-
-                setMessage("");
-
-
-                await api.patch(
-                    `/training-programmes/${programme._id}/reactivate`
-                );
-
-
-                setMessage(
+                setSuccessMessage(
+                    response.data
+                        ?.message ||
                     "Training programme reactivated successfully."
                 );
 
@@ -1050,731 +1338,246 @@ function TrainingProgrammeManager({
                 await loadProgrammes();
 
             } catch (error) {
-                setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to reactivate training programme."
+                console.error(
+                    "Reactivate programme error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to reactivate this programme."
+                    )
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
 
-    // ==================================================
-    // SECTIONS
-    // ==================================================
+    // ======================================================
+    // MANAGE LEARNING SECTIONS
+    // ======================================================
 
-    const openSections =
-        (programme) => {
-            navigate(
-                `/training-programmes/${programme._id}/sections`
-            );
-        };
+    const handleManageSections = (
+        programme
+    ) => {
+        if (
+            !programme?._id
+        ) {
+            return;
+        }
 
 
-    // ==================================================
+        navigate(
+            `/training-programmes/${programme._id}/sections`
+        );
+    };
+
+
+    // ======================================================
     // LOADING
-    // ==================================================
+    // ======================================================
 
     if (loading) {
         return (
-            <div className="flex min-h-[420px] items-center justify-center">
-
-                <div className="text-center">
-
-                    <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-
-                    <p className="mt-4 text-sm text-slate-600">
-                        Loading training programmes...
-                    </p>
-
-                </div>
-
-            </div>
+            <LoadingCard
+                message="Loading training programmes..."
+            />
         );
     }
 
 
-    // ==================================================
-    // UI
-    // ==================================================
+    // ======================================================
+    // PAGE
+    // ======================================================
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
 
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            {/* ================================================= */}
+            {/* FEEDBACK */}
+            {/* ================================================= */}
 
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
-                    <div>
-
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-blue-600">
-                            Sprint 2
-                        </p>
-
-                        <h2 className="mt-1 text-xl font-bold text-slate-900">
-                            Training Programme Management
-                        </h2>
-
-                        <p className="mt-1 text-xs text-slate-500">
-                            Create, edit, deactivate, reactivate and manage learning sections.
-                        </p>
-
-                    </div>
+            <FeedbackAlert
+                type="success"
+                message={
+                    successMessage
+                }
+                onClose={() =>
+                    setSuccessMessage(
+                        ""
+                    )
+                }
+            />
 
 
-                    <button
-                        type="button"
+            <FeedbackAlert
+                type="error"
+                message={
+                    errorMessage
+                }
+                onClose={() =>
+                    setErrorMessage(
+                        ""
+                    )
+                }
+            />
+
+
+            {/* ================================================= */}
+            {/* CREATE BUTTON */}
+            {/* ================================================= */}
+
+            {!showForm && (
+                <div className="flex justify-end">
+
+                    <ActionButton
+                        variant="primary"
                         onClick={
-                            openCreateForm
+                            handleCreateProgramme
                         }
-                        disabled={
-                            !isAdmin &&
-                            availableProgrammeTypes.length ===
-                            0
-                        }
-                        className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:bg-slate-300"
                     >
                         + Create Programme
-                    </button>
+                    </ActionButton>
 
                 </div>
-
-            </section>
-
-
-            {
-                message && (
-                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-700">
-                        {message}
-                    </div>
-                )
-            }
-
-
-            {
-                error && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
-                        {error}
-                    </div>
-                )
-            }
-
-
-            {
-                showForm && (
-                    <section className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm">
-
-                        <div className="mb-5 flex justify-between">
-
-                            <h3 className="font-bold text-slate-900">
-                                {
-                                    editingProgramme
-                                        ? "Edit Training Programme"
-                                        : "Create Training Programme"
-                                }
-                            </h3>
-
-
-                            <button
-                                type="button"
-                                onClick={
-                                    closeForm
-                                }
-                                className="rounded border px-3 py-2 text-xs"
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
-
-
-                        <form
-                            onSubmit={
-                                handleSubmit
-                            }
-                            className="space-y-4"
-                        >
-
-                            <div className="grid gap-4 md:grid-cols-2">
-
-                                <label>
-
-                                    <span className="text-xs font-semibold">
-                                        Programme Type *
-                                    </span>
-
-                                    <select
-                                        name="programmeType"
-                                        value={
-                                            formData.programmeType
-                                        }
-                                        onChange={
-                                            handleInputChange
-                                        }
-                                        className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                    >
-                                        {
-                                            availableProgrammeTypes.map(
-                                                (type) => (
-                                                    <option
-                                                        key={
-                                                            type.value
-                                                        }
-                                                        value={
-                                                            type.value
-                                                        }
-                                                    >
-                                                        {type.label}
-                                                    </option>
-                                                )
-                                            )
-                                        }
-                                    </select>
-
-                                </label>
-
-
-                                <label>
-
-                                    <span className="text-xs font-semibold">
-                                        Pass Mark (%) *
-                                    </span>
-
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        name="passMark"
-                                        value={
-                                            formData.passMark
-                                        }
-                                        onChange={
-                                            handleInputChange
-                                        }
-                                        className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                    />
-
-                                </label>
-
-                            </div>
-
-
-                            <label className="block">
-
-                                <span className="text-xs font-semibold">
-                                    Title *
-                                </span>
-
-                                <input
-                                    type="text"
-                                    name="title"
-                                    value={
-                                        formData.title
-                                    }
-                                    onChange={
-                                        handleInputChange
-                                    }
-                                    className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                />
-
-                            </label>
-
-
-                            <label className="block">
-
-                                <span className="text-xs font-semibold">
-                                    Description *
-                                </span>
-
-                                <textarea
-                                    rows="5"
-                                    name="description"
-                                    value={
-                                        formData.description
-                                    }
-                                    onChange={
-                                        handleInputChange
-                                    }
-                                    className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                />
-
-                            </label>
-
-
-                            {
-                                isAdmin && (
-                                    <div className="grid gap-4 md:grid-cols-2">
-
-                                        <label>
-
-                                            <span className="text-xs font-semibold">
-                                                Programme Owner *
-                                            </span>
-
-                                            <select
-                                                name="ownerId"
-                                                value={
-                                                    formData.ownerId
-                                                }
-                                                onChange={
-                                                    handleInputChange
-                                                }
-                                                className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                            >
-
-                                                <option value="">
-                                                    Select Trainer
-                                                </option>
-
-                                                {
-                                                    eligibleOwnerTrainers.map(
-                                                        (trainer) => (
-                                                            <option
-                                                                key={
-                                                                    trainer._id
-                                                                }
-                                                                value={
-                                                                    trainer._id
-                                                                }
-                                                            >
-                                                                {
-                                                                    getUserName(
-                                                                        trainer
-                                                                    )
-                                                                }
-                                                            </option>
-                                                        )
-                                                    )
-                                                }
-
-                                            </select>
-
-                                        </label>
-
-
-                                        <div>
-
-                                            <p className="text-xs font-semibold">
-                                                Authorized Trainers
-                                            </p>
-
-                                            <div className="mt-2 space-y-2 rounded-lg border p-3">
-
-                                                {
-                                                    eligibleAuthorizedTrainers.length ===
-                                                        0
-                                                        ? (
-                                                            <p className="text-xs text-slate-500">
-                                                                No additional eligible Trainers.
-                                                            </p>
-                                                        )
-                                                        : eligibleAuthorizedTrainers.map(
-                                                            (trainer) => (
-                                                                <label
-                                                                    key={
-                                                                        trainer._id
-                                                                    }
-                                                                    className="flex gap-2"
-                                                                >
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={
-                                                                            formData.authorizedTrainers.includes(
-                                                                                trainer._id
-                                                                            )
-                                                                        }
-                                                                        onChange={
-                                                                            () =>
-                                                                                toggleAuthorizedTrainer(
-                                                                                    trainer._id
-                                                                                )
-                                                                        }
-                                                                    />
-
-                                                                    <span className="text-xs">
-                                                                        {
-                                                                            getUserName(
-                                                                                trainer
-                                                                            )
-                                                                        }
-                                                                    </span>
-                                                                </label>
-                                                            )
-                                                        )
-                                                }
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                )
-                            }
-
-
-                            <label className="block max-w-xs">
-
-                                <span className="text-xs font-semibold">
-                                    Status
-                                </span>
-
-                                <select
-                                    name="status"
-                                    value={
-                                        formData.status
-                                    }
-                                    onChange={
-                                        handleInputChange
-                                    }
-                                    className="mt-2 w-full rounded-lg border px-3 py-2.5 text-sm"
-                                >
-                                    {
-                                        PROGRAMME_STATUSES.map(
-                                            (status) => (
-                                                <option
-                                                    key={
-                                                        status.value
-                                                    }
-                                                    value={
-                                                        status.value
-                                                    }
-                                                >
-                                                    {
-                                                        status.label
-                                                    }
-                                                </option>
-                                            )
-                                        )
-                                    }
-                                </select>
-
-                            </label>
-
-
-                            <div className="flex justify-end gap-3">
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        closeForm
-                                    }
-                                    className="rounded-lg border px-4 py-2 text-xs"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    disabled={
-                                        saving
-                                    }
-                                    className="rounded-lg bg-blue-600 px-5 py-2 text-xs font-semibold text-white"
-                                >
-                                    {
-                                        saving
-                                            ? "Saving..."
-                                            : editingProgramme
-                                                ? "Save Changes"
-                                                : "Create Programme"
-                                    }
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </section>
-                )
-            }
-
-
-            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-
-                <div className="border-b p-5">
-
-                    <div className="grid gap-2 md:grid-cols-3">
-
-                        <input
-                            type="search"
-                            placeholder="Search programmes"
-                            value={
-                                search
-                            }
-                            onChange={
-                                (event) =>
-                                    setSearch(
-                                        event.target.value
-                                    )
-                            }
-                            className="rounded-lg border px-3 py-2 text-xs"
-                        />
-
-
-                        <select
-                            value={
-                                typeFilter
-                            }
-                            onChange={
-                                (event) =>
-                                    setTypeFilter(
-                                        event.target.value
-                                    )
-                            }
-                            className="rounded-lg border px-3 py-2 text-xs"
-                        >
-                            <option value="all">
-                                All Types
-                            </option>
-
-                            {
-                                PROGRAMME_TYPES.map(
-                                    (type) => (
-                                        <option
-                                            key={
-                                                type.value
-                                            }
-                                            value={
-                                                type.value
-                                            }
-                                        >
-                                            {type.label}
-                                        </option>
-                                    )
-                                )
-                            }
-                        </select>
-
-
-                        <select
-                            value={
-                                statusFilter
-                            }
-                            onChange={
-                                (event) =>
-                                    setStatusFilter(
-                                        event.target.value
-                                    )
-                            }
-                            className="rounded-lg border px-3 py-2 text-xs"
-                        >
-                            <option value="all">
-                                All Statuses
-                            </option>
-
-                            {
-                                PROGRAMME_STATUSES.map(
-                                    (status) => (
-                                        <option
-                                            key={
-                                                status.value
-                                            }
-                                            value={
-                                                status.value
-                                            }
-                                        >
-                                            {
-                                                status.label
-                                            }
-                                        </option>
-                                    )
-                                )
-                            }
-                        </select>
-
-                    </div>
+            )}
+
+
+            {/* ================================================= */}
+            {/* FORM */}
+            {/* ================================================= */}
+
+            {showForm && (
+                <TrainingProgrammeForm
+                    formData={
+                        formData
+                    }
+                    isAdmin={
+                        isAdmin
+                    }
+                    availableProgrammeTypes={
+                        availableProgrammeTypes
+                    }
+                    eligibleOwnerTrainers={
+                        eligibleOwnerTrainers
+                    }
+                    eligibleAuthorizedTrainers={
+                        eligibleAuthorizedTrainers
+                    }
+                    editingProgramme={
+                        editingProgramme
+                    }
+                    saving={
+                        saving
+                    }
+                    onInputChange={
+                        handleInputChange
+                    }
+                    onToggleAuthorizedTrainer={
+                        handleToggleAuthorizedTrainer
+                    }
+                    onSubmit={
+                        handleSubmit
+                    }
+                    onCancel={
+                        resetForm
+                    }
+                />
+            )}
+
+
+            {/* ================================================= */}
+            {/* PROGRAMME LIST */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+
+                <div className="border-b border-slate-200 p-5">
+
+                    <h2 className="text-base font-bold text-slate-900">
+                        Training Programmes
+                    </h2>
+
+
+                    <p className="mt-1 text-xs text-slate-500">
+                        View and manage available training programmes.
+                    </p>
 
                 </div>
 
 
-                <div className="overflow-x-auto">
+                {/* ================================================= */}
+                {/* FILTERS */}
+                {/* ================================================= */}
 
-                    <table className="min-w-full">
+                <div className="p-5">
 
-                        <thead className="bg-slate-50">
-
-                            <tr className="text-left text-[10px] uppercase text-slate-500">
-
-                                <th className="px-5 py-3">
-                                    Programme
-                                </th>
-
-                                <th className="px-5 py-3">
-                                    Type
-                                </th>
-
-                                <th className="px-5 py-3">
-                                    Owner
-                                </th>
-
-                                <th className="px-5 py-3">
-                                    Pass
-                                </th>
-
-                                <th className="px-5 py-3">
-                                    Status
-                                </th>
-
-                                <th className="px-5 py-3 text-right">
-                                    Actions
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody className="divide-y">
-
-                            {
-                                filteredProgrammes.map(
-                                    (programme) => (
-                                        <tr
-                                            key={
-                                                programme._id
-                                            }
-                                            className="text-xs"
-                                        >
-
-                                            <td className="px-5 py-4">
-                                                <p className="font-semibold">
-                                                    {
-                                                        programme.title
-                                                    }
-                                                </p>
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                {
-                                                    getProgrammeTypeLabel(
-                                                        programme.programmeType
-                                                    )
-                                                }
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                {
-                                                    getUserName(
-                                                        programme.owner
-                                                    )
-                                                }
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                {
-                                                    programme.passMark
-                                                }
-                                                %
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <StatusBadge
-                                                    status={
-                                                        programme.status
-                                                    }
-                                                />
-                                            </td>
-
-                                            <td className="px-5 py-4">
-
-                                                <div className="flex justify-end gap-2">
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={
-                                                            () =>
-                                                                openSections(
-                                                                    programme
-                                                                )
-                                                        }
-                                                        className="rounded-md bg-emerald-50 px-3 py-1.5 text-[10px] font-semibold text-emerald-700"
-                                                    >
-                                                        Manage Sections
-                                                    </button>
-
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={
-                                                            () =>
-                                                                openEditForm(
-                                                                    programme
-                                                                )
-                                                        }
-                                                        className="rounded-md bg-blue-50 px-3 py-1.5 text-[10px] font-semibold text-blue-700"
-                                                    >
-                                                        Edit
-                                                    </button>
-
-
-                                                    {
-                                                        programme.status ===
-                                                            "inactive"
-                                                            ? (
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={
-                                                                        processingId ===
-                                                                        programme._id
-                                                                    }
-                                                                    onClick={
-                                                                        () =>
-                                                                            handleReactivate(
-                                                                                programme
-                                                                            )
-                                                                    }
-                                                                    className="rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-semibold text-white disabled:bg-slate-300"
-                                                                >
-                                                                    {
-                                                                        processingId ===
-                                                                            programme._id
-                                                                            ? "Processing..."
-                                                                            : "Reactivate"
-                                                                    }
-                                                                </button>
-                                                            )
-                                                            : (
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={
-                                                                        processingId ===
-                                                                        programme._id
-                                                                    }
-                                                                    onClick={
-                                                                        () =>
-                                                                            handleDeactivate(
-                                                                                programme
-                                                                            )
-                                                                    }
-                                                                    className="rounded-md bg-red-50 px-3 py-1.5 text-[10px] font-semibold text-red-700"
-                                                                >
-                                                                    {
-                                                                        processingId ===
-                                                                            programme._id
-                                                                            ? "Processing..."
-                                                                            : "Deactivate"
-                                                                    }
-                                                                </button>
-                                                            )
-                                                    }
-
-                                                </div>
-
-                                            </td>
-
-                                        </tr>
-                                    )
-                                )
-                            }
-
-                        </tbody>
-
-                    </table>
+                    <TrainingProgrammeFilters
+                        searchTerm={
+                            searchTerm
+                        }
+                        typeFilter={
+                            typeFilter
+                        }
+                        statusFilter={
+                            statusFilter
+                        }
+                        programmeTypes={
+                            PROGRAMME_TYPES
+                        }
+                        onSearchChange={
+                            setSearchTerm
+                        }
+                        onTypeChange={
+                            setTypeFilter
+                        }
+                        onStatusChange={
+                            setStatusFilter
+                        }
+                    />
 
                 </div>
+
+
+                {/* ================================================= */}
+                {/* TABLE */}
+                {/* ================================================= */}
+
+                <TrainingProgrammeTable
+                    programmes={
+                        filteredProgrammes
+                    }
+                    processingId={
+                        processingId
+                    }
+                    onEdit={
+                        handleEditProgramme
+                    }
+                    onManageSections={
+                        handleManageSections
+                    }
+                    onDeactivate={
+                        handleDeactivate
+                    }
+                    onReactivate={
+                        handleReactivate
+                    }
+                />
 
             </section>
 

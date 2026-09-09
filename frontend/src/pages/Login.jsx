@@ -3,48 +3,44 @@ import {
 } from "react";
 
 import LoginBranding from "../components/auth/LoginBranding";
-
 import LoginForm from "../components/auth/LoginForm";
-
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
-
 import ForcePasswordChangeModal from "../components/auth/ForcePasswordChangeModal";
 
-
-const getStoredForcedPasswordUser =
-    () => {
-        try {
-            const storedUser =
-                sessionStorage.getItem(
-                    "user"
-                );
+import {
+    getSessionUser,
+} from "../utils/session";
 
 
-            if (
-                !storedUser
-            ) {
-                return null;
-            }
+// ======================================================
+// CHECK EXISTING FORCED-PASSWORD SESSION
+// ======================================================
+
+function getStoredForcedPasswordUser() {
+    const user =
+        getSessionUser();
 
 
-            const user =
-                JSON.parse(
-                    storedUser
-                );
+    if (!user) {
+        return null;
+    }
 
 
-            return (
-                user
-                    ?.mustChangePassword ===
-                    true
-                    ? user
-                    : null
-            );
+    const requiresChange =
+        [
+            "trainer",
+            "trainee",
+        ].includes(
+            user.role
+        ) &&
+        user.mustChangePassword ===
+        true;
 
-        } catch {
-            return null;
-        }
-    };
+
+    return requiresChange
+        ? user
+        : null;
+}
 
 
 function Login() {
@@ -101,6 +97,14 @@ function Login() {
 
     const handlePasswordChangeCompleted =
         () => {
+            /*
+                ForcePasswordChangeModal clears the old
+                authentication session.
+
+                We return to the normal login form so the
+                user can login again with the new password.
+            */
+
             setForcedPasswordUser(
                 null
             );
@@ -117,8 +121,16 @@ function Login() {
 
             <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-[1450px] overflow-hidden bg-white lg:grid-cols-[1fr_1fr]">
 
+                {/* ================================================= */}
+                {/* LEFT BRANDING */}
+                {/* ================================================= */}
+
                 <LoginBranding />
 
+
+                {/* ================================================= */}
+                {/* RIGHT SIDE */}
+                {/* ================================================= */}
 
                 {showForgotPassword ? (
                     <ForgotPasswordForm
@@ -140,7 +152,9 @@ function Login() {
             </div>
 
 
-            {/* MANDATORY POPUP */}
+            {/* ================================================= */}
+            {/* REQUIRED FIRST LOGIN PASSWORD CHANGE */}
+            {/* ================================================= */}
 
             {forcedPasswordUser && (
                 <ForcePasswordChangeModal

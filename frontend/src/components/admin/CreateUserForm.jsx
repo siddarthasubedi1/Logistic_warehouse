@@ -203,10 +203,15 @@ function CreateUserForm() {
                     return {
                         ...current,
                         role: value,
+
                         assignedTrainingSections:
-                            value === "trainee"
+                            value ===
+                                "trainee"
                                 ? TRAINING_SECTIONS.map(
-                                    (section) => section.id
+                                    (
+                                        section
+                                    ) =>
+                                        section.id
                                 )
                                 : [],
                     };
@@ -234,7 +239,8 @@ function CreateUserForm() {
         sectionId
     ) => {
         if (
-            formData.role === "trainee"
+            formData.role ===
+            "trainee"
         ) {
             return;
         }
@@ -257,7 +263,9 @@ function CreateUserForm() {
 
                         assignedTrainingSections:
                             currentSections.filter(
-                                (item) =>
+                                (
+                                    item
+                                ) =>
                                     item !==
                                     sectionId
                             ),
@@ -288,13 +296,17 @@ function CreateUserForm() {
     // ======================================================
 
     const handleSaveUser =
-        async (event) => {
+        async (
+            event
+        ) => {
             event.preventDefault();
 
 
             setError("");
             setSuccess("");
-            setCredentials(null);
+            setCredentials(
+                null
+            );
 
 
             const {
@@ -307,7 +319,8 @@ function CreateUserForm() {
                 gender,
                 role,
                 assignedTrainingSections,
-            } = formData;
+            } =
+                formData;
 
 
             if (
@@ -329,8 +342,9 @@ function CreateUserForm() {
 
 
             if (
-                Number(age) <
-                16
+                Number(
+                    age
+                ) < 16
             ) {
                 setError(
                     "Age must be 16 or above."
@@ -341,8 +355,11 @@ function CreateUserForm() {
 
 
             if (
-                role === "trainer" &&
-                assignedTrainingSections.length === 0
+                role ===
+                "trainer" &&
+                assignedTrainingSections
+                    .length ===
+                0
             ) {
                 setError(
                     "Please select at least one training section for the Trainer."
@@ -361,6 +378,7 @@ function CreateUserForm() {
                 const response =
                     await api.post(
                         "/admin/pending-users",
+
                         {
                             firstName:
                                 firstName.trim(),
@@ -369,7 +387,9 @@ function CreateUserForm() {
                                 lastName.trim(),
 
                             age:
-                                Number(age),
+                                Number(
+                                    age
+                                ),
 
                             email:
                                 email.trim(),
@@ -408,7 +428,9 @@ function CreateUserForm() {
 
                 await loadPendingUsers();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 setError(
                     error.response
                         ?.data
@@ -449,7 +471,9 @@ function CreateUserForm() {
         setSuccess("");
 
 
-        if (!userId) {
+        if (
+            !userId
+        ) {
             setSelectedUser(
                 null
             );
@@ -460,7 +484,9 @@ function CreateUserForm() {
 
         const user =
             pendingUsers.find(
-                (item) =>
+                (
+                    item
+                ) =>
                     String(
                         item.id
                     ) ===
@@ -471,7 +497,8 @@ function CreateUserForm() {
 
 
         setSelectedUser(
-            user || null
+            user ||
+            null
         );
     };
 
@@ -500,12 +527,16 @@ function CreateUserForm() {
 
                 setError("");
                 setSuccess("");
-                setCredentials(null);
+
+                setCredentials(
+                    null
+                );
 
 
                 const response =
                     await api.post(
                         "/admin/generate-credentials",
+
                         {
                             pendingUserId:
                                 selectedUserId,
@@ -544,7 +575,9 @@ function CreateUserForm() {
 
                 await loadPendingUsers();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 setError(
                     error.response
                         ?.data
@@ -564,26 +597,28 @@ function CreateUserForm() {
     // SEND EMAIL
     // ======================================================
 
-    const handleSendEmail = () => {
-        if (
-            !selectedUser?.email ||
-            !credentials
-        ) {
-            return;
-        }
+    const handleSendEmail =
+        () => {
+            if (
+                !selectedUser
+                    ?.email ||
+                !credentials
+            ) {
+                return;
+            }
 
 
-        const fullName =
-            `${selectedUser.firstName || ""} ${selectedUser.lastName || ""}`
-                .trim();
+            const fullName =
+                `${selectedUser.firstName || ""} ${selectedUser.lastName || ""}`
+                    .trim();
 
 
-        const subject =
-            "UK LogiWare - Your Account Credentials";
+            const subject =
+                "UK LogiWare - Your Account Credentials";
 
 
-        const body =
-            `Hello ${fullName},
+            const body =
+                `Hello ${fullName},
 
 Your UK LogiWare account has been created successfully.
 
@@ -599,25 +634,25 @@ Regards,
 UK LogiWare Administrator`;
 
 
-        const gmailUrl =
-            "https://mail.google.com/mail/?view=cm&fs=1" +
-            `&to=${encodeURIComponent(
-                selectedUser.email
-            )}` +
-            `&su=${encodeURIComponent(
-                subject
-            )}` +
-            `&body=${encodeURIComponent(
-                body
-            )}`;
+            const gmailUrl =
+                "https://mail.google.com/mail/?view=cm&fs=1" +
+                `&to=${encodeURIComponent(
+                    selectedUser.email
+                )}` +
+                `&su=${encodeURIComponent(
+                    subject
+                )}` +
+                `&body=${encodeURIComponent(
+                    body
+                )}`;
 
 
-        window.open(
-            gmailUrl,
-            "_blank",
-            "noopener,noreferrer"
-        );
-    };
+            window.open(
+                gmailUrl,
+                "_blank",
+                "noopener,noreferrer"
+            );
+        };
 
 
     // ======================================================
@@ -629,7 +664,9 @@ UK LogiWare Administrator`;
     ) => {
         const section =
             TRAINING_SECTIONS.find(
-                (item) =>
+                (
+                    item
+                ) =>
                     item.id ===
                     sectionId
             );
@@ -642,6 +679,10 @@ UK LogiWare Administrator`;
     };
 
 
+    // ======================================================
+    // UI
+    // ======================================================
+
     return (
         <div className="space-y-6">
 
@@ -649,18 +690,67 @@ UK LogiWare Administrator`;
             {/* CREATE USER HERO */}
             {/* ================================================= */}
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <section
+                className="
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
 
-                <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-7">
+                <div
+                    className="
+                        relative
+                        overflow-hidden
+                        bg-gradient-to-r
+                        from-blue-600
+                        to-indigo-600
+                        px-6
+                        py-7
+                    "
+                >
 
-                    <div className="absolute -right-14 -top-16 h-40 w-40 rounded-full bg-white/10" />
+                    <div
+                        className="
+                            absolute
+                            -right-14
+                            -top-16
+                            h-40
+                            w-40
+                            rounded-full
+                            bg-white/10
+                        "
+                    />
 
 
-                    <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div
+                        className="
+                            relative
+                            flex
+                            flex-col
+                            gap-5
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
+                            <div
+                                className="
+                                    flex
+                                    h-14
+                                    w-14
+                                    items-center
+                                    justify-center
+                                    rounded-2xl
+                                    bg-white/15
+                                "
+                            >
 
                                 <svg
                                     viewBox="0 0 24 24"
@@ -675,11 +765,17 @@ UK LogiWare Administrator`;
                                         r="3"
                                     />
 
-                                    <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+                                    <path
+                                        d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6"
+                                    />
 
-                                    <path d="M18 5v8" />
+                                    <path
+                                        d="M18 5v8"
+                                    />
 
-                                    <path d="M14 9h8" />
+                                    <path
+                                        d="M14 9h8"
+                                    />
                                 </svg>
 
                             </div>
@@ -687,17 +783,38 @@ UK LogiWare Administrator`;
 
                             <div>
 
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">
+                                <p
+                                    className="
+                                        text-xs
+                                        font-semibold
+                                        uppercase
+                                        tracking-[0.16em]
+                                        text-blue-100
+                                    "
+                                >
                                     User Accounts
                                 </p>
 
 
-                                <h1 className="mt-1 text-xl font-bold text-white">
+                                <h1
+                                    className="
+                                        mt-1
+                                        text-xl
+                                        font-bold
+                                        text-white
+                                    "
+                                >
                                     Create Trainer or Trainee
                                 </h1>
 
 
-                                <p className="mt-1 text-sm text-blue-100">
+                                <p
+                                    className="
+                                        mt-1
+                                        text-sm
+                                        text-blue-100
+                                    "
+                                >
                                     Enter user information and assign their training.
                                 </p>
 
@@ -711,7 +828,18 @@ UK LogiWare Administrator`;
                             onClick={
                                 toggleCreateForm
                             }
-                            className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50"
+                            className="
+                                rounded-xl
+                                bg-white
+                                px-5
+                                py-3
+                                text-sm
+                                font-bold
+                                text-blue-700
+                                shadow-sm
+                                transition
+                                hover:bg-blue-50
+                            "
                         >
                             {showCreateForm
                                 ? "Close Form"
@@ -730,14 +858,38 @@ UK LogiWare Administrator`;
             {/* ================================================= */}
 
             {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                <div
+                    className="
+                        rounded-xl
+                        border
+                        border-red-200
+                        bg-red-50
+                        px-4
+                        py-3
+                        text-sm
+                        font-medium
+                        text-red-700
+                    "
+                >
                     {error}
                 </div>
             )}
 
 
             {success && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                <div
+                    className="
+                        rounded-xl
+                        border
+                        border-emerald-200
+                        bg-emerald-50
+                        px-4
+                        py-3
+                        text-sm
+                        font-medium
+                        text-emerald-700
+                    "
+                >
                     {success}
                 </div>
             )}
@@ -748,16 +900,43 @@ UK LogiWare Administrator`;
             {/* ================================================= */}
 
             {showCreateForm && (
-                <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <section
+                    className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        shadow-sm
+                    "
+                >
 
-                    <div className="border-b border-slate-200 px-6 py-5">
+                    <div
+                        className="
+                            border-b
+                            border-slate-200
+                            px-6
+                            py-5
+                        "
+                    >
 
-                        <h2 className="text-lg font-bold text-slate-900">
+                        <h2
+                            className="
+                                text-lg
+                                font-bold
+                                text-slate-900
+                            "
+                        >
                             User Information
                         </h2>
 
 
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p
+                            className="
+                                mt-1
+                                text-sm
+                                text-slate-500
+                            "
+                        >
                             Complete the user details. Trainers can be assigned one or both sections; Trainees automatically receive both.
                         </p>
 
@@ -771,20 +950,45 @@ UK LogiWare Administrator`;
                         className="space-y-6 p-6"
                     >
 
+                        {/* ===================================== */}
                         {/* PERSONAL INFORMATION */}
+                        {/* ===================================== */}
 
                         <div>
 
-                            <h3 className="text-sm font-bold text-slate-900">
+                            <h3
+                                className="
+                                    text-sm
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
                                 Personal Information
                             </h3>
 
 
-                            <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <div
+                                className="
+                                    mt-4
+                                    grid
+                                    gap-4
+                                    md:grid-cols-2
+                                "
+                            >
+
+                                {/* FIRST NAME */}
 
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         First Name *
                                     </label>
 
@@ -799,15 +1003,35 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter first name"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
 
 
+                                {/* LAST NAME */}
+
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Last Name *
                                     </label>
 
@@ -822,15 +1046,35 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter last name"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
 
 
+                                {/* AGE */}
+
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Age *
                                     </label>
 
@@ -846,15 +1090,35 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter age"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
 
 
+                                {/* GENDER */}
+
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Gender *
                                     </label>
 
@@ -867,7 +1131,18 @@ UK LogiWare Administrator`;
                                         onChange={
                                             handleChange
                                         }
-                                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            bg-white
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     >
                                         <option value="">
                                             Select gender
@@ -889,9 +1164,19 @@ UK LogiWare Administrator`;
                                 </div>
 
 
+                                {/* EMAIL */}
+
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Email *
                                     </label>
 
@@ -906,15 +1191,35 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="example@email.com"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
 
 
+                                {/* PHONE */}
+
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Phone Number *
                                     </label>
 
@@ -929,15 +1234,35 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter phone number"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
 
 
+                                {/* ADDRESS */}
+
                                 <div className="md:col-span-2">
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                    <label
+                                        className="
+                                            mb-2
+                                            block
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
                                         Address *
                                     </label>
 
@@ -952,7 +1277,17 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter address"
-                                        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                                        className="
+                                            w-full
+                                            rounded-xl
+                                            border
+                                            border-slate-300
+                                            px-4
+                                            py-3
+                                            text-sm
+                                            outline-none
+                                            focus:border-blue-500
+                                        "
                                     />
 
                                 </div>
@@ -962,21 +1297,48 @@ UK LogiWare Administrator`;
                         </div>
 
 
+                        {/* ===================================== */}
                         {/* ROLE */}
+                        {/* ===================================== */}
 
-                        <div className="border-t border-slate-200 pt-6">
+                        <div
+                            className="
+                                border-t
+                                border-slate-200
+                                pt-6
+                            "
+                        >
 
-                            <h3 className="text-sm font-bold text-slate-900">
+                            <h3
+                                className="
+                                    text-sm
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
                                 User Role
                             </h3>
 
 
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p
+                                className="
+                                    mt-1
+                                    text-xs
+                                    text-slate-500
+                                "
+                            >
                                 Select whether this user is a Trainer or Trainee.
                             </p>
 
 
-                            <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <div
+                                className="
+                                    mt-4
+                                    grid
+                                    gap-4
+                                    md:grid-cols-2
+                                "
+                            >
 
                                 {[
                                     {
@@ -1001,7 +1363,9 @@ UK LogiWare Administrator`;
                                             "Can complete the training sections assigned by the Administrator.",
                                     },
                                 ].map(
-                                    (roleOption) => {
+                                    (
+                                        roleOption
+                                    ) => {
                                         const selected =
                                             formData.role ===
                                             roleOption.id;
@@ -1024,22 +1388,49 @@ UK LogiWare Administrator`;
                                                         },
                                                     })
                                                 }
-                                                className={`rounded-xl border p-5 text-left transition ${selected
-                                                    ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
-                                                    : "border-slate-200 hover:border-blue-300"
-                                                    }`}
+                                                className={`
+                                                    rounded-xl
+                                                    border
+                                                    p-5
+                                                    text-left
+                                                    transition
+
+                                                    ${selected
+                                                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                                                        : "border-slate-200 hover:border-blue-300"
+                                                    }
+                                                `}
                                             >
 
-                                                <div className="flex items-center justify-between gap-3">
+                                                <div
+                                                    className="
+                                                        flex
+                                                        items-center
+                                                        justify-between
+                                                        gap-3
+                                                    "
+                                                >
 
                                                     <div>
 
-                                                        <p className="font-bold text-slate-900">
+                                                        <p
+                                                            className="
+                                                                font-bold
+                                                                text-slate-900
+                                                            "
+                                                        >
                                                             {roleOption.title}
                                                         </p>
 
 
-                                                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                                                        <p
+                                                            className="
+                                                                mt-1
+                                                                text-xs
+                                                                leading-5
+                                                                text-slate-500
+                                                            "
+                                                        >
                                                             {roleOption.description}
                                                         </p>
 
@@ -1047,13 +1438,31 @@ UK LogiWare Administrator`;
 
 
                                                     <div
-                                                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected
-                                                            ? "border-blue-600 bg-blue-600"
-                                                            : "border-slate-300"
-                                                            }`}
+                                                        className={`
+                                                            flex
+                                                            h-5
+                                                            w-5
+                                                            shrink-0
+                                                            items-center
+                                                            justify-center
+                                                            rounded-full
+                                                            border
+
+                                                            ${selected
+                                                                ? "border-blue-600 bg-blue-600"
+                                                                : "border-slate-300"
+                                                            }
+                                                        `}
                                                     >
                                                         {selected && (
-                                                            <div className="h-2 w-2 rounded-full bg-white" />
+                                                            <div
+                                                                className="
+                                                                    h-2
+                                                                    w-2
+                                                                    rounded-full
+                                                                    bg-white
+                                                                "
+                                                            />
                                                         )}
                                                     </div>
 
@@ -1069,20 +1478,42 @@ UK LogiWare Administrator`;
                         </div>
 
 
+                        {/* ===================================== */}
                         {/* TRAINING ASSIGNMENT */}
+                        {/* ===================================== */}
 
                         {formData.role && (
-                            <div className="border-t border-slate-200 pt-6">
+                            <div
+                                className="
+                                    border-t
+                                    border-slate-200
+                                    pt-6
+                                "
+                            >
 
                                 <div>
 
-                                    <h3 className="text-sm font-bold text-slate-900">
+                                    <h3
+                                        className="
+                                            text-sm
+                                            font-bold
+                                            text-slate-900
+                                        "
+                                    >
                                         Training Assignment *
                                     </h3>
 
 
-                                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                                        {formData.role === "trainer"
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-xs
+                                            leading-5
+                                            text-slate-500
+                                        "
+                                    >
+                                        {formData.role ===
+                                            "trainer"
                                             ? "Select Manual Handling, Working at Height, or both."
                                             : "Both training sections are assigned automatically to every Trainee."}
                                     </p>
@@ -1090,14 +1521,25 @@ UK LogiWare Administrator`;
                                 </div>
 
 
-                                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                                <div
+                                    className="
+                                        mt-4
+                                        grid
+                                        gap-4
+                                        md:grid-cols-2
+                                    "
+                                >
 
                                     {TRAINING_SECTIONS.map(
-                                        (section) => {
+                                        (
+                                            section
+                                        ) => {
                                             const selected =
-                                                formData.assignedTrainingSections.includes(
-                                                    section.id
-                                                );
+                                                formData
+                                                    .assignedTrainingSections
+                                                    .includes(
+                                                        section.id
+                                                    );
 
 
                                             return (
@@ -1112,27 +1554,62 @@ UK LogiWare Administrator`;
                                                         )
                                                     }
                                                     disabled={
-                                                        formData.role === "trainee"
+                                                        formData.role ===
+                                                        "trainee"
                                                     }
-                                                    className={`rounded-xl border p-5 text-left transition ${selected
-                                                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
-                                                        : "border-slate-200 bg-white hover:border-blue-300"
-                                                        } ${formData.role === "trainee"
+                                                    className={`
+                                                        rounded-xl
+                                                        border
+                                                        p-5
+                                                        text-left
+                                                        transition
+
+                                                        ${selected
+                                                            ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                                                            : "border-slate-200 bg-white hover:border-blue-300"
+                                                        }
+
+                                                        ${formData.role ===
+                                                            "trainee"
                                                             ? "cursor-not-allowed opacity-80"
                                                             : ""
-                                                        }`}
+                                                        }
+                                                    `}
                                                 >
 
-                                                    <div className="flex items-start gap-3">
+                                                    <div
+                                                        className="
+                                                            flex
+                                                            items-start
+                                                            gap-3
+                                                        "
+                                                    >
 
                                                         <div
-                                                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${selected
-                                                                ? "border-blue-600 bg-blue-600 text-white"
-                                                                : "border-slate-300"
-                                                                }`}
+                                                            className={`
+                                                                mt-0.5
+                                                                flex
+                                                                h-5
+                                                                w-5
+                                                                shrink-0
+                                                                items-center
+                                                                justify-center
+                                                                rounded
+                                                                border
+
+                                                                ${selected
+                                                                    ? "border-blue-600 bg-blue-600 text-white"
+                                                                    : "border-slate-300"
+                                                                }
+                                                            `}
                                                         >
                                                             {selected && (
-                                                                <span className="text-xs font-bold">
+                                                                <span
+                                                                    className="
+                                                                        text-xs
+                                                                        font-bold
+                                                                    "
+                                                                >
                                                                     ✓
                                                                 </span>
                                                             )}
@@ -1141,12 +1618,24 @@ UK LogiWare Administrator`;
 
                                                         <div>
 
-                                                            <p className="font-bold text-slate-900">
+                                                            <p
+                                                                className="
+                                                                    font-bold
+                                                                    text-slate-900
+                                                                "
+                                                            >
                                                                 {section.name}
                                                             </p>
 
 
-                                                            <p className="mt-1 text-xs leading-5 text-slate-500">
+                                                            <p
+                                                                className="
+                                                                    mt-1
+                                                                    text-xs
+                                                                    leading-5
+                                                                    text-slate-500
+                                                                "
+                                                            >
                                                                 {section.description}
                                                             </p>
 
@@ -1162,26 +1651,45 @@ UK LogiWare Administrator`;
                                 </div>
 
 
-                                {formData.assignedTrainingSections.length >
+                                {formData
+                                    .assignedTrainingSections
+                                    .length >
                                     0 && (
-                                        <div className="mt-4 flex flex-wrap gap-2">
+                                        <div
+                                            className="
+                                            mt-4
+                                            flex
+                                            flex-wrap
+                                            gap-2
+                                        "
+                                        >
 
-                                            {formData.assignedTrainingSections.map(
-                                                (
-                                                    sectionId
-                                                ) => (
-                                                    <span
-                                                        key={
-                                                            sectionId
-                                                        }
-                                                        className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-                                                    >
-                                                        {getSectionName(
-                                                            sectionId
-                                                        )}
-                                                    </span>
-                                                )
-                                            )}
+                                            {formData
+                                                .assignedTrainingSections
+                                                .map(
+                                                    (
+                                                        sectionId
+                                                    ) => (
+                                                        <span
+                                                            key={
+                                                                sectionId
+                                                            }
+                                                            className="
+                                                            rounded-full
+                                                            bg-blue-100
+                                                            px-3
+                                                            py-1.5
+                                                            text-xs
+                                                            font-semibold
+                                                            text-blue-700
+                                                        "
+                                                        >
+                                                            {getSectionName(
+                                                                sectionId
+                                                            )}
+                                                        </span>
+                                                    )
+                                                )}
 
                                         </div>
                                     )}
@@ -1190,9 +1698,22 @@ UK LogiWare Administrator`;
                         )}
 
 
+                        {/* ===================================== */}
                         {/* BUTTONS */}
+                        {/* ===================================== */}
 
-                        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+                        <div
+                            className="
+                                flex
+                                flex-col-reverse
+                                gap-3
+                                border-t
+                                border-slate-200
+                                pt-6
+                                sm:flex-row
+                                sm:justify-end
+                            "
+                        >
 
                             <button
                                 type="button"
@@ -1202,7 +1723,18 @@ UK LogiWare Administrator`;
                                 disabled={
                                     savingUser
                                 }
-                                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                className="
+                                    rounded-xl
+                                    border
+                                    border-slate-300
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-semibold
+                                    text-slate-700
+                                    transition
+                                    hover:bg-slate-50
+                                "
                             >
                                 Cancel
                             </button>
@@ -1213,7 +1745,19 @@ UK LogiWare Administrator`;
                                 disabled={
                                     savingUser
                                 }
-                                className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="
+                                    rounded-xl
+                                    bg-blue-600
+                                    px-6
+                                    py-3
+                                    text-sm
+                                    font-bold
+                                    text-white
+                                    transition
+                                    hover:bg-blue-700
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+                                "
                             >
                                 {savingUser
                                     ? "Saving..."
@@ -1232,27 +1776,75 @@ UK LogiWare Administrator`;
             {/* PENDING ACCOUNT CREATION */}
             {/* ================================================= */}
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <section
+                className="
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
 
-                <div className="border-b border-slate-200 px-6 py-5">
+                <div
+                    className="
+                        border-b
+                        border-slate-200
+                        px-6
+                        py-5
+                    "
+                >
 
-                    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            justify-between
+                            gap-3
+                            sm:flex-row
+                            sm:items-center
+                        "
+                    >
 
                         <div>
 
-                            <h2 className="text-lg font-bold text-slate-900">
+                            <h2
+                                className="
+                                    text-lg
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
                                 Pending Account Creation
                             </h2>
 
 
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p
+                                className="
+                                    mt-1
+                                    text-sm
+                                    text-slate-500
+                                "
+                            >
                                 Review the user and generate their login credentials.
                             </p>
 
                         </div>
 
 
-                        <span className="w-fit rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                        <span
+                            className="
+                                w-fit
+                                rounded-full
+                                bg-blue-50
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-semibold
+                                text-blue-700
+                            "
+                        >
                             {pendingUsers.length} Pending
                         </span>
 
@@ -1263,9 +1855,21 @@ UK LogiWare Administrator`;
 
                 <div className="space-y-5 p-6">
 
+                    {/* ========================================= */}
+                    {/* SELECT PENDING USER */}
+                    {/* ========================================= */}
+
                     <div>
 
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">
+                        <label
+                            className="
+                                mb-2
+                                block
+                                text-sm
+                                font-semibold
+                                text-slate-700
+                            "
+                        >
                             Select Pending User
                         </label>
 
@@ -1280,7 +1884,18 @@ UK LogiWare Administrator`;
                             disabled={
                                 loadingUsers
                             }
-                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500"
+                            className="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-300
+                                bg-white
+                                px-4
+                                py-3
+                                text-sm
+                                outline-none
+                                focus:border-blue-500
+                            "
                         >
 
                             <option value="">
@@ -1296,7 +1911,9 @@ UK LogiWare Administrator`;
 
 
                             {pendingUsers.map(
-                                (user) => (
+                                (
+                                    user
+                                ) => (
                                     <option
                                         key={
                                             user.id
@@ -1321,42 +1938,104 @@ UK LogiWare Administrator`;
                     </div>
 
 
+                    {/* ========================================= */}
                     {/* REVIEW */}
+                    {/* ========================================= */}
 
                     {selectedUser &&
                         !credentials && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                            <div
+                                className="
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-slate-50
+                                    p-5
+                                "
+                            >
 
-                                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                                <div
+                                    className="
+                                        flex
+                                        flex-col
+                                        justify-between
+                                        gap-4
+                                        md:flex-row
+                                        md:items-start
+                                    "
+                                >
 
                                     <div>
 
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                        <p
+                                            className="
+                                                text-xs
+                                                font-semibold
+                                                uppercase
+                                                tracking-wider
+                                                text-slate-400
+                                            "
+                                        >
                                             Account Review
                                         </p>
 
 
-                                        <h3 className="mt-2 text-lg font-bold text-slate-900">
+                                        <h3
+                                            className="
+                                                mt-2
+                                                text-lg
+                                                font-bold
+                                                text-slate-900
+                                            "
+                                        >
                                             {selectedUser.firstName}{" "}
                                             {selectedUser.lastName}
                                         </h3>
 
 
-                                        <p className="mt-1 text-sm text-slate-500">
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                text-slate-500
+                                            "
+                                        >
                                             {selectedUser.email}
                                         </p>
 
                                     </div>
 
 
-                                    <span className="w-fit rounded-full bg-blue-100 px-3 py-1.5 text-xs font-bold capitalize text-blue-700">
+                                    <span
+                                        className="
+                                            w-fit
+                                            rounded-full
+                                            bg-blue-100
+                                            px-3
+                                            py-1.5
+                                            text-xs
+                                            font-bold
+                                            capitalize
+                                            text-blue-700
+                                        "
+                                    >
                                         {selectedUser.role}
                                     </span>
 
                                 </div>
 
 
-                                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                {/* USER INFORMATION */}
+
+                                <div
+                                    className="
+                                        mt-5
+                                        grid
+                                        gap-4
+                                        sm:grid-cols-2
+                                        lg:grid-cols-4
+                                    "
+                                >
 
                                     <div>
 
@@ -1364,7 +2043,14 @@ UK LogiWare Administrator`;
                                             Age
                                         </p>
 
-                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                text-slate-800
+                                            "
+                                        >
                                             {selectedUser.age}
                                         </p>
 
@@ -1377,7 +2063,15 @@ UK LogiWare Administrator`;
                                             Gender
                                         </p>
 
-                                        <p className="mt-1 text-sm font-semibold capitalize text-slate-800">
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                capitalize
+                                                text-slate-800
+                                            "
+                                        >
                                             {selectedUser.gender}
                                         </p>
 
@@ -1390,7 +2084,14 @@ UK LogiWare Administrator`;
                                             Phone
                                         </p>
 
-                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                text-slate-800
+                                            "
+                                        >
                                             {selectedUser.phoneNumber}
                                         </p>
 
@@ -1403,7 +2104,14 @@ UK LogiWare Administrator`;
                                             Address
                                         </p>
 
-                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                text-slate-800
+                                            "
+                                        >
                                             {selectedUser.address}
                                         </p>
 
@@ -1412,41 +2120,82 @@ UK LogiWare Administrator`;
                                 </div>
 
 
+                                {/* ================================= */}
                                 {/* ASSIGNED TRAINING */}
+                                {/* ================================= */}
 
-                                <div className="mt-5 border-t border-slate-200 pt-4">
+                                <div
+                                    className="
+                                        mt-5
+                                        border-t
+                                        border-slate-200
+                                        pt-4
+                                    "
+                                >
 
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                    <p
+                                        className="
+                                            text-xs
+                                            font-semibold
+                                            uppercase
+                                            tracking-wider
+                                            text-slate-400
+                                        "
+                                    >
                                         Assigned Training
                                     </p>
 
 
-                                    <div className="mt-3 flex flex-wrap gap-2">
+                                    <div
+                                        className="
+                                            mt-3
+                                            flex
+                                            flex-wrap
+                                            gap-2
+                                        "
+                                    >
 
                                         {Array.isArray(
-                                            selectedUser.assignedTrainingSections
+                                            selectedUser
+                                                .assignedTrainingSections
                                         ) &&
-                                            selectedUser.assignedTrainingSections
+                                            selectedUser
+                                                .assignedTrainingSections
                                                 .length >
                                             0 ? (
-                                            selectedUser.assignedTrainingSections.map(
-                                                (
-                                                    sectionId
-                                                ) => (
-                                                    <span
-                                                        key={
-                                                            sectionId
-                                                        }
-                                                        className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
-                                                    >
-                                                        {getSectionName(
-                                                            sectionId
-                                                        )}
-                                                    </span>
+                                            selectedUser
+                                                .assignedTrainingSections
+                                                .map(
+                                                    (
+                                                        sectionId
+                                                    ) => (
+                                                        <span
+                                                            key={
+                                                                sectionId
+                                                            }
+                                                            className="
+                                                                rounded-full
+                                                                bg-blue-100
+                                                                px-3
+                                                                py-1.5
+                                                                text-xs
+                                                                font-semibold
+                                                                text-blue-700
+                                                            "
+                                                        >
+                                                            {getSectionName(
+                                                                sectionId
+                                                            )}
+                                                        </span>
+                                                    )
                                                 )
-                                            )
                                         ) : (
-                                            <span className="text-sm text-slate-400">
+                                            <span
+                                                className="
+                                                    text-sm
+                                                    text-slate-400
+                                                "
+                                            >
                                                 No training assigned.
                                             </span>
                                         )}
@@ -1455,6 +2204,8 @@ UK LogiWare Administrator`;
 
                                 </div>
 
+
+                                {/* GENERATE BUTTON */}
 
                                 <div className="mt-5 flex justify-end">
 
@@ -1466,7 +2217,18 @@ UK LogiWare Administrator`;
                                         disabled={
                                             generating
                                         }
-                                        className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                                        className="
+                                            rounded-xl
+                                            bg-blue-600
+                                            px-6
+                                            py-3
+                                            text-sm
+                                            font-bold
+                                            text-white
+                                            transition
+                                            hover:bg-blue-700
+                                            disabled:opacity-50
+                                        "
                                     >
                                         {generating
                                             ? "Generating..."
@@ -1479,54 +2241,138 @@ UK LogiWare Administrator`;
                         )}
 
 
+                    {/* ========================================= */}
                     {/* CREDENTIALS */}
+                    {/* ========================================= */}
 
                     {credentials && (
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+                        <div
+                            className="
+                                rounded-xl
+                                border
+                                border-emerald-200
+                                bg-emerald-50
+                                p-5
+                            "
+                        >
 
                             <div>
 
-                                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+                                <p
+                                    className="
+                                        text-xs
+                                        font-semibold
+                                        uppercase
+                                        tracking-wider
+                                        text-emerald-600
+                                    "
+                                >
                                     Account Created
                                 </p>
 
 
-                                <h3 className="mt-2 text-lg font-bold text-slate-900">
+                                <h3
+                                    className="
+                                        mt-2
+                                        text-lg
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
                                     Credentials Generated Successfully
                                 </h3>
 
 
-                                <p className="mt-1 text-sm text-slate-600">
+                                <p
+                                    className="
+                                        mt-1
+                                        text-sm
+                                        text-slate-600
+                                    "
+                                >
                                     These credentials are shown only once.
                                 </p>
 
                             </div>
 
 
-                            <div className="mt-5 grid gap-4 md:grid-cols-2">
+                            <div
+                                className="
+                                    mt-5
+                                    grid
+                                    gap-4
+                                    md:grid-cols-2
+                                "
+                            >
 
-                                <div className="rounded-xl bg-white p-4">
+                                {/* USERNAME */}
 
-                                    <p className="text-xs font-semibold text-slate-400">
+                                <div
+                                    className="
+                                        rounded-xl
+                                        bg-white
+                                        p-4
+                                    "
+                                >
+
+                                    <p
+                                        className="
+                                            text-xs
+                                            font-semibold
+                                            text-slate-400
+                                        "
+                                    >
                                         Username
                                     </p>
 
 
-                                    <p className="mt-2 break-all font-mono text-sm font-bold text-slate-900">
+                                    <p
+                                        className="
+                                            mt-2
+                                            break-all
+                                            font-mono
+                                            text-sm
+                                            font-bold
+                                            text-slate-900
+                                        "
+                                    >
                                         {credentials.username}
                                     </p>
 
                                 </div>
 
 
-                                <div className="rounded-xl bg-white p-4">
+                                {/* TEMP PASSWORD */}
 
-                                    <p className="text-xs font-semibold text-slate-400">
+                                <div
+                                    className="
+                                        rounded-xl
+                                        bg-white
+                                        p-4
+                                    "
+                                >
+
+                                    <p
+                                        className="
+                                            text-xs
+                                            font-semibold
+                                            text-slate-400
+                                        "
+                                    >
                                         Temporary Password
                                     </p>
 
 
-                                    <p className="mt-2 break-all font-mono text-sm font-bold text-slate-900">
+                                    <p
+                                        className="
+                                            mt-2
+                                            break-all
+                                            font-mono
+                                            text-sm
+                                            font-bold
+                                            text-slate-900
+                                        "
+                                    >
                                         {credentials.password}
                                     </p>
 
@@ -1535,14 +2381,38 @@ UK LogiWare Administrator`;
                             </div>
 
 
-                            <div className="mt-5 flex flex-wrap justify-end gap-3">
+                            {/* ================================= */}
+                            {/* CREDENTIAL BUTTONS */}
+                            {/* ================================= */}
+
+                            <div
+                                className="
+                                    mt-5
+                                    flex
+                                    flex-wrap
+                                    justify-end
+                                    gap-3
+                                "
+                            >
 
                                 <button
                                     type="button"
                                     onClick={
                                         handleSendEmail
                                     }
-                                    className="rounded-xl border border-emerald-300 bg-white px-5 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
+                                    className="
+                                        rounded-xl
+                                        border
+                                        border-emerald-300
+                                        bg-white
+                                        px-5
+                                        py-3
+                                        text-sm
+                                        font-bold
+                                        text-emerald-700
+                                        transition
+                                        hover:bg-emerald-100
+                                    "
                                 >
                                     Send Credentials by Gmail
                                 </button>
@@ -1563,7 +2433,17 @@ UK LogiWare Administrator`;
                                             ""
                                         );
                                     }}
-                                    className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+                                    className="
+                                        rounded-xl
+                                        bg-emerald-600
+                                        px-5
+                                        py-3
+                                        text-sm
+                                        font-bold
+                                        text-white
+                                        transition
+                                        hover:bg-emerald-700
+                                    "
                                 >
                                     Done
                                 </button>

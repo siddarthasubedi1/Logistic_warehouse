@@ -2,165 +2,236 @@ import {
     useNavigate,
 } from "react-router-dom";
 
+import ActionButton from "../ui/ActionButton";
+import EmptyState from "../ui/EmptyState";
+import StatusBadge from "../ui/StatusBadge";
+
+import {
+    getUserDisplayName,
+} from "../../utils/training";
+
 
 function AdminUsersOverview({
-    loading,
-    users,
-    trainers,
-    trainees,
+    loading = false,
+    users = [],
+    trainers = 0,
+    trainees = 0,
 }) {
     const navigate =
         useNavigate();
 
 
+    // ======================================================
+    // MOST RECENT USERS
+    // ======================================================
+
     const recentUsers =
         [...users]
-            .sort((first, second) => {
-                return (
+            .sort(
+                (
+                    first,
+                    second
+                ) =>
                     new Date(
-                        second.createdAt || 0
+                        second.createdAt ||
+                        0
                     ) -
                     new Date(
-                        first.createdAt || 0
+                        first.createdAt ||
+                        0
                     )
-                );
-            })
-            .slice(0, 5);
+            )
+            .slice(
+                0,
+                5
+            );
 
 
     return (
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
+            {/* ================================================= */}
             {/* HEADER */}
+            {/* ================================================= */}
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start justify-between gap-4">
 
                 <div>
-
                     <h2 className="text-sm font-bold text-slate-900">
                         User Overview
                     </h2>
 
-                    <p className="mt-1 text-[10px] text-slate-500">
-                        Recently generated Trainer
-                        and Trainee accounts.
-                    </p>
 
+                    <p className="mt-1 text-[11px] text-slate-500">
+                        Recently generated Trainer and Trainee accounts.
+                    </p>
                 </div>
 
 
-                <button
-                    type="button"
+                <ActionButton
+                    variant="secondary"
+                    className="px-3 py-2"
                     onClick={() =>
                         navigate(
                             "/admin/users"
                         )
                     }
-                    className="text-[10px] font-semibold text-blue-600 hover:underline"
                 >
                     View All
-                </button>
+                </ActionButton>
 
             </div>
 
 
-            {/* ROLE SUMMARY */}
+            {/* ================================================= */}
+            {/* COUNTS */}
+            {/* ================================================= */}
 
             <div className="mt-5 grid grid-cols-2 gap-3">
 
-                <RoleCard
+                <RoleSummary
                     title="Trainees"
-                    value={trainees}
-                    type="trainee"
+                    value={
+                        trainees
+                    }
                 />
 
 
-                <RoleCard
+                <RoleSummary
                     title="Trainers"
-                    value={trainers}
-                    type="trainer"
+                    value={
+                        trainers
+                    }
                 />
 
             </div>
 
 
-            {/* TABLE */}
+            {/* ================================================= */}
+            {/* USERS */}
+            {/* ================================================= */}
 
-            <div className="mt-5 overflow-x-auto">
+            <div className="mt-5">
 
-                <table className="w-full min-w-[600px] border-collapse">
+                {loading ? (
+                    <p className="py-8 text-center text-xs text-slate-400">
+                        Loading users...
+                    </p>
+                ) : recentUsers.length ===
+                    0 ? (
+                    <EmptyState
+                        title="No users found."
+                        description="Generated Trainer and Trainee accounts will appear here."
+                    />
+                ) : (
+                    <div className="overflow-x-auto">
 
-                    <thead>
+                        <table className="min-w-[600px] w-full">
 
-                        <tr className="border-b border-slate-200 text-left">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
 
-                            <TableHeading>
-                                User
-                            </TableHeading>
+                                    <th className="px-2 py-3">
+                                        User
+                                    </th>
 
-                            <TableHeading>
-                                Role
-                            </TableHeading>
+                                    <th className="px-2 py-3">
+                                        Role
+                                    </th>
 
-                            <TableHeading>
-                                Username
-                            </TableHeading>
+                                    <th className="px-2 py-3">
+                                        Username
+                                    </th>
 
-                            <TableHeading>
-                                Status
-                            </TableHeading>
+                                    <th className="px-2 py-3">
+                                        Status
+                                    </th>
 
-                        </tr>
+                                </tr>
+                            </thead>
 
-                    </thead>
+
+                            <tbody className="divide-y divide-slate-100">
+
+                                {recentUsers.map(
+                                    (
+                                        user
+                                    ) => (
+                                        <tr
+                                            key={
+                                                user._id ||
+                                                user.email
+                                            }
+                                        >
+                                            <td className="px-2 py-4">
+
+                                                <div className="flex items-center gap-3">
+
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
+                                                        {getUserDisplayName(
+                                                            user,
+                                                            "U"
+                                                        )
+                                                            .charAt(
+                                                                0
+                                                            )
+                                                            .toUpperCase()}
+                                                    </div>
 
 
-                    <tbody>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-slate-700">
+                                                            {getUserDisplayName(
+                                                                user,
+                                                                "User"
+                                                            )}
+                                                        </p>
 
-                        {loading ? (
-                            <tr>
 
-                                <td
-                                    colSpan="4"
-                                    className="px-2 py-8 text-center text-xs text-slate-400"
-                                >
-                                    Loading users...
-                                </td>
+                                                        <p className="mt-[2px] text-[8px] text-slate-400">
+                                                            {user.email ||
+                                                                "—"}
+                                                        </p>
+                                                    </div>
 
-                            </tr>
-                        ) : recentUsers.length ===
-                            0 ? (
-                            <tr>
+                                                </div>
 
-                                <td
-                                    colSpan="4"
-                                    className="px-2 py-8 text-center text-xs text-slate-400"
-                                >
-                                    No generated users
-                                    found.
-                                </td>
+                                            </td>
 
-                            </tr>
-                        ) : (
-                            recentUsers.map(
-                                (user) => (
-                                    <UserRow
-                                        key={
-                                            user._id ||
-                                            user.id ||
-                                            user.email
-                                        }
-                                        user={
-                                            user
-                                        }
-                                    />
-                                )
-                            )
-                        )}
 
-                    </tbody>
+                                            <td className="px-2 py-4">
+                                                <StatusBadge
+                                                    status={
+                                                        user.role
+                                                    }
+                                                />
+                                            </td>
 
-                </table>
+
+                                            <td className="px-2 py-4 text-[9px] text-slate-500">
+                                                {user.username ||
+                                                    "—"}
+                                            </td>
+
+
+                                            <td className="px-2 py-4">
+                                                <StatusBadge
+                                                    status={
+                                                        user.status
+                                                    }
+                                                />
+                                            </td>
+
+                                        </tr>
+                                    )
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                )}
 
             </div>
 
@@ -169,151 +240,23 @@ function AdminUsersOverview({
 }
 
 
-function RoleCard({
+function RoleSummary({
     title,
     value,
-    type,
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-lg bg-[#f7f9fc] p-3">
+        <div className="rounded-xl bg-slate-50 p-4">
 
-            <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full ${type === "trainer"
-                    ? "bg-violet-100 text-violet-600"
-                    : "bg-blue-100 text-blue-600"
-                    }`}
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-4 w-4"
-                >
-                    <circle
-                        cx="12"
-                        cy="8"
-                        r="4"
-                    />
-
-                    <path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6" />
-                </svg>
-            </div>
+            <p className="text-xl font-bold text-slate-800">
+                {value}
+            </p>
 
 
-            <div>
-
-                <p className="text-lg font-bold text-slate-800">
-                    {value}
-                </p>
-
-                <p className="text-[9px] text-slate-500">
-                    {title}
-                </p>
-
-            </div>
+            <p className="mt-1 text-[10px] font-medium text-slate-500">
+                {title}
+            </p>
 
         </div>
-    );
-}
-
-
-function TableHeading({
-    children,
-}) {
-    return (
-        <th className="px-2 py-3 text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-            {children}
-        </th>
-    );
-}
-
-
-function UserRow({
-    user,
-}) {
-    const fullName =
-        `${user.firstName || ""} ${user.lastName || ""
-            }`.trim() || "User";
-
-
-    const initial =
-        user.firstName
-            ?.charAt(0)
-            ?.toUpperCase() || "U";
-
-
-    return (
-        <tr className="border-b border-slate-100 last:border-b-0">
-
-            <td className="px-2 py-4">
-
-                <div className="flex items-center gap-3">
-
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
-                        {initial}
-                    </div>
-
-
-                    <div>
-
-                        <p className="text-[10px] font-semibold text-slate-700">
-                            {fullName}
-                        </p>
-
-                        <p className="mt-[2px] text-[8px] text-slate-400">
-                            {user.email}
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </td>
-
-
-            <td className="px-2 py-4">
-
-                <span
-                    className={`rounded-full px-2 py-1 text-[8px] font-semibold capitalize ${user.role ===
-                        "trainer"
-                        ? "bg-violet-50 text-violet-600"
-                        : user.role ===
-                            "admin"
-                            ? "bg-orange-50 text-orange-600"
-                            : "bg-blue-50 text-blue-600"
-                        }`}
-                >
-                    {user.role}
-                </span>
-
-            </td>
-
-
-            <td className="px-2 py-4 text-[9px] text-slate-500">
-                {user.username ||
-                    "—"}
-            </td>
-
-
-            <td className="px-2 py-4">
-
-                <span
-                    className={`rounded-full px-2 py-1 text-[8px] font-semibold ${user.status ===
-                        "active"
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-red-50 text-red-500"
-                        }`}
-                >
-                    {user.status ===
-                        "active"
-                        ? "Active"
-                        : "Deactivated"}
-                </span>
-
-            </td>
-
-        </tr>
     );
 }
 

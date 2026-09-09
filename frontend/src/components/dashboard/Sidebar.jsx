@@ -16,6 +16,7 @@ import singleTruck from "../../images/single-truck.jpg";
 function SidebarIcon({
     type,
 }) {
+
     const iconClass =
         "h-[18px] w-[18px] shrink-0";
 
@@ -377,10 +378,280 @@ function SidebarIcon({
     }
 
 
+    // ==================================================
+    // FALLBACK
+    // ==================================================
+
     return (
-        <span className="h-2 w-2 rounded-full bg-current" />
+        <span
+            className="
+                h-2
+                w-2
+                rounded-full
+                bg-current
+            "
+        />
     );
 }
+
+
+// ======================================================
+// ADMIN MENU
+// ======================================================
+
+const ADMIN_ITEMS = [
+    {
+        label:
+            "Dashboard",
+
+        path:
+            "/admin",
+
+        icon:
+            "dashboard",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Create User",
+
+        path:
+            "/admin/create-user",
+
+        icon:
+            "create",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Manage Users",
+
+        path:
+            "/admin/users",
+
+        icon:
+            "users",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Roles & Permissions",
+
+        path:
+            "/admin/roles",
+
+        icon:
+            "roles",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Training Programmes",
+
+        path:
+            "/training-programmes",
+
+        icon:
+            "training",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Training Assignments",
+
+        path:
+            "/training-assignments",
+
+        icon:
+            "training",
+
+        enabled:
+            true,
+    },
+];
+
+
+// ======================================================
+// TRAINER MENU
+// ======================================================
+
+const TRAINER_ITEMS = [
+    {
+        label:
+            "Dashboard",
+
+        path:
+            "/trainer",
+
+        icon:
+            "dashboard",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Training Programmes",
+
+        path:
+            "/training-programmes",
+
+        icon:
+            "training",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Profile",
+
+        path:
+            "/trainer/profile",
+
+        icon:
+            "profile",
+
+        enabled:
+            true,
+    },
+];
+
+
+// ======================================================
+// TRAINEE MENU
+// ======================================================
+
+const TRAINEE_ITEMS = [
+    {
+        label:
+            "Dashboard",
+
+        path:
+            "/trainee",
+
+        icon:
+            "dashboard",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "My Training",
+
+        path:
+            "/my-training",
+
+        icon:
+            "training",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "My Progress",
+
+        path:
+            "/trainee/progress",
+
+        icon:
+            "progress",
+
+        enabled:
+            false,
+    },
+
+    {
+        label:
+            "Panoramic Scenarios",
+
+        path:
+            "/trainee/scenarios",
+
+        icon:
+            "scenario",
+
+        enabled:
+            false,
+    },
+
+    {
+        label:
+            "Quizzes",
+
+        path:
+            "/trainee/quizzes",
+
+        icon:
+            "quiz",
+
+        enabled:
+            false,
+    },
+
+    {
+        label:
+            "Notifications",
+
+        path:
+            "/trainee/notifications",
+
+        icon:
+            "notification",
+
+        enabled:
+            false,
+    },
+
+    {
+        label:
+            "Profile",
+
+        path:
+            "/trainee/profile",
+
+        icon:
+            "profile",
+
+        enabled:
+            true,
+    },
+
+    {
+        label:
+            "Help Support",
+
+        path:
+            "/trainee/help",
+
+        icon:
+            "help",
+
+        enabled:
+            false,
+    },
+];
 
 
 // ======================================================
@@ -390,319 +661,93 @@ function SidebarIcon({
 function Sidebar({
     role,
 }) {
+
     const location =
         useLocation();
 
 
     // ==================================================
-    // ADMIN MENU
+    // SELECT MENU
     // ==================================================
 
-    const adminItems = [
-        {
-            label:
-                "Dashboard",
-
-            path:
-                "/admin",
-
-            icon:
-                "dashboard",
-
-            enabled:
-                true,
-        },
-
-        {
-            label:
-                "Create User",
-
-            path:
-                "/admin/create-user",
-
-            icon:
-                "create",
-
-            enabled:
-                true,
-        },
-
-        {
-            label:
-                "Manage Users",
-
-            path:
-                "/admin/users",
-
-            icon:
-                "users",
-
-            enabled:
-                true,
-        },
-
-        {
-            label:
-                "Roles & Permissions",
-
-            path:
-                "/admin/roles",
-
-            icon:
-                "roles",
-
-            enabled:
-                true,
-        },
-
-        // ==============================================
-        // IMPORTANT
-        // SHARED SPRINT 2 ROUTE
-        // ==============================================
-
-        {
-            label:
-                "Training Programmes",
-
-            path:
-                "/training-programmes",
-
-            icon:
-                "training",
-
-            enabled:
-                true,
-        },
-    ];
-
-
-    // ==================================================
-    // TRAINER MENU
-    // ==================================================
-
-    const trainerItems = [
-        {
-            label:
-                "Dashboard",
-
-            path:
-                "/trainer",
-
-            icon:
-                "dashboard",
-
-            enabled:
-                true,
-        },
-
-        // ==============================================
-        // IMPORTANT
-        // SAME ROUTE AS ADMIN
-        // ==============================================
-
-        {
-            label:
-                "Training Programmes",
-
-            path:
-                "/training-programmes",
-
-            icon:
-                "training",
-
-            enabled:
-                true,
-        },
-    ];
-
-
-    // ==================================================
-    // TRAINEE MENU
-    // ==================================================
-
-    const traineeItems = [
-        {
-            label:
-                "Dashboard",
-
-            path:
-                "/trainee",
-
-            icon:
-                "dashboard",
-
-            enabled:
-                true,
-        },
-
-        {
-            label:
-                "My Training",
-
-            path:
-                "/my-training",
-
-            icon:
-                "training",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "My Progress",
-
-            path:
-                "/trainee/progress",
-
-            icon:
-                "progress",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "Panoramic Scenarios",
-
-            path:
-                "/trainee/scenarios",
-
-            icon:
-                "scenario",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "Quizzes",
-
-            path:
-                "/trainee/quizzes",
-
-            icon:
-                "quiz",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "Notifications",
-
-            path:
-                "/trainee/notifications",
-
-            icon:
-                "notification",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "Profile",
-
-            path:
-                "/trainee/profile",
-
-            icon:
-                "profile",
-
-            enabled:
-                false,
-        },
-
-        {
-            label:
-                "Help Support",
-
-            path:
-                "/trainee/help",
-
-            icon:
-                "help",
-
-            enabled:
-                false,
-        },
-    ];
-
-
-    // ==================================================
-    // MENU BY ROLE
-    // ==================================================
-
-    const roleItems = {
+    const menuByRole = {
         admin:
-            adminItems,
+            ADMIN_ITEMS,
 
         trainer:
-            trainerItems,
+            TRAINER_ITEMS,
 
         trainee:
-            traineeItems,
+            TRAINEE_ITEMS,
     };
 
 
     const items =
-        roleItems[
+        menuByRole[
         role
         ] ||
         [];
 
 
     // ==================================================
-    // ACTIVE MENU
+    // ACTIVE MENU CHECK
     // ==================================================
 
-    const isItemActive =
-        (
-            item
-        ) => {
+    const isItemActive = (
+        item
+    ) => {
 
-            if (
-                item.path ===
+        // ----------------------------------------------
+        // ADMIN ROLE CHILD PAGES
+        // ----------------------------------------------
+
+        if (
+            item.path ===
+            "/admin/roles"
+        ) {
+            return location.pathname.startsWith(
                 "/admin/roles"
-            ) {
-                return location
-                    .pathname
-                    .startsWith(
-                        "/admin/roles"
-                    );
-            }
-
-
-            // ==========================================
-            // TRAINING PROGRAMMES
-            //
-            // Keep active when user enters
-            // /training-programmes/:programmeId/sections
-            // ==========================================
-
-            if (
-                item.path ===
-                "/training-programmes"
-            ) {
-                return location
-                    .pathname
-                    .startsWith(
-                        "/training-programmes"
-                    );
-            }
-
-
-            return (
-                location.pathname ===
-                item.path
             );
-        };
+        }
+
+
+        // ----------------------------------------------
+        // TRAINING PROGRAMMES
+        // ----------------------------------------------
+
+        if (
+            item.path ===
+            "/training-programmes"
+        ) {
+            return location.pathname.startsWith(
+                "/training-programmes"
+            );
+        }
+
+
+        // ----------------------------------------------
+        // MY TRAINING
+        // ----------------------------------------------
+
+        if (
+            item.path ===
+            "/my-training"
+        ) {
+            return location.pathname.startsWith(
+                "/my-training"
+            );
+        }
+
+
+        // ----------------------------------------------
+        // EXACT ROUTE
+        // ----------------------------------------------
+
+        return (
+            location.pathname ===
+            item.path
+        );
+    };
 
 
     // ==================================================
@@ -710,99 +755,96 @@ function Sidebar({
     // ==================================================
 
     return (
-        <aside className="flex min-h-screen w-[190px] flex-col bg-[#073763] text-white">
+        <aside
+            className="
+                flex
+                h-full
+                min-h-screen
+                w-[190px]
+                flex-col
+                bg-[#073763]
+                text-white
+            "
+        >
 
-            {/* ==========================================
-                LOGO
-            ========================================== */}
+            {/* ================================================= */}
+            {/* LOGO */}
+            {/* ================================================= */}
 
-            <div className="border-b border-white/10 px-5 py-5">
-
+            <div
+                className="
+                    border-b
+                    border-white/10
+                    px-5
+                    py-5
+                "
+            >
                 <Logo
                     light
                 />
-
             </div>
 
 
-            {/* ==========================================
-                NAVIGATION
-            ========================================== */}
+            {/* ================================================= */}
+            {/* NAVIGATION */}
+            {/* ================================================= */}
 
-            <nav className="flex flex-1 flex-col px-3 py-5">
+            <nav
+                className="
+                    flex
+                    min-h-0
+                    flex-1
+                    flex-col
+                    px-3
+                    py-5
+                "
+            >
+
+                {/* MENU ITEMS */}
 
                 <div className="space-y-2">
 
-                    {
-                        items.map(
-                            (
-                                item
-                            ) => {
+                    {items.map(
+                        (
+                            item
+                        ) => {
 
-                                const active =
-                                    isItemActive(
-                                        item
-                                    );
-
-
-                                // ==========================
-                                // DISABLED
-                                // ==========================
-
-                                if (
-                                    !item.enabled
-                                ) {
-                                    return (
-                                        <button
-                                            key={
-                                                item.label
-                                            }
-
-                                            type="button"
-
-                                            disabled
-
-                                            title="Available in a later sprint"
-
-                                            className="flex w-full cursor-default items-center gap-3 rounded-md px-3 py-[10px] text-left text-[12px] font-medium text-slate-300"
-                                        >
-
-                                            <SidebarIcon
-                                                type={
-                                                    item.icon
-                                                }
-                                            />
+                            const active =
+                                isItemActive(
+                                    item
+                                );
 
 
-                                            <span>
-                                                {
-                                                    item.label
-                                                }
-                                            </span>
+                            // ==================================
+                            // DISABLED FUTURE FEATURE
+                            // ==================================
 
-                                        </button>
-                                    );
-                                }
-
-
-                                // ==========================
-                                // LINK
-                                // ==========================
-
+                            if (
+                                !item.enabled
+                            ) {
                                 return (
-                                    <NavLink
+                                    <button
                                         key={
                                             `${role}-${item.path}-${item.label}`
                                         }
-
-                                        to={
-                                            item.path
-                                        }
-
-                                        className={`flex items-center gap-3 rounded-md px-3 py-[10px] text-[12px] font-medium transition ${active
-                                            ? "bg-[#1976e9] text-white shadow-sm"
-                                            : "text-slate-200 hover:bg-white/10 hover:text-white"
-                                            }`}
+                                        type="button"
+                                        disabled
+                                        title="Available in a later sprint"
+                                        className="
+                                            flex
+                                            w-full
+                                            cursor-default
+                                            items-center
+                                            gap-3
+                                            rounded-md
+                                            px-3
+                                            py-[10px]
+                                            text-left
+                                            text-[12px]
+                                            font-medium
+                                            text-slate-300
+                                            opacity-60
+                                        "
                                     >
 
                                         <SidebarIcon
@@ -813,87 +855,163 @@ function Sidebar({
 
 
                                         <span>
-                                            {
-                                                item.label
-                                            }
+                                            {item.label}
                                         </span>
 
-                                    </NavLink>
+                                    </button>
                                 );
                             }
-                        )
-                    }
+
+
+                            // ==================================
+                            // ACTIVE LINK
+                            // ==================================
+
+                            return (
+                                <NavLink
+                                    key={
+                                        `${role}-${item.path}-${item.label}`
+                                    }
+                                    to={
+                                        item.path
+                                    }
+                                    className={`
+                                        flex
+                                        items-center
+                                        gap-3
+                                        rounded-md
+                                        px-3
+                                        py-[10px]
+                                        text-[12px]
+                                        font-medium
+                                        transition
+
+                                        ${active
+                                            ? "bg-[#1976e9] text-white shadow-sm"
+                                            : "text-slate-200 hover:bg-white/10 hover:text-white"
+                                        }
+                                    `}
+                                >
+
+                                    <SidebarIcon
+                                        type={
+                                            item.icon
+                                        }
+                                    />
+
+
+                                    <span>
+                                        {item.label}
+                                    </span>
+
+                                </NavLink>
+                            );
+                        }
+                    )}
 
                 </div>
 
 
-                {/* ======================================
-                    LOGOUT
-                ====================================== */}
+                {/* ================================================= */}
+                {/* LOGOUT */}
+                {/* ================================================= */}
 
-                <div className="mt-4 border-t border-white/10 pt-4">
-
+                <div
+                    className="
+                        mt-4
+                        border-t
+                        border-white/10
+                        pt-4
+                    "
+                >
                     <LogoutButton />
-
                 </div>
 
 
-                {/* ======================================
-                    TRAINEE CARD
-                ====================================== */}
+                {/* ================================================= */}
+                {/* TRAINEE INFORMATION CARD */}
+                {/* ================================================= */}
 
-                {
-                    role ===
+                {role ===
                     "trainee" && (
+                        <div
+                            className="
+                                mt-auto
+                                pt-8
+                            "
+                        >
 
-                        <div className="mt-auto pt-8">
-
-                            <div className="overflow-hidden rounded-lg border border-white/10 bg-[#0b416f]">
+                            <div
+                                className="
+                                    overflow-hidden
+                                    rounded-lg
+                                    border
+                                    border-white/10
+                                    bg-[#0b416f]
+                                "
+                            >
 
                                 <img
                                     src={
                                         singleTruck
                                     }
-
                                     alt="UK LogiWare truck"
-
-                                    className="h-[145px] w-full object-cover"
+                                    className="
+                                        h-[145px]
+                                        w-full
+                                        object-cover
+                                    "
                                 />
 
 
-                                <div className="flex items-start gap-2 px-3 py-3">
+                                <div
+                                    className="
+                                        flex
+                                        items-start
+                                        gap-2
+                                        px-3
+                                        py-3
+                                    "
+                                >
 
-                                    <div className="mt-[1px]">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        className="
+                                            mt-[1px]
+                                            h-5
+                                            w-5
+                                            text-white
+                                        "
+                                    >
+                                        <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
 
-                                        <svg
-                                            viewBox="0 0 24 24"
-
-                                            fill="none"
-
-                                            stroke="currentColor"
-
-                                            strokeWidth="1.8"
-
-                                            className="h-5 w-5 text-white"
-                                        >
-
-                                            <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
-
-                                            <path d="m9 12 2 2 4-4" />
-
-                                        </svg>
-
-                                    </div>
+                                        <path d="m9 12 2 2 4-4" />
+                                    </svg>
 
 
                                     <div>
 
-                                        <p className="text-[11px] font-semibold text-white">
+                                        <p
+                                            className="
+                                                text-[11px]
+                                                font-semibold
+                                                text-white
+                                            "
+                                        >
                                             Our priority.
                                         </p>
 
 
-                                        <p className="text-[10px] leading-4 text-slate-200">
+                                        <p
+                                            className="
+                                                text-[10px]
+                                                leading-4
+                                                text-slate-200
+                                            "
+                                        >
                                             Your safety.
                                         </p>
 
@@ -904,96 +1022,171 @@ function Sidebar({
                             </div>
 
                         </div>
-                    )
-                }
+                    )}
 
 
-                {/* ======================================
-                    TRAINER BADGE
-                ====================================== */}
+                {/* ================================================= */}
+                {/* TRAINER INFORMATION CARD */}
+                {/* ================================================= */}
 
-                {
-                    role ===
+                {role ===
                     "trainer" && (
+                        <div
+                            className="
+                                mt-auto
+                                pt-8
+                            "
+                        >
 
-                        <div className="mt-auto pt-8">
+                            <div
+                                className="
+                                    rounded-lg
+                                    border
+                                    border-white/10
+                                    bg-[#0b416f]
+                                    p-4
+                                "
+                            >
 
-                            <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
-
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
+                                <div
+                                    className="
+                                        flex
+                                        h-9
+                                        w-9
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        bg-blue-500/20
+                                        text-blue-300
+                                    "
+                                >
 
                                     <svg
                                         viewBox="0 0 24 24"
-
                                         fill="none"
-
                                         stroke="currentColor"
-
                                         strokeWidth="1.8"
-
                                         className="h-5 w-5"
                                     >
-
                                         <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
 
                                         <path d="m9 12 2 2 4-4" />
-
                                     </svg>
 
                                 </div>
 
 
-                                <p className="mt-3 text-[11px] font-semibold text-white">
+                                <p
+                                    className="
+                                        mt-3
+                                        text-[11px]
+                                        font-semibold
+                                        text-white
+                                    "
+                                >
                                     Trainer
                                 </p>
 
 
-                                <p className="mt-1 text-[10px] leading-4 text-slate-300">
-                                    Training and trainee management.
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[10px]
+                                        leading-4
+                                        text-slate-300
+                                    "
+                                >
+                                    Manage authorised training programmes
+                                    and learning content.
                                 </p>
 
                             </div>
 
                         </div>
-                    )
-                }
+                    )}
 
 
-                {/* ======================================
-                    ADMIN BADGE
-                ====================================== */}
+                {/* ================================================= */}
+                {/* ADMIN INFORMATION CARD */}
+                {/* ================================================= */}
 
-                {
-                    role ===
+                {role ===
                     "admin" && (
+                        <div
+                            className="
+                                mt-auto
+                                pt-8
+                            "
+                        >
 
-                        <div className="mt-auto pt-8">
+                            <div
+                                className="
+                                    rounded-lg
+                                    border
+                                    border-white/10
+                                    bg-[#0b416f]
+                                    p-4
+                                "
+                            >
 
-                            <div className="rounded-lg border border-white/10 bg-[#0b416f] p-4">
+                                <div
+                                    className="
+                                        flex
+                                        h-9
+                                        w-9
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        bg-blue-500/20
+                                        text-blue-300
+                                    "
+                                >
 
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        className="h-5 w-5"
+                                    >
+                                        <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
 
-                                    <SidebarIcon
-                                        type="users"
-                                    />
+                                        <path d="M12 8v8" />
+
+                                        <path d="M8 12h8" />
+                                    </svg>
 
                                 </div>
 
 
-                                <p className="mt-3 text-[11px] font-semibold text-white">
+                                <p
+                                    className="
+                                        mt-3
+                                        text-[11px]
+                                        font-semibold
+                                        text-white
+                                    "
+                                >
                                     Administrator
                                 </p>
 
 
-                                <p className="mt-1 text-[10px] leading-4 text-slate-300">
-                                    User account and access management.
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[10px]
+                                        leading-4
+                                        text-slate-300
+                                    "
+                                >
+                                    User, programme, role, and training
+                                    assignment management.
                                 </p>
 
                             </div>
 
                         </div>
-                    )
-                }
+                    )}
 
             </nav>
 
