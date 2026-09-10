@@ -11,26 +11,106 @@ function AdminQuickActions({
 
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section
+            className="
+                overflow-hidden
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-sm
+            "
+        >
 
-            <div>
+            {/* HEADER */}
 
-                <h2 className="text-sm font-bold text-slate-900">
-                    Quick Actions
-                </h2>
+            <div
+                className="
+                    border-b
+                    border-slate-200
+                    bg-gradient-to-r
+                    from-slate-50
+                    to-blue-50/40
+                    px-5
+                    py-4
+                "
+            >
 
-                <p className="mt-1 text-[10px] text-slate-500">
-                    Common Sprint 1 administrator actions.
-                </p>
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-3
+                    "
+                >
+
+                    <div
+                        className="
+                            flex
+                            h-9
+                            w-9
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-blue-100
+                            text-blue-700
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-5 w-5"
+                        >
+                            <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
+
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </div>
+
+
+                    <div>
+
+                        <h2
+                            className="
+                                text-sm
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            Quick Actions
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[10px]
+                                text-slate-500
+                            "
+                        >
+                            Common administrator tasks.
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
 
-            <div className="mt-5 space-y-3">
+            {/* ACTIONS */}
 
-                {/* ================================================= */}
-                {/* CREATE USER */}
-                {/* ================================================= */}
+            <div
+                className="
+                    grid
+                    gap-3
+                    p-5
+                    sm:grid-cols-2
+                    lg:grid-cols-1
+                "
+            >
 
                 <ActionButton
                     type="create"
@@ -39,7 +119,7 @@ function AdminQuickActions({
                         1
                         ? ""
                         : "s"
-                        }`}
+                        } waiting for credentials`}
                     onClick={() =>
                         navigate(
                             "/admin/create-user"
@@ -48,14 +128,10 @@ function AdminQuickActions({
                 />
 
 
-                {/* ================================================= */}
-                {/* MANAGE USERS */}
-                {/* ================================================= */}
-
                 <ActionButton
                     type="users"
                     title="Manage Users"
-                    description="Activate, deactivate or remove accounts"
+                    description="Edit, activate, deactivate or remove accounts"
                     onClick={() =>
                         navigate(
                             "/admin/users"
@@ -64,14 +140,10 @@ function AdminQuickActions({
                 />
 
 
-                {/* ================================================= */}
-                {/* AUDIT LOGS */}
-                {/* ================================================= */}
-
                 <ActionButton
                     type="audit"
                     title="View Audit Logs"
-                    description="Review account and system activity"
+                    description="Review important account and system activity"
                     onClick={() =>
                         navigate(
                             "/admin/audit-logs"
@@ -80,15 +152,42 @@ function AdminQuickActions({
                 />
 
 
-                {/* ================================================= */}
-                {/* ACCESS CONTROL INFORMATION */}
-                {/* ================================================= */}
+                {/* ACCESS CONTROL */}
 
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <div
+                    className="
+                        rounded-xl
+                        border
+                        border-blue-100
+                        bg-gradient-to-r
+                        from-blue-50
+                        to-cyan-50
+                        p-4
+                    "
+                >
 
-                    <div className="flex gap-3">
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-3
+                        "
+                    >
 
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-blue-600">
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-white
+                                text-blue-600
+                                shadow-sm
+                            "
+                        >
 
                             <svg
                                 viewBox="0 0 24 24"
@@ -107,12 +206,26 @@ function AdminQuickActions({
 
                         <div>
 
-                            <p className="text-[10px] font-semibold text-slate-700">
-                                Access Control
+                            <p
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    text-slate-700
+                                "
+                            >
+                                Protected Administration
                             </p>
 
-                            <p className="mt-1 text-[9px] leading-4 text-slate-500">
-                                Admin routes are protected by role-based access control.
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    leading-4
+                                    text-slate-500
+                                "
+                            >
+                                Administrative routes use role-based access control to protect user and training management.
                             </p>
 
                         </div>
@@ -144,14 +257,42 @@ function ActionButton({
             onClick={
                 onClick
             }
-            className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
+            className="
+                group
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-4
+                text-left
+                transition-all
+                duration-200
+                hover:-translate-y-0.5
+                hover:border-blue-200
+                hover:bg-blue-50/40
+                hover:shadow-sm
+            "
         >
 
-            {/* ================================================= */}
-            {/* ICON */}
-            {/* ================================================= */}
-
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <div
+                className="
+                    flex
+                    h-11
+                    w-11
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-blue-50
+                    text-blue-600
+                    transition
+                    group-hover:bg-blue-100
+                "
+            >
 
                 {type ===
                     "create" ? (
@@ -227,24 +368,46 @@ function ActionButton({
             </div>
 
 
-            {/* ================================================= */}
-            {/* TEXT */}
-            {/* ================================================= */}
+            <div
+                className="
+                    min-w-0
+                    flex-1
+                "
+            >
 
-            <div className="min-w-0 flex-1">
-
-                <p className="text-[11px] font-semibold text-slate-800">
+                <p
+                    className="
+                        text-[11px]
+                        font-semibold
+                        text-slate-800
+                    "
+                >
                     {title}
                 </p>
 
-                <p className="mt-1 text-[9px] leading-4 text-slate-500">
+
+                <p
+                    className="
+                        mt-1
+                        text-[9px]
+                        leading-4
+                        text-slate-500
+                    "
+                >
                     {description}
                 </p>
 
             </div>
 
 
-            <span className="text-xl text-blue-600">
+            <span
+                className="
+                    text-xl
+                    text-blue-500
+                    transition-transform
+                    group-hover:translate-x-1
+                "
+            >
                 ›
             </span>
 

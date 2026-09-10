@@ -10,20 +10,15 @@ import singleTruck from "../../images/single-truck.jpg";
 
 
 // ======================================================
-// SIDEBAR ICON
+// ICON
 // ======================================================
 
 function SidebarIcon({
     type,
 }) {
-
-    const iconClass =
+    const className =
         "h-[18px] w-[18px] shrink-0";
 
-
-    // ==================================================
-    // DASHBOARD
-    // ==================================================
 
     if (
         type ===
@@ -36,20 +31,15 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <path d="M3 12 12 4l9 8" />
-
                 <path d="M5 10v10h14V10" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // CREATE USER
-    // ==================================================
 
     if (
         type ===
@@ -62,28 +52,23 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
-                    cx="10"
+                    cx="9"
                     cy="8"
-                    r="4"
+                    r="3"
                 />
 
-                <path d="M3 21c.6-4 3-6 7-6" />
+                <path d="M3 20c.5-4 2.5-6 6-6" />
 
                 <path d="M18 13v8" />
-
                 <path d="M14 17h8" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // USERS
-    // ==================================================
 
     if (
         type ===
@@ -96,7 +81,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
@@ -119,10 +104,6 @@ function SidebarIcon({
     }
 
 
-    // ==================================================
-    // ROLES
-    // ==================================================
-
     if (
         type ===
         "roles"
@@ -134,7 +115,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
@@ -143,21 +124,15 @@ function SidebarIcon({
                     r="3"
                 />
 
-                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+                <path d="M3 20c.5-4 2.5-6 6-6" />
 
-                <path d="M17 8l2 2 3-4" />
+                <path d="M16 7l2 2 3-4" />
 
-                <path d="M16 14h5" />
-
-                <path d="M18.5 11.5v5" />
+                <path d="M15 15h6" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // TRAINING
-    // ==================================================
 
     if (
         type ===
@@ -170,7 +145,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <path d="M4 5h6v14H4z" />
@@ -178,16 +153,11 @@ function SidebarIcon({
                 <path d="M14 5h6v14h-6z" />
 
                 <path d="M10 8h4" />
-
                 <path d="M10 16h4" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // PROGRESS
-    // ==================================================
 
     if (
         type ===
@@ -200,24 +170,17 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <path d="M4 20V10" />
-
                 <path d="M10 20V4" />
-
                 <path d="M16 20v-7" />
-
                 <path d="M22 20V8" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // SCENARIO
-    // ==================================================
 
     if (
         type ===
@@ -230,7 +193,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
@@ -246,20 +209,13 @@ function SidebarIcon({
                 />
 
                 <path d="M12 2v3" />
-
                 <path d="M12 19v3" />
-
                 <path d="M2 12h3" />
-
                 <path d="M19 12h3" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // QUIZ
-    // ==================================================
 
     if (
         type ===
@@ -272,7 +228,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
@@ -294,10 +250,6 @@ function SidebarIcon({
     }
 
 
-    // ==================================================
-    // NOTIFICATION
-    // ==================================================
-
     if (
         type ===
         "notification"
@@ -309,7 +261,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
@@ -319,10 +271,6 @@ function SidebarIcon({
         );
     }
 
-
-    // ==================================================
-    // PROFILE
-    // ==================================================
 
     if (
         type ===
@@ -335,7 +283,7 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <circle
@@ -350,10 +298,6 @@ function SidebarIcon({
     }
 
 
-    // ==================================================
-    // HELP
-    // ==================================================
-
     if (
         type ===
         "help"
@@ -365,22 +309,16 @@ function SidebarIcon({
                 stroke="currentColor"
                 strokeWidth="1.8"
                 className={
-                    iconClass
+                    className
                 }
             >
                 <path d="M4 13a8 8 0 0 1 16 0" />
-
-                <path d="M4 13v4a2 2 0 0 0 2 2h2v-6H4z" />
-
-                <path d="M20 13v4a2 2 0 0 1-2 2h-2v-6h4z" />
+                <path d="M4 13v5h4v-6H4" />
+                <path d="M20 13v5h-4v-6h4" />
             </svg>
         );
     }
 
-
-    // ==================================================
-    // FALLBACK
-    // ==================================================
 
     return (
         <span
@@ -396,7 +334,7 @@ function SidebarIcon({
 
 
 // ======================================================
-// ADMIN MENU
+// MENU DATA
 // ======================================================
 
 const ADMIN_ITEMS = [
@@ -486,10 +424,6 @@ const ADMIN_ITEMS = [
 ];
 
 
-// ======================================================
-// TRAINER MENU
-// ======================================================
-
 const TRAINER_ITEMS = [
     {
         label:
@@ -534,10 +468,6 @@ const TRAINER_ITEMS = [
     },
 ];
 
-
-// ======================================================
-// TRAINEE MENU
-// ======================================================
 
 const TRAINEE_ITEMS = [
     {
@@ -660,15 +590,12 @@ const TRAINEE_ITEMS = [
 
 function Sidebar({
     role,
+    onNavigate = null,
 }) {
 
     const location =
         useLocation();
 
-
-    // ==================================================
-    // SELECT MENU
-    // ==================================================
 
     const menuByRole = {
         admin:
@@ -689,17 +616,13 @@ function Sidebar({
         [];
 
 
-    // ==================================================
-    // ACTIVE MENU CHECK
-    // ==================================================
+    // ======================================================
+    // ACTIVE ROUTE
+    // ======================================================
 
     const isItemActive = (
         item
     ) => {
-
-        // ----------------------------------------------
-        // ADMIN ROLE CHILD PAGES
-        // ----------------------------------------------
 
         if (
             item.path ===
@@ -711,10 +634,6 @@ function Sidebar({
         }
 
 
-        // ----------------------------------------------
-        // TRAINING PROGRAMMES
-        // ----------------------------------------------
-
         if (
             item.path ===
             "/training-programmes"
@@ -724,10 +643,6 @@ function Sidebar({
             );
         }
 
-
-        // ----------------------------------------------
-        // MY TRAINING
-        // ----------------------------------------------
 
         if (
             item.path ===
@@ -739,10 +654,6 @@ function Sidebar({
         }
 
 
-        // ----------------------------------------------
-        // EXACT ROUTE
-        // ----------------------------------------------
-
         return (
             location.pathname ===
             item.path
@@ -750,9 +661,53 @@ function Sidebar({
     };
 
 
-    // ==================================================
+    // ======================================================
+    // ROLE INFORMATION
+    // ======================================================
+
+    const roleInformation = {
+        admin: {
+            title:
+                "Administrator",
+
+            description:
+                "User, programme, role and assignment management.",
+        },
+
+        trainer: {
+            title:
+                "Trainer",
+
+            description:
+                "Manage authorised safety training and learning content.",
+        },
+
+        trainee: {
+            title:
+                "Safety Learner",
+
+            description:
+                "Learn safely, follow procedures and track your training.",
+        },
+    };
+
+
+    const currentRoleInfo =
+        roleInformation[
+        role
+        ] ||
+        {
+            title:
+                "UK LogiWare",
+
+            description:
+                "Workplace safety training.",
+        };
+
+
+    // ======================================================
     // UI
-    // ==================================================
+    // ======================================================
 
     return (
         <aside
@@ -760,9 +715,12 @@ function Sidebar({
                 flex
                 h-full
                 min-h-screen
-                w-[190px]
+                w-full
                 flex-col
-                bg-[#073763]
+                bg-gradient-to-b
+                from-[#073763]
+                via-[#083d6b]
+                to-[#052b4f]
                 text-white
             "
         >
@@ -782,6 +740,29 @@ function Sidebar({
                 <Logo
                     light
                 />
+
+
+                <div
+                    className="
+                        mt-4
+                        h-[3px]
+                        overflow-hidden
+                        rounded-full
+                        bg-white/10
+                    "
+                >
+                    <div
+                        className="
+                            h-full
+                            w-2/3
+                            rounded-full
+                            bg-gradient-to-r
+                            from-blue-400
+                            to-cyan-300
+                        "
+                    />
+                </div>
+
             </div>
 
 
@@ -800,9 +781,33 @@ function Sidebar({
                 "
             >
 
-                {/* MENU ITEMS */}
+                <div
+                    className="
+                        px-3
+                        pb-3
+                    "
+                >
 
-                <div className="space-y-2">
+                    <p
+                        className="
+                            text-[9px]
+                            font-semibold
+                            uppercase
+                            tracking-[0.18em]
+                            text-blue-200/80
+                        "
+                    >
+                        Safety Workspace
+                    </p>
+
+                </div>
+
+
+                {/* ================================================= */}
+                {/* MENU */}
+                {/* ================================================= */}
+
+                <div className="space-y-1.5">
 
                     {items.map(
                         (
@@ -814,10 +819,6 @@ function Sidebar({
                                     item
                                 );
 
-
-                            // ==================================
-                            // DISABLED FUTURE FEATURE
-                            // ==================================
 
                             if (
                                 !item.enabled
@@ -836,14 +837,14 @@ function Sidebar({
                                             cursor-default
                                             items-center
                                             gap-3
-                                            rounded-md
+                                            rounded-lg
                                             px-3
                                             py-[10px]
                                             text-left
                                             text-[12px]
                                             font-medium
                                             text-slate-300
-                                            opacity-60
+                                            opacity-45
                                         "
                                     >
 
@@ -863,10 +864,6 @@ function Sidebar({
                             }
 
 
-                            // ==================================
-                            // ACTIVE LINK
-                            // ==================================
-
                             return (
                                 <NavLink
                                     key={
@@ -875,34 +872,77 @@ function Sidebar({
                                     to={
                                         item.path
                                     }
+                                    onClick={() => {
+                                        if (
+                                            onNavigate
+                                        ) {
+                                            onNavigate();
+                                        }
+                                    }}
                                     className={`
+                                        group
                                         flex
                                         items-center
                                         gap-3
-                                        rounded-md
+                                        rounded-lg
                                         px-3
-                                        py-[10px]
+                                        py-[11px]
                                         text-[12px]
                                         font-medium
-                                        transition
+                                        transition-all
+                                        duration-200
 
                                         ${active
-                                            ? "bg-[#1976e9] text-white shadow-sm"
+                                            ? "bg-[#1976e9] text-white shadow-[0_6px_18px_rgba(25,118,233,0.3)]"
                                             : "text-slate-200 hover:bg-white/10 hover:text-white"
                                         }
                                     `}
                                 >
 
-                                    <SidebarIcon
-                                        type={
-                                            item.icon
-                                        }
-                                    />
+                                    <span
+                                        className={`
+                                            flex
+                                            h-7
+                                            w-7
+                                            items-center
+                                            justify-center
+                                            rounded-md
+                                            transition
+
+                                            ${active
+                                                ? "bg-white/15"
+                                                : "bg-white/5 group-hover:bg-white/10"
+                                            }
+                                        `}
+                                    >
+                                        <SidebarIcon
+                                            type={
+                                                item.icon
+                                            }
+                                        />
+                                    </span>
 
 
-                                    <span>
+                                    <span
+                                        className="
+                                            min-w-0
+                                            flex-1
+                                        "
+                                    >
                                         {item.label}
                                     </span>
+
+
+                                    {active && (
+                                        <span
+                                            className="
+                                                h-1.5
+                                                w-1.5
+                                                rounded-full
+                                                bg-white
+                                            "
+                                        />
+                                    )}
 
                                 </NavLink>
                             );
@@ -918,7 +958,7 @@ function Sidebar({
 
                 <div
                     className="
-                        mt-4
+                        mt-5
                         border-t
                         border-white/10
                         pt-4
@@ -929,67 +969,83 @@ function Sidebar({
 
 
                 {/* ================================================= */}
-                {/* TRAINEE INFORMATION CARD */}
+                {/* SAFETY INFORMATION CARD */}
                 {/* ================================================= */}
 
-                {role ===
-                    "trainee" && (
+                <div
+                    className="
+                        mt-auto
+                        pt-8
+                    "
+                >
+
+                    {role ===
+                        "trainee" ? (
                         <div
                             className="
-                                mt-auto
-                                pt-8
+                                overflow-hidden
+                                rounded-xl
+                                border
+                                border-white/10
+                                bg-white/[0.06]
+                                shadow-lg
                             "
                         >
 
+                            <img
+                                src={
+                                    singleTruck
+                                }
+                                alt="UK LogiWare truck"
+                                className="
+                                    h-[110px]
+                                    w-full
+                                    object-cover
+                                "
+                            />
+
+
                             <div
                                 className="
-                                    overflow-hidden
-                                    rounded-lg
-                                    border
-                                    border-white/10
-                                    bg-[#0b416f]
+                                    p-4
                                 "
                             >
-
-                                <img
-                                    src={
-                                        singleTruck
-                                    }
-                                    alt="UK LogiWare truck"
-                                    className="
-                                        h-[145px]
-                                        w-full
-                                        object-cover
-                                    "
-                                />
-
 
                                 <div
                                     className="
                                         flex
                                         items-start
-                                        gap-2
-                                        px-3
-                                        py-3
+                                        gap-3
                                     "
                                 >
 
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.8"
+                                    <div
                                         className="
-                                            mt-[1px]
-                                            h-5
-                                            w-5
-                                            text-white
+                                            flex
+                                            h-8
+                                            w-8
+                                            shrink-0
+                                            items-center
+                                            justify-center
+                                            rounded-lg
+                                            bg-blue-400/15
+                                            text-blue-200
                                         "
                                     >
-                                        <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
 
-                                        <path d="m9 12 2 2 4-4" />
-                                    </svg>
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            className="h-4 w-4"
+                                        >
+                                            <path d="M12 3 5 6v5c0 4.8 2.8 8 7 10 4.2-2 7-5.2 7-10V6l-7-3z" />
+
+                                            <path d="m9 12 2 2 4-4" />
+                                        </svg>
+
+                                    </div>
 
 
                                     <div>
@@ -1001,18 +1057,19 @@ function Sidebar({
                                                 text-white
                                             "
                                         >
-                                            Our priority.
+                                            Safety First
                                         </p>
 
 
                                         <p
                                             className="
-                                                text-[10px]
+                                                mt-1
+                                                text-[9px]
                                                 leading-4
-                                                text-slate-200
+                                                text-slate-300
                                             "
                                         >
-                                            Your safety.
+                                            Learn the correct procedure before starting work.
                                         </p>
 
                                     </div>
@@ -1022,171 +1079,73 @@ function Sidebar({
                             </div>
 
                         </div>
-                    )}
-
-
-                {/* ================================================= */}
-                {/* TRAINER INFORMATION CARD */}
-                {/* ================================================= */}
-
-                {role ===
-                    "trainer" && (
+                    ) : (
                         <div
                             className="
-                                mt-auto
-                                pt-8
+                                rounded-xl
+                                border
+                                border-white/10
+                                bg-white/[0.06]
+                                p-4
+                                shadow-lg
                             "
                         >
 
                             <div
                                 className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    items-center
+                                    justify-center
                                     rounded-lg
-                                    border
-                                    border-white/10
-                                    bg-[#0b416f]
-                                    p-4
+                                    bg-blue-400/15
+                                    text-blue-200
                                 "
                             >
 
-                                <div
-                                    className="
-                                        flex
-                                        h-9
-                                        w-9
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-blue-500/20
-                                        text-blue-300
-                                    "
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    className="h-5 w-5"
                                 >
+                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
 
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.8"
-                                        className="h-5 w-5"
-                                    >
-                                        <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                        <path d="m9 12 2 2 4-4" />
-                                    </svg>
-
-                                </div>
-
-
-                                <p
-                                    className="
-                                        mt-3
-                                        text-[11px]
-                                        font-semibold
-                                        text-white
-                                    "
-                                >
-                                    Trainer
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[10px]
-                                        leading-4
-                                        text-slate-300
-                                    "
-                                >
-                                    Manage authorised training programmes
-                                    and learning content.
-                                </p>
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
 
                             </div>
 
-                        </div>
-                    )}
 
-
-                {/* ================================================= */}
-                {/* ADMIN INFORMATION CARD */}
-                {/* ================================================= */}
-
-                {role ===
-                    "admin" && (
-                        <div
-                            className="
-                                mt-auto
-                                pt-8
-                            "
-                        >
-
-                            <div
+                            <p
                                 className="
-                                    rounded-lg
-                                    border
-                                    border-white/10
-                                    bg-[#0b416f]
-                                    p-4
+                                    mt-3
+                                    text-[11px]
+                                    font-semibold
+                                    text-white
                                 "
                             >
-
-                                <div
-                                    className="
-                                        flex
-                                        h-9
-                                        w-9
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-blue-500/20
-                                        text-blue-300
-                                    "
-                                >
-
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.8"
-                                        className="h-5 w-5"
-                                    >
-                                        <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                        <path d="M12 8v8" />
-
-                                        <path d="M8 12h8" />
-                                    </svg>
-
-                                </div>
+                                {currentRoleInfo.title}
+                            </p>
 
 
-                                <p
-                                    className="
-                                        mt-3
-                                        text-[11px]
-                                        font-semibold
-                                        text-white
-                                    "
-                                >
-                                    Administrator
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[10px]
-                                        leading-4
-                                        text-slate-300
-                                    "
-                                >
-                                    User, programme, role, and training
-                                    assignment management.
-                                </p>
-
-                            </div>
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    leading-4
+                                    text-slate-300
+                                "
+                            >
+                                {currentRoleInfo.description}
+                            </p>
 
                         </div>
                     )}
+
+                </div>
 
             </nav>
 

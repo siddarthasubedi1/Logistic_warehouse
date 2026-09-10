@@ -1,4 +1,13 @@
+import {
+    useEffect,
+    useState,
+} from "react";
+
 import Sidebar from "./Sidebar";
+
+import {
+    getSessionUser,
+} from "../../utils/session";
 
 
 function DashboardLayout({
@@ -11,16 +20,40 @@ function DashboardLayout({
 }) {
 
     // ======================================================
+    // MOBILE SIDEBAR
+    // ======================================================
+
+    const [
+        mobileSidebarOpen,
+        setMobileSidebarOpen,
+    ] = useState(false);
+
+
+    // ======================================================
+    // SESSION USER
+    // ======================================================
+
+    const sessionUser =
+        getSessionUser();
+
+
+    const currentUser =
+        user ||
+        sessionUser ||
+        null;
+
+
+    // ======================================================
     // USER INFORMATION
     // ======================================================
 
     const firstName =
-        user?.firstName ||
+        currentUser?.firstName ||
         "";
 
 
     const lastName =
-        user?.lastName ||
+        currentUser?.lastName ||
         "";
 
 
@@ -41,19 +74,151 @@ function DashboardLayout({
 
 
     // ======================================================
+    // CLOSE MOBILE SIDEBAR ON LARGE SCREEN
+    // ======================================================
+
+    useEffect(
+        () => {
+            const handleResize =
+                () => {
+                    if (
+                        window.innerWidth >=
+                        1024
+                    ) {
+                        setMobileSidebarOpen(
+                            false
+                        );
+                    }
+                };
+
+
+            window.addEventListener(
+                "resize",
+                handleResize
+            );
+
+
+            return () => {
+                window.removeEventListener(
+                    "resize",
+                    handleResize
+                );
+            };
+        },
+        []
+    );
+
+
+    // ======================================================
+    // LOCK BODY SCROLL WHEN MOBILE MENU OPEN
+    // ======================================================
+
+    useEffect(
+        () => {
+            if (
+                mobileSidebarOpen
+            ) {
+                document.body.style.overflow =
+                    "hidden";
+            } else {
+                document.body.style.overflow =
+                    "";
+            }
+
+
+            return () => {
+                document.body.style.overflow =
+                    "";
+            };
+        },
+        [
+            mobileSidebarOpen,
+        ]
+    );
+
+
+    // ======================================================
     // UI
     // ======================================================
 
     return (
         <div
             className="
+                relative
                 min-h-screen
-                bg-[#f7f9fc]
+                overflow-x-hidden
+                bg-[#f4f7fb]
             "
         >
 
+            {/* ================================================= */}
+            {/* BACKGROUND DESIGN */}
+            {/* ================================================= */}
+
             <div
                 className="
+                    pointer-events-none
+                    fixed
+                    inset-0
+                    z-0
+                    overflow-hidden
+                "
+            >
+
+                <div
+                    className="
+                        absolute
+                        -right-32
+                        -top-32
+                        h-[420px]
+                        w-[420px]
+                        rounded-full
+                        bg-blue-100/40
+                        blur-3xl
+                    "
+                />
+
+
+                <div
+                    className="
+                        absolute
+                        -bottom-40
+                        left-[18%]
+                        h-[420px]
+                        w-[420px]
+                        rounded-full
+                        bg-cyan-100/30
+                        blur-3xl
+                    "
+                />
+
+
+                <div
+                    className="
+                        absolute
+                        inset-0
+                        opacity-[0.025]
+                    "
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(#0f4c81 1px, transparent 1px), linear-gradient(90deg, #0f4c81 1px, transparent 1px)",
+
+                        backgroundSize:
+                            "32px 32px",
+                    }}
+                />
+
+            </div>
+
+
+            {/* ================================================= */}
+            {/* PAGE LAYOUT */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    relative
+                    z-10
                     flex
                     min-h-screen
                     items-stretch
@@ -61,30 +226,18 @@ function DashboardLayout({
             >
 
                 {/* ================================================= */}
-                {/* SIDEBAR */}
+                {/* DESKTOP SIDEBAR */}
                 {/* ================================================= */}
-                {/*
-                    IMPORTANT:
-
-                    This wrapper receives the same height as the
-                    entire page content.
-
-                    Therefore, when the page becomes taller than
-                    the browser viewport, the dark sidebar
-                    background continues all the way to the bottom.
-
-                    This fixes the white space that appeared below
-                    the sidebar on long pages.
-                */}
 
                 <div
                     className="
                         hidden
-                        w-[190px]
+                        w-[220px]
                         shrink-0
                         self-stretch
                         bg-[#073763]
                         lg:block
+                        xl:w-[235px]
                     "
                 >
                     <Sidebar
@@ -96,6 +249,69 @@ function DashboardLayout({
 
 
                 {/* ================================================= */}
+                {/* MOBILE SIDEBAR OVERLAY */}
+                {/* ================================================= */}
+
+                {mobileSidebarOpen && (
+                    <div
+                        className="
+                            fixed
+                            inset-0
+                            z-[80]
+                            lg:hidden
+                        "
+                    >
+
+                        {/* BACKDROP */}
+
+                        <button
+                            type="button"
+                            aria-label="Close navigation"
+                            onClick={() =>
+                                setMobileSidebarOpen(
+                                    false
+                                )
+                            }
+                            className="
+                                absolute
+                                inset-0
+                                bg-slate-950/55
+                                backdrop-blur-[2px]
+                            "
+                        />
+
+
+                        {/* DRAWER */}
+
+                        <div
+                            className="
+                                relative
+                                h-full
+                                w-[270px]
+                                max-w-[85vw]
+                                bg-[#073763]
+                                shadow-2xl
+                            "
+                        >
+
+                            <Sidebar
+                                role={
+                                    role
+                                }
+                                onNavigate={() =>
+                                    setMobileSidebarOpen(
+                                        false
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                    </div>
+                )}
+
+
+                {/* ================================================= */}
                 {/* MAIN AREA */}
                 {/* ================================================= */}
 
@@ -103,65 +319,242 @@ function DashboardLayout({
                     className="
                         min-w-0
                         flex-1
-                        bg-[#f7f9fc]
                     "
                 >
 
                     {/* ================================================= */}
-                    {/* OPTIONAL PAGE HEADER */}
+                    {/* MOBILE TOP BAR */}
+                    {/* ================================================= */}
+
+                    <div
+                        className="
+                            sticky
+                            top-0
+                            z-50
+                            flex
+                            h-16
+                            items-center
+                            justify-between
+                            border-b
+                            border-slate-200
+                            bg-white/95
+                            px-4
+                            backdrop-blur
+                            lg:hidden
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                items-center
+                                gap-3
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setMobileSidebarOpen(
+                                        true
+                                    )
+                                }
+                                aria-label="Open navigation"
+                                className="
+                                    flex
+                                    h-10
+                                    w-10
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    text-slate-700
+                                    shadow-sm
+                                    transition
+                                    hover:bg-slate-50
+                                "
+                            >
+
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    className="h-5 w-5"
+                                >
+                                    <path d="M4 7h16" />
+                                    <path d="M4 12h16" />
+                                    <path d="M4 17h16" />
+                                </svg>
+
+                            </button>
+
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-[10px]
+                                        font-semibold
+                                        uppercase
+                                        tracking-[0.16em]
+                                        text-blue-600
+                                    "
+                                >
+                                    UK LogiWare
+                                </p>
+
+
+                                <p
+                                    className="
+                                        text-sm
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
+                                    Safety Training
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-blue-100
+                                text-xs
+                                font-bold
+                                text-blue-700
+                            "
+                        >
+                            {initial}
+                        </div>
+
+                    </div>
+
+
+                    {/* ================================================= */}
+                    {/* PAGE HEADER */}
                     {/* ================================================= */}
 
                     {showHeader && (
                         <header
                             className="
                                 border-b
-                                border-slate-200
-                                bg-white
-                                px-5
+                                border-slate-200/90
+                                bg-white/90
+                                px-4
                                 py-4
+                                backdrop-blur
+                                sm:px-5
                                 lg:px-7
+                                xl:px-8
                             "
                         >
 
                             <div
                                 className="
+                                    mx-auto
                                     flex
-                                    flex-wrap
-                                    items-center
-                                    justify-between
+                                    w-full
+                                    max-w-[1600px]
+                                    flex-col
                                     gap-4
+                                    sm:flex-row
+                                    sm:items-center
+                                    sm:justify-between
                                 "
                             >
 
                                 {/* ================================= */}
-                                {/* LEFT SIDE */}
+                                {/* TITLE */}
                                 {/* ================================= */}
 
-                                <div>
+                                <div className="min-w-0">
 
                                     {title && (
-                                        <h1
+                                        <div
                                             className="
-                                                text-xl
-                                                font-bold
-                                                text-[#172033]
+                                                flex
+                                                items-start
+                                                gap-3
                                             "
                                         >
-                                            {title}
-                                        </h1>
-                                    )}
+
+                                            <div
+                                                className="
+                                                    mt-0.5
+                                                    hidden
+                                                    h-10
+                                                    w-10
+                                                    shrink-0
+                                                    items-center
+                                                    justify-center
+                                                    rounded-xl
+                                                    bg-blue-50
+                                                    text-blue-600
+                                                    sm:flex
+                                                "
+                                            >
+
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.8"
+                                                    className="h-5 w-5"
+                                                >
+                                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
+
+                                                    <path d="m9 12 2 2 4-4" />
+                                                </svg>
+
+                                            </div>
 
 
-                                    {subtitle && (
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-xs
-                                                text-slate-500
-                                            "
-                                        >
-                                            {subtitle}
-                                        </p>
+                                            <div className="min-w-0">
+
+                                                <h1
+                                                    className="
+                                                        truncate
+                                                        text-lg
+                                                        font-bold
+                                                        text-[#172033]
+                                                        sm:text-xl
+                                                        lg:text-[22px]
+                                                    "
+                                                >
+                                                    {title}
+                                                </h1>
+
+
+                                                {subtitle && (
+                                                    <p
+                                                        className="
+                                                            mt-1
+                                                            max-w-3xl
+                                                            text-xs
+                                                            leading-5
+                                                            text-slate-500
+                                                            sm:text-[13px]
+                                                        "
+                                                    >
+                                                        {subtitle}
+                                                    </p>
+                                                )}
+
+                                            </div>
+
+                                        </div>
                                     )}
 
                                 </div>
@@ -171,27 +564,34 @@ function DashboardLayout({
                                 {/* USER INFORMATION */}
                                 {/* ================================= */}
 
-                                {user && (
+                                {currentUser && (
                                     <div
                                         className="
-                                            flex
+                                            hidden
+                                            shrink-0
                                             items-center
                                             gap-3
+                                            rounded-xl
+                                            border
+                                            border-slate-200
+                                            bg-white
+                                            px-3
+                                            py-2
+                                            shadow-sm
+                                            sm:flex
                                         "
                                     >
-
-                                        {/* AVATAR */}
 
                                         <div
                                             className="
                                                 flex
-                                                h-10
-                                                w-10
+                                                h-9
+                                                w-9
                                                 items-center
                                                 justify-center
                                                 rounded-full
                                                 bg-blue-100
-                                                text-sm
+                                                text-xs
                                                 font-bold
                                                 text-blue-700
                                             "
@@ -200,23 +600,19 @@ function DashboardLayout({
                                         </div>
 
 
-                                        {/* NAME + ROLE */}
-
-                                        <div
-                                            className="
-                                                hidden
-                                                sm:block
-                                            "
-                                        >
+                                        <div>
 
                                             <p
                                                 className="
+                                                    max-w-[180px]
+                                                    truncate
                                                     text-xs
                                                     font-semibold
                                                     text-slate-800
                                                 "
                                             >
                                                 {fullName ||
+                                                    currentUser.username ||
                                                     "User"}
                                             </p>
 
@@ -249,11 +645,28 @@ function DashboardLayout({
 
                     <div
                         className="
+                            relative
                             min-w-0
-                            bg-[#f7f9fc]
+                            px-3
+                            py-4
+                            sm:px-5
+                            sm:py-5
+                            lg:px-6
+                            lg:py-6
+                            xl:px-8
                         "
                     >
-                        {children}
+
+                        <div
+                            className="
+                                mx-auto
+                                w-full
+                                max-w-[1600px]
+                            "
+                        >
+                            {children}
+                        </div>
+
                     </div>
 
                 </main>

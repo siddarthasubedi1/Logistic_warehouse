@@ -6,7 +6,14 @@ function AdminStats({
     deactivatedUsers,
 }) {
     return (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section
+            className="
+                grid
+                gap-4
+                sm:grid-cols-2
+                xl:grid-cols-4
+            "
+        >
 
             <StatCard
                 title="Total Users"
@@ -15,7 +22,7 @@ function AdminStats({
                         ? "..."
                         : totalUsers
                 }
-                description="Generated accounts"
+                description="Generated Trainer and Trainee accounts"
                 type="users"
                 tone="blue"
             />
@@ -28,7 +35,7 @@ function AdminStats({
                         ? "..."
                         : activeUsers
                 }
-                description="Users allowed to login"
+                description="Users currently allowed to login"
                 type="active"
                 tone="green"
             />
@@ -54,7 +61,7 @@ function AdminStats({
                         ? "..."
                         : deactivatedUsers
                 }
-                description="Login access disabled"
+                description="Accounts with login access disabled"
                 type="disabled"
                 tone="slate"
             />
@@ -73,35 +80,59 @@ function StatCard({
 }) {
     const styles = {
         blue: {
+            card:
+                "from-blue-50/80 to-white border-blue-100",
+
             icon:
-                "bg-blue-50 text-blue-600",
+                "bg-blue-100 text-blue-700",
 
             value:
                 "text-blue-700",
+
+            accent:
+                "bg-blue-500",
         },
 
         green: {
+            card:
+                "from-emerald-50/80 to-white border-emerald-100",
+
             icon:
-                "bg-emerald-50 text-emerald-600",
+                "bg-emerald-100 text-emerald-700",
 
             value:
                 "text-emerald-700",
+
+            accent:
+                "bg-emerald-500",
         },
 
         orange: {
+            card:
+                "from-amber-50/80 to-white border-amber-100",
+
             icon:
-                "bg-orange-50 text-orange-500",
+                "bg-amber-100 text-amber-700",
 
             value:
-                "text-orange-600",
+                "text-amber-700",
+
+            accent:
+                "bg-amber-500",
         },
 
         slate: {
+            card:
+                "from-slate-50 to-white border-slate-200",
+
             icon:
-                "bg-slate-100 text-slate-500",
+                "bg-slate-100 text-slate-600",
 
             value:
                 "text-slate-700",
+
+            accent:
+                "bg-slate-400",
         },
     };
 
@@ -111,41 +142,131 @@ function StatCard({
 
 
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div
+            className={`
+                relative
+                overflow-hidden
+                rounded-2xl
+                border
+                bg-gradient-to-br
+                p-5
+                shadow-sm
+                transition
+                duration-200
+                hover:-translate-y-0.5
+                hover:shadow-md
+                ${style.card}
+            `}
+        >
 
-            <div className="flex items-start justify-between">
+            {/* ACCENT */}
+
+            <div
+                className={`
+                    absolute
+                    left-0
+                    top-0
+                    h-full
+                    w-1
+                    ${style.accent}
+                `}
+            />
+
+
+            {/* HEADER */}
+
+            <div
+                className="
+                    flex
+                    items-start
+                    justify-between
+                    gap-3
+                "
+            >
 
                 <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${style.icon}`}
+                    className={`
+                        flex
+                        h-11
+                        w-11
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        ${style.icon}
+                    `}
                 >
                     <StatIcon
-                        type={type}
+                        type={
+                            type
+                        }
                     />
                 </div>
 
 
-                <span className="rounded-full bg-slate-50 px-2 py-1 text-[8px] font-semibold text-slate-400">
+                <span
+                    className="
+                        rounded-full
+                        border
+                        border-slate-200
+                        bg-white/70
+                        px-2.5
+                        py-1
+                        text-[9px]
+                        font-semibold
+                        uppercase
+                        tracking-wide
+                        text-slate-400
+                    "
+                >
                     Sprint 1
                 </span>
 
             </div>
 
 
-            <p className="mt-4 text-[10px] font-medium text-slate-500">
-                {title}
-            </p>
+            {/* TEXT */}
+
+            <div className="mt-5">
+
+                <p
+                    className="
+                        text-[11px]
+                        font-semibold
+                        uppercase
+                        tracking-wide
+                        text-slate-500
+                    "
+                >
+                    {title}
+                </p>
 
 
-            <p
-                className={`mt-1 text-2xl font-bold ${style.value}`}
-            >
-                {value}
-            </p>
+                <p
+                    className={`
+                        mt-2
+                        text-3xl
+                        font-bold
+                        tracking-tight
+                        ${style.value}
+                    `}
+                >
+                    {value}
+                </p>
 
 
-            <p className="mt-1 text-[9px] text-slate-400">
-                {description}
-            </p>
+                <p
+                    className="
+                        mt-2
+                        text-[10px]
+                        leading-4
+                        text-slate-500
+                    "
+                >
+                    {description}
+                </p>
+
+            </div>
 
         </div>
     );
@@ -155,7 +276,11 @@ function StatCard({
 function StatIcon({
     type,
 }) {
-    if (type === "users") {
+
+    if (
+        type ===
+        "users"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
@@ -184,7 +309,10 @@ function StatIcon({
     }
 
 
-    if (type === "active") {
+    if (
+        type ===
+        "active"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
@@ -205,7 +333,10 @@ function StatIcon({
     }
 
 
-    if (type === "pending") {
+    if (
+        type ===
+        "pending"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
