@@ -18,16 +18,34 @@ function TrainingProgrammeForm({
     onSubmit,
     onCancel,
 }) {
+
+    // ======================================================
+    // AUTHORIZED TRAINER COUNT
+    // ======================================================
+
+    const authorisedCount =
+        Array.isArray(
+            formData.authorizedTrainers
+        )
+            ? formData.authorizedTrainers.length
+            : 0;
+
+
+    // ======================================================
+    // UI
+    // ======================================================
+
     return (
         <form
-            onSubmit={onSubmit}
+            onSubmit={
+                onSubmit
+            }
             className="
-                space-y-6
-                rounded-xl
+                overflow-hidden
+                rounded-2xl
                 border
                 border-slate-200
                 bg-white
-                p-5
                 shadow-sm
             "
         >
@@ -36,487 +54,976 @@ function TrainingProgrammeForm({
             {/* HEADER */}
             {/* ================================================= */}
 
-            <div>
-                <h2 className="text-base font-bold text-slate-900">
-                    {editingProgramme
-                        ? "Edit Training Programme"
-                        : "Create Training Programme"}
-                </h2>
+            <div
+                className="
+                    relative
+                    overflow-hidden
+                    border-b
+                    border-slate-200
+                    bg-gradient-to-r
+                    from-[#073763]
+                    via-[#0b4f87]
+                    to-[#1769aa]
+                    px-5
+                    py-5
+                    text-white
+                    sm:px-6
+                "
+            >
+
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        -right-12
+                        -top-12
+                        h-32
+                        w-32
+                        rounded-full
+                        bg-white/10
+                    "
+                />
 
 
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Configure the programme information and Trainer
-                    access.
-                </p>
-            </div>
-
-
-            {/* ================================================= */}
-            {/* BASIC INFORMATION */}
-            {/* ================================================= */}
-
-            <div className="grid gap-4 md:grid-cols-2">
-
-                {/* ================================================= */}
-                {/* PROGRAMME TYPE */}
-                {/* ================================================= */}
-
-                <FormField
-                    label="Programme Type"
-                    required
+                <div
+                    className="
+                        relative
+                        flex
+                        items-start
+                        gap-4
+                    "
                 >
-                    <select
-                        name="programmeType"
-                        value={
-                            formData.programmeType
-                        }
-                        onChange={
-                            onInputChange
-                        }
-                        disabled={
-                            saving ||
-                            Boolean(
-                                editingProgramme
-                            )
-                        }
-                        className={inputClass}
-                        required
+
+                    <div
+                        className="
+                            flex
+                            h-11
+                            w-11
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-xl
+                            border
+                            border-white/15
+                            bg-white/10
+                        "
                     >
-                        <option value="">
-                            Select programme type
-                        </option>
 
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-5 w-5"
+                        >
+                            <rect
+                                x="4"
+                                y="4"
+                                width="16"
+                                height="16"
+                                rx="3"
+                            />
 
-                        {availableProgrammeTypes.map(
-                            (programme) => (
-                                <option
-                                    key={
-                                        programme.value
-                                    }
-                                    value={
-                                        programme.value
-                                    }
-                                >
-                                    {programme.label}
-                                </option>
-                            )
-                        )}
-                    </select>
+                            <path d="M8 9h8" />
 
+                            <path d="M8 13h8" />
 
-                    {editingProgramme && (
-                        <p className="mt-1 text-[11px] text-slate-400">
-                            Programme type cannot be changed from this
-                            form after creation.
-                        </p>
-                    )}
-                </FormField>
+                            <path d="M8 17h5" />
+                        </svg>
 
-
-                {/* ================================================= */}
-                {/* PASS MARK */}
-                {/* ================================================= */}
-
-                <FormField
-                    label="Pass Mark (%)"
-                    required
-                >
-                    <input
-                        type="number"
-                        name="passMark"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={
-                            formData.passMark
-                        }
-                        onChange={
-                            onInputChange
-                        }
-                        disabled={
-                            saving
-                        }
-                        className={inputClass}
-                        placeholder="Example: 70"
-                        required
-                    />
-
-
-                    <p className="mt-1 text-[11px] text-slate-400">
-                        Enter a value between 0 and 100.
-                    </p>
-                </FormField>
-
-
-                {/* ================================================= */}
-                {/* TITLE */}
-                {/* ================================================= */}
-
-                <div className="md:col-span-2">
-                    <FormField
-                        label="Programme Title"
-                        required
-                    >
-                        <input
-                            type="text"
-                            name="title"
-                            minLength="3"
-                            maxLength="150"
-                            value={
-                                formData.title
-                            }
-                            onChange={
-                                onInputChange
-                            }
-                            disabled={
-                                saving
-                            }
-                            className={inputClass}
-                            placeholder="Enter programme title"
-                            required
-                        />
-
-
-                        <div className="mt-1 flex justify-between gap-3 text-[11px] text-slate-400">
-                            <span>
-                                Minimum 3 characters.
-                            </span>
-
-                            <span>
-                                {formData.title.length}/150
-                            </span>
-                        </div>
-                    </FormField>
-                </div>
-
-
-                {/* ================================================= */}
-                {/* DESCRIPTION */}
-                {/* ================================================= */}
-
-                <div className="md:col-span-2">
-                    <FormField
-                        label="Description"
-                        required
-                    >
-                        <textarea
-                            name="description"
-                            rows="5"
-                            minLength="10"
-                            maxLength="3000"
-                            value={
-                                formData.description
-                            }
-                            onChange={
-                                onInputChange
-                            }
-                            disabled={
-                                saving
-                            }
-                            className={inputClass}
-                            placeholder="Describe the training programme"
-                            required
-                        />
-
-
-                        <div className="mt-1 flex justify-between gap-3 text-[11px] text-slate-400">
-                            <span>
-                                Minimum 10 characters.
-                            </span>
-
-                            <span>
-                                {formData.description.length}/3000
-                            </span>
-                        </div>
-                    </FormField>
-                </div>
-
-            </div>
-
-
-            {/* ================================================= */}
-            {/* ADMIN TRAINER MANAGEMENT */}
-            {/* ================================================= */}
-
-            {isAdmin && (
-                <div className="space-y-5 border-t border-slate-100 pt-5">
-
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-900">
-                            Trainer Management
-                        </h3>
-
-
-                        <p className="mt-1 text-xs leading-5 text-slate-500">
-                            The owner Trainer must already have access
-                            to the selected training area.
-                        </p>
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* OWNER TRAINER */}
-                    {/* ================================================= */}
+                    <div>
 
-                    <FormField
-                        label="Owner Trainer"
-                        required
+                        <p
+                            className="
+                                text-[9px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.18em]
+                                text-blue-100
+                            "
+                        >
+                            Safety Programme
+                        </p>
+
+
+                        <h2
+                            className="
+                                mt-1
+                                text-base
+                                font-bold
+                                sm:text-lg
+                            "
+                        >
+                            {editingProgramme
+                                ? "Edit Training Programme"
+                                : "Create Training Programme"}
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                max-w-xl
+                                text-[10px]
+                                leading-5
+                                text-blue-100
+                            "
+                        >
+                            Configure programme information,
+                            pass requirements and Trainer access.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {/* ================================================= */}
+            {/* FORM BODY */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    space-y-6
+                    p-4
+                    sm:p-5
+                    lg:p-6
+                "
+            >
+
+                {/* ================================================= */}
+                {/* BASIC INFORMATION */}
+                {/* ================================================= */}
+
+                <FormSection
+                    title="Programme Information"
+                    description="Define the safety training programme and its pass requirement."
+                    icon="programme"
+                >
+
+                    <div
+                        className="
+                            grid
+                            gap-4
+                            md:grid-cols-2
+                        "
                     >
-                        <select
-                            name="ownerId"
-                            value={
-                                formData.ownerId
-                            }
-                            onChange={
-                                onInputChange
-                            }
-                            disabled={
-                                saving ||
-                                !formData.programmeType
-                            }
-                            className={inputClass}
+
+                        {/* PROGRAMME TYPE */}
+
+                        <FormField
+                            label="Programme Type"
                             required
                         >
-                            <option value="">
-                                {formData.programmeType
-                                    ? "Select owner Trainer"
-                                    : "Select programme type first"}
-                            </option>
 
+                            <div className="relative">
 
-                            {eligibleOwnerTrainers.map(
-                                (trainer) => (
-                                    <option
-                                        key={
-                                            trainer._id
-                                        }
-                                        value={
-                                            trainer._id
-                                        }
-                                    >
-                                        {getUserDisplayName(
-                                            trainer,
-                                            trainer.username ||
-                                            "Trainer"
-                                        )}
-                                    </option>
-                                )
-                            )}
-                        </select>
-
-
-                        {formData.programmeType &&
-                            eligibleOwnerTrainers.length === 0 && (
-                                <p className="mt-2 text-xs text-amber-600">
-                                    No active Trainer is currently assigned
-                                    to this training area.
-                                </p>
-                            )}
-                    </FormField>
-
-
-                    {/* ================================================= */}
-                    {/* AUTHORISED TRAINERS */}
-                    {/* ================================================= */}
-
-                    <div>
-                        <p className="text-xs font-semibold text-slate-700">
-                            Additional Authorised Trainers
-                        </p>
-
-
-                        <p className="mt-1 text-[11px] leading-5 text-slate-500">
-                            These Trainers can manage the programme in
-                            addition to the owner Trainer.
-                        </p>
-
-
-                        {!formData.programmeType ? (
-                            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                <p className="text-xs text-slate-500">
-                                    Select a programme type first.
-                                </p>
-                            </div>
-                        ) : !formData.ownerId ? (
-                            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                <p className="text-xs text-slate-500">
-                                    Select an owner Trainer before adding
-                                    authorised Trainers.
-                                </p>
-                            </div>
-                        ) : eligibleAuthorizedTrainers.length === 0 ? (
-                            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                <p className="text-xs text-slate-500">
-                                    No additional eligible Trainers are
-                                    available for this programme.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="mt-3 grid gap-3 md:grid-cols-2">
-
-                                {eligibleAuthorizedTrainers.map(
-                                    (trainer) => {
-                                        const checked =
-                                            formData
-                                                .authorizedTrainers
-                                                .includes(
-                                                    trainer._id
-                                                );
-
-
-                                        return (
-                                            <label
-                                                key={
-                                                    trainer._id
-                                                }
-                                                className={`
-                                                    flex
-                                                    items-start
-                                                    gap-3
-                                                    rounded-xl
-                                                    border
-                                                    p-4
-                                                    transition
-
-                                                    ${saving
-                                                        ? "cursor-not-allowed opacity-60"
-                                                        : "cursor-pointer"
-                                                    }
-
-                                                    ${checked
-                                                        ? "border-blue-300 bg-blue-50"
-                                                        : "border-slate-200 bg-white hover:border-blue-300"
-                                                    }
-                                                `}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={
-                                                        checked
-                                                    }
-                                                    disabled={
-                                                        saving
-                                                    }
-                                                    onChange={() =>
-                                                        onToggleAuthorizedTrainer(
-                                                            trainer._id
-                                                        )
-                                                    }
-                                                    className="
-                                                        mt-0.5
-                                                        h-4
-                                                        w-4
-                                                        rounded
-                                                        border-slate-300
-                                                        text-blue-600
-                                                        focus:ring-blue-500
-                                                    "
-                                                />
-
-
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-800">
-                                                        {getUserDisplayName(
-                                                            trainer,
-                                                            trainer.username ||
-                                                            "Trainer"
-                                                        )}
-                                                    </p>
-
-
-                                                    {trainer.username && (
-                                                        <p className="mt-1 text-[11px] text-slate-500">
-                                                            {trainer.username}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                            </label>
-                                        );
+                                <select
+                                    name="programmeType"
+                                    value={
+                                        formData.programmeType
                                     }
+                                    onChange={
+                                        onInputChange
+                                    }
+                                    disabled={
+                                        saving ||
+                                        Boolean(
+                                            editingProgramme
+                                        )
+                                    }
+                                    className={
+                                        selectClass
+                                    }
+                                    required
+                                >
+                                    <option value="">
+                                        Select programme type
+                                    </option>
+
+
+                                    {availableProgrammeTypes.map(
+                                        (
+                                            programme
+                                        ) => (
+                                            <option
+                                                key={
+                                                    programme.value
+                                                }
+                                                value={
+                                                    programme.value
+                                                }
+                                            >
+                                                {programme.label}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+
+                                <SelectArrow />
+
+                            </div>
+
+
+                            {editingProgramme && (
+                                <HelperText>
+                                    Programme type cannot be changed after creation.
+                                </HelperText>
+                            )}
+
+                        </FormField>
+
+
+                        {/* PASS MARK */}
+
+                        <FormField
+                            label="Pass Mark (%)"
+                            required
+                        >
+
+                            <input
+                                type="number"
+                                name="passMark"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value={
+                                    formData.passMark
+                                }
+                                onChange={
+                                    onInputChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                placeholder="Example: 80"
+                                required
+                            />
+
+
+                            <HelperText>
+                                Enter a value between 0 and 100.
+                            </HelperText>
+
+                        </FormField>
+
+
+                        {/* TITLE */}
+
+                        <div className="md:col-span-2">
+
+                            <FormField
+                                label="Programme Title"
+                                required
+                            >
+
+                                <input
+                                    type="text"
+                                    name="title"
+                                    minLength="3"
+                                    maxLength="150"
+                                    value={
+                                        formData.title
+                                    }
+                                    onChange={
+                                        onInputChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
+                                    placeholder="Example: Manual Handling Safety"
+                                    required
+                                />
+
+
+                                <div
+                                    className="
+                                        mt-2
+                                        flex
+                                        items-center
+                                        justify-between
+                                        gap-3
+                                        text-[9px]
+                                        text-slate-400
+                                    "
+                                >
+
+                                    <span>
+                                        Minimum 3 characters.
+                                    </span>
+
+
+                                    <span
+                                        className="
+                                            font-semibold
+                                        "
+                                    >
+                                        {formData.title.length}/150
+                                    </span>
+
+                                </div>
+
+                            </FormField>
+
+                        </div>
+
+
+                        {/* DESCRIPTION */}
+
+                        <div className="md:col-span-2">
+
+                            <FormField
+                                label="Description"
+                                required
+                            >
+
+                                <textarea
+                                    name="description"
+                                    rows="6"
+                                    minLength="10"
+                                    maxLength="3000"
+                                    value={
+                                        formData.description
+                                    }
+                                    onChange={
+                                        onInputChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    className={`${inputClass} min-h-[140px] resize-y`}
+                                    placeholder="Describe the purpose and safety learning objectives of this programme."
+                                    required
+                                />
+
+
+                                <div
+                                    className="
+                                        mt-2
+                                        flex
+                                        items-center
+                                        justify-between
+                                        gap-3
+                                        text-[9px]
+                                        text-slate-400
+                                    "
+                                >
+
+                                    <span>
+                                        Minimum 10 characters.
+                                    </span>
+
+
+                                    <span
+                                        className="
+                                            font-semibold
+                                        "
+                                    >
+                                        {formData.description.length}/3000
+                                    </span>
+
+                                </div>
+
+                            </FormField>
+
+                        </div>
+
+                    </div>
+
+                </FormSection>
+
+
+                {/* ================================================= */}
+                {/* PROGRAMME TYPE INFORMATION */}
+                {/* ================================================= */}
+
+                {formData.programmeType && (
+                    <div
+                        className="
+                            rounded-xl
+                            border
+                            border-blue-100
+                            bg-gradient-to-r
+                            from-blue-50
+                            to-white
+                            p-4
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                items-start
+                                gap-3
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-white
+                                    text-blue-600
+                                    shadow-sm
+                                "
+                            >
+                                <ProgrammeTypeIcon
+                                    type={
+                                        formData.programmeType
+                                    }
+                                />
+                            </div>
+
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-[11px]
+                                        font-bold
+                                        text-slate-800
+                                    "
+                                >
+                                    {formData.programmeType ===
+                                        "working-at-height"
+                                        ? "Working at Height"
+                                        : "Manual Handling"}
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[9px]
+                                        leading-5
+                                        text-slate-500
+                                    "
+                                >
+                                    {formData.programmeType ===
+                                        "working-at-height"
+                                        ? "This programme covers safety procedures for elevated work, ladders, platforms and fall-risk awareness."
+                                        : "This programme covers safe lifting, carrying, load assessment and injury-prevention practices."}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                )}
+
+
+                {/* ================================================= */}
+                {/* ADMIN TRAINER MANAGEMENT */}
+                {/* ================================================= */}
+
+                {isAdmin && (
+                    <FormSection
+                        title="Trainer Management"
+                        description="Select the programme owner and any additional authorised Trainers."
+                        icon="trainer"
+                    >
+
+                        <div
+                            className="
+                                space-y-5
+                            "
+                        >
+
+                            {/* OWNER */}
+
+                            <FormField
+                                label="Owner Trainer"
+                                required
+                            >
+
+                                <div className="relative">
+
+                                    <select
+                                        name="ownerId"
+                                        value={
+                                            formData.ownerId
+                                        }
+                                        onChange={
+                                            onInputChange
+                                        }
+                                        disabled={
+                                            saving ||
+                                            !formData.programmeType
+                                        }
+                                        className={
+                                            selectClass
+                                        }
+                                        required
+                                    >
+
+                                        <option value="">
+                                            {formData.programmeType
+                                                ? "Select owner Trainer"
+                                                : "Select programme type first"}
+                                        </option>
+
+
+                                        {eligibleOwnerTrainers.map(
+                                            (
+                                                trainer
+                                            ) => (
+                                                <option
+                                                    key={
+                                                        trainer._id
+                                                    }
+                                                    value={
+                                                        trainer._id
+                                                    }
+                                                >
+                                                    {getUserDisplayName(
+                                                        trainer,
+                                                        trainer.username ||
+                                                        "Trainer"
+                                                    )}
+                                                </option>
+                                            )
+                                        )}
+
+                                    </select>
+
+
+                                    <SelectArrow />
+
+                                </div>
+
+
+                                <HelperText>
+                                    Owner must already have access to the selected training area.
+                                </HelperText>
+
+
+                                {formData.programmeType &&
+                                    eligibleOwnerTrainers.length ===
+                                    0 && (
+                                        <div
+                                            className="
+                                                mt-3
+                                                rounded-xl
+                                                border
+                                                border-amber-200
+                                                bg-amber-50
+                                                p-3
+                                                text-[10px]
+                                                text-amber-700
+                                            "
+                                        >
+                                            No active Trainer is currently assigned to this training area.
+                                        </div>
+                                    )}
+
+                            </FormField>
+
+
+                            {/* AUTHORIZED TRAINERS */}
+
+                            <div
+                                className="
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-slate-50/60
+                                    p-4
+                                    sm:p-5
+                                "
+                            >
+
+                                <div
+                                    className="
+                                        flex
+                                        flex-col
+                                        gap-3
+                                        sm:flex-row
+                                        sm:items-center
+                                        sm:justify-between
+                                    "
+                                >
+
+                                    <div>
+
+                                        <p
+                                            className="
+                                                text-xs
+                                                font-bold
+                                                text-slate-800
+                                            "
+                                        >
+                                            Additional Authorised Trainers
+                                        </p>
+
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-[9px]
+                                                leading-5
+                                                text-slate-500
+                                            "
+                                        >
+                                            These Trainers can manage this programme in addition to its owner.
+                                        </p>
+
+                                    </div>
+
+
+                                    <span
+                                        className="
+                                            w-fit
+                                            rounded-full
+                                            bg-blue-50
+                                            px-3
+                                            py-1.5
+                                            text-[9px]
+                                            font-semibold
+                                            text-blue-700
+                                        "
+                                    >
+                                        {authorisedCount} Selected
+                                    </span>
+
+                                </div>
+
+
+                                {!formData.programmeType ? (
+                                    <TrainerEmptyState
+                                        message="Select a programme type first."
+                                    />
+                                ) : !formData.ownerId ? (
+                                    <TrainerEmptyState
+                                        message="Select an owner Trainer before adding authorised Trainers."
+                                    />
+                                ) : eligibleAuthorizedTrainers.length ===
+                                    0 ? (
+                                    <TrainerEmptyState
+                                        message="No additional eligible Trainers are available for this programme."
+                                    />
+                                ) : (
+                                    <div
+                                        className="
+                                            mt-4
+                                            grid
+                                            gap-3
+                                            md:grid-cols-2
+                                        "
+                                    >
+
+                                        {eligibleAuthorizedTrainers.map(
+                                            (
+                                                trainer
+                                            ) => {
+
+                                                const checked =
+                                                    Array.isArray(
+                                                        formData.authorizedTrainers
+                                                    ) &&
+                                                    formData.authorizedTrainers.includes(
+                                                        trainer._id
+                                                    );
+
+
+                                                return (
+                                                    <label
+                                                        key={
+                                                            trainer._id
+                                                        }
+                                                        className={`
+                                                            relative
+                                                            overflow-hidden
+                                                            rounded-xl
+                                                            border
+                                                            p-4
+                                                            transition-all
+
+                                                            ${saving
+                                                                ? "cursor-not-allowed opacity-60"
+                                                                : "cursor-pointer"
+                                                            }
+
+                                                            ${checked
+                                                                ? "border-blue-400 bg-blue-50 shadow-sm"
+                                                                : "border-slate-200 bg-white hover:border-blue-300"
+                                                            }
+                                                        `}
+                                                    >
+
+                                                        {checked && (
+                                                            <div
+                                                                className="
+                                                                    absolute
+                                                                    left-0
+                                                                    top-0
+                                                                    h-full
+                                                                    w-1
+                                                                    bg-blue-500
+                                                                "
+                                                            />
+                                                        )}
+
+
+                                                        <div
+                                                            className="
+                                                                flex
+                                                                items-start
+                                                                gap-3
+                                                            "
+                                                        >
+
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={
+                                                                    checked
+                                                                }
+                                                                disabled={
+                                                                    saving
+                                                                }
+                                                                onChange={() =>
+                                                                    onToggleAuthorizedTrainer(
+                                                                        trainer._id
+                                                                    )
+                                                                }
+                                                                className="
+                                                                    mt-1
+                                                                    h-4
+                                                                    w-4
+                                                                    shrink-0
+                                                                    rounded
+                                                                    border-slate-300
+                                                                    text-blue-600
+                                                                    focus:ring-blue-500
+                                                                "
+                                                            />
+
+
+                                                            <div
+                                                                className="
+                                                                    min-w-0
+                                                                "
+                                                            >
+
+                                                                <p
+                                                                    className="
+                                                                        truncate
+                                                                        text-[11px]
+                                                                        font-bold
+                                                                        text-slate-800
+                                                                    "
+                                                                >
+                                                                    {getUserDisplayName(
+                                                                        trainer,
+                                                                        trainer.username ||
+                                                                        "Trainer"
+                                                                    )}
+                                                                </p>
+
+
+                                                                {trainer.username && (
+                                                                    <p
+                                                                        className="
+                                                                            mt-1
+                                                                            truncate
+                                                                            text-[9px]
+                                                                            text-slate-500
+                                                                        "
+                                                                    >
+                                                                        @{trainer.username}
+                                                                    </p>
+                                                                )}
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </label>
+                                                );
+                                            }
+                                        )}
+
+                                    </div>
                                 )}
 
                             </div>
-                        )}
-                    </div>
 
-                </div>
-            )}
+                        </div>
+
+                    </FormSection>
+                )}
 
 
-            {/* ================================================= */}
-            {/* STATUS */}
-            {/* ================================================= */}
+                {/* ================================================= */}
+                {/* STATUS */}
+                {/* ================================================= */}
 
-            <div className="border-t border-slate-100 pt-5">
-
-                <FormField
-                    label="Programme Status"
-                    required
+                <FormSection
+                    title="Programme Availability"
+                    description="Control whether this programme is currently available."
+                    icon="status"
                 >
-                    <select
-                        name="status"
-                        value={
-                            formData.status
-                        }
-                        onChange={
-                            onInputChange
+
+                    <FormField
+                        label="Programme Status"
+                        required
+                    >
+
+                        <div className="relative">
+
+                            <select
+                                name="status"
+                                value={
+                                    formData.status
+                                }
+                                onChange={
+                                    onInputChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    selectClass
+                                }
+                                required
+                            >
+                                <option value="draft">
+                                    Draft
+                                </option>
+
+                                <option value="active">
+                                    Active
+                                </option>
+
+                                <option value="inactive">
+                                    Inactive
+                                </option>
+                            </select>
+
+
+                            <SelectArrow />
+
+                        </div>
+
+
+                        <div
+                            className="
+                                mt-3
+                                grid
+                                gap-2
+                                sm:grid-cols-3
+                            "
+                        >
+
+                            <StatusHelp
+                                title="Draft"
+                                description="Still being prepared."
+                                active={
+                                    formData.status ===
+                                    "draft"
+                                }
+                            />
+
+
+                            <StatusHelp
+                                title="Active"
+                                description="Available for programme use."
+                                active={
+                                    formData.status ===
+                                    "active"
+                                }
+                            />
+
+
+                            <StatusHelp
+                                title="Inactive"
+                                description="Retained but unavailable."
+                                active={
+                                    formData.status ===
+                                    "inactive"
+                                }
+                            />
+
+                        </div>
+
+                    </FormField>
+
+                </FormSection>
+
+
+                {/* ================================================= */}
+                {/* ACTIONS */}
+                {/* ================================================= */}
+
+                <div
+                    className="
+                        flex
+                        flex-col-reverse
+                        gap-3
+                        border-t
+                        border-slate-100
+                        pt-5
+                        sm:flex-row
+                        sm:justify-end
+                    "
+                >
+
+                    <ActionButton
+                        variant="secondary"
+                        onClick={
+                            onCancel
                         }
                         disabled={
                             saving
                         }
-                        className={inputClass}
-                        required
+                        className="
+                            w-full
+                            justify-center
+                            sm:w-auto
+                        "
                     >
-                        <option value="draft">
-                            Draft
-                        </option>
-
-                        <option value="active">
-                            Active
-                        </option>
-
-                        <option value="inactive">
-                            Inactive
-                        </option>
-                    </select>
-                </FormField>
-
-            </div>
+                        Cancel
+                    </ActionButton>
 
 
-            {/* ================================================= */}
-            {/* ACTION BUTTONS */}
-            {/* ================================================= */}
+                    <ActionButton
+                        type="submit"
+                        variant="primary"
+                        disabled={
+                            saving
+                        }
+                        className="
+                            w-full
+                            justify-center
+                            sm:w-auto
+                        "
+                    >
+                        {saving
+                            ? "Saving..."
+                            : editingProgramme
+                                ? "Save Changes"
+                                : "Create Programme"}
+                    </ActionButton>
 
-            <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
-
-                <ActionButton
-                    variant="secondary"
-                    onClick={
-                        onCancel
-                    }
-                    disabled={
-                        saving
-                    }
-                >
-                    Cancel
-                </ActionButton>
-
-
-                <ActionButton
-                    type="submit"
-                    variant="primary"
-                    disabled={
-                        saving
-                    }
-                >
-                    {saving
-                        ? "Saving..."
-                        : editingProgramme
-                            ? "Save Changes"
-                            : "Create Programme"}
-                </ActionButton>
+                </div>
 
             </div>
 
@@ -526,7 +1033,86 @@ function TrainingProgrammeForm({
 
 
 // ======================================================
-// FORM FIELD
+// FORM SECTION
+// ======================================================
+
+function FormSection({
+    title,
+    description,
+    icon,
+    children,
+}) {
+    return (
+        <section>
+
+            <div
+                className="
+                    mb-5
+                    flex
+                    items-start
+                    gap-3
+                "
+            >
+
+                <div
+                    className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-blue-50
+                        text-blue-600
+                    "
+                >
+                    <SectionIcon
+                        type={
+                            icon
+                        }
+                    />
+                </div>
+
+
+                <div>
+
+                    <h3
+                        className="
+                            text-sm
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        {title}
+                    </h3>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[10px]
+                            leading-5
+                            text-slate-500
+                        "
+                    >
+                        {description}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {children}
+
+        </section>
+    );
+}
+
+
+// ======================================================
+// FIELD
 // ======================================================
 
 function FormField({
@@ -537,14 +1123,28 @@ function FormField({
     return (
         <label className="block">
 
-            <span className="mb-2 block text-xs font-semibold text-slate-700">
+            <span
+                className="
+                    mb-2
+                    block
+                    text-[11px]
+                    font-semibold
+                    text-slate-700
+                "
+            >
                 {label}
 
                 {required && (
-                    <span className="ml-1 text-red-500">
+                    <span
+                        className="
+                            ml-1
+                            text-red-500
+                        "
+                    >
                         *
                     </span>
                 )}
+
             </span>
 
 
@@ -556,18 +1156,322 @@ function FormField({
 
 
 // ======================================================
-// SHARED INPUT STYLE
+// HELPER
+// ======================================================
+
+function HelperText({
+    children,
+}) {
+    return (
+        <p
+            className="
+                mt-2
+                text-[9px]
+                leading-4
+                text-slate-400
+            "
+        >
+            {children}
+        </p>
+    );
+}
+
+
+// ======================================================
+// TRAINER EMPTY STATE
+// ======================================================
+
+function TrainerEmptyState({
+    message,
+}) {
+    return (
+        <div
+            className="
+                mt-4
+                rounded-xl
+                border
+                border-dashed
+                border-slate-300
+                bg-white
+                p-4
+                text-center
+            "
+        >
+
+            <p
+                className="
+                    text-[10px]
+                    text-slate-500
+                "
+            >
+                {message}
+            </p>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// STATUS HELP
+// ======================================================
+
+function StatusHelp({
+    title,
+    description,
+    active,
+}) {
+    return (
+        <div
+            className={`
+                rounded-xl
+                border
+                p-3
+                transition
+
+                ${active
+                    ? "border-blue-300 bg-blue-50"
+                    : "border-slate-200 bg-slate-50"
+                }
+            `}
+        >
+
+            <p
+                className={`
+                    text-[10px]
+                    font-bold
+
+                    ${active
+                        ? "text-blue-700"
+                        : "text-slate-600"
+                    }
+                `}
+            >
+                {title}
+            </p>
+
+
+            <p
+                className="
+                    mt-1
+                    text-[9px]
+                    leading-4
+                    text-slate-500
+                "
+            >
+                {description}
+            </p>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// SELECT ARROW
+// ======================================================
+
+function SelectArrow() {
+    return (
+        <div
+            className="
+                pointer-events-none
+                absolute
+                inset-y-0
+                right-0
+                flex
+                items-center
+                pr-3
+                text-slate-400
+            "
+        >
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="h-4 w-4"
+            >
+                <path d="m7 10 5 5 5-5" />
+            </svg>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// PROGRAMME TYPE ICON
+// ======================================================
+
+function ProgrammeTypeIcon({
+    type,
+}) {
+
+    if (
+        type ===
+        "working-at-height"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <path d="M5 21V6" />
+
+                <path d="M19 21V6" />
+
+                <path d="M5 9h14" />
+
+                <path d="M5 14h14" />
+
+                <path d="M5 19h14" />
+            </svg>
+        );
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-5 w-5"
+        >
+            <rect
+                x="3"
+                y="8"
+                width="18"
+                height="10"
+                rx="2"
+            />
+
+            <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
+
+            <path d="M8 13h8" />
+        </svg>
+    );
+}
+
+
+// ======================================================
+// SECTION ICON
+// ======================================================
+
+function SectionIcon({
+    type,
+}) {
+
+    if (
+        type ===
+        "trainer"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                />
+
+                <path d="M3 20c.5-4 2.5-6 6-6" />
+
+                <path d="M16 8l2 2 3-4" />
+            </svg>
+        );
+    }
+
+
+    if (
+        type ===
+        "status"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                />
+
+                <path d="m8 12 2.5 2.5L16 9" />
+            </svg>
+        );
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-5 w-5"
+        >
+            <path d="M6 4h12v16H6z" />
+
+            <path d="M9 9h6" />
+
+            <path d="M9 13h6" />
+        </svg>
+    );
+}
+
+
+// ======================================================
+// SHARED STYLES
 // ======================================================
 
 const inputClass = `
     w-full
-    rounded-lg
+    rounded-xl
     border
     border-slate-300
     bg-white
-    px-3
-    py-2.5
-    text-sm
+    px-3.5
+    py-3
+    text-xs
+    text-slate-800
+    outline-none
+    transition
+    placeholder:text-slate-400
+    focus:border-blue-500
+    focus:ring-2
+    focus:ring-blue-100
+    disabled:cursor-not-allowed
+    disabled:bg-slate-100
+    disabled:text-slate-500
+`;
+
+
+const selectClass = `
+    w-full
+    appearance-none
+    rounded-xl
+    border
+    border-slate-300
+    bg-white
+    px-3.5
+    py-3
+    pr-10
+    text-xs
     text-slate-800
     outline-none
     transition
