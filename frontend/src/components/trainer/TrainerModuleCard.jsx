@@ -9,18 +9,8 @@ import heightImage from "../../images/hight.jpg";
 // ======================================================
 // TRAINING AREAS
 // ======================================================
-//
-// assignedTrainingSections defines which broad training
-// areas the Trainer is allowed to work with.
-//
-// Actual Sprint 2 programme management happens through:
-//
-// /training-programmes
-//
-// ======================================================
 
 const TRAINING_AREAS = {
-
     "manual-handling": {
         id:
             "manual-handling",
@@ -33,6 +23,9 @@ const TRAINING_AREAS = {
 
         image:
             boxLift,
+
+        accent:
+            "blue",
     },
 
 
@@ -48,6 +41,9 @@ const TRAINING_AREAS = {
 
         image:
             heightImage,
+
+        accent:
+            "amber",
     },
 };
 
@@ -60,12 +56,17 @@ function EmptyAssignment() {
     return (
         <section
             className="
-                rounded-xl
+                overflow-hidden
+                rounded-2xl
                 border
-                border-slate-200
-                bg-white
+                border-amber-200
+                bg-gradient-to-r
+                from-amber-50
+                via-white
+                to-orange-50
                 p-5
                 shadow-sm
+                sm:p-6
             "
         >
 
@@ -86,10 +87,12 @@ function EmptyAssignment() {
                         items-center
                         justify-center
                         rounded-xl
-                        bg-amber-50
+                        bg-white
                         text-amber-600
+                        shadow-sm
                     "
                 >
+
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -107,6 +110,7 @@ function EmptyAssignment() {
 
                         <path d="M12 17h.01" />
                     </svg>
+
                 </div>
 
 
@@ -126,13 +130,15 @@ function EmptyAssignment() {
                     <p
                         className="
                             mt-2
-                            text-xs
+                            max-w-2xl
+                            text-[10px]
                             leading-5
-                            text-slate-500
+                            text-slate-600
                         "
                     >
                         You do not currently have permission to manage
-                        a training area. Please contact the Administrator.
+                        Manual Handling or Working at Height. Please
+                        contact the Administrator.
                     </p>
 
                 </div>
@@ -155,17 +161,9 @@ function TrainingAreaCard({
         useNavigate();
 
 
-    // ==================================================
+    // ======================================================
     // OPEN PROGRAMME MANAGEMENT
-    // ==================================================
-    //
-    // Trainer and Admin intentionally use the same
-    // Sprint 2 route.
-    //
-    // Backend authorization decides which programmes
-    // the Trainer can see/manage.
-    //
-    // ==================================================
+    // ======================================================
 
     const handleOpenProgrammes =
         () => {
@@ -175,18 +173,26 @@ function TrainingAreaCard({
         };
 
 
+    const isWorkingAtHeight =
+        area.id ===
+        "working-at-height";
+
+
     return (
         <article
             className="
-                rounded-xl
+                group
+                overflow-hidden
+                rounded-2xl
                 border
                 border-slate-200
                 bg-white
-                p-4
                 shadow-sm
-                transition
-                hover:border-blue-300
-                hover:shadow-md
+                transition-all
+                duration-200
+                hover:-translate-y-1
+                hover:border-blue-200
+                hover:shadow-lg
             "
         >
 
@@ -194,93 +200,262 @@ function TrainingAreaCard({
             {/* IMAGE */}
             {/* ================================================= */}
 
-            <img
-                src={
-                    area.image
-                }
-                alt={
-                    area.title
-                }
+            <div
                 className="
-                    h-36
-                    w-full
-                    rounded-lg
-                    object-cover
+                    relative
+                    h-44
+                    overflow-hidden
                 "
-            />
+            >
+
+                <img
+                    src={
+                        area.image
+                    }
+                    alt={
+                        area.title
+                    }
+                    className="
+                        h-full
+                        w-full
+                        object-cover
+                        transition-transform
+                        duration-500
+                        group-hover:scale-105
+                    "
+                />
+
+
+                <div
+                    className="
+                        absolute
+                        inset-0
+                        bg-gradient-to-t
+                        from-slate-950/70
+                        via-slate-900/10
+                        to-transparent
+                    "
+                />
+
+
+                <div
+                    className="
+                        absolute
+                        left-4
+                        top-4
+                    "
+                >
+
+                    <span
+                        className="
+                            inline-flex
+                            items-center
+                            gap-1.5
+                            rounded-full
+                            border
+                            border-white/20
+                            bg-slate-900/40
+                            px-3
+                            py-1.5
+                            text-[9px]
+                            font-semibold
+                            text-white
+                            backdrop-blur-sm
+                        "
+                    >
+
+                        <span
+                            className="
+                                h-1.5
+                                w-1.5
+                                rounded-full
+                                bg-emerald-400
+                            "
+                        />
+
+                        Assigned Training Area
+                    </span>
+
+                </div>
+
+
+                <div
+                    className="
+                        absolute
+                        bottom-4
+                        left-4
+                        right-4
+                    "
+                >
+
+                    <p
+                        className="
+                            text-[9px]
+                            font-semibold
+                            uppercase
+                            tracking-[0.16em]
+                            text-white/80
+                        "
+                    >
+                        Trainer Access
+                    </p>
+
+
+                    <h2
+                        className="
+                            mt-1
+                            text-lg
+                            font-bold
+                            text-white
+                        "
+                    >
+                        {area.title}
+                    </h2>
+
+                </div>
+
+            </div>
 
 
             {/* ================================================= */}
             {/* CONTENT */}
             {/* ================================================= */}
 
-            <div className="mt-4">
+            <div className="p-4 sm:p-5">
 
                 <div
                     className="
                         flex
                         items-start
-                        justify-between
                         gap-3
                     "
                 >
+
+                    <div
+                        className={`
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-xl
+
+                            ${isWorkingAtHeight
+                                ? "bg-amber-50 text-amber-700"
+                                : "bg-blue-50 text-blue-700"
+                            }
+                        `}
+                    >
+
+                        {isWorkingAtHeight ? (
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                className="h-5 w-5"
+                            >
+                                <path d="M5 21V5" />
+
+                                <path d="M19 21V5" />
+
+                                <path d="M5 9h14" />
+
+                                <path d="M5 14h14" />
+
+                                <path d="M5 19h14" />
+                            </svg>
+                        ) : (
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                className="h-5 w-5"
+                            >
+                                <rect
+                                    x="3"
+                                    y="8"
+                                    width="18"
+                                    height="10"
+                                    rx="2"
+                                />
+
+                                <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
+
+                                <path d="M8 13h8" />
+                            </svg>
+                        )}
+
+                    </div>
+
 
                     <div>
 
                         <p
                             className="
-                                text-[9px]
-                                font-semibold
-                                uppercase
-                                tracking-wide
-                                text-blue-600
+                                text-[10px]
+                                font-bold
+                                text-slate-800
                             "
                         >
-                            Assigned Training Area
+                            Safety Programme Management
                         </p>
 
 
-                        <h2
+                        <p
                             className="
                                 mt-1
-                                text-sm
-                                font-bold
-                                text-slate-900
+                                text-[9px]
+                                leading-4
+                                text-slate-500
                             "
                         >
-                            {area.title}
-                        </h2>
+                            Create programmes and organise structured
+                            learning content for this area.
+                        </p>
 
                     </div>
-
-
-                    <span
-                        className="
-                            rounded-full
-                            bg-emerald-50
-                            px-2.5
-                            py-1
-                            text-[9px]
-                            font-semibold
-                            text-emerald-700
-                        "
-                    >
-                        Assigned
-                    </span>
 
                 </div>
 
 
                 <p
                     className="
-                        mt-3
-                        text-xs
+                        mt-4
+                        text-[10px]
                         leading-5
                         text-slate-500
                     "
                 >
                     {area.description}
                 </p>
+
+
+                {/* ================================================= */}
+                {/* FEATURES */}
+                {/* ================================================= */}
+
+                <div
+                    className="
+                        mt-4
+                        grid
+                        grid-cols-2
+                        gap-2
+                    "
+                >
+
+                    <AreaFeature
+                        label="Programmes"
+                    />
+
+
+                    <AreaFeature
+                        label="Learning Sections"
+                    />
+
+                </div>
 
 
                 {/* ================================================= */}
@@ -293,25 +468,98 @@ function TrainingAreaCard({
                         handleOpenProgrammes
                     }
                     className="
-                        mt-4
+                        mt-5
+                        inline-flex
+                        min-h-[42px]
                         w-full
-                        rounded-lg
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-xl
                         bg-blue-600
                         px-4
                         py-2.5
-                        text-xs
+                        text-[10px]
                         font-semibold
                         text-white
+                        shadow-sm
                         transition
                         hover:bg-blue-700
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-300
                     "
                 >
                     Manage Training Programmes
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="h-4 w-4"
+                    >
+                        <path d="m9 6 6 6-6 6" />
+                    </svg>
                 </button>
 
             </div>
 
         </article>
+    );
+}
+
+
+// ======================================================
+// FEATURE
+// ======================================================
+
+function AreaFeature({
+    label,
+}) {
+    return (
+        <div
+            className="
+                flex
+                items-center
+                gap-2
+                rounded-xl
+                bg-slate-50
+                px-3
+                py-2.5
+            "
+        >
+
+            <span
+                className="
+                    flex
+                    h-5
+                    w-5
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-emerald-100
+                    text-[8px]
+                    font-bold
+                    text-emerald-700
+                "
+            >
+                ✓
+            </span>
+
+
+            <span
+                className="
+                    text-[9px]
+                    font-semibold
+                    text-slate-600
+                "
+            >
+                {label}
+            </span>
+
+        </div>
     );
 }
 
@@ -323,10 +571,9 @@ function TrainingAreaCard({
 function TrainerModuleCard({
     assignedTrainingSections = [],
 }) {
-
-    // ==================================================
+    // ======================================================
     // GET ASSIGNED AREAS
-    // ==================================================
+    // ======================================================
 
     const assignedAreas =
         assignedTrainingSections
@@ -343,9 +590,9 @@ function TrainerModuleCard({
             );
 
 
-    // ==================================================
+    // ======================================================
     // EMPTY
-    // ==================================================
+    // ======================================================
 
     if (
         assignedAreas.length ===
@@ -357,18 +604,18 @@ function TrainerModuleCard({
     }
 
 
-    // ==================================================
+    // ======================================================
     // UI
-    // ==================================================
+    // ======================================================
 
     return (
         <section
             className="
-                rounded-xl
+                overflow-hidden
+                rounded-2xl
                 border
                 border-slate-200
                 bg-white
-                p-5
                 shadow-sm
             "
         >
@@ -379,55 +626,114 @@ function TrainerModuleCard({
 
             <div
                 className="
-                    mb-5
                     flex
-                    flex-wrap
-                    items-center
-                    justify-between
+                    flex-col
                     gap-3
+                    border-b
+                    border-slate-100
+                    bg-gradient-to-r
+                    from-white
+                    to-blue-50/50
+                    px-5
+                    py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                 "
             >
 
-                <div>
+                <div
+                    className="
+                        flex
+                        items-start
+                        gap-3
+                    "
+                >
 
-                    <h2
+                    <div
                         className="
-                            text-sm
-                            font-bold
-                            text-slate-900
+                            flex
+                            h-9
+                            w-9
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-blue-50
+                            text-blue-600
                         "
                     >
-                        My Training Areas
-                    </h2>
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-5 w-5"
+                        >
+                            <rect
+                                x="4"
+                                y="4"
+                                width="16"
+                                height="16"
+                                rx="3"
+                            />
+
+                            <path d="M8 9h8" />
+
+                            <path d="M8 13h8" />
+
+                            <path d="M8 17h5" />
+                        </svg>
+
+                    </div>
 
 
-                    <p
-                        className="
-                            mt-1
-                            text-xs
-                            text-slate-500
-                        "
-                    >
-                        These training areas determine which programmes
-                        you are allowed to create and manage.
-                    </p>
+                    <div>
+
+                        <h2
+                            className="
+                                text-sm
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            My Training Areas
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                max-w-2xl
+                                text-[10px]
+                                leading-5
+                                text-slate-500
+                            "
+                        >
+                            These training areas determine which
+                            programmes you are allowed to create and
+                            manage.
+                        </p>
+
+                    </div>
 
                 </div>
 
 
                 <span
                     className="
+                        w-fit
                         rounded-full
                         bg-blue-50
                         px-3
                         py-1.5
-                        text-[10px]
+                        text-[9px]
                         font-semibold
                         text-blue-700
                     "
                 >
                     {assignedAreas.length}{" "}
-
                     {assignedAreas.length ===
                         1
                         ? "Area"
@@ -441,33 +747,37 @@ function TrainerModuleCard({
             {/* CARDS */}
             {/* ================================================= */}
 
-            <div
-                className={`
-                    grid
-                    gap-4
+            <div className="p-4 sm:p-5">
 
-                    ${assignedAreas.length >
-                        1
-                        ? "md:grid-cols-2"
-                        : "grid-cols-1"
-                    }
-                `}
-            >
+                <div
+                    className={`
+                        grid
+                        gap-5
 
-                {assignedAreas.map(
-                    (
-                        area
-                    ) => (
-                        <TrainingAreaCard
-                            key={
-                                area.id
-                            }
-                            area={
-                                area
-                            }
-                        />
-                    )
-                )}
+                        ${assignedAreas.length >
+                            1
+                            ? "md:grid-cols-2"
+                            : "grid-cols-1"
+                        }
+                    `}
+                >
+
+                    {assignedAreas.map(
+                        (
+                            area
+                        ) => (
+                            <TrainingAreaCard
+                                key={
+                                    area.id
+                                }
+                                area={
+                                    area
+                                }
+                            />
+                        )
+                    )}
+
+                </div>
 
             </div>
 

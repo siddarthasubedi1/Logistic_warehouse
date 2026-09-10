@@ -14,6 +14,10 @@ function ChangePasswordForm() {
         useNavigate();
 
 
+    // ======================================================
+    // FORM
+    // ======================================================
+
     const [
         formData,
         setFormData,
@@ -24,36 +28,53 @@ function ChangePasswordForm() {
     });
 
 
+    // ======================================================
+    // PASSWORD VISIBILITY
+    // ======================================================
+
     const [
         showCurrent,
         setShowCurrent,
     ] = useState(false);
+
 
     const [
         showNew,
         setShowNew,
     ] = useState(false);
 
+
     const [
         showConfirm,
         setShowConfirm,
     ] = useState(false);
+
+
+    // ======================================================
+    // STATE
+    // ======================================================
 
     const [
         loading,
         setLoading,
     ] = useState(false);
 
+
     const [
         error,
         setError,
     ] = useState("");
+
 
     const [
         success,
         setSuccess,
     ] = useState("");
 
+
+    // ======================================================
+    // CHANGE
+    // ======================================================
 
     const handleChange = (
         event
@@ -78,9 +99,14 @@ function ChangePasswordForm() {
 
 
         setError("");
+
         setSuccess("");
     };
 
+
+    // ======================================================
+    // SUBMIT
+    // ======================================================
 
     const handleSubmit =
         async (
@@ -90,6 +116,7 @@ function ChangePasswordForm() {
 
 
             setError("");
+
             setSuccess("");
 
 
@@ -133,10 +160,8 @@ function ChangePasswordForm() {
 
 
             if (
-                formData
-                    .currentPassword ===
-                formData
-                    .newPassword
+                formData.currentPassword ===
+                formData.newPassword
             ) {
                 setError(
                     "New password must be different from your current password."
@@ -184,14 +209,23 @@ function ChangePasswordForm() {
                 });
 
 
+                // ===========================================
+                // CLEAR CURRENT SESSION
+                // ===========================================
+
                 sessionStorage.removeItem(
                     "accessToken"
                 );
+
 
                 sessionStorage.removeItem(
                     "user"
                 );
 
+
+                // ===========================================
+                // RETURN TO LOGIN
+                // ===========================================
 
                 setTimeout(
                     () => {
@@ -228,31 +262,101 @@ function ChangePasswordForm() {
         };
 
 
+    // ======================================================
+    // PASSWORD RULES
+    // ======================================================
+
     const newPasswordLength =
         formData
             .newPassword
             .length;
 
 
+    const differentFromCurrent =
+        Boolean(
+            formData.newPassword &&
+            formData.currentPassword &&
+            formData.newPassword !==
+            formData.currentPassword
+        );
+
+
     const passwordsMatch =
-        formData
-            .confirmPassword &&
-        formData.newPassword ===
-        formData
-            .confirmPassword;
+        Boolean(
+            formData.confirmPassword &&
+            formData.newPassword ===
+            formData.confirmPassword
+        );
 
 
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section
+            className="
+                overflow-hidden
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-sm
+            "
+        >
+
+            {/* ================================================= */}
+            {/* HEADER */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    relative
+                    overflow-hidden
+                    border-b
+                    border-slate-100
+                    bg-gradient-to-br
+                    from-white
+                    to-blue-50
+                    p-5
+                    sm:p-6
+                "
+            >
+
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        -right-12
+                        -top-12
+                        h-32
+                        w-32
+                        rounded-full
+                        bg-blue-100/50
+                    "
+                />
 
 
-            {/* SECURITY HEADER */}
+                <div
+                    className="
+                        relative
+                        flex
+                        items-start
+                        gap-4
+                    "
+                >
 
-            <div className="border-b border-slate-100 bg-gradient-to-br from-white to-blue-50/60 p-6">
-
-                <div className="flex items-start gap-4">
-
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
+                    <div
+                        className="
+                            flex
+                            h-11
+                            w-11
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-blue-600
+                            text-white
+                            shadow-sm
+                            shadow-blue-200
+                        "
+                    >
 
                         <svg
                             viewBox="0 0 24 24"
@@ -277,16 +381,41 @@ function ChangePasswordForm() {
 
                     <div>
 
-                        <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-blue-600">
+                        <p
+                            className="
+                                text-[9px]
+                                font-bold
+                                uppercase
+                                tracking-[0.16em]
+                                text-blue-600
+                            "
+                        >
                             Security
                         </p>
 
-                        <h2 className="mt-1 text-[15px] font-bold text-slate-900">
+
+                        <h2
+                            className="
+                                mt-1
+                                text-base
+                                font-bold
+                                text-slate-900
+                            "
+                        >
                             Change Password
                         </h2>
 
-                        <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                            Create a strong password to keep your account protected.
+
+                        <p
+                            className="
+                                mt-1
+                                text-[10px]
+                                leading-5
+                                text-slate-500
+                            "
+                        >
+                            Create a strong new password to protect your
+                            training account.
                         </p>
 
                     </div>
@@ -296,48 +425,50 @@ function ChangePasswordForm() {
             </div>
 
 
-            <div className="p-6">
+            {/* ================================================= */}
+            {/* BODY */}
+            {/* ================================================= */}
 
+            <div
+                className="
+                    p-4
+                    sm:p-6
+                "
+            >
 
                 {/* ERROR */}
 
                 {error && (
-                    <div className="mb-5 flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[10px] text-red-600">
-
-                        <span className="font-bold">
-                            !
-                        </span>
-
-                        <span>
-                            {error}
-                        </span>
-
-                    </div>
+                    <FeedbackBox
+                        type="error"
+                        message={
+                            error
+                        }
+                    />
                 )}
 
 
                 {/* SUCCESS */}
 
                 {success && (
-                    <div className="mb-5 flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[10px] text-emerald-700">
-
-                        <span>
-                            ✓
-                        </span>
-
-                        <span>
-                            {success}
-                        </span>
-
-                    </div>
+                    <FeedbackBox
+                        type="success"
+                        message={
+                            success
+                        }
+                    />
                 )}
 
+
+                {/* FORM */}
 
                 <form
                     onSubmit={
                         handleSubmit
                     }
-                    className="space-y-4"
+                    className="
+                        space-y-4
+                    "
                 >
 
                     <PasswordField
@@ -424,16 +555,74 @@ function ChangePasswordForm() {
                     />
 
 
+                    {/* ================================================= */}
                     {/* PASSWORD RULES */}
+                    {/* ================================================= */}
 
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                    <div
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-slate-50/80
+                            p-4
+                        "
+                    >
 
-                        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500">
-                            Password requirements
-                        </p>
+                        <div
+                            className="
+                                flex
+                                items-center
+                                gap-2
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-7
+                                    w-7
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    bg-white
+                                    text-blue-600
+                                    shadow-sm
+                                "
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    className="h-3.5 w-3.5"
+                                >
+                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
+                                </svg>
+                            </div>
 
 
-                        <div className="mt-3 space-y-2">
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-bold
+                                    uppercase
+                                    tracking-[0.12em]
+                                    text-slate-500
+                                "
+                            >
+                                Password Requirements
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                mt-4
+                                space-y-2.5
+                            "
+                        >
 
                             <Rule
                                 valid={
@@ -446,12 +635,7 @@ function ChangePasswordForm() {
 
                             <Rule
                                 valid={
-                                    Boolean(
-                                        formData.newPassword &&
-                                        formData.currentPassword &&
-                                        formData.newPassword !==
-                                        formData.currentPassword
-                                    )
+                                    differentFromCurrent
                                 }
                                 text="Different from current password"
                             />
@@ -459,9 +643,7 @@ function ChangePasswordForm() {
 
                             <Rule
                                 valid={
-                                    Boolean(
-                                        passwordsMatch
-                                    )
+                                    passwordsMatch
                                 }
                                 text="New passwords match"
                             />
@@ -471,19 +653,53 @@ function ChangePasswordForm() {
                     </div>
 
 
-                    {/* BUTTON */}
+                    {/* ================================================= */}
+                    {/* SUBMIT */}
+                    {/* ================================================= */}
 
                     <button
                         type="submit"
                         disabled={
                             loading
                         }
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#1769e0] text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#0f5dc9] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="
+                            flex
+                            min-h-[46px]
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-xl
+                            bg-blue-600
+                            px-4
+                            py-3
+                            text-[10px]
+                            font-semibold
+                            text-white
+                            shadow-sm
+                            transition
+                            hover:bg-blue-700
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-300
+                            disabled:cursor-not-allowed
+                            disabled:opacity-60
+                        "
                     >
 
                         {loading ? (
                             <>
-                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                <span
+                                    className="
+                                        h-4
+                                        w-4
+                                        animate-spin
+                                        rounded-full
+                                        border-2
+                                        border-white/40
+                                        border-t-white
+                                    "
+                                />
 
                                 Changing Password...
                             </>
@@ -510,11 +726,68 @@ function ChangePasswordForm() {
                 </form>
 
 
-                <div className="mt-5 border-t border-slate-100 pt-4">
+                {/* ================================================= */}
+                {/* SIGN OUT NOTICE */}
+                {/* ================================================= */}
 
-                    <p className="text-center text-[9px] leading-4 text-slate-400">
-                        After changing your password you will be signed out and asked to log in again.
-                    </p>
+                <div
+                    className="
+                        mt-5
+                        border-t
+                        border-slate-100
+                        pt-4
+                    "
+                >
+
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-2
+                            rounded-xl
+                            bg-blue-50/60
+                            p-3
+                        "
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="
+                                mt-0.5
+                                h-4
+                                w-4
+                                shrink-0
+                                text-blue-600
+                            "
+                        >
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="9"
+                            />
+
+                            <path d="M12 11v5" />
+
+                            <path d="M12 8h.01" />
+                        </svg>
+
+
+                        <p
+                            className="
+                                text-[9px]
+                                leading-5
+                                text-blue-700
+                            "
+                        >
+                            After changing your password, you will be
+                            signed out and asked to log in again using
+                            your new password.
+                        </p>
+
+                    </div>
 
                 </div>
 
@@ -525,18 +798,89 @@ function ChangePasswordForm() {
 }
 
 
+// ======================================================
+// FEEDBACK BOX
+// ======================================================
+
+function FeedbackBox({
+    type,
+    message,
+}) {
+    const success =
+        type ===
+        "success";
+
+
+    return (
+        <div
+            className={`
+                mb-5
+                flex
+                items-start
+                gap-2
+                rounded-xl
+                border
+                px-4
+                py-3
+                text-[10px]
+
+                ${success
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-red-200 bg-red-50 text-red-600"
+                }
+            `}
+        >
+
+            <span className="font-bold">
+                {success
+                    ? "✓"
+                    : "!"}
+            </span>
+
+
+            <span>
+                {message}
+            </span>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// RULE
+// ======================================================
+
 function Rule({
     valid,
     text,
 }) {
     return (
-        <div className="flex items-center gap-2">
+        <div
+            className="
+                flex
+                items-center
+                gap-2
+            "
+        >
 
             <span
-                className={`flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold ${valid
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-200 text-slate-500"
-                    }`}
+                className={`
+                    flex
+                    h-5
+                    w-5
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-[8px]
+                    font-bold
+
+                    ${valid
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-slate-200 text-slate-500"
+                    }
+                `}
             >
                 {valid
                     ? "✓"
@@ -545,10 +889,14 @@ function Rule({
 
 
             <p
-                className={`text-[9px] ${valid
-                    ? "font-semibold text-emerald-700"
-                    : "text-slate-500"
-                    }`}
+                className={`
+                    text-[9px]
+
+                    ${valid
+                        ? "font-semibold text-emerald-700"
+                        : "text-slate-500"
+                    }
+                `}
             >
                 {text}
             </p>
@@ -557,6 +905,10 @@ function Rule({
     );
 }
 
+
+// ======================================================
+// PASSWORD FIELD
+// ======================================================
 
 function PasswordField({
     label,
@@ -576,7 +928,13 @@ function PasswordField({
                 htmlFor={
                     name
                 }
-                className="mb-2 block text-[10px] font-semibold text-slate-700"
+                className="
+                    mb-2
+                    block
+                    text-[10px]
+                    font-semibold
+                    text-slate-700
+                "
             >
                 {label}
             </label>
@@ -584,7 +942,18 @@ function PasswordField({
 
             <div className="relative">
 
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        inset-y-0
+                        left-0
+                        flex
+                        items-center
+                        pl-3.5
+                        text-slate-400
+                    "
+                >
 
                     <svg
                         viewBox="0 0 24 24"
@@ -634,7 +1003,26 @@ function PasswordField({
                     placeholder={
                         placeholder
                     }
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-[11px] text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+                    className="
+                        h-12
+                        w-full
+                        rounded-xl
+                        border
+                        border-slate-300
+                        bg-white
+                        pl-10
+                        pr-11
+                        text-[11px]
+                        text-slate-800
+                        outline-none
+                        transition
+                        placeholder:text-slate-300
+                        focus:border-blue-500
+                        focus:ring-2
+                        focus:ring-blue-100
+                        disabled:cursor-not-allowed
+                        disabled:bg-slate-50
+                    "
                 />
 
 
@@ -646,7 +1034,18 @@ function PasswordField({
                     disabled={
                         disabled
                     }
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-blue-600 disabled:opacity-50"
+                    className="
+                        absolute
+                        inset-y-0
+                        right-0
+                        flex
+                        items-center
+                        px-3
+                        text-slate-400
+                        transition
+                        hover:text-blue-600
+                        disabled:opacity-50
+                    "
                     aria-label={
                         visible
                             ? "Hide password"

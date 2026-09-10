@@ -16,6 +16,10 @@ import {
 } from "../../utils/training";
 
 
+// ======================================================
+// FORCE PASSWORD CHANGE MODAL
+// ======================================================
+
 function ForcePasswordChangeModal({
     user,
     onCompleted,
@@ -39,6 +43,24 @@ function ForcePasswordChangeModal({
 
 
     const [
+        showCurrentPassword,
+        setShowCurrentPassword,
+    ] = useState(false);
+
+
+    const [
+        showNewPassword,
+        setShowNewPassword,
+    ] = useState(false);
+
+
+    const [
+        showConfirmPassword,
+        setShowConfirmPassword,
+    ] = useState(false);
+
+
+    const [
         loading,
         setLoading,
     ] = useState(false);
@@ -57,6 +79,32 @@ function ForcePasswordChangeModal({
 
 
     // ======================================================
+    // PASSWORD CONDITIONS
+    // ======================================================
+
+    const hasMinimumLength =
+        newPassword.length >=
+        12;
+
+
+    const isDifferent =
+        Boolean(
+            newPassword &&
+            currentPassword &&
+            newPassword !==
+            currentPassword
+        );
+
+
+    const passwordsMatch =
+        Boolean(
+            confirmPassword &&
+            newPassword ===
+            confirmPassword
+        );
+
+
+    // ======================================================
     // CHANGE PASSWORD
     // ======================================================
 
@@ -67,7 +115,9 @@ function ForcePasswordChangeModal({
             event.preventDefault();
 
 
-            setError("");
+            setError(
+                ""
+            );
 
 
             // ==================================================
@@ -88,7 +138,7 @@ function ForcePasswordChangeModal({
 
 
             // ==================================================
-            // PASSWORD LENGTH
+            // LENGTH
             // ==================================================
 
             if (
@@ -120,7 +170,7 @@ function ForcePasswordChangeModal({
 
 
             // ==================================================
-            // MUST BE DIFFERENT
+            // DIFFERENT FROM TEMPORARY
             // ==================================================
 
             if (
@@ -136,7 +186,9 @@ function ForcePasswordChangeModal({
 
 
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
 
                 // ==================================================
@@ -153,21 +205,27 @@ function ForcePasswordChangeModal({
 
 
                 // ==================================================
-                // REMOVE OLD SESSION
+                // CLEAR SESSION
                 // ==================================================
                 //
-                // Backend invalidates the old authenticated session
-                // when the password changes.
-                //
-                // User must login again using the new password.
+                // The user must authenticate again with the new
+                // password after the temporary password is replaced.
                 // ==================================================
 
                 clearAuthSession();
 
 
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
+                setCurrentPassword(
+                    ""
+                );
+
+                setNewPassword(
+                    ""
+                );
+
+                setConfirmPassword(
+                    ""
+                );
 
 
                 setCompleted(
@@ -189,7 +247,9 @@ function ForcePasswordChangeModal({
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         };
 
@@ -198,43 +258,160 @@ function ForcePasswordChangeModal({
     // SUCCESS SCREEN
     // ======================================================
 
-    if (completed) {
+    if (
+        completed
+    ) {
         return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
+            <div
+                className="
+                    fixed
+                    inset-0
+                    z-[100]
+                    flex
+                    items-center
+                    justify-center
+                    overflow-y-auto
+                    bg-slate-950/60
+                    px-4
+                    py-8
+                    backdrop-blur-sm
+                "
+            >
 
-                <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl">
+                <div
+                    className="
+                        relative
+                        w-full
+                        max-w-md
+                        overflow-hidden
+                        rounded-2xl
+                        bg-white
+                        shadow-2xl
+                    "
+                >
 
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                    <div
+                        className="
+                            h-1
+                            bg-emerald-500
+                        "
+                    />
 
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="h-7 w-7"
+
+                    <div
+                        className="
+                            p-6
+                            text-center
+                            sm:p-7
+                        "
+                    >
+
+                        <div
+                            className="
+                                mx-auto
+                                flex
+                                h-16
+                                w-16
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                bg-emerald-100
+                                text-emerald-600
+                            "
                         >
-                            <path d="m5 12 4 4L19 6" />
-                        </svg>
 
-                    </div>
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="h-8 w-8"
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="9"
+                                />
+
+                                <path d="m8 12 2.5 2.5L16 9" />
+                            </svg>
+
+                        </div>
 
 
-                    <h2 className="mt-5 text-center text-xl font-bold text-slate-900">
-                        Password Changed Successfully
-                    </h2>
+                        <p
+                            className="
+                                mt-5
+                                text-[9px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.16em]
+                                text-emerald-600
+                            "
+                        >
+                            Security Update Complete
+                        </p>
 
 
-                    <p className="mt-2 text-center text-sm leading-6 text-slate-500">
-                        Your temporary password is no longer valid.
-                        Please log in again using your new password.
-                    </p>
+                        <h2
+                            className="
+                                mt-2
+                                text-xl
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            Password Changed Successfully
+                        </h2>
 
 
-                    <div className="mt-6 flex justify-center">
+                        <p
+                            className="
+                                mx-auto
+                                mt-3
+                                max-w-sm
+                                text-[11px]
+                                leading-6
+                                text-slate-500
+                            "
+                        >
+                            Your temporary password is no longer valid.
+                            Please log in again using your new password.
+                        </p>
+
+
+                        <div
+                            className="
+                                mt-6
+                                rounded-xl
+                                border
+                                border-emerald-100
+                                bg-emerald-50
+                                p-3
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-[9px]
+                                    leading-5
+                                    text-emerald-700
+                                "
+                            >
+                                Your account is now ready to use with
+                                the new password.
+                            </p>
+
+                        </div>
+
 
                         <ActionButton
                             variant="primary"
-                            className="w-full justify-center"
+                            className="
+                                mt-6
+                                w-full
+                                justify-center
+                            "
                             onClick={
                                 onCompleted
                             }
@@ -256,19 +433,91 @@ function ForcePasswordChangeModal({
     // ======================================================
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
+        <div
+            className="
+                fixed
+                inset-0
+                z-[100]
+                flex
+                items-center
+                justify-center
+                overflow-y-auto
+                bg-slate-950/60
+                px-4
+                py-6
+                backdrop-blur-sm
+            "
+        >
 
-            <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div
+                className="
+                    my-auto
+                    w-full
+                    max-w-lg
+                    overflow-hidden
+                    rounded-2xl
+                    bg-white
+                    shadow-2xl
+                "
+            >
 
                 {/* ================================================= */}
                 {/* HEADER */}
                 {/* ================================================= */}
 
-                <div className="border-b border-slate-200 px-6 py-5">
+                <div
+                    className="
+                        relative
+                        overflow-hidden
+                        bg-gradient-to-r
+                        from-[#073763]
+                        via-[#0b4f87]
+                        to-[#1769aa]
+                        px-5
+                        py-5
+                        text-white
+                        sm:px-6
+                    "
+                >
 
-                    <div className="flex items-start gap-4">
+                    <div
+                        className="
+                            pointer-events-none
+                            absolute
+                            -right-10
+                            -top-12
+                            h-32
+                            w-32
+                            rounded-full
+                            bg-white/10
+                        "
+                    />
 
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+
+                    <div
+                        className="
+                            relative
+                            z-10
+                            flex
+                            items-start
+                            gap-4
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                h-12
+                                w-12
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-xl
+                                border
+                                border-white/15
+                                bg-white/10
+                            "
+                        >
 
                             <svg
                                 viewBox="0 0 24 24"
@@ -293,15 +542,41 @@ function ForcePasswordChangeModal({
 
                         <div>
 
-                            <h2 className="text-lg font-bold text-slate-900">
+                            <p
+                                className="
+                                    text-[8px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-[0.16em]
+                                    text-blue-100
+                                "
+                            >
+                                First Login Security
+                            </p>
+
+
+                            <h2
+                                className="
+                                    mt-1
+                                    text-lg
+                                    font-bold
+                                "
+                            >
                                 Password Change Required
                             </h2>
 
 
-                            <p className="mt-1 text-sm leading-5 text-slate-500">
+                            <p
+                                className="
+                                    mt-2
+                                    text-[10px]
+                                    leading-5
+                                    text-blue-100
+                                "
+                            >
                                 You are using a temporary password
-                                generated by the administrator. Create
-                                a new password before accessing your
+                                generated by the Administrator. Create
+                                your own password before accessing your
                                 dashboard.
                             </p>
 
@@ -320,46 +595,145 @@ function ForcePasswordChangeModal({
                     onSubmit={
                         handleSubmit
                     }
-                    className="space-y-5 p-6"
+                    className="
+                        space-y-4
+                        p-5
+                        sm:p-6
+                    "
                 >
 
-                    {/* User */}
-                    <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                    {/* ================================================= */}
+                    {/* ACCOUNT */}
+                    {/* ================================================= */}
 
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-500">
-                            Account
-                        </p>
+                    <div
+                        className="
+                            rounded-xl
+                            border
+                            border-blue-100
+                            bg-blue-50
+                            p-4
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                items-center
+                                gap-3
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-10
+                                    w-10
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-white
+                                    text-blue-600
+                                    shadow-sm
+                                "
+                            >
+
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    className="h-5 w-5"
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="8"
+                                        r="3"
+                                    />
+
+                                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
+                                </svg>
+
+                            </div>
 
 
-                        <p className="mt-1 text-sm font-bold text-slate-900">
-                            {getUserDisplayName(
-                                user,
-                                user?.username ||
-                                "User"
-                            )}
-                        </p>
+                            <div className="min-w-0">
+
+                                <p
+                                    className="
+                                        text-[8px]
+                                        font-semibold
+                                        uppercase
+                                        tracking-wide
+                                        text-blue-500
+                                    "
+                                >
+                                    Account
+                                </p>
 
 
-                        <p className="mt-1 text-xs capitalize text-slate-500">
-                            {user?.username}
-                            {" · "}
-                            {user?.role}
-                        </p>
+                                <p
+                                    className="
+                                        mt-1
+                                        truncate
+                                        text-[11px]
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
+                                    {getUserDisplayName(
+                                        user,
+                                        user?.username ||
+                                        "User"
+                                    )}
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-0.5
+                                        text-[9px]
+                                        capitalize
+                                        text-slate-500
+                                    "
+                                >
+                                    {user?.username ||
+                                        "No username"}
+                                    {" · "}
+                                    {user?.role ||
+                                        "User"}
+                                </p>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
 
-                    {/* Error */}
+                    {/* ================================================= */}
+                    {/* ERROR */}
+                    {/* ================================================= */}
+
                     <FeedbackAlert
                         type="error"
                         message={
                             error
                         }
+                        onClose={() =>
+                            setError(
+                                ""
+                            )
+                        }
                     />
 
 
-                    {/* Current password */}
-                    <PasswordField
+                    {/* ================================================= */}
+                    {/* TEMPORARY PASSWORD */}
+                    {/* ================================================= */}
+
+                    <ModalPasswordField
                         label="Current Temporary Password"
                         value={
                             currentPassword
@@ -371,17 +745,34 @@ function ForcePasswordChangeModal({
                                 event.target.value
                             );
 
-                            setError("");
+                            setError(
+                                ""
+                            );
                         }}
+                        visible={
+                            showCurrentPassword
+                        }
+                        onToggle={() =>
+                            setShowCurrentPassword(
+                                (
+                                    current
+                                ) =>
+                                    !current
+                            )
+                        }
                         autoComplete="current-password"
                         disabled={
                             loading
                         }
+                        placeholder="Enter temporary password"
                     />
 
 
-                    {/* New password */}
-                    <PasswordField
+                    {/* ================================================= */}
+                    {/* NEW PASSWORD */}
+                    {/* ================================================= */}
+
+                    <ModalPasswordField
                         label="New Password"
                         value={
                             newPassword
@@ -393,23 +784,34 @@ function ForcePasswordChangeModal({
                                 event.target.value
                             );
 
-                            setError("");
+                            setError(
+                                ""
+                            );
                         }}
+                        visible={
+                            showNewPassword
+                        }
+                        onToggle={() =>
+                            setShowNewPassword(
+                                (
+                                    current
+                                ) =>
+                                    !current
+                            )
+                        }
                         autoComplete="new-password"
                         disabled={
                             loading
                         }
+                        placeholder="Create new password"
                     />
 
 
-                    <p className="-mt-3 text-[11px] leading-5 text-slate-500">
-                        Use at least 12 characters and do not reuse
-                        your temporary password.
-                    </p>
+                    {/* ================================================= */}
+                    {/* CONFIRM */}
+                    {/* ================================================= */}
 
-
-                    {/* Confirm */}
-                    <PasswordField
+                    <ModalPasswordField
                         label="Confirm New Password"
                         value={
                             confirmPassword
@@ -421,23 +823,106 @@ function ForcePasswordChangeModal({
                                 event.target.value
                             );
 
-                            setError("");
+                            setError(
+                                ""
+                            );
                         }}
+                        visible={
+                            showConfirmPassword
+                        }
+                        onToggle={() =>
+                            setShowConfirmPassword(
+                                (
+                                    current
+                                ) =>
+                                    !current
+                            )
+                        }
                         autoComplete="new-password"
                         disabled={
                             loading
                         }
+                        placeholder="Confirm new password"
                     />
 
 
-                    {/* Submit */}
+                    {/* ================================================= */}
+                    {/* REQUIREMENTS */}
+                    {/* ================================================= */}
+
+                    <div
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-slate-50
+                            p-4
+                        "
+                    >
+
+                        <p
+                            className="
+                                text-[8px]
+                                font-bold
+                                uppercase
+                                tracking-[0.12em]
+                                text-slate-500
+                            "
+                        >
+                            Password Requirements
+                        </p>
+
+
+                        <div
+                            className="
+                                mt-3
+                                space-y-2
+                            "
+                        >
+
+                            <PasswordRule
+                                valid={
+                                    hasMinimumLength
+                                }
+                                label="At least 12 characters"
+                            />
+
+
+                            <PasswordRule
+                                valid={
+                                    isDifferent
+                                }
+                                label="Different from temporary password"
+                            />
+
+
+                            <PasswordRule
+                                valid={
+                                    passwordsMatch
+                                }
+                                label="New passwords match"
+                            />
+
+                        </div>
+
+                    </div>
+
+
+                    {/* ================================================= */}
+                    {/* SUBMIT */}
+                    {/* ================================================= */}
+
                     <ActionButton
                         type="submit"
                         variant="primary"
                         disabled={
                             loading
                         }
-                        className="w-full justify-center py-3"
+                        className="
+                            w-full
+                            justify-center
+                            py-3
+                        "
                     >
                         {loading
                             ? "Changing Password..."
@@ -445,11 +930,55 @@ function ForcePasswordChangeModal({
                     </ActionButton>
 
 
-                    <p className="text-center text-[11px] leading-5 text-slate-400">
-                        This step cannot be skipped. Trainer and
-                        Trainee dashboard access stays blocked until
-                        the temporary password is changed.
-                    </p>
+                    {/* ================================================= */}
+                    {/* NOTICE */}
+                    {/* ================================================= */}
+
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-2
+                            rounded-xl
+                            bg-amber-50
+                            p-3
+                        "
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="
+                                mt-0.5
+                                h-4
+                                w-4
+                                shrink-0
+                                text-amber-600
+                            "
+                        >
+                            <path d="M12 3 2.5 20h19L12 3Z" />
+
+                            <path d="M12 9v5" />
+
+                            <path d="M12 17h.01" />
+                        </svg>
+
+
+                        <p
+                            className="
+                                text-[9px]
+                                leading-5
+                                text-amber-700
+                            "
+                        >
+                            This step cannot be skipped. Trainer and
+                            Trainee dashboard access remains blocked
+                            until the temporary password is changed.
+                        </p>
+
+                    </div>
 
                 </form>
 
@@ -461,56 +990,237 @@ function ForcePasswordChangeModal({
 
 
 // ======================================================
-// PASSWORD FIELD
+// PASSWORD RULE
 // ======================================================
 
-function PasswordField({
+function PasswordRule({
+    valid,
     label,
-    value,
-    onChange,
-    autoComplete,
-    disabled,
 }) {
     return (
-        <label className="block">
+        <div
+            className="
+                flex
+                items-center
+                gap-2
+            "
+        >
 
-            <span className="mb-2 block text-sm font-semibold text-slate-700">
-                {label}
+            <span
+                className={`
+                    flex
+                    h-5
+                    w-5
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-[8px]
+                    font-bold
+
+                    ${valid
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-slate-200 text-slate-500"
+                    }
+                `}
+            >
+                {valid
+                    ? "✓"
+                    : "•"}
             </span>
 
 
-            <input
-                type="password"
-                value={
-                    value
-                }
-                onChange={
-                    onChange
-                }
-                autoComplete={
-                    autoComplete
-                }
-                disabled={
-                    disabled
-                }
-                className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-slate-300
-                    px-4
-                    py-3
-                    text-sm
-                    outline-none
-                    transition
-                    focus:border-blue-500
-                    focus:ring-2
-                    focus:ring-blue-100
-                    disabled:bg-slate-100
-                "
-            />
+            <span
+                className={`
+                    text-[9px]
 
-        </label>
+                    ${valid
+                        ? "font-semibold text-emerald-700"
+                        : "text-slate-500"
+                    }
+                `}
+            >
+                {label}
+            </span>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// MODAL PASSWORD FIELD
+// ======================================================
+
+function ModalPasswordField({
+    label,
+    value,
+    onChange,
+    visible,
+    onToggle,
+    autoComplete,
+    disabled,
+    placeholder,
+}) {
+    return (
+        <div>
+
+            <label
+                className="
+                    mb-2
+                    block
+                    text-[10px]
+                    font-semibold
+                    text-slate-700
+                "
+            >
+                {label}
+            </label>
+
+
+            <div className="relative">
+
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        inset-y-0
+                        left-0
+                        flex
+                        items-center
+                        pl-3.5
+                        text-slate-400
+                    "
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                    >
+                        <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                        />
+
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                    </svg>
+                </div>
+
+
+                <input
+                    type={
+                        visible
+                            ? "text"
+                            : "password"
+                    }
+                    value={
+                        value
+                    }
+                    onChange={
+                        onChange
+                    }
+                    autoComplete={
+                        autoComplete
+                    }
+                    disabled={
+                        disabled
+                    }
+                    placeholder={
+                        placeholder
+                    }
+                    className="
+                        h-12
+                        w-full
+                        rounded-xl
+                        border
+                        border-slate-300
+                        bg-white
+                        pl-10
+                        pr-11
+                        text-[11px]
+                        text-slate-800
+                        outline-none
+                        transition
+                        placeholder:text-slate-400
+                        focus:border-blue-500
+                        focus:ring-2
+                        focus:ring-blue-100
+                        disabled:cursor-not-allowed
+                        disabled:bg-slate-100
+                    "
+                />
+
+
+                <button
+                    type="button"
+                    disabled={
+                        disabled
+                    }
+                    onClick={
+                        onToggle
+                    }
+                    aria-label={
+                        visible
+                            ? "Hide password"
+                            : "Show password"
+                    }
+                    className="
+                        absolute
+                        inset-y-0
+                        right-0
+                        flex
+                        w-11
+                        items-center
+                        justify-center
+                        text-slate-400
+                        transition
+                        hover:text-blue-600
+                        disabled:opacity-50
+                    "
+                >
+
+                    {visible ? (
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-4 w-4"
+                        >
+                            <path d="M3 3l18 18" />
+
+                            <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+
+                            <path d="M9.8 4.2A10.5 10.5 0 0 1 12 4c5.5 0 9 5 9 8a10.8 10.8 0 0 1-2.2 3.8" />
+                        </svg>
+                    ) : (
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-4 w-4"
+                        >
+                            <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z" />
+
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="2.5"
+                            />
+                        </svg>
+                    )}
+
+                </button>
+
+            </div>
+
+        </div>
     );
 }
 

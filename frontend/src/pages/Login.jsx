@@ -43,6 +43,10 @@ function getStoredForcedPasswordUser() {
 }
 
 
+// ======================================================
+// LOGIN PAGE
+// ======================================================
+
 function Login() {
     const [
         showForgotPassword,
@@ -83,7 +87,9 @@ function Login() {
     // ======================================================
 
     const handlePasswordChangeRequired =
-        (user) => {
+        (
+            user
+        ) => {
             setShowForgotPassword(
                 false
             );
@@ -95,14 +101,18 @@ function Login() {
         };
 
 
+    // ======================================================
+    // PASSWORD CHANGE COMPLETED
+    // ======================================================
+
     const handlePasswordChangeCompleted =
         () => {
             /*
-                ForcePasswordChangeModal clears the old
-                authentication session.
+                ForcePasswordChangeModal already clears
+                the temporary authenticated session.
 
-                We return to the normal login form so the
-                user can login again with the new password.
+                After that we simply return the user to
+                the normal login form.
             */
 
             setForcedPasswordUser(
@@ -116,10 +126,79 @@ function Login() {
         };
 
 
-    return (
-        <div className="min-h-screen bg-[#f5f5f5] p-3 sm:p-5">
+    // ======================================================
+    // PAGE
+    // ======================================================
 
-            <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-[1450px] overflow-hidden bg-white lg:grid-cols-[1fr_1fr]">
+    return (
+        <main
+            className="
+                relative
+                min-h-screen
+                overflow-hidden
+                bg-slate-100
+                p-0
+                sm:p-4
+                lg:p-5
+            "
+        >
+
+            {/* ================================================= */}
+            {/* BACKGROUND */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    pointer-events-none
+                    absolute
+                    -left-32
+                    -top-32
+                    h-80
+                    w-80
+                    rounded-full
+                    bg-blue-100/70
+                    blur-3xl
+                "
+            />
+
+
+            <div
+                className="
+                    pointer-events-none
+                    absolute
+                    -bottom-32
+                    -right-32
+                    h-80
+                    w-80
+                    rounded-full
+                    bg-emerald-100/60
+                    blur-3xl
+                "
+            />
+
+
+            {/* ================================================= */}
+            {/* LOGIN CONTAINER */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    relative
+                    z-10
+                    mx-auto
+                    grid
+                    min-h-screen
+                    w-full
+                    max-w-[1450px]
+                    overflow-hidden
+                    bg-white
+                    shadow-2xl
+                    shadow-slate-300/40
+                    sm:min-h-[calc(100vh-32px)]
+                    sm:rounded-3xl
+                    lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]
+                "
+            >
 
                 {/* ================================================= */}
                 {/* LEFT BRANDING */}
@@ -129,7 +208,7 @@ function Login() {
 
 
                 {/* ================================================= */}
-                {/* RIGHT SIDE */}
+                {/* RIGHT FORM AREA */}
                 {/* ================================================= */}
 
                 {showForgotPassword ? (
@@ -153,7 +232,7 @@ function Login() {
 
 
             {/* ================================================= */}
-            {/* REQUIRED FIRST LOGIN PASSWORD CHANGE */}
+            {/* REQUIRED FIRST-LOGIN PASSWORD CHANGE */}
             {/* ================================================= */}
 
             {forcedPasswordUser && (
@@ -167,7 +246,7 @@ function Login() {
                 />
             )}
 
-        </div>
+        </main>
     );
 }
 

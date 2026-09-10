@@ -1,104 +1,343 @@
 // ======================================================
-// SESSION UTILITIES
+// STORAGE KEYS
 // ======================================================
-//
-// This file contains reusable helper functions related
-// to the logged-in user stored inside sessionStorage.
-//
-// Instead of repeating JSON.parse(sessionStorage...)
-// in multiple pages, we keep the logic in one place.
-//
+
+const ACCESS_TOKEN_KEY =
+    "accessToken";
+
+
+const USER_KEY =
+    "user";
+
+
 // ======================================================
+// CHECK BROWSER STORAGE
+// ======================================================
+
+const canUseSessionStorage = () => {
+    return (
+        typeof window !==
+        "undefined" &&
+        typeof window.sessionStorage !==
+        "undefined"
+    );
+};
 
 
 // ======================================================
 // GET SESSION USER
 // ======================================================
-//
-// Returns the logged-in user object.
-//
-// If no user exists or invalid JSON is stored,
-// this function safely returns null.
-// ======================================================
 
 export const getSessionUser = () => {
+    if (
+        !canUseSessionStorage()
+    ) {
+        return null;
+    }
+
 
     try {
-
         const storedUser =
-            sessionStorage.getItem("user");
+            sessionStorage.getItem(
+                USER_KEY
+            );
+
 
         if (!storedUser) {
             return null;
         }
 
-        return JSON.parse(storedUser);
+
+        const user =
+            JSON.parse(
+                storedUser
+            );
+
+
+        if (
+            !user ||
+            typeof user !==
+            "object" ||
+            Array.isArray(
+                user
+            )
+        ) {
+            return null;
+        }
+
+
+        return user;
 
     } catch (error) {
-
         console.error(
             "Unable to read session user:",
             error
         );
 
-        return null;
 
+        return null;
+    }
+};
+
+
+// ======================================================
+// SAVE SESSION USER
+// ======================================================
+
+export const saveSessionUser = (
+    user
+) => {
+    if (
+        !canUseSessionStorage()
+    ) {
+        return;
     }
 
+
+    if (
+        !user ||
+        typeof user !==
+        "object" ||
+        Array.isArray(
+            user
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+        sessionStorage.setItem(
+            USER_KEY,
+            JSON.stringify(
+                user
+            )
+        );
+
+    } catch (error) {
+        console.error(
+            "Unable to save session user:",
+            error
+        );
+    }
+};
+
+
+// ======================================================
+// UPDATE SESSION USER
+// ======================================================
+
+export const updateSessionUser = (
+    updates
+) => {
+    if (
+        !updates ||
+        typeof updates !==
+        "object"
+    ) {
+        return null;
+    }
+
+
+    const currentUser =
+        getSessionUser();
+
+
+    if (!currentUser) {
+        return null;
+    }
+
+
+    const updatedUser = {
+        ...currentUser,
+        ...updates,
+    };
+
+
+    saveSessionUser(
+        updatedUser
+    );
+
+
+    return updatedUser;
 };
 
 
 // ======================================================
 // GET ACCESS TOKEN
 // ======================================================
-//
-// Returns the access token stored during login.
-// ======================================================
 
 export const getAccessToken = () => {
+    if (
+        !canUseSessionStorage()
+    ) {
+        return "";
+    }
+
 
     return (
-        sessionStorage.getItem("accessToken") ||
+        sessionStorage.getItem(
+            ACCESS_TOKEN_KEY
+        ) ||
         ""
     );
+};
 
+
+// ======================================================
+// SAVE ACCESS TOKEN
+// ======================================================
+
+export const saveAccessToken = (
+    accessToken
+) => {
+    if (
+        !canUseSessionStorage()
+    ) {
+        return;
+    }
+
+
+    if (
+        !accessToken ||
+        typeof accessToken !==
+        "string"
+    ) {
+        return;
+    }
+
+
+    sessionStorage.setItem(
+        ACCESS_TOKEN_KEY,
+        accessToken
+    );
+};
+
+
+// ======================================================
+// SAVE AUTH SESSION
+// ======================================================
+
+export const saveAuthSession = ({
+    accessToken,
+    user,
+}) => {
+    if (
+        accessToken
+    ) {
+        saveAccessToken(
+            accessToken
+        );
+    }
+
+
+    if (
+        user
+    ) {
+        saveSessionUser(
+            user
+        );
+    }
 };
 
 
 // ======================================================
 // CLEAR AUTH SESSION
 // ======================================================
-//
-// Removes authentication information.
-//
-// This can be reused during logout or when the session
-// becomes invalid.
-// ======================================================
 
 export const clearAuthSession = () => {
+    if (
+        !canUseSessionStorage()
+    ) {
+        return;
+    }
 
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("user");
 
+    sessionStorage.removeItem(
+        ACCESS_TOKEN_KEY
+    );
+
+
+    sessionStorage.removeItem(
+        USER_KEY
+    );
+};
+
+
+// ======================================================
+// AUTHENTICATED
+// ======================================================
+
+export const hasAuthSession = () => {
+    return Boolean(
+        getAccessToken() &&
+        getSessionUser()
+    );
 };
 
 
 // ======================================================
 // CHECK USER ROLE
 // ======================================================
-//
-// Example:
-//
-// isUserRole("admin")
-// isUserRole("trainer")
-// isUserRole("trainee")
-//
+
+export const isUserRole = (
+    role
+) => {
+    const user =
+        getSessionUser();
+
+
+    if (
+        !user?.role ||
+        !role
+    ) {
+        return false;
+    }
+
+
+    return (
+        String(
+            user.role
+        )
+            .trim()
+            .toLowerCase() ===
+        String(
+            role
+        )
+            .trim()
+            .toLowerCase()
+    );
+};
+
+
+// ======================================================
+// TEMPORARY PASSWORD RULE
 // ======================================================
 
-export const isUserRole = (role) => {
+export const sessionRequiresPasswordChange =
+    () => {
+        const user =
+            getSessionUser();
 
-    const user = getSessionUser();
 
-    return user?.role === role;
+        if (!user) {
+            return false;
+        }
 
-};
+
+        return (
+            [
+                "trainer",
+                "trainee",
+            ].includes(
+                String(
+                    user.role ||
+                    ""
+                )
+                    .trim()
+                    .toLowerCase()
+            ) &&
+            user.mustChangePassword ===
+            true
+        );
+    };
