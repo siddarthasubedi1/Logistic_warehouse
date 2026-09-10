@@ -39,26 +39,16 @@ const SECTION_STATUSES = [
 
 
 // ======================================================
-// INITIAL FORM DATA
+// INITIAL FORM
 // ======================================================
 
-const getInitialFormData =
-    () => ({
-        title:
-            "",
-
-        content:
-            "",
-
-        imageUrl:
-            "",
-
-        imageAltText:
-            "",
-
-        status:
-            "active",
-    });
+const getInitialFormData = () => ({
+    title: "",
+    content: "",
+    imageUrl: "",
+    imageAltText: "",
+    status: "active",
+});
 
 
 // ======================================================
@@ -68,7 +58,6 @@ const getInitialFormData =
 function LearningSectionManager() {
     const navigate =
         useNavigate();
-
 
     const {
         programmeId,
@@ -96,7 +85,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // FORM
+    // FORM STATE
     // ======================================================
 
     const [
@@ -104,12 +93,10 @@ function LearningSectionManager() {
         setShowForm,
     ] = useState(false);
 
-
     const [
         editingSection,
         setEditingSection,
     ] = useState(null);
-
 
     const [
         formData,
@@ -120,7 +107,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // LOADING STATE
+    // PROCESS STATE
     // ======================================================
 
     const [
@@ -128,12 +115,10 @@ function LearningSectionManager() {
         setLoading,
     ] = useState(true);
 
-
     const [
         saving,
         setSaving,
     ] = useState(false);
-
 
     const [
         processingId,
@@ -149,7 +134,6 @@ function LearningSectionManager() {
         errorMessage,
         setErrorMessage,
     ] = useState("");
-
 
     const [
         successMessage,
@@ -178,27 +162,23 @@ function LearningSectionManager() {
                     `/training-programmes/${programmeId}`
                 );
 
-
             const loadedProgramme =
                 response.data?.programme ||
                 response.data ||
                 null;
 
-
             setProgramme(
                 loadedProgramme
             );
 
-
             return loadedProgramme;
-
         }, [
             programmeId,
         ]);
 
 
     // ======================================================
-    // LOAD SECTIONS
+    // LOAD LEARNING SECTIONS
     // ======================================================
 
     const loadSections =
@@ -208,27 +188,22 @@ function LearningSectionManager() {
                     `/training-programmes/${programmeId}/sections`
                 );
 
-
             const responseSections =
                 parseArrayResponse(
                     response.data,
                     "sections"
                 );
 
-
             const sortedSections =
                 sortLearningSections(
                     responseSections
                 );
 
-
             setSections(
                 sortedSections
             );
 
-
             return sortedSections;
-
         }, [
             programmeId,
         ]);
@@ -242,7 +217,6 @@ function LearningSectionManager() {
         let active =
             true;
 
-
         const loadPage =
             async () => {
                 try {
@@ -250,9 +224,7 @@ function LearningSectionManager() {
                         true
                     );
 
-
                     clearFeedback();
-
 
                     await Promise.all([
                         loadProgramme(),
@@ -264,7 +236,6 @@ function LearningSectionManager() {
                         "Learning section load error:",
                         error
                     );
-
 
                     if (active) {
                         setErrorMessage(
@@ -284,15 +255,12 @@ function LearningSectionManager() {
                 }
             };
 
-
         loadPage();
-
 
         return () => {
             active =
                 false;
         };
-
     }, [
         loadProgramme,
         loadSections,
@@ -311,9 +279,7 @@ function LearningSectionManager() {
             value,
         } = event.target;
 
-
         clearFeedback();
-
 
         setFormData(
             (current) => ({
@@ -335,11 +301,9 @@ function LearningSectionManager() {
             null
         );
 
-
         setFormData(
             getInitialFormData()
         );
-
 
         setShowForm(
             false
@@ -354,7 +318,6 @@ function LearningSectionManager() {
     const handleAddSection = () => {
         clearFeedback();
 
-
         if (
             programme?.status ===
             "inactive"
@@ -366,28 +329,21 @@ function LearningSectionManager() {
             return;
         }
 
-
         setEditingSection(
             null
         );
-
 
         setFormData(
             getInitialFormData()
         );
 
-
         setShowForm(
             true
         );
 
-
         window.scrollTo({
-            top:
-                0,
-
-            behavior:
-                "smooth",
+            top: 0,
+            behavior: "smooth",
         });
     };
 
@@ -405,9 +361,7 @@ function LearningSectionManager() {
             return;
         }
 
-
         clearFeedback();
-
 
         if (
             programme?.status ===
@@ -420,11 +374,9 @@ function LearningSectionManager() {
             return;
         }
 
-
         setEditingSection(
             section
         );
-
 
         setFormData({
             title:
@@ -448,24 +400,19 @@ function LearningSectionManager() {
                 "active",
         });
 
-
         setShowForm(
             true
         );
 
-
         window.scrollTo({
-            top:
-                0,
-
-            behavior:
-                "smooth",
+            top: 0,
+            behavior: "smooth",
         });
     };
 
 
     // ======================================================
-    // VALIDATE FORM
+    // VALIDATION
     // ======================================================
 
     const validateForm = () => {
@@ -474,28 +421,21 @@ function LearningSectionManager() {
                 .title
                 .trim();
 
-
         const content =
             formData
                 .content
                 .trim();
-
 
         const imageUrl =
             formData
                 .imageUrl
                 .trim();
 
-
         const imageAltText =
             formData
                 .imageAltText
                 .trim();
 
-
-        // ------------------------------------------
-        // TITLE
-        // ------------------------------------------
 
         if (
             title.length <
@@ -509,20 +449,12 @@ function LearningSectionManager() {
         }
 
 
-        // ------------------------------------------
-        // CONTENT
-        // ------------------------------------------
-
         if (!content) {
             return (
                 "Learning section content is required."
             );
         }
 
-
-        // ------------------------------------------
-        // IMAGE ALT TEXT LENGTH
-        // ------------------------------------------
 
         if (
             imageAltText.length >
@@ -534,10 +466,6 @@ function LearningSectionManager() {
         }
 
 
-        // ------------------------------------------
-        // IMAGE REQUIRES ALT TEXT
-        // ------------------------------------------
-
         if (
             imageUrl &&
             !imageAltText
@@ -547,10 +475,6 @@ function LearningSectionManager() {
             );
         }
 
-
-        // ------------------------------------------
-        // STATUS
-        // ------------------------------------------
 
         if (
             !SECTION_STATUSES.includes(
@@ -568,7 +492,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // SAVE SECTION
+    // CREATE / UPDATE SECTION
     // ======================================================
 
     const handleSubmit =
@@ -576,7 +500,6 @@ function LearningSectionManager() {
             event
         ) => {
             event.preventDefault();
-
 
             clearFeedback();
 
@@ -640,10 +563,6 @@ function LearningSectionManager() {
                 );
 
 
-                // ------------------------------------------
-                // UPDATE
-                // ------------------------------------------
-
                 if (
                     editingSection
                 ) {
@@ -655,16 +574,12 @@ function LearningSectionManager() {
 
 
                     setSuccessMessage(
-                        response.data?.message ||
+                        response.data
+                            ?.message ||
                         "Learning section updated successfully."
                     );
 
                 } else {
-
-                    // --------------------------------------
-                    // CREATE
-                    // --------------------------------------
-
                     const response =
                         await api.post(
                             `/training-programmes/${programmeId}/sections`,
@@ -673,14 +588,14 @@ function LearningSectionManager() {
 
 
                     setSuccessMessage(
-                        response.data?.message ||
+                        response.data
+                            ?.message ||
                         "Learning section created successfully."
                     );
                 }
 
 
                 resetForm();
-
 
                 await loadSections();
 
@@ -715,13 +630,7 @@ function LearningSectionManager() {
             section
         ) => {
             if (
-                !section?._id
-            ) {
-                return;
-            }
-
-
-            if (
+                !section?._id ||
                 processingId
             ) {
                 return;
@@ -757,7 +666,8 @@ function LearningSectionManager() {
 
 
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Learning section deactivated successfully."
                 );
 
@@ -803,13 +713,7 @@ function LearningSectionManager() {
             section
         ) => {
             if (
-                !section?._id
-            ) {
-                return;
-            }
-
-
-            if (
+                !section?._id ||
                 processingId
             ) {
                 return;
@@ -832,7 +736,8 @@ function LearningSectionManager() {
 
 
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Learning section reactivated successfully."
                 );
 
@@ -902,13 +807,10 @@ function LearningSectionManager() {
             clearFeedback();
 
 
-            // Keep previous order so it can be restored
-            // visually if the API request fails.
             const previousSections =
                 sections;
 
 
-            // Update the displayed order immediately.
             const optimisticSections =
                 reorderedSections.map(
                     (
@@ -951,7 +853,8 @@ function LearningSectionManager() {
 
 
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Learning section order updated successfully."
                 );
 
@@ -965,7 +868,6 @@ function LearningSectionManager() {
                 );
 
 
-                // Restore the previous display order.
                 setSections(
                     previousSections
                 );
@@ -979,12 +881,12 @@ function LearningSectionManager() {
                 );
 
 
-                // Reload server state so frontend and
-                // backend remain synchronized.
                 try {
                     await loadSections();
 
-                } catch (reloadError) {
+                } catch (
+                reloadError
+                ) {
                     console.error(
                         "Reload sections after reorder error:",
                         reloadError
@@ -1141,9 +1043,33 @@ function LearningSectionManager() {
     }
 
 
+    // ======================================================
+    // DERIVED VALUES
+    // ======================================================
+
     const programmeInactive =
         programme.status ===
         "inactive";
+
+
+    const activeSections =
+        sections.filter(
+            (
+                section
+            ) =>
+                section.status ===
+                "active"
+        ).length;
+
+
+    const inactiveSections =
+        sections.filter(
+            (
+                section
+            ) =>
+                section.status ===
+                "inactive"
+        ).length;
 
 
     // ======================================================
@@ -1151,67 +1077,109 @@ function LearningSectionManager() {
     // ======================================================
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
 
             {/* ================================================= */}
-            {/* PROGRAMME HEADER */}
+            {/* PROGRAMME HERO */}
             {/* ================================================= */}
 
             <section
                 className="
-                    rounded-xl
+                    relative
+                    overflow-hidden
+                    rounded-2xl
                     border
-                    border-slate-200
-                    bg-white
+                    border-blue-100
+                    bg-gradient-to-r
+                    from-[#073763]
+                    via-[#0b4f87]
+                    to-[#1769aa]
                     p-5
+                    text-white
                     shadow-sm
+                    sm:p-6
                 "
             >
                 <div
                     className="
+                        pointer-events-none
+                        absolute
+                        -right-14
+                        -top-14
+                        h-44
+                        w-44
+                        rounded-full
+                        bg-white/10
+                    "
+                />
+
+
+                <div
+                    className="
+                        relative
+                        z-10
                         flex
                         flex-col
-                        gap-4
-                        sm:flex-row
-                        sm:items-start
-                        sm:justify-between
+                        gap-5
+                        lg:flex-row
+                        lg:items-start
+                        lg:justify-between
                     "
                 >
+                    <div className="min-w-0">
 
-                    <div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-
-                            <p
+                        <div
+                            className="
+                                flex
+                                flex-wrap
+                                items-center
+                                gap-2
+                            "
+                        >
+                            <span
                                 className="
-                                    text-xs
+                                    rounded-full
+                                    border
+                                    border-white/15
+                                    bg-white/10
+                                    px-3
+                                    py-1.5
+                                    text-[9px]
                                     font-semibold
                                     uppercase
                                     tracking-wide
-                                    text-blue-600
                                 "
                             >
                                 {formatProgrammeType(
                                     programme.programmeType
                                 )}
-                            </p>
+                            </span>
 
 
-                            <StatusBadge
-                                status={
-                                    programme.status
-                                }
-                            />
-
+                            <div
+                                className="
+                                    rounded-full
+                                    bg-white
+                                    px-1
+                                    py-0.5
+                                "
+                            >
+                                <StatusBadge
+                                    status={
+                                        programme.status
+                                    }
+                                />
+                            </div>
                         </div>
 
 
                         <h2
                             className="
-                                mt-2
+                                mt-4
+                                break-words
                                 text-xl
                                 font-bold
-                                text-slate-900
+                                sm:text-2xl
                             "
                         >
                             {programme.title}
@@ -1223,44 +1191,52 @@ function LearningSectionManager() {
                                 className="
                                     mt-2
                                     max-w-3xl
-                                    text-xs
+                                    text-[10px]
                                     leading-5
-                                    text-slate-500
+                                    text-blue-100
+                                    sm:text-[11px]
                                 "
                             >
                                 {programme.description}
                             </p>
                         )}
-
-
-                        <p className="mt-3 text-xs font-medium text-slate-500">
-                            {sections.length}{" "}
-                            {sections.length ===
-                                1
-                                ? "learning section"
-                                : "learning sections"}
-                        </p>
-
                     </div>
 
 
-                    <div className="flex flex-wrap gap-2">
-
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-2
+                            sm:flex-row
+                            lg:shrink-0
+                        "
+                    >
                         <ActionButton
-                            variant="secondary"
+                            variant="light"
+                            className="
+                                w-full
+                                justify-center
+                                sm:w-auto
+                            "
                             onClick={() =>
                                 navigate(
                                     "/training-programmes"
                                 )
                             }
                         >
-                            ← Back
+                            ← Back to Programmes
                         </ActionButton>
 
 
                         {!programmeInactive && (
                             <ActionButton
-                                variant="primary"
+                                variant="warning"
+                                className="
+                                    w-full
+                                    justify-center
+                                    sm:w-auto
+                                "
                                 onClick={
                                     handleAddSection
                                 }
@@ -1274,16 +1250,50 @@ function LearningSectionManager() {
                                 + Add Section
                             </ActionButton>
                         )}
-
                     </div>
-
                 </div>
-
             </section>
 
 
             {/* ================================================= */}
-            {/* INACTIVE PROGRAMME NOTICE */}
+            {/* STATS */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    grid
+                    gap-3
+                    sm:grid-cols-3
+                "
+            >
+                <SectionStat
+                    label="Total Sections"
+                    value={
+                        sections.length
+                    }
+                    type="total"
+                />
+
+                <SectionStat
+                    label="Active Sections"
+                    value={
+                        activeSections
+                    }
+                    type="active"
+                />
+
+                <SectionStat
+                    label="Inactive Sections"
+                    value={
+                        inactiveSections
+                    }
+                    type="inactive"
+                />
+            </section>
+
+
+            {/* ================================================= */}
+            {/* INACTIVE NOTICE */}
             {/* ================================================= */}
 
             {programmeInactive && (
@@ -1295,7 +1305,7 @@ function LearningSectionManager() {
 
 
             {/* ================================================= */}
-            {/* SUCCESS */}
+            {/* FEEDBACK */}
             {/* ================================================= */}
 
             <FeedbackAlert
@@ -1311,10 +1321,6 @@ function LearningSectionManager() {
             />
 
 
-            {/* ================================================= */}
-            {/* ERROR */}
-            {/* ================================================= */}
-
             <FeedbackAlert
                 type="error"
                 message={
@@ -1329,7 +1335,7 @@ function LearningSectionManager() {
 
 
             {/* ================================================= */}
-            {/* SECTION FORM */}
+            {/* FORM */}
             {/* ================================================= */}
 
             {showForm &&
@@ -1358,32 +1364,78 @@ function LearningSectionManager() {
 
 
             {/* ================================================= */}
-            {/* LEARNING SECTION TABLE */}
+            {/* SECTION TABLE */}
             {/* ================================================= */}
 
             <section
                 className="
                     overflow-hidden
-                    rounded-xl
+                    rounded-2xl
                     border
                     border-slate-200
                     bg-white
                     shadow-sm
                 "
             >
+                <div
+                    className="
+                        flex
+                        flex-col
+                        gap-3
+                        border-b
+                        border-slate-100
+                        bg-gradient-to-r
+                        from-white
+                        to-blue-50/40
+                        p-5
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                    "
+                >
+                    <div>
+                        <h3
+                            className="
+                                text-sm
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            Learning Sections
+                        </h3>
 
-                <div className="border-b border-slate-200 p-5">
 
-                    <h3 className="text-base font-bold text-slate-900">
-                        Learning Sections
-                    </h3>
+                        <p
+                            className="
+                                mt-1
+                                text-[10px]
+                                leading-5
+                                text-slate-500
+                            "
+                        >
+                            Add learning content and control the order in
+                            which Trainees move through the programme.
+                        </p>
+                    </div>
 
 
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                        Add learning content and control the order in
-                        which Trainees move through the programme.
-                    </p>
-
+                    {processingId ===
+                        "reorder" && (
+                            <span
+                                className="
+                                w-fit
+                                rounded-full
+                                bg-blue-50
+                                px-3
+                                py-1.5
+                                text-[9px]
+                                font-semibold
+                                text-blue-700
+                            "
+                            >
+                                Updating order...
+                            </span>
+                        )}
                 </div>
 
 
@@ -1413,10 +1465,104 @@ function LearningSectionManager() {
                         handleMoveDown
                     }
                 />
-
             </section>
-
         </div>
+    );
+}
+
+
+// ======================================================
+// SECTION STAT
+// ======================================================
+
+function SectionStat({
+    label,
+    value,
+    type,
+}) {
+    const styles = {
+        total:
+            "bg-blue-50 text-blue-700",
+
+        active:
+            "bg-emerald-50 text-emerald-700",
+
+        inactive:
+            "bg-slate-100 text-slate-600",
+    };
+
+
+    return (
+        <article
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-4
+                shadow-sm
+            "
+        >
+            <div
+                className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                "
+            >
+                <div>
+                    <p
+                        className="
+                            text-[8px]
+                            font-semibold
+                            uppercase
+                            tracking-wide
+                            text-slate-400
+                        "
+                    >
+                        {label}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-2xl
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        {value}
+                    </p>
+                </div>
+
+
+                <div
+                    className={`
+                        flex
+                        h-9
+                        w-9
+                        items-center
+                        justify-center
+                        rounded-xl
+
+                        ${styles[type]}
+                    `}
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                    >
+                        <path d="M4 5h7v14H4z" />
+                        <path d="M13 5h7v14h-7z" />
+                    </svg>
+                </div>
+            </div>
+        </article>
     );
 }
 

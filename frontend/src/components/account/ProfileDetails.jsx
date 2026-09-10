@@ -19,14 +19,26 @@ function ProfileDetails({
         useRef(null);
 
 
-    const [uploading, setUploading] =
-        useState(false);
+    // ======================================================
+    // STATE
+    // ======================================================
 
-    const [imageError, setImageError] =
-        useState("");
+    const [
+        uploading,
+        setUploading,
+    ] = useState(false);
 
-    const [imageSuccess, setImageSuccess] =
-        useState("");
+
+    const [
+        imageError,
+        setImageError,
+    ] = useState("");
+
+
+    const [
+        imageSuccess,
+        setImageSuccess,
+    ] = useState("");
 
 
     // ======================================================
@@ -35,21 +47,75 @@ function ProfileDetails({
 
     if (loading) {
         return (
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section
+                className="
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
 
-                <div className="animate-pulse">
+                <div className="animate-pulse p-5 sm:p-6">
 
-                    <div className="h-16 w-16 rounded-full bg-slate-100" />
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-4
+                        "
+                    >
 
-                    <div className="mt-5 h-4 w-40 rounded bg-slate-100" />
+                        <div
+                            className="
+                                h-20
+                                w-20
+                                rounded-2xl
+                                bg-slate-100
+                            "
+                        />
 
-                    <div className="mt-3 h-3 w-56 rounded bg-slate-100" />
+
+                        <div className="flex-1">
+
+                            <div
+                                className="
+                                    h-4
+                                    w-40
+                                    rounded
+                                    bg-slate-100
+                                "
+                            />
+
+                            <div
+                                className="
+                                    mt-3
+                                    h-3
+                                    w-56
+                                    max-w-full
+                                    rounded
+                                    bg-slate-100
+                                "
+                            />
+
+                        </div>
+
+                    </div>
 
 
-                    <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    <div
+                        className="
+                            mt-7
+                            grid
+                            gap-3
+                            sm:grid-cols-2
+                        "
+                    >
 
                         {Array.from({
-                            length: 8,
+                            length: 10,
                         }).map(
                             (
                                 _,
@@ -59,7 +125,11 @@ function ProfileDetails({
                                     key={
                                         index
                                     }
-                                    className="h-16 rounded-xl bg-slate-100"
+                                    className="
+                                        h-16
+                                        rounded-xl
+                                        bg-slate-100
+                                    "
                                 />
                             )
                         )}
@@ -73,21 +143,81 @@ function ProfileDetails({
     }
 
 
+    // ======================================================
+    // NO USER
+    // ======================================================
+
     if (!user) {
         return (
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section
+                className="
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                    p-6
+                    shadow-sm
+                "
+            >
 
-                <p className="text-sm text-slate-500">
-                    Profile information is unavailable.
-                </p>
+                <div className="text-center">
+
+                    <div
+                        className="
+                            mx-auto
+                            flex
+                            h-11
+                            w-11
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-slate-100
+                            text-slate-500
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-5 w-5"
+                        >
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="3"
+                            />
+
+                            <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
+                        </svg>
+                    </div>
+
+
+                    <p
+                        className="
+                            mt-3
+                            text-[11px]
+                            font-semibold
+                            text-slate-600
+                        "
+                    >
+                        Profile information is unavailable.
+                    </p>
+
+                </div>
 
             </section>
         );
     }
 
 
+    // ======================================================
+    // USER INFORMATION
+    // ======================================================
+
     const fullName =
-        `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+        "User";
 
 
     const initial =
@@ -115,6 +245,7 @@ function ProfileDetails({
 
 
             setImageError("");
+
             setImageSuccess("");
 
 
@@ -137,6 +268,7 @@ function ProfileDetails({
 
 
             setImageError("");
+
             setImageSuccess("");
 
 
@@ -262,7 +394,7 @@ function ProfileDetails({
 
 
                 // ===========================================
-                // UPDATE PAGE STATE
+                // UPDATE PARENT
                 // ===========================================
 
                 onProfileImageUpdated?.(
@@ -305,23 +437,76 @@ function ProfileDetails({
         };
 
 
+    // ======================================================
+    // PAGE
+    // ======================================================
+
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section
+            className="
+                overflow-hidden
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-sm
+            "
+        >
 
-
+            {/* ================================================= */}
             {/* PROFILE TOP */}
+            {/* ================================================= */}
 
-            <div className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-slate-50 via-white to-blue-50/70 px-6 py-6">
+            <div
+                className="
+                    relative
+                    overflow-hidden
+                    border-b
+                    border-slate-100
+                    bg-gradient-to-br
+                    from-slate-50
+                    via-white
+                    to-blue-50
+                    p-5
+                    sm:p-6
+                "
+            >
 
-                <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-blue-100/50 blur-2xl" />
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        -right-14
+                        -top-16
+                        h-44
+                        w-44
+                        rounded-full
+                        bg-blue-100/60
+                        blur-2xl
+                    "
+                />
 
 
-                <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-
+                <div
+                    className="
+                        relative
+                        flex
+                        flex-col
+                        gap-5
+                        sm:flex-row
+                        sm:items-center
+                    "
+                >
 
                     {/* AVATAR */}
 
-                    <div className="relative shrink-0">
+                    <div
+                        className="
+                            relative
+                            w-fit
+                            shrink-0
+                        "
+                    >
 
                         <button
                             type="button"
@@ -332,7 +517,17 @@ function ProfileDetails({
                                 uploading
                             }
                             title="Change profile image"
-                            className="group relative block rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-wait"
+                            className="
+                                group
+                                relative
+                                block
+                                rounded-2xl
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-blue-500
+                                focus:ring-offset-2
+                                disabled:cursor-wait
+                            "
                         >
 
                             {profileImageUrl ? (
@@ -343,18 +538,57 @@ function ProfileDetails({
                                     alt={
                                         `${fullName} profile`
                                     }
-                                    className="h-[78px] w-[78px] rounded-full border-4 border-white object-cover shadow-md"
+                                    className="
+                                        h-24
+                                        w-24
+                                        rounded-2xl
+                                        border-4
+                                        border-white
+                                        object-cover
+                                        shadow-lg
+                                    "
                                 />
                             ) : (
-                                <div className="flex h-[78px] w-[78px] items-center justify-center rounded-full border-4 border-white bg-blue-100 text-2xl font-bold text-blue-600 shadow-md">
+                                <div
+                                    className="
+                                        flex
+                                        h-24
+                                        w-24
+                                        items-center
+                                        justify-center
+                                        rounded-2xl
+                                        border-4
+                                        border-white
+                                        bg-gradient-to-br
+                                        from-blue-100
+                                        to-blue-200
+                                        text-3xl
+                                        font-bold
+                                        text-blue-700
+                                        shadow-lg
+                                    "
+                                >
                                     {initial}
                                 </div>
                             )}
 
 
-                            {/* CAMERA HOVER */}
-
-                            <span className="absolute inset-1 flex items-center justify-center rounded-full bg-slate-900/0 text-white opacity-0 transition group-hover:bg-slate-900/45 group-hover:opacity-100">
+                            <span
+                                className="
+                                    absolute
+                                    inset-1
+                                    flex
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-slate-950/0
+                                    text-white
+                                    opacity-0
+                                    transition
+                                    group-hover:bg-slate-950/45
+                                    group-hover:opacity-100
+                                "
+                            >
 
                                 <svg
                                     viewBox="0 0 24 24"
@@ -376,15 +610,26 @@ function ProfileDetails({
 
 
                             {uploading && (
-                                <span className="absolute inset-1 flex items-center justify-center rounded-full bg-slate-900/65 text-[8px] font-semibold text-white">
+                                <span
+                                    className="
+                                        absolute
+                                        inset-1
+                                        flex
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        bg-slate-950/65
+                                        text-[9px]
+                                        font-semibold
+                                        text-white
+                                    "
+                                >
                                     Uploading...
                                 </span>
                             )}
 
                         </button>
 
-
-                        {/* EDIT BUTTON */}
 
                         <button
                             type="button"
@@ -395,9 +640,26 @@ function ProfileDetails({
                                 uploading
                             }
                             title="Change profile image"
-                            className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-white bg-[#1769e0] text-white shadow-md transition hover:bg-[#0f5dc9] disabled:opacity-50"
+                            className="
+                                absolute
+                                -bottom-2
+                                -right-2
+                                flex
+                                h-8
+                                w-8
+                                items-center
+                                justify-center
+                                rounded-xl
+                                border-[3px]
+                                border-white
+                                bg-blue-600
+                                text-white
+                                shadow-md
+                                transition
+                                hover:bg-blue-700
+                                disabled:opacity-50
+                            "
                         >
-
                             <svg
                                 viewBox="0 0 24 24"
                                 fill="none"
@@ -409,11 +671,8 @@ function ProfileDetails({
 
                                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
                             </svg>
-
                         </button>
 
-
-                        {/* HIDDEN FILE INPUT */}
 
                         <input
                             ref={
@@ -430,20 +689,70 @@ function ProfileDetails({
                     </div>
 
 
-                    {/* USER INFO */}
+                    {/* USER INFORMATION */}
 
-                    <div className="min-w-0 flex-1">
+                    <div
+                        className="
+                            min-w-0
+                            flex-1
+                        "
+                    >
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div
+                            className="
+                                flex
+                                flex-wrap
+                                items-center
+                                gap-2
+                            "
+                        >
 
-                            <h2 className="truncate text-[17px] font-bold text-slate-900">
+                            <h2
+                                className="
+                                    break-words
+                                    text-lg
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
                                 {fullName}
                             </h2>
 
 
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                            <span
+                                className={`
+                                    inline-flex
+                                    items-center
+                                    gap-1.5
+                                    rounded-full
+                                    px-2.5
+                                    py-1
+                                    text-[9px]
+                                    font-semibold
+                                    ring-1
+                                    ring-inset
 
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    ${user.status ===
+                                        "active"
+                                        ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
+                                        : "bg-red-50 text-red-600 ring-red-100"
+                                    }
+                                `}
+                            >
+
+                                <span
+                                    className={`
+                                        h-1.5
+                                        w-1.5
+                                        rounded-full
+
+                                        ${user.status ===
+                                            "active"
+                                            ? "bg-emerald-500"
+                                            : "bg-red-500"
+                                        }
+                                    `}
+                                />
 
                                 {user.status ===
                                     "active"
@@ -455,14 +764,82 @@ function ProfileDetails({
                         </div>
 
 
-                        <p className="mt-1 text-[10px] font-semibold capitalize text-blue-600">
+                        <p
+                            className="
+                                mt-1
+                                text-[10px]
+                                font-semibold
+                                capitalize
+                                text-blue-600
+                            "
+                        >
                             {user.role} Account
                         </p>
 
 
-                        <p className="mt-3 max-w-lg text-[9px] leading-4 text-slate-500">
-                            Click your profile image or the edit icon to choose a JPG, PNG or WebP image up to 2 MB.
+                        <p
+                            className="
+                                mt-3
+                                max-w-lg
+                                text-[9px]
+                                leading-5
+                                text-slate-500
+                            "
+                        >
+                            Click your profile image or the edit button
+                            to upload a JPG, PNG or WebP image up to
+                            2 MB.
                         </p>
+
+
+                        <div
+                            className="
+                                mt-4
+                                flex
+                                flex-wrap
+                                gap-2
+                            "
+                        >
+
+                            <span
+                                className="
+                                    rounded-lg
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    px-3
+                                    py-1.5
+                                    text-[9px]
+                                    font-semibold
+                                    text-slate-600
+                                "
+                            >
+                                @{user.username ||
+                                    "username"}
+                            </span>
+
+
+                            {user.email && (
+                                <span
+                                    className="
+                                        max-w-full
+                                        truncate
+                                        rounded-lg
+                                        border
+                                        border-slate-200
+                                        bg-white
+                                        px-3
+                                        py-1.5
+                                        text-[9px]
+                                        font-semibold
+                                        text-slate-600
+                                    "
+                                >
+                                    {user.email}
+                                </span>
+                            )}
+
+                        </div>
 
                     </div>
 
@@ -471,72 +848,118 @@ function ProfileDetails({
             </div>
 
 
-            {/* IMAGE MESSAGE */}
+            {/* ================================================= */}
+            {/* IMAGE FEEDBACK */}
+            {/* ================================================= */}
 
             {(imageError ||
                 imageSuccess) && (
-                    <div className="px-6 pt-5">
+                    <div
+                        className="
+                            px-4
+                            pt-4
+                            sm:px-6
+                            sm:pt-5
+                        "
+                    >
 
                         {imageError && (
-                            <div className="flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[10px] text-red-600">
-
-                                <span className="font-bold">
-                                    !
-                                </span>
-
-                                <span>
-                                    {imageError}
-                                </span>
-
-                            </div>
+                            <FeedbackMessage
+                                type="error"
+                                message={
+                                    imageError
+                                }
+                            />
                         )}
 
 
                         {imageSuccess && (
-                            <div className="flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[10px] text-emerald-700">
-
-                                <span>
-                                    ✓
-                                </span>
-
-                                <span>
-                                    {imageSuccess}
-                                </span>
-
-                            </div>
+                            <FeedbackMessage
+                                type="success"
+                                message={
+                                    imageSuccess
+                                }
+                            />
                         )}
 
                     </div>
                 )}
 
 
+            {/* ================================================= */}
             {/* PERSONAL DETAILS */}
+            {/* ================================================= */}
 
-            <div className="p-6">
+            <div
+                className="
+                    p-4
+                    sm:p-6
+                "
+            >
 
-                <div className="flex items-center justify-between gap-4">
+                <div
+                    className="
+                        flex
+                        flex-col
+                        gap-3
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                    "
+                >
 
                     <div>
 
-                        <h3 className="text-[13px] font-bold text-slate-900">
+                        <h3
+                            className="
+                                text-sm
+                                font-bold
+                                text-slate-900
+                            "
+                        >
                             Personal Details
                         </h3>
 
-                        <p className="mt-1 text-[9px] text-slate-500">
+
+                        <p
+                            className="
+                                mt-1
+                                text-[9px]
+                                text-slate-500
+                            "
+                        >
                             Your account and personal information.
                         </p>
 
                     </div>
 
 
-                    <span className="rounded-lg bg-slate-50 px-3 py-2 text-[9px] font-semibold text-slate-500">
-                        Read only
+                    <span
+                        className="
+                            w-fit
+                            rounded-lg
+                            bg-slate-50
+                            px-3
+                            py-2
+                            text-[9px]
+                            font-semibold
+                            text-slate-500
+                        "
+                    >
+                        Read Only
                     </span>
 
                 </div>
 
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div
+                    className="
+                        mt-5
+                        grid
+                        gap-3
+                        sm:grid-cols-2
+                    "
+                >
 
                     <DetailField
                         label="First Name"
@@ -546,6 +969,7 @@ function ProfileDetails({
                         icon="user"
                     />
 
+
                     <DetailField
                         label="Last Name"
                         value={
@@ -553,6 +977,7 @@ function ProfileDetails({
                         }
                         icon="user"
                     />
+
 
                     <DetailField
                         label="Username"
@@ -562,6 +987,7 @@ function ProfileDetails({
                         icon="at"
                     />
 
+
                     <DetailField
                         label="Email"
                         value={
@@ -569,6 +995,7 @@ function ProfileDetails({
                         }
                         icon="mail"
                     />
+
 
                     <DetailField
                         label="Role"
@@ -579,6 +1006,7 @@ function ProfileDetails({
                         icon="role"
                     />
 
+
                     <DetailField
                         label="Account Status"
                         value={
@@ -588,6 +1016,7 @@ function ProfileDetails({
                         icon="status"
                     />
 
+
                     <DetailField
                         label="Age"
                         value={
@@ -595,6 +1024,7 @@ function ProfileDetails({
                         }
                         icon="calendar"
                     />
+
 
                     <DetailField
                         label="Gender"
@@ -605,6 +1035,7 @@ function ProfileDetails({
                         icon="user"
                     />
 
+
                     <DetailField
                         label="Phone Number"
                         value={
@@ -612,6 +1043,7 @@ function ProfileDetails({
                         }
                         icon="phone"
                     />
+
 
                     <DetailField
                         label="Address"
@@ -630,6 +1062,62 @@ function ProfileDetails({
 }
 
 
+// ======================================================
+// FEEDBACK
+// ======================================================
+
+function FeedbackMessage({
+    type,
+    message,
+}) {
+    const success =
+        type ===
+        "success";
+
+
+    return (
+        <div
+            className={`
+                flex
+                items-start
+                gap-2
+                rounded-xl
+                border
+                px-4
+                py-3
+                text-[10px]
+
+                ${success
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-red-200 bg-red-50 text-red-600"
+                }
+            `}
+        >
+
+            <span
+                className="
+                    font-bold
+                "
+            >
+                {success
+                    ? "✓"
+                    : "!"}
+            </span>
+
+
+            <span>
+                {message}
+            </span>
+
+        </div>
+    );
+}
+
+
+// ======================================================
+// DETAIL FIELD
+// ======================================================
+
 function DetailField({
     label,
     value,
@@ -640,21 +1128,62 @@ function DetailField({
         value === null ||
             value === undefined ||
             value === ""
-            ? "—"
-            : value;
+            ? "Not provided"
+            : String(
+                value
+            );
 
 
     return (
-        <div>
+        <div
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-slate-50/60
+                p-3
+                transition
+                hover:border-blue-100
+                hover:bg-blue-50/30
+            "
+        >
 
-            <p className="mb-2 text-[9px] font-semibold text-slate-500">
+            <p
+                className="
+                    text-[8px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-slate-400
+                "
+            >
                 {label}
             </p>
 
 
-            <div className="flex min-h-[50px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3">
+            <div
+                className="
+                    mt-2
+                    flex
+                    items-start
+                    gap-2.5
+                "
+            >
 
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm ring-1 ring-slate-100">
+                <div
+                    className="
+                        flex
+                        h-7
+                        w-7
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        bg-white
+                        text-blue-600
+                        shadow-sm
+                    "
+                >
 
                     <FieldIcon
                         type={
@@ -666,10 +1195,19 @@ function DetailField({
 
 
                 <p
-                    className={`min-w-0 break-words text-[10px] font-semibold text-slate-700 ${capitalize
-                        ? "capitalize"
-                        : ""
-                        }`}
+                    className={`
+                        min-w-0
+                        break-words
+                        pt-1
+                        text-[10px]
+                        font-semibold
+                        text-slate-700
+
+                        ${capitalize
+                            ? "capitalize"
+                            : ""
+                        }
+                    `}
                 >
                     {displayValue}
                 </p>
@@ -681,6 +1219,10 @@ function DetailField({
 }
 
 
+// ======================================================
+// FIELD ICON
+// ======================================================
+
 function FieldIcon({
     type,
 }) {
@@ -688,7 +1230,10 @@ function FieldIcon({
         "h-3.5 w-3.5";
 
 
-    if (type === "mail") {
+    if (
+        type ===
+        "mail"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
@@ -713,7 +1258,10 @@ function FieldIcon({
     }
 
 
-    if (type === "phone") {
+    if (
+        type ===
+        "phone"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"
@@ -784,7 +1332,10 @@ function FieldIcon({
     }
 
 
-    if (type === "at") {
+    if (
+        type ===
+        "at"
+    ) {
         return (
             <svg
                 viewBox="0 0 24 24"

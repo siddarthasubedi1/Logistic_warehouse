@@ -51,7 +51,7 @@ const PROGRAMME_TYPES = [
 
 
 // ======================================================
-// PROGRAMME STATUS
+// STATUS
 // ======================================================
 
 const PROGRAMME_STATUSES = [
@@ -65,30 +65,20 @@ const PROGRAMME_STATUSES = [
 // INITIAL FORM
 // ======================================================
 
-const getInitialFormData =
-    () => ({
-        programmeType:
-            "",
+const getInitialFormData = () => ({
+    programmeType: "",
+    title: "",
+    description: "",
+    passMark: 70,
+    status: "draft",
+    ownerId: "",
+    authorizedTrainers: [],
+});
 
-        title:
-            "",
 
-        description:
-            "",
-
-        passMark:
-            70,
-
-        status:
-            "draft",
-
-        ownerId:
-            "",
-
-        authorizedTrainers:
-            [],
-    });
-
+// ======================================================
+// TRAINING PROGRAMME MANAGER
+// ======================================================
 
 function TrainingProgrammeManager({
     role,
@@ -96,10 +86,6 @@ function TrainingProgrammeManager({
     const navigate =
         useNavigate();
 
-
-    // ======================================================
-    // ROLE
-    // ======================================================
 
     const isAdmin =
         role ===
@@ -112,7 +98,7 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // PROGRAMMES
+    // DATA
     // ======================================================
 
     const [
@@ -120,10 +106,6 @@ function TrainingProgrammeManager({
         setProgrammes,
     ] = useState([]);
 
-
-    // ======================================================
-    // TRAINERS
-    // ======================================================
 
     const [
         trainers,
@@ -174,17 +156,21 @@ function TrainingProgrammeManager({
     const [
         typeFilter,
         setTypeFilter,
-    ] = useState("all");
+    ] = useState(
+        "all"
+    );
 
 
     const [
         statusFilter,
         setStatusFilter,
-    ] = useState("all");
+    ] = useState(
+        "all"
+    );
 
 
     // ======================================================
-    // LOADING
+    // PROCESS
     // ======================================================
 
     const [
@@ -221,10 +207,6 @@ function TrainingProgrammeManager({
     ] = useState("");
 
 
-    // ======================================================
-    // CLEAR FEEDBACK
-    // ======================================================
-
     const clearFeedback = () => {
         setErrorMessage("");
         setSuccessMessage("");
@@ -244,15 +226,11 @@ function TrainingProgrammeManager({
                     );
 
 
-                const programmeList =
+                setProgrammes(
                     parseArrayResponse(
                         response.data,
                         "programmes"
-                    );
-
-
-                setProgrammes(
-                    programmeList
+                    )
                 );
 
             } catch (error) {
@@ -299,18 +277,11 @@ function TrainingProgrammeManager({
                     );
 
 
-                /*
-                    /admin/users already returns accounts whose
-                    accountStatus is "created".
-
-                    We additionally keep only:
-                    - Trainer
-                    - active account
-                */
-
                 const trainerUsers =
                     users.filter(
-                        (user) => {
+                        (
+                            user
+                        ) => {
                             const status =
                                 String(
                                     user.status ||
@@ -476,7 +447,9 @@ function TrainingProgrammeManager({
 
 
             return PROGRAMME_TYPES.filter(
-                (programmeType) =>
+                (
+                    programmeType
+                ) =>
                     assignedSections.includes(
                         programmeType.value
                     )
@@ -513,7 +486,9 @@ function TrainingProgrammeManager({
 
 
             return trainers.filter(
-                (trainer) =>
+                (
+                    trainer
+                ) =>
                     Array.isArray(
                         trainer
                             .assignedTrainingSections
@@ -533,7 +508,7 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // ELIGIBLE AUTHORISED TRAINERS
+    // ELIGIBLE AUTHORIZED TRAINERS
     // ======================================================
 
     const eligibleAuthorizedTrainers =
@@ -544,7 +519,9 @@ function TrainingProgrammeManager({
 
 
             return eligibleOwnerTrainers.filter(
-                (trainer) =>
+                (
+                    trainer
+                ) =>
                     String(
                         trainer._id
                     ) !==
@@ -573,12 +550,9 @@ function TrainingProgrammeManager({
 
 
             return programmes.filter(
-                (programme) => {
-
-                    // ------------------------------------------
-                    // TYPE FILTER
-                    // ------------------------------------------
-
+                (
+                    programme
+                ) => {
                     if (
                         typeFilter !==
                         "all" &&
@@ -589,10 +563,6 @@ function TrainingProgrammeManager({
                     }
 
 
-                    // ------------------------------------------
-                    // STATUS FILTER
-                    // ------------------------------------------
-
                     if (
                         statusFilter !==
                         "all" &&
@@ -602,10 +572,6 @@ function TrainingProgrammeManager({
                         return false;
                     }
 
-
-                    // ------------------------------------------
-                    // SEARCH
-                    // ------------------------------------------
 
                     if (!query) {
                         return true;
@@ -621,7 +587,6 @@ function TrainingProgrammeManager({
                     const searchableText =
                         [
                             programme.title,
-
                             programme.description,
 
                             formatProgrammeType(
@@ -635,9 +600,7 @@ function TrainingProgrammeManager({
 
                             programme.status,
                         ]
-                            .filter(
-                                Boolean
-                            )
+                            .filter(Boolean)
                             .join(" ")
                             .toLowerCase();
 
@@ -673,12 +636,9 @@ function TrainingProgrammeManager({
 
 
         setFormData(
-            (current) => {
-
-                // ------------------------------------------
-                // PROGRAMME TYPE CHANGE
-                // ------------------------------------------
-
+            (
+                current
+            ) => {
                 if (
                     name ===
                     "programmeType"
@@ -698,10 +658,6 @@ function TrainingProgrammeManager({
                 }
 
 
-                // ------------------------------------------
-                // OWNER CHANGE
-                // ------------------------------------------
-
                 if (
                     name ===
                     "ownerId"
@@ -716,7 +672,9 @@ function TrainingProgrammeManager({
                             current
                                 .authorizedTrainers
                                 .filter(
-                                    (trainerId) =>
+                                    (
+                                        trainerId
+                                    ) =>
                                         String(
                                             trainerId
                                         ) !==
@@ -740,7 +698,7 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // AUTHORISED TRAINER
+    // TOGGLE AUTHORIZED TRAINER
     // ======================================================
 
     const handleToggleAuthorizedTrainer = (
@@ -750,7 +708,9 @@ function TrainingProgrammeManager({
 
 
         setFormData(
-            (current) => {
+            (
+                current
+            ) => {
                 const selected =
                     current
                         .authorizedTrainers;
@@ -766,7 +726,9 @@ function TrainingProgrammeManager({
 
                         authorizedTrainers:
                             selected.filter(
-                                (id) =>
+                                (
+                                    id
+                                ) =>
                                     id !==
                                     trainerId
                             ),
@@ -796,11 +758,9 @@ function TrainingProgrammeManager({
             getInitialFormData()
         );
 
-
         setEditingProgramme(
             null
         );
-
 
         setShowForm(
             false
@@ -809,32 +769,28 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // CREATE FORM
+    // CREATE
     // ======================================================
 
-    const handleCreateProgramme =
-        () => {
-            clearFeedback();
+    const handleCreateProgramme = () => {
+        clearFeedback();
 
+        setEditingProgramme(
+            null
+        );
 
-            setEditingProgramme(
-                null
-            );
+        setFormData(
+            getInitialFormData()
+        );
 
-
-            setFormData(
-                getInitialFormData()
-            );
-
-
-            setShowForm(
-                true
-            );
-        };
+        setShowForm(
+            true
+        );
+    };
 
 
     // ======================================================
-    // EDIT PROGRAMME
+    // EDIT
     // ======================================================
 
     const handleEditProgramme = (
@@ -856,15 +812,15 @@ function TrainingProgrammeManager({
                 ? programme
                     .authorizedTrainers
                     .map(
-                        (trainer) =>
+                        (
+                            trainer
+                        ) =>
                             typeof trainer ===
                                 "string"
                                 ? trainer
                                 : trainer._id
                     )
-                    .filter(
-                        Boolean
-                    )
+                    .filter(Boolean)
                 : [];
 
 
@@ -910,28 +866,22 @@ function TrainingProgrammeManager({
 
 
         window.scrollTo({
-            top:
-                0,
-
-            behavior:
-                "smooth",
+            top: 0,
+            behavior: "smooth",
         });
     };
 
 
     // ======================================================
-    // VALIDATE FORM
+    // VALIDATE
     // ======================================================
 
     const validateForm = () => {
-
-        // ------------------------------------------
-        // PROGRAMME TYPE
-        // ------------------------------------------
-
         if (
             !PROGRAMME_TYPES.some(
-                (type) =>
+                (
+                    type
+                ) =>
                     type.value ===
                     formData.programmeType
             )
@@ -942,12 +892,10 @@ function TrainingProgrammeManager({
         }
 
 
-        // ------------------------------------------
-        // TITLE
-        // ------------------------------------------
-
         const title =
-            formData.title.trim();
+            formData
+                .title
+                .trim();
 
 
         if (
@@ -961,10 +909,6 @@ function TrainingProgrammeManager({
             );
         }
 
-
-        // ------------------------------------------
-        // DESCRIPTION
-        // ------------------------------------------
 
         const description =
             formData
@@ -983,10 +927,6 @@ function TrainingProgrammeManager({
             );
         }
 
-
-        // ------------------------------------------
-        // PASS MARK
-        // ------------------------------------------
 
         const passMark =
             Number(
@@ -1009,10 +949,6 @@ function TrainingProgrammeManager({
         }
 
 
-        // ------------------------------------------
-        // STATUS
-        // ------------------------------------------
-
         if (
             !PROGRAMME_STATUSES.includes(
                 formData.status
@@ -1024,10 +960,6 @@ function TrainingProgrammeManager({
         }
 
 
-        // ------------------------------------------
-        // ADMIN OWNER
-        // ------------------------------------------
-
         if (
             isAdmin &&
             !formData.ownerId
@@ -1038,14 +970,12 @@ function TrainingProgrammeManager({
         }
 
 
-        // ------------------------------------------
-        // ADMIN OWNER MUST BE ELIGIBLE
-        // ------------------------------------------
-
         if (
             isAdmin &&
             !eligibleOwnerTrainers.some(
-                (trainer) =>
+                (
+                    trainer
+                ) =>
                     String(
                         trainer._id
                     ) ===
@@ -1060,14 +990,12 @@ function TrainingProgrammeManager({
         }
 
 
-        // ------------------------------------------
-        // TRAINER PROGRAMME ACCESS
-        // ------------------------------------------
-
         if (
             isTrainer &&
             !availableProgrammeTypes.some(
-                (type) =>
+                (
+                    type
+                ) =>
                     type.value ===
                     formData.programmeType
             )
@@ -1091,7 +1019,6 @@ function TrainingProgrammeManager({
             event
         ) => {
             event.preventDefault();
-
 
             clearFeedback();
 
@@ -1141,10 +1068,6 @@ function TrainingProgrammeManager({
                 };
 
 
-                // ------------------------------------------
-                // ADMIN OWNERSHIP
-                // ------------------------------------------
-
                 if (
                     isAdmin
                 ) {
@@ -1157,10 +1080,6 @@ function TrainingProgrammeManager({
                             .authorizedTrainers;
                 }
 
-
-                // ------------------------------------------
-                // UPDATE
-                // ------------------------------------------
 
                 if (
                     editingProgramme
@@ -1179,11 +1098,6 @@ function TrainingProgrammeManager({
                     );
 
                 } else {
-
-                    // --------------------------------------
-                    // CREATE
-                    // --------------------------------------
-
                     const response =
                         await api.post(
                             "/training-programmes",
@@ -1200,7 +1114,6 @@ function TrainingProgrammeManager({
 
 
                 resetForm();
-
 
                 await loadProgrammes();
 
@@ -1253,7 +1166,6 @@ function TrainingProgrammeManager({
 
 
             clearFeedback();
-
 
             setProcessingId(
                 programme._id
@@ -1314,7 +1226,6 @@ function TrainingProgrammeManager({
 
 
             clearFeedback();
-
 
             setProcessingId(
                 programme._id
@@ -1380,6 +1291,40 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
+    // COUNTS
+    // ======================================================
+
+    const activeCount =
+        programmes.filter(
+            (
+                programme
+            ) =>
+                programme.status ===
+                "active"
+        ).length;
+
+
+    const draftCount =
+        programmes.filter(
+            (
+                programme
+            ) =>
+                programme.status ===
+                "draft"
+        ).length;
+
+
+    const inactiveCount =
+        programmes.filter(
+            (
+                programme
+            ) =>
+                programme.status ===
+                "inactive"
+        ).length;
+
+
+    // ======================================================
     // LOADING
     // ======================================================
 
@@ -1397,7 +1342,53 @@ function TrainingProgrammeManager({
     // ======================================================
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
+
+            {/* ================================================= */}
+            {/* OVERVIEW */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    grid
+                    gap-3
+                    sm:grid-cols-2
+                    xl:grid-cols-4
+                "
+            >
+                <ManagerStat
+                    label="Total Programmes"
+                    value={
+                        programmes.length
+                    }
+                    type="total"
+                />
+
+                <ManagerStat
+                    label="Active"
+                    value={
+                        activeCount
+                    }
+                    type="active"
+                />
+
+                <ManagerStat
+                    label="Draft"
+                    value={
+                        draftCount
+                    }
+                    type="draft"
+                />
+
+                <ManagerStat
+                    label="Inactive"
+                    value={
+                        inactiveCount
+                    }
+                    type="inactive"
+                />
+            </section>
+
 
             {/* ================================================= */}
             {/* FEEDBACK */}
@@ -1430,22 +1421,70 @@ function TrainingProgrammeManager({
 
 
             {/* ================================================= */}
-            {/* CREATE BUTTON */}
+            {/* CREATE CONTROL */}
             {/* ================================================= */}
 
             {!showForm && (
-                <div className="flex justify-end">
+                <section
+                    className="
+                        flex
+                        flex-col
+                        gap-3
+                        rounded-2xl
+                        border
+                        border-blue-100
+                        bg-gradient-to-r
+                        from-blue-50
+                        via-white
+                        to-emerald-50
+                        p-4
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                        sm:p-5
+                    "
+                >
+                    <div>
+                        <h3
+                            className="
+                                text-xs
+                                font-bold
+                                text-slate-900
+                            "
+                        >
+                            Create Training Content
+                        </h3>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[9px]
+                                leading-5
+                                text-slate-500
+                            "
+                        >
+                            {isAdmin
+                                ? "Create programmes, select an owner Trainer and authorize additional Trainers where required."
+                                : "Create and manage programmes only for training areas assigned to your Trainer account."}
+                        </p>
+                    </div>
+
 
                     <ActionButton
                         variant="primary"
+                        className="
+                            w-full
+                            justify-center
+                            sm:w-auto
+                        "
                         onClick={
                             handleCreateProgramme
                         }
                     >
                         + Create Programme
                     </ActionButton>
-
-                </div>
+                </section>
             )}
 
 
@@ -1499,34 +1538,84 @@ function TrainingProgrammeManager({
             <section
                 className="
                     overflow-hidden
-                    rounded-xl
+                    rounded-2xl
                     border
                     border-slate-200
                     bg-white
                     shadow-sm
                 "
             >
+                <div
+                    className="
+                        border-b
+                        border-slate-100
+                        bg-gradient-to-r
+                        from-white
+                        to-blue-50/40
+                        p-5
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-3
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div>
+                            <h2
+                                className="
+                                    text-sm
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
+                                Training Programmes
+                            </h2>
 
-                <div className="border-b border-slate-200 p-5">
 
-                    <h2 className="text-base font-bold text-slate-900">
-                        Training Programmes
-                    </h2>
+                            <p
+                                className="
+                                    mt-1
+                                    text-[10px]
+                                    text-slate-500
+                                "
+                            >
+                                Search, edit and manage programme learning
+                                content.
+                            </p>
+                        </div>
 
 
-                    <p className="mt-1 text-xs text-slate-500">
-                        View and manage available training programmes.
-                    </p>
-
+                        <span
+                            className="
+                                w-fit
+                                rounded-full
+                                bg-blue-50
+                                px-3
+                                py-1.5
+                                text-[9px]
+                                font-semibold
+                                text-blue-700
+                            "
+                        >
+                            {filteredProgrammes.length} shown
+                        </span>
+                    </div>
                 </div>
 
 
-                {/* ================================================= */}
-                {/* FILTERS */}
-                {/* ================================================= */}
-
-                <div className="p-5">
-
+                <div
+                    className="
+                        border-b
+                        border-slate-100
+                        p-4
+                        sm:p-5
+                    "
+                >
                     <TrainingProgrammeFilters
                         searchTerm={
                             searchTerm
@@ -1550,13 +1639,8 @@ function TrainingProgrammeManager({
                             setStatusFilter
                         }
                     />
-
                 </div>
 
-
-                {/* ================================================= */}
-                {/* TABLE */}
-                {/* ================================================= */}
 
                 <TrainingProgrammeTable
                     programmes={
@@ -1578,10 +1662,107 @@ function TrainingProgrammeManager({
                         handleReactivate
                     }
                 />
-
             </section>
-
         </div>
+    );
+}
+
+
+// ======================================================
+// MANAGER STAT
+// ======================================================
+
+function ManagerStat({
+    label,
+    value,
+    type,
+}) {
+    const styles = {
+        total:
+            "bg-blue-50 text-blue-700",
+
+        active:
+            "bg-emerald-50 text-emerald-700",
+
+        draft:
+            "bg-amber-50 text-amber-700",
+
+        inactive:
+            "bg-slate-100 text-slate-600",
+    };
+
+
+    return (
+        <article
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-4
+                shadow-sm
+            "
+        >
+            <div
+                className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                "
+            >
+                <div>
+                    <p
+                        className="
+                            text-[8px]
+                            font-semibold
+                            uppercase
+                            tracking-wide
+                            text-slate-400
+                        "
+                    >
+                        {label}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-2xl
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        {value}
+                    </p>
+                </div>
+
+
+                <div
+                    className={`
+                        flex
+                        h-9
+                        w-9
+                        items-center
+                        justify-center
+                        rounded-xl
+
+                        ${styles[type]}
+                    `}
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                    >
+                        <path d="M4 5h7v14H4z" />
+                        <path d="M13 5h7v14h-7z" />
+                    </svg>
+                </div>
+            </div>
+        </article>
     );
 }
 

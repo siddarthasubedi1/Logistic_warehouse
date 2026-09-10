@@ -10,6 +10,10 @@ import {
 } from "../utils/session";
 
 
+// ======================================================
+// PROTECTED ROUTE
+// ======================================================
+
 function ProtectedRoute({
     children,
     allowedRoles = [],
@@ -19,7 +23,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // AUTH SESSION
+    // SESSION
     // ======================================================
 
     const accessToken =
@@ -31,7 +35,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // NOT LOGGED IN
+    // NOT AUTHENTICATED
     // ======================================================
 
     if (
@@ -55,7 +59,16 @@ function ProtectedRoute({
     // INVALID ROLE
     // ======================================================
 
-    if (!user.role) {
+    const role =
+        String(
+            user.role ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (!role) {
         clearAuthSession();
 
 
@@ -72,15 +85,21 @@ function ProtectedRoute({
     // DEACTIVATED ACCOUNT
     // ======================================================
 
+    const status =
+        String(
+            user.status ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
     if (
         [
             "deactivated",
             "inactive",
         ].includes(
-            String(
-                user.status ||
-                ""
-            ).toLowerCase()
+            status
         )
     ) {
         clearAuthSession();
@@ -96,13 +115,16 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // FORCED PASSWORD CHANGE
+    // FIRST LOGIN PASSWORD CHANGE
     // ======================================================
     //
-    // Only Trainer and Trainee use the temporary-password
-    // first-login policy.
+    // IMPORTANT:
     //
-    // Admin is never blocked by this condition.
+    // Only Trainer and Trainee accounts use the
+    // Administrator-generated temporary password policy.
+    //
+    // Admin must NOT be blocked here.
+    //
     // ======================================================
 
     const requiresPasswordChange =
@@ -110,7 +132,7 @@ function ProtectedRoute({
             "trainer",
             "trainee",
         ].includes(
-            user.role
+            role
         ) &&
         user.mustChangePassword ===
         true;
@@ -126,6 +148,9 @@ function ProtectedRoute({
                 state={{
                     passwordChangeRequired:
                         true,
+
+                    from:
+                        location,
                 }}
             />
         );
@@ -133,20 +158,41 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // ROLE ACCESS
+    // ROLE-BASED ACCESS
     // ======================================================
 
+    const normalizedAllowedRoles =
+        Array.isArray(
+            allowedRoles
+        )
+            ? allowedRoles.map(
+                (
+                    allowedRole
+                ) =>
+                    String(
+                        allowedRole
+                    )
+                        .trim()
+                        .toLowerCase()
+            )
+            : [];
+
+
     if (
-        allowedRoles.length >
+        normalizedAllowedRoles.length >
         0 &&
-        !allowedRoles.includes(
-            user.role
+        !normalizedAllowedRoles.includes(
+            role
         )
     ) {
         return (
             <Navigate
                 to="/unauthorized"
                 replace
+                state={{
+                    from:
+                        location,
+                }}
             />
         );
     }

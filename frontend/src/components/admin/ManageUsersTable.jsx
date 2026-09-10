@@ -23,11 +23,14 @@ import {
 } from "../../utils/training";
 
 
+// ======================================================
+// MANAGE USERS TABLE
+// ======================================================
+
 function ManageUsersTable({
     selectedUserId = null,
     passwordResetRequest = null,
 }) {
-
     // ======================================================
     // USERS
     // ======================================================
@@ -39,7 +42,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // PENDING PASSWORD RESET REQUESTS
+    // PASSWORD RESET REQUESTS
     // ======================================================
 
     const [
@@ -57,7 +60,6 @@ function ManageUsersTable({
         setLoading,
     ] = useState(true);
 
-
     const [
         processingId,
         setProcessingId,
@@ -73,12 +75,10 @@ function ManageUsersTable({
         setSearchTerm,
     ] = useState("");
 
-
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("all");
-
 
     const [
         statusFilter,
@@ -95,7 +95,6 @@ function ManageUsersTable({
         setErrorMessage,
     ] = useState("");
 
-
     const [
         successMessage,
         setSuccessMessage,
@@ -103,7 +102,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // CONFIRM ACTION
+    // CONFIRM DIALOG
     // ======================================================
 
     const [
@@ -121,12 +120,10 @@ function ManageUsersTable({
         setEditingUser,
     ] = useState(null);
 
-
     const [
         editSaving,
         setEditSaving,
     ] = useState(false);
-
 
     const [
         editError,
@@ -135,14 +132,13 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // RESET PASSWORD CREDENTIALS
+    // RESET CREDENTIALS
     // ======================================================
 
     const [
         resetCredentials,
         setResetCredentials,
     ] = useState(null);
-
 
     const [
         credentialUser,
@@ -167,7 +163,9 @@ function ManageUsersTable({
     const loadUsers =
         useCallback(async () => {
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
 
                 const response =
@@ -198,13 +196,15 @@ function ManageUsersTable({
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         }, []);
 
 
     // ======================================================
-    // LOAD PENDING PASSWORD RESET REQUESTS
+    // LOAD RESET REQUESTS
     // ======================================================
 
     const loadPasswordResetRequests =
@@ -223,48 +223,54 @@ function ManageUsersTable({
                     );
 
 
-                const userIds =
+                const ids =
                     requests
                         .filter(
-                            (request) =>
+                            (
+                                request
+                            ) =>
                                 request?.status ===
                                 "pending"
                         )
                         .map(
-                            (request) => {
-                                const requestUser =
+                            (
+                                request
+                            ) => {
+                                const user =
                                     request?.user;
 
 
-                                if (!requestUser) {
+                                if (!user) {
                                     return "";
                                 }
 
 
                                 if (
-                                    typeof requestUser ===
+                                    typeof user ===
                                     "object"
                                 ) {
                                     return String(
-                                        requestUser._id ||
-                                        requestUser.id ||
+                                        user._id ||
+                                        user.id ||
                                         ""
                                     );
                                 }
 
 
                                 return String(
-                                    requestUser
+                                    user
                                 );
                             }
                         )
-                        .filter(Boolean);
+                        .filter(
+                            Boolean
+                        );
 
 
                 setPendingResetUserIds(
                     [
                         ...new Set(
-                            userIds
+                            ids
                         ),
                     ]
                 );
@@ -297,7 +303,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // SCROLL TO SELECTED USER
+    // SCROLL TO USER FROM RESET REQUEST
     // ======================================================
 
     useEffect(() => {
@@ -328,11 +334,10 @@ function ManageUsersTable({
             );
 
 
-        return () => {
+        return () =>
             window.clearTimeout(
                 timer
             );
-        };
 
     }, [
         loading,
@@ -341,7 +346,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // FILTER USERS
+    // FILTERED USERS
     // ======================================================
 
     const filteredUsers =
@@ -353,12 +358,9 @@ function ManageUsersTable({
 
 
             return users.filter(
-                (user) => {
-
-                    // --------------------------------------
-                    // ROLE FILTER
-                    // --------------------------------------
-
+                (
+                    user
+                ) => {
                     if (
                         roleFilter !==
                         "all" &&
@@ -369,10 +371,6 @@ function ManageUsersTable({
                     }
 
 
-                    // --------------------------------------
-                    // STATUS FILTER
-                    // --------------------------------------
-
                     if (
                         statusFilter !==
                         "all"
@@ -381,7 +379,9 @@ function ManageUsersTable({
                             String(
                                 user.status ||
                                 ""
-                            ).toLowerCase();
+                            )
+                                .trim()
+                                .toLowerCase();
 
 
                         if (
@@ -409,16 +409,12 @@ function ManageUsersTable({
                     }
 
 
-                    // --------------------------------------
-                    // SEARCH
-                    // --------------------------------------
-
                     if (!query) {
                         return true;
                     }
 
 
-                    const searchableText =
+                    const text =
                         [
                             getUserDisplayName(
                                 user,
@@ -426,14 +422,11 @@ function ManageUsersTable({
                             ),
 
                             user.username,
-
                             user.email,
-
                             user.phoneNumber,
-
                             user.address,
-
                             user.role,
+                            user.status,
                         ]
                             .filter(
                                 Boolean
@@ -442,7 +435,7 @@ function ManageUsersTable({
                             .toLowerCase();
 
 
-                    return searchableText.includes(
+                    return text.includes(
                         query
                     );
                 }
@@ -457,7 +450,41 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // OPEN EDIT USER
+    // COUNTS
+    // ======================================================
+
+    const trainerCount =
+        users.filter(
+            (
+                user
+            ) =>
+                user.role ===
+                "trainer"
+        ).length;
+
+
+    const traineeCount =
+        users.filter(
+            (
+                user
+            ) =>
+                user.role ===
+                "trainee"
+        ).length;
+
+
+    const activeCount =
+        users.filter(
+            (
+                user
+            ) =>
+                user.status ===
+                "active"
+        ).length;
+
+
+    // ======================================================
+    // EDIT USER
     // ======================================================
 
     const handleEditUser = (
@@ -487,18 +514,17 @@ function ManageUsersTable({
             formData
         ) => {
             if (
-                !editingUser?._id
+                !editingUser
+                    ?._id
             ) {
                 return;
             }
 
 
-            setEditError("");
+            setEditError(
+                ""
+            );
 
-
-            // ------------------------------------------
-            // REQUIRED FIELDS
-            // ------------------------------------------
 
             if (
                 !formData.firstName ||
@@ -517,10 +543,6 @@ function ManageUsersTable({
             }
 
 
-            // ------------------------------------------
-            // AGE
-            // ------------------------------------------
-
             if (
                 !Number.isInteger(
                     Number(
@@ -529,7 +551,8 @@ function ManageUsersTable({
                 ) ||
                 Number(
                     formData.age
-                ) < 16
+                ) <
+                16
             ) {
                 setEditError(
                     "Age must be 16 or above."
@@ -538,10 +561,6 @@ function ManageUsersTable({
                 return;
             }
 
-
-            // ------------------------------------------
-            // EMAIL
-            // ------------------------------------------
 
             const emailPattern =
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -574,7 +593,8 @@ function ManageUsersTable({
 
 
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "User updated successfully."
                 );
 
@@ -583,8 +603,9 @@ function ManageUsersTable({
                     null
                 );
 
-
-                setEditError("");
+                setEditError(
+                    ""
+                );
 
 
                 await loadUsers();
@@ -627,12 +648,14 @@ function ManageUsersTable({
             null
         );
 
-        setEditError("");
+        setEditError(
+            ""
+        );
     };
 
 
     // ======================================================
-    // REQUEST DEACTIVATE
+    // DEACTIVATE REQUEST
     // ======================================================
 
     const requestDeactivate = (
@@ -666,7 +689,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // REQUEST REACTIVATE
+    // REACTIVATE REQUEST
     // ======================================================
 
     const requestReactivate = (
@@ -700,7 +723,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // REQUEST DELETE
+    // DELETE REQUEST
     // ======================================================
 
     const requestDelete = (
@@ -734,128 +757,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // CONFIRM USER ACTION
-    // ======================================================
-
-    const handleConfirmAction =
-        async () => {
-            const action =
-                confirmAction;
-
-
-            const user =
-                action?.user;
-
-
-            if (
-                !action ||
-                !user?._id
-            ) {
-                return;
-            }
-
-
-            clearFeedback();
-
-
-            try {
-                setProcessingId(
-                    user._id
-                );
-
-
-                // ------------------------------------------
-                // DEACTIVATE
-                // ------------------------------------------
-
-                if (
-                    action.type ===
-                    "deactivate"
-                ) {
-                    const response =
-                        await api.patch(
-                            `/admin/users/${user._id}/deactivate`
-                        );
-
-
-                    setSuccessMessage(
-                        response.data?.message ||
-                        "User deactivated successfully."
-                    );
-                }
-
-
-                // ------------------------------------------
-                // REACTIVATE
-                // ------------------------------------------
-
-                if (
-                    action.type ===
-                    "reactivate"
-                ) {
-                    const response =
-                        await api.patch(
-                            `/admin/users/${user._id}/reactivate`
-                        );
-
-
-                    setSuccessMessage(
-                        response.data?.message ||
-                        "User reactivated successfully."
-                    );
-                }
-
-
-                // ------------------------------------------
-                // DELETE
-                // ------------------------------------------
-
-                if (
-                    action.type ===
-                    "delete"
-                ) {
-                    const response =
-                        await api.delete(
-                            `/admin/users/${user._id}`
-                        );
-
-
-                    setSuccessMessage(
-                        response.data?.message ||
-                        "User deleted successfully."
-                    );
-                }
-
-
-                setConfirmAction(
-                    null
-                );
-
-
-                await loadUsers();
-
-            } catch (error) {
-                console.error(
-                    "User action error:",
-                    error
-                );
-
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to complete the requested action."
-                    )
-                );
-
-            } finally {
-                setProcessingId("");
-            }
-        };
-
-
-    // ======================================================
-    // REQUEST PASSWORD RESET
+    // RESET PASSWORD REQUEST
     // ======================================================
 
     const requestResetPassword = (
@@ -906,6 +808,119 @@ function ManageUsersTable({
 
 
     // ======================================================
+    // NORMAL USER ACTION
+    // ======================================================
+
+    const handleConfirmAction =
+        async () => {
+            const action =
+                confirmAction;
+
+
+            const user =
+                action?.user;
+
+
+            if (
+                !action ||
+                !user?._id
+            ) {
+                return;
+            }
+
+
+            try {
+                setProcessingId(
+                    user._id
+                );
+
+                clearFeedback();
+
+
+                if (
+                    action.type ===
+                    "deactivate"
+                ) {
+                    const response =
+                        await api.patch(
+                            `/admin/users/${user._id}/deactivate`
+                        );
+
+
+                    setSuccessMessage(
+                        response.data
+                            ?.message ||
+                        "User deactivated successfully."
+                    );
+                }
+
+
+                if (
+                    action.type ===
+                    "reactivate"
+                ) {
+                    const response =
+                        await api.patch(
+                            `/admin/users/${user._id}/reactivate`
+                        );
+
+
+                    setSuccessMessage(
+                        response.data
+                            ?.message ||
+                        "User reactivated successfully."
+                    );
+                }
+
+
+                if (
+                    action.type ===
+                    "delete"
+                ) {
+                    const response =
+                        await api.delete(
+                            `/admin/users/${user._id}`
+                        );
+
+
+                    setSuccessMessage(
+                        response.data
+                            ?.message ||
+                        "User deleted successfully."
+                    );
+                }
+
+
+                setConfirmAction(
+                    null
+                );
+
+
+                await loadUsers();
+
+            } catch (error) {
+                console.error(
+                    "User action error:",
+                    error
+                );
+
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to complete the requested action."
+                    )
+                );
+
+            } finally {
+                setProcessingId(
+                    ""
+                );
+            }
+        };
+
+
+    // ======================================================
     // RESET PASSWORD
     // ======================================================
 
@@ -922,7 +937,6 @@ function ManageUsersTable({
                 setProcessingId(
                     user._id
                 );
-
 
                 clearFeedback();
 
@@ -950,7 +964,8 @@ function ManageUsersTable({
                 setCredentialUser({
                     ...user,
 
-                    ...(response.data?.user ||
+                    ...(response.data
+                        ?.user ||
                         {}),
                 });
 
@@ -961,7 +976,8 @@ function ManageUsersTable({
 
 
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Temporary password generated successfully."
                 );
 
@@ -986,13 +1002,15 @@ function ManageUsersTable({
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
 
     // ======================================================
-    // CONFIRM DIALOG HANDLER
+    // CONFIRM HANDLER
     // ======================================================
 
     const handleConfirmDialog =
@@ -1024,7 +1042,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // PASSWORD RESET NOTICE
+    // RESET NOTICE
     // ======================================================
 
     const showPendingResetNotice =
@@ -1036,7 +1054,8 @@ function ManageUsersTable({
                         selectedUserId
                     )
                 ) ||
-                passwordResetRequest?.status ===
+                passwordResetRequest
+                    ?.status ===
                 "pending"
             )
         );
@@ -1050,7 +1069,7 @@ function ManageUsersTable({
         <section
             className="
                 overflow-hidden
-                rounded-xl
+                rounded-2xl
                 border
                 border-slate-200
                 bg-white
@@ -1064,45 +1083,189 @@ function ManageUsersTable({
 
             <div
                 className="
+                    relative
+                    overflow-hidden
                     border-b
-                    border-slate-200
+                    border-slate-100
+                    bg-gradient-to-r
+                    from-white
+                    via-white
+                    to-blue-50
                     p-5
+                    sm:p-6
                 "
             >
-                <h2
+
+                <div
                     className="
-                        text-base
-                        font-bold
-                        text-slate-900
+                        pointer-events-none
+                        absolute
+                        -right-20
+                        -top-20
+                        h-48
+                        w-48
+                        rounded-full
+                        bg-blue-50
                     "
-                >
-                    Trainer & Trainee Accounts
-                </h2>
+                />
 
 
-                <p
+                <div
                     className="
-                        mt-1
-                        text-xs
-                        text-slate-500
+                        relative
+                        z-10
+                        flex
+                        flex-col
+                        gap-4
+                        xl:flex-row
+                        xl:items-center
+                        xl:justify-between
                     "
                 >
-                    Search, edit, deactivate, reactivate, reset
-                    passwords, or remove user accounts.
-                </p>
+
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-3
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                h-11
+                                w-11
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-xl
+                                bg-blue-50
+                                text-blue-600
+                            "
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                className="h-5 w-5"
+                            >
+                                <circle
+                                    cx="9"
+                                    cy="8"
+                                    r="3"
+                                />
+
+                                <circle
+                                    cx="17"
+                                    cy="9"
+                                    r="2"
+                                />
+
+                                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+
+                                <path d="M15 15c3 0 5 1.6 5.5 5" />
+                            </svg>
+                        </div>
+
+
+                        <div>
+                            <p
+                                className="
+                                    text-[8px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-[0.16em]
+                                    text-blue-600
+                                "
+                            >
+                                User Administration
+                            </p>
+
+
+                            <h2
+                                className="
+                                    mt-1
+                                    text-base
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
+                                Trainer & Trainee Accounts
+                            </h2>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    max-w-xl
+                                    text-[10px]
+                                    leading-5
+                                    text-slate-500
+                                "
+                            >
+                                Search, edit, deactivate, reactivate
+                                and manage password-reset requests.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        className="
+                            grid
+                            grid-cols-3
+                            gap-2
+                            sm:w-fit
+                        "
+                    >
+                        <MiniStat
+                            label="Trainers"
+                            value={
+                                trainerCount
+                            }
+                        />
+
+                        <MiniStat
+                            label="Trainees"
+                            value={
+                                traineeCount
+                            }
+                        />
+
+                        <MiniStat
+                            label="Active"
+                            value={
+                                activeCount
+                            }
+                        />
+                    </div>
+
+                </div>
+
             </div>
 
 
             {/* ================================================= */}
-            {/* FILTERS + FEEDBACK */}
+            {/* FILTERS */}
             {/* ================================================= */}
 
-            <div className="space-y-5 p-5">
+            <div
+                className="
+                    space-y-4
+                    border-b
+                    border-slate-100
+                    p-4
+                    sm:p-5
+                "
+            >
 
                 {showPendingResetNotice && (
                     <FeedbackAlert
-                        type="info"
-                        message="This user has a pending password reset request."
+                        type="warning"
+                        message="This user has a pending password reset request. The Reset Password action is now available for this account."
                     />
                 )}
 
@@ -1158,7 +1321,7 @@ function ManageUsersTable({
 
 
             {/* ================================================= */}
-            {/* TABLE */}
+            {/* USER TABLE */}
             {/* ================================================= */}
 
             {loading ? (
@@ -1229,7 +1392,7 @@ function ManageUsersTable({
 
 
             {/* ================================================= */}
-            {/* CONFIRM ACTION */}
+            {/* CONFIRM */}
             {/* ================================================= */}
 
             <ConfirmDialog
@@ -1239,19 +1402,23 @@ function ManageUsersTable({
                     )
                 }
                 title={
-                    confirmAction?.title ||
+                    confirmAction
+                        ?.title ||
                     ""
                 }
                 message={
-                    confirmAction?.message ||
+                    confirmAction
+                        ?.message ||
                     ""
                 }
                 confirmText={
-                    confirmAction?.confirmText ||
+                    confirmAction
+                        ?.confirmText ||
                     "Confirm"
                 }
                 variant={
-                    confirmAction?.variant ||
+                    confirmAction
+                        ?.variant ||
                     "danger"
                 }
                 loading={
@@ -1271,7 +1438,7 @@ function ManageUsersTable({
 
 
             {/* ================================================= */}
-            {/* GENERATED RESET CREDENTIALS */}
+            {/* GENERATED CREDENTIALS */}
             {/* ================================================= */}
 
             <GeneratedCredentialsModal
@@ -1298,6 +1465,56 @@ function ManageUsersTable({
             />
 
         </section>
+    );
+}
+
+
+// ======================================================
+// MINI STAT
+// ======================================================
+
+function MiniStat({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                min-w-[72px]
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                px-3
+                py-2.5
+                text-center
+                shadow-sm
+            "
+        >
+            <p
+                className="
+                    text-lg
+                    font-bold
+                    text-slate-900
+                "
+            >
+                {value}
+            </p>
+
+
+            <p
+                className="
+                    mt-0.5
+                    text-[7px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-slate-400
+                "
+            >
+                {label}
+            </p>
+        </div>
     );
 }
 
