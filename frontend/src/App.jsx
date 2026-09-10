@@ -20,6 +20,7 @@ import ManageUsersPage from "./pages/admin/ManageUsersPage";
 import RolesPermissionsPage from "./pages/admin/RolesPermissionsPage";
 import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
 import EditRolePage from "./pages/admin/EditRolePage";
+import AuditLogsPage from "./pages/admin/AuditLogsPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
@@ -230,6 +231,24 @@ function App() {
             ]}
           >
             <EditRolePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ================================================= */}
+      {/* ADMIN AUDIT LOGS */}
+      {/* ================================================= */}
+
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <AuditLogsPage />
           </ProtectedRoute>
         }
       />

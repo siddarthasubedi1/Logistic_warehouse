@@ -174,6 +174,9 @@ const generateCredentials =
             // ==================================================
             // AUDIT LOG
             //
+            // IMPORTANT:
+            // Keep the approved Sprint 1 action name.
+            //
             // Never save generated password.
             // ==================================================
 
@@ -184,7 +187,7 @@ const generateCredentials =
                     req.user,
 
                 action:
-                    "ADMIN_GENERATED_CREDENTIALS",
+                    "TEMPORARY_CREDENTIALS_GENERATED",
 
                 status:
                     "success",
@@ -324,7 +327,24 @@ const listUsers =
                         "created",
                 })
                     .select(
-                        "-passwordHash -refreshTokenHash"
+                        [
+                            "_id",
+                            "firstName",
+                            "lastName",
+                            "age",
+                            "username",
+                            "email",
+                            "phoneNumber",
+                            "address",
+                            "gender",
+                            "role",
+                            "status",
+                            "accountStatus",
+                            "assignedTrainingSections",
+                            "mustChangePassword",
+                            "createdAt",
+                            "updatedAt",
+                        ].join(" ")
                     )
                     .sort({
                         createdAt:
@@ -334,9 +354,9 @@ const listUsers =
 
             return res
                 .status(200)
-                .json(
-                    users
-                );
+                .json({
+                    users,
+                });
 
         } catch (error) {
             console.error(
@@ -349,31 +369,21 @@ const listUsers =
                 .status(500)
                 .json({
                     message:
-                        "Server error",
+                        "Unable to load users",
                 });
         }
     };
 
 
 // ======================================================
-// UPDATE / EDIT USER INFORMATION
+// UPDATE TRAINER / TRAINEE
 //
 // PATCH /api/admin/users/:id
-//
-// This records:
-// - which Admin edited
-// - which user was edited
-// - previous values
-// - new values
 // ======================================================
 
 const updateUser =
     async (req, res) => {
         try {
-            // ==================================================
-            // FIND USER
-            // ==================================================
-
             const user =
                 await User.findById(
                     req.params.id
@@ -393,24 +403,7 @@ const updateUser =
 
 
             // ==================================================
-            // ADMIN ACCOUNT CANNOT BE EDITED HERE
-            // ==================================================
-
-            if (
-                user.role ===
-                "admin"
-            ) {
-                return res
-                    .status(403)
-                    .json({
-                        message:
-                            "Administrator accounts cannot be edited through this endpoint",
-                    });
-            }
-
-
-            // ==================================================
-            // ONLY TRAINER / TRAINEE
+            // TRAINER / TRAINEE ONLY
             // ==================================================
 
             if (
@@ -422,7 +415,7 @@ const updateUser =
                 )
             ) {
                 return res
-                    .status(400)
+                    .status(403)
                     .json({
                         message:
                             "Only Trainer and Trainee accounts can be edited",
@@ -431,8 +424,21 @@ const updateUser =
 
 
             // ==================================================
-            // STORE OLD VALUES
+            // CREATED ACCOUNT ONLY
             // ==================================================
+
+            if (
+                user.accountStatus !==
+                "created"
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            "Only created user accounts can be edited",
+                    });
+            }
+
 
             const previousData = {
                 firstName:
@@ -559,7 +565,7 @@ const updateUser =
                 req.body.age !==
                 undefined
             ) {
-                const parsedAge =
+                const age =
                     Number(
                         req.body.age
                     );
@@ -567,9 +573,10 @@ const updateUser =
 
                 if (
                     !Number.isInteger(
-                        parsedAge
+                        age
                     ) ||
-                    parsedAge < 16
+                    age <
+                    16
                 ) {
                     return res
                         .status(400)
@@ -581,7 +588,7 @@ const updateUser =
 
 
                 if (
-                    parsedAge !==
+                    age !==
                     user.age
                 ) {
                     changedFields.age = {
@@ -589,12 +596,12 @@ const updateUser =
                             user.age,
 
                         to:
-                            parsedAge,
+                            age,
                     };
 
 
                     user.age =
-                        parsedAge;
+                        age;
                 }
             }
 
@@ -615,12 +622,12 @@ const updateUser =
                         .toLowerCase();
 
 
-                const emailPattern =
+                const emailRegex =
                     /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
                 if (
-                    !emailPattern.test(
+                    !emailRegex.test(
                         normalizedEmail
                     )
                 ) {
@@ -1343,9 +1350,6 @@ const deleteUser =
 
             // ==================================================
             // COPY TARGET INFORMATION BEFORE DELETE
-            //
-            // Important because after delete the User
-            // document no longer exists.
             // ==================================================
 
             const deletedUserSnapshot = {

@@ -28,10 +28,15 @@ function AdminQuickActions({
 
             <div className="mt-5 space-y-3">
 
+                {/* ================================================= */}
+                {/* CREATE USER */}
+                {/* ================================================= */}
+
                 <ActionButton
                     type="create"
                     title="Create User Account"
-                    description={`${pendingCount} pending user${pendingCount === 1
+                    description={`${pendingCount} pending user${pendingCount ===
+                        1
                         ? ""
                         : "s"
                         }`}
@@ -42,6 +47,10 @@ function AdminQuickActions({
                     }
                 />
 
+
+                {/* ================================================= */}
+                {/* MANAGE USERS */}
+                {/* ================================================= */}
 
                 <ActionButton
                     type="users"
@@ -54,6 +63,26 @@ function AdminQuickActions({
                     }
                 />
 
+
+                {/* ================================================= */}
+                {/* AUDIT LOGS */}
+                {/* ================================================= */}
+
+                <ActionButton
+                    type="audit"
+                    title="View Audit Logs"
+                    description="Review account and system activity"
+                    onClick={() =>
+                        navigate(
+                            "/admin/audit-logs"
+                        )
+                    }
+                />
+
+
+                {/* ================================================= */}
+                {/* ACCESS CONTROL INFORMATION */}
+                {/* ================================================= */}
 
                 <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
 
@@ -83,9 +112,7 @@ function AdminQuickActions({
                             </p>
 
                             <p className="mt-1 text-[9px] leading-4 text-slate-500">
-                                Admin routes are
-                                protected by role-based
-                                access control.
+                                Admin routes are protected by role-based access control.
                             </p>
 
                         </div>
@@ -101,6 +128,10 @@ function AdminQuickActions({
 }
 
 
+// ======================================================
+// QUICK ACTION BUTTON
+// ======================================================
+
 function ActionButton({
     type,
     title,
@@ -110,13 +141,21 @@ function ActionButton({
     return (
         <button
             type="button"
-            onClick={onClick}
+            onClick={
+                onClick
+            }
             className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
         >
 
+            {/* ================================================= */}
+            {/* ICON */}
+            {/* ================================================= */}
+
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
 
-                {type === "create" ? (
+                {type ===
+                    "create" ? (
+
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -136,7 +175,30 @@ function ActionButton({
 
                         <path d="M14 17h8" />
                     </svg>
+
+                ) : type ===
+                    "audit" ? (
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-5 w-5"
+                    >
+                        <path d="M7 3h10v4H7z" />
+
+                        <path d="M5 5h14v16H5z" />
+
+                        <path d="M8 11h8" />
+
+                        <path d="M8 15h8" />
+
+                        <path d="M8 19h5" />
+                    </svg>
+
                 ) : (
+
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -164,6 +226,10 @@ function ActionButton({
 
             </div>
 
+
+            {/* ================================================= */}
+            {/* TEXT */}
+            {/* ================================================= */}
 
             <div className="min-w-0 flex-1">
 
