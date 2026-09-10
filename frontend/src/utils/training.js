@@ -2,16 +2,74 @@
 // TRAINING UTILITY HELPERS
 // ======================================================
 //
-// Shared helpers used throughout:
+// Shared between:
 //
-// - Admin training pages
-// - Trainer training pages
-// - Trainee training pages
-// - Training assignments
-// - Programme management
-// - Learning sections
+// Admin
+// Trainer
+// Trainee
+// Training Programmes
+// Learning Sections
+// Training Assignments
+// Trainee My Training
+//
+// IMPORTANT:
+//
+// Sprint 1:
+// assignedTrainingSections
+// TrainingProgress
+//
+// Sprint 2:
+// TrainingProgramme
+// LearningSection
+// TrainingAssignment
+//
+// These helpers do NOT merge those concepts.
 //
 // ======================================================
+
+
+// ======================================================
+// PROGRAMME TYPES
+// ======================================================
+
+export const PROGRAMME_TYPES = [
+    {
+        value:
+            "manual-handling",
+
+        label:
+            "Manual Handling",
+    },
+
+    {
+        value:
+            "working-at-height",
+
+        label:
+            "Working at Height",
+    },
+];
+
+
+// ======================================================
+// PROGRAMME STATUS
+// ======================================================
+
+export const PROGRAMME_STATUSES = [
+    "draft",
+    "active",
+    "inactive",
+];
+
+
+// ======================================================
+// LEARNING SECTION STATUS
+// ======================================================
+
+export const LEARNING_SECTION_STATUSES = [
+    "active",
+    "inactive",
+];
 
 
 // ======================================================
@@ -27,8 +85,10 @@ export const formatProgrammeType = (
         case "manual-handling":
             return "Manual Handling";
 
+
         case "working-at-height":
             return "Working at Height";
+
 
         default:
             return (
@@ -37,6 +97,27 @@ export const formatProgrammeType = (
             );
     }
 };
+
+
+// ======================================================
+// ALIAS
+// ======================================================
+//
+// Some older components used:
+// getProgrammeTypeLabel()
+//
+// Keep it so those components continue working.
+//
+// ======================================================
+
+export const getProgrammeTypeLabel =
+    (
+        programmeType
+    ) => {
+        return formatProgrammeType(
+            programmeType
+        );
+    };
 
 
 // ======================================================
@@ -52,22 +133,43 @@ export const getUserDisplayName = (
     }
 
 
-    // ------------------------------------------
-    // FULL NAME
-    // ------------------------------------------
+    // ==================================================
+    // USER MAY SOMETIMES BE STRING
+    // ==================================================
+
+    if (
+        typeof user ===
+        "string"
+    ) {
+        const cleanValue =
+            user.trim();
+
+
+        return (
+            cleanValue ||
+            fallback
+        );
+    }
+
+
+    // ==================================================
+    // FULL NAME PROPERTY
+    // ==================================================
 
     if (
         typeof user.fullName ===
         "string" &&
         user.fullName.trim()
     ) {
-        return user.fullName.trim();
+        return user
+            .fullName
+            .trim();
     }
 
 
-    // ------------------------------------------
+    // ==================================================
     // FIRST + LAST NAME
-    // ------------------------------------------
+    // ==================================================
 
     const fullName =
         [
@@ -81,21 +183,25 @@ export const getUserDisplayName = (
             .trim();
 
 
-    if (fullName) {
+    if (
+        fullName
+    ) {
         return fullName;
     }
 
 
-    // ------------------------------------------
+    // ==================================================
     // USERNAME
-    // ------------------------------------------
+    // ==================================================
 
     if (
         typeof user.username ===
         "string" &&
         user.username.trim()
     ) {
-        return user.username.trim();
+        return user
+            .username
+            .trim();
     }
 
 
@@ -104,37 +210,79 @@ export const getUserDisplayName = (
 
 
 // ======================================================
-// PROGRAMME TRAINER NAME
+// DISPLAY NAME ALIAS
 // ======================================================
 //
-// Current backend programme model uses "owner".
+// Some previous components use getDisplayName.
 //
-// Extra fallbacks are supported so the helper remains
-// safe if a populated programme is shaped slightly
-// differently elsewhere in the application.
+// Keep both helper names so existing components do not
+// need unnecessary changes.
 //
 // ======================================================
 
-export const getProgrammeTrainerName = (
+export const getDisplayName = (
+    user,
+    fallback =
+        "Unknown user"
+) => {
+    return getUserDisplayName(
+        user,
+        fallback
+    );
+};
+
+
+// ======================================================
+// PROGRAMME OWNER
+// ======================================================
+//
+// Current and earlier frontend versions may receive:
+//
+// programme.ownerTrainer
+// programme.owner
+// programme.trainer
+//
+// Supporting all three prevents UI breakage while the
+// backend remains the source of truth.
+//
+// ======================================================
+
+export const getProgrammeOwner = (
     programme
 ) => {
     if (!programme) {
-        return "Not assigned";
+        return null;
     }
 
 
-    const trainer =
-        programme.owner ||
+    return (
         programme.ownerTrainer ||
+        programme.owner ||
         programme.trainer ||
-        null;
-
-
-    return getUserDisplayName(
-        trainer,
-        "Not assigned"
+        null
     );
 };
+
+
+// ======================================================
+// PROGRAMME TRAINER NAME
+// ======================================================
+
+export const getProgrammeTrainerName =
+    (
+        programme
+    ) => {
+        const trainer =
+            getProgrammeOwner(
+                programme
+            );
+
+
+        return getUserDisplayName(
+            trainer,
+            "Not assigned"
+        );
+    };
 
 
 // ======================================================
@@ -181,47 +329,118 @@ export const formatTrainingDate = (
 
 
 // ======================================================
+// FORMAT DATE + TIME
+// ======================================================
+
+export const formatTrainingDateTime = (
+    value
+) => {
+    if (!value) {
+        return "—";
+    }
+
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "—";
+    }
+
+
+    return date.toLocaleString(
+        undefined,
+        {
+            year:
+                "numeric",
+
+            month:
+                "short",
+
+            day:
+                "numeric",
+
+            hour:
+                "2-digit",
+
+            minute:
+                "2-digit",
+        }
+    );
+};
+
+
+// ======================================================
 // GET PROGRAMME FROM ASSIGNMENT
 // ======================================================
 
-export const getAssignmentProgramme = (
-    assignment
-) => {
-    return (
-        assignment?.programme ||
-        assignment?.trainingProgramme ||
-        null
-    );
-};
+export const getAssignmentProgramme =
+    (
+        assignment
+    ) => {
+        if (
+            !assignment
+        ) {
+            return null;
+        }
+
+
+        return (
+            assignment.programme ||
+            assignment.trainingProgramme ||
+            null
+        );
+    };
 
 
 // ======================================================
 // GET TRAINEE FROM ASSIGNMENT
 // ======================================================
 
-export const getAssignmentTrainee = (
-    assignment
-) => {
-    return (
-        assignment?.trainee ||
-        assignment?.user ||
-        null
-    );
-};
+export const getAssignmentTrainee =
+    (
+        assignment
+    ) => {
+        if (
+            !assignment
+        ) {
+            return null;
+        }
+
+
+        return (
+            assignment.trainee ||
+            assignment.user ||
+            null
+        );
+    };
 
 
 // ======================================================
-// CHECK ACTIVE RECORD
+// ACTIVE RECORD
 // ======================================================
 
-export const isActiveTrainingRecord = (
-    record
-) => {
-    return (
-        record?.status ===
-        "active"
-    );
-};
+export const isActiveTrainingRecord =
+    (
+        record
+    ) => {
+        return (
+            String(
+                record?.status ||
+                ""
+            )
+                .trim()
+                .toLowerCase() ===
+            "active"
+        );
+    };
 
 
 // ======================================================
@@ -241,9 +460,12 @@ export const getActiveProgrammes = (
 
 
     return programmes.filter(
-        (programme) =>
-            programme?.status ===
-            "active"
+        (
+            programme
+        ) =>
+            isActiveTrainingRecord(
+                programme
+            )
     );
 };
 
@@ -252,39 +474,69 @@ export const getActiveProgrammes = (
 // ASSIGNABLE TRAINEES
 // ======================================================
 //
-// A Trainee can receive a programme when:
+// TrainingAssignment is a Sprint 2 concept.
 //
-// - role = trainee
-// - status = active
-// - accountStatus = created
+// An assignable Trainee must:
 //
-// This matches the backend Training Assignment
-// controller.
+// role = trainee
+// status = active
+//
+// Older Sprint 1 users normally also have:
+//
+// accountStatus = created
+//
+// If accountStatus is present, require created.
+// If older valid records do not contain accountStatus,
+// they are still accepted.
 //
 // ======================================================
 
-export const getAssignableTrainees = (
-    users = []
-) => {
-    if (
-        !Array.isArray(
-            users
-        )
-    ) {
-        return [];
-    }
+export const getAssignableTrainees =
+    (
+        users = []
+    ) => {
+        if (
+            !Array.isArray(
+                users
+            )
+        ) {
+            return [];
+        }
 
 
-    return users.filter(
-        (user) =>
-            user?.role ===
-            "trainee" &&
-            user?.status ===
-            "active" &&
-            user?.accountStatus ===
-            "created"
-    );
-};
+        return users.filter(
+            (
+                user
+            ) => {
+                if (
+                    user?.role !==
+                    "trainee"
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    user?.status !==
+                    "active"
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    user.accountStatus &&
+                    user.accountStatus !==
+                    "created"
+                ) {
+                    return false;
+                }
+
+
+                return true;
+            }
+        );
+    };
 
 
 // ======================================================
@@ -324,9 +576,9 @@ export const sortLearningSections = (
                 );
 
 
-            // ------------------------------------------
-            // PRIMARY SORT: ORDER
-            // ------------------------------------------
+            // ==================================================
+            // PRIMARY: SECTION ORDER
+            // ==================================================
 
             if (
                 firstOrder !==
@@ -339,9 +591,9 @@ export const sortLearningSections = (
             }
 
 
-            // ------------------------------------------
-            // SECONDARY SORT: CREATED DATE
-            // ------------------------------------------
+            // ==================================================
+            // SECONDARY: CREATION TIME
+            // ==================================================
 
             const firstCreated =
                 new Date(
@@ -367,114 +619,131 @@ export const sortLearningSections = (
 
 
 // ======================================================
-// SECTION READING PERCENTAGE
+// SECTION POSITION PERCENTAGE
 // ======================================================
 //
-// currentSection is ZERO-BASED.
+// IMPORTANT:
+//
+// This is NOT persisted progress.
+//
+// It only describes where the Trainee currently is inside
+// the list of Sprint 2 learning sections.
 //
 // Example:
 //
-// Section 1 of 4
 // currentSection = 0
+// totalSections = 4
 //
-// Reading progress = 25%
+// Section position = 25%
 //
-// Section 4 of 4
-// currentSection = 3
-//
-// Reading progress = 100%
-//
-// This is only visual Sprint 2 navigation progress.
-// It does NOT save completion to MongoDB.
+// This helper does not:
+// - update TrainingProgress
+// - create a database record
+// - mark content completed
+// - calculate quiz scores
 //
 // ======================================================
 
-export const calculateSectionPercentage = (
-    currentSection,
-    totalSections
-) => {
-    const current =
-        Number(
-            currentSection
-        );
+export const calculateSectionPercentage =
+    (
+        currentSection,
+        totalSections
+    ) => {
+        const current =
+            Number(
+                currentSection
+            );
 
 
-    const total =
-        Number(
-            totalSections
-        );
+        const total =
+            Number(
+                totalSections
+            );
 
 
-    if (
-        !Number.isFinite(
-            total
-        ) ||
-        total <=
-        0
-    ) {
-        return 0;
-    }
-
-
-    if (
-        !Number.isFinite(
-            current
-        )
-    ) {
-        return 0;
-    }
-
-
-    // currentSection is zero-based, therefore Section 1
-    // is index 0.
-    const sectionBeingRead =
-        current +
-        1;
-
-
-    const percentage =
-        Math.round(
-            (
-                sectionBeingRead /
+        if (
+            !Number.isFinite(
                 total
-            ) *
-            100
+            ) ||
+            total <=
+            0
+        ) {
+            return 0;
+        }
+
+
+        if (
+            !Number.isFinite(
+                current
+            )
+        ) {
+            return 0;
+        }
+
+
+        const normalizedCurrent =
+            Math.max(
+                0,
+                Math.min(
+                    current,
+                    total -
+                    1
+                )
+            );
+
+
+        const position =
+            normalizedCurrent +
+            1;
+
+
+        const percentage =
+            Math.round(
+                (
+                    position /
+                    total
+                ) *
+                100
+            );
+
+
+        return Math.max(
+            0,
+            Math.min(
+                percentage,
+                100
+            )
         );
-
-
-    return Math.max(
-        0,
-        Math.min(
-            percentage,
-            100
-        )
-    );
-};
+    };
 
 
 // ======================================================
-// PARSE ARRAY API RESPONSE
+// PARSE ARRAY RESPONSE
 // ======================================================
 //
-// Different controllers can return:
+// APIs in the current project may return:
 //
-// [
-//   ...
-// ]
+// [...]
 //
 // or:
 //
 // {
-//   programmes: [...]
+//     users: [...]
 // }
 //
 // or:
 //
 // {
-//   assignments: [...]
+//     programmes: [...]
 // }
 //
-// This helper safely supports both.
+// or:
+//
+// {
+//     sections: [...]
+// }
+//
+// This helper supports both.
 //
 // ======================================================
 
@@ -495,7 +764,9 @@ export const parseArrayResponse = (
         data &&
         propertyName &&
         Array.isArray(
-            data[propertyName]
+            data[
+            propertyName
+            ]
         )
     ) {
         return data[
@@ -509,7 +780,27 @@ export const parseArrayResponse = (
 
 
 // ======================================================
-// API ERROR MESSAGE
+// ARRAY RESPONSE ALIAS
+// ======================================================
+//
+// Earlier My Training components used getArrayResponse.
+// Keep the alias to prevent unnecessary import changes.
+//
+// ======================================================
+
+export const getArrayResponse = (
+    data,
+    propertyName
+) => {
+    return parseArrayResponse(
+        data,
+        propertyName
+    );
+};
+
+
+// ======================================================
+// GET API ERROR MESSAGE
 // ======================================================
 
 export const getApiErrorMessage = (
@@ -517,10 +808,125 @@ export const getApiErrorMessage = (
     fallbackMessage =
         "Something went wrong."
 ) => {
-    return (
-        error?.response?.data
-            ?.message ||
-        error?.message ||
-        fallbackMessage
-    );
+    const serverMessage =
+        error
+            ?.response
+            ?.data
+            ?.message;
+
+
+    if (
+        typeof serverMessage ===
+        "string" &&
+        serverMessage.trim()
+    ) {
+        return serverMessage.trim();
+    }
+
+
+    const localMessage =
+        error?.message;
+
+
+    if (
+        typeof localMessage ===
+        "string" &&
+        localMessage.trim()
+    ) {
+        return localMessage.trim();
+    }
+
+
+    return fallbackMessage;
 };
+
+
+// ======================================================
+// NORMALIZE TRAINING SECTIONS
+// ======================================================
+//
+// Sprint 1 broad training area helper.
+//
+// Does NOT work with Sprint 2 TrainingAssignments.
+//
+// ======================================================
+
+export const normalizeTrainingSections =
+    (
+        sections = []
+    ) => {
+        if (
+            !Array.isArray(
+                sections
+            )
+        ) {
+            return [];
+        }
+
+
+        const allowed = [
+            "manual-handling",
+            "working-at-height",
+        ];
+
+
+        return [
+            ...new Set(
+                sections.filter(
+                    (
+                        section
+                    ) =>
+                        allowed.includes(
+                            section
+                        )
+                )
+            ),
+        ];
+    };
+
+
+// ======================================================
+// CHECK TRAINING SECTION ACCESS
+// ======================================================
+//
+// Sprint 1 broad role assignment only.
+//
+// ======================================================
+
+export const hasTrainingSectionAccess =
+    (
+        user,
+        programmeType
+    ) => {
+        if (
+            !user ||
+            !programmeType
+        ) {
+            return false;
+        }
+
+
+        const assignedSections =
+            normalizeTrainingSections(
+                user
+                    .assignedTrainingSections
+            );
+
+
+        return assignedSections.includes(
+            programmeType
+        );
+    };
+
+
+// ======================================================
+// EXPORT PROGRAMME TYPE VALUES
+// ======================================================
+
+export const PROGRAMME_TYPE_VALUES =
+    PROGRAMME_TYPES.map(
+        (
+            type
+        ) =>
+            type.value
+    );
