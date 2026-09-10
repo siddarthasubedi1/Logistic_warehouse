@@ -35,34 +35,20 @@ const {
 );
 
 
+const {
+    getMyTrainingProgress,
+    startTrainingModule,
+} = require(
+    "../controllers/trainingProgressController"
+);
+
+
 const router =
     express.Router();
 
 
 // ======================================================
-// USER ROUTES
-// ======================================================
-//
-// This router now handles only account/profile
-// operations.
-//
-// Trainee Sprint 2 training access is handled by:
-//
-// /api/my-training
-//
-// The old Sprint 1 broad-module progress endpoints:
-//
-// /api/users/me/training-progress
-//
-// have been removed.
-//
-// ======================================================
-
-
-// ======================================================
 // GET OWN PROFILE
-//
-// GET /api/users/me
 //
 // Admin
 // Trainer
@@ -87,9 +73,53 @@ router.get(
 
 
 // ======================================================
-// UPLOAD / CHANGE OWN PROFILE IMAGE
+// GET TRAINEE'S OWN TRAINING PROGRESS
 //
-// PATCH /api/users/me/profile-image
+// GET /api/users/me/training-progress
+// ======================================================
+
+router.get(
+    "/me/training-progress",
+
+    authenticate,
+
+    authorize(
+        "trainee"
+    ),
+
+    checkActiveStatus,
+
+    getMyTrainingProgress
+);
+
+
+// ======================================================
+// START / CONTINUE TRAINING MODULE
+//
+// POST
+// /api/users/me/training-progress/manual-handling/start
+//
+// POST
+// /api/users/me/training-progress/working-at-height/start
+// ======================================================
+
+router.post(
+    "/me/training-progress/:trainingSection/start",
+
+    authenticate,
+
+    authorize(
+        "trainee"
+    ),
+
+    checkActiveStatus,
+
+    startTrainingModule
+);
+
+
+// ======================================================
+// UPLOAD / CHANGE OWN PROFILE IMAGE
 //
 // Trainer and Trainee only
 // ======================================================
@@ -116,8 +146,6 @@ router.patch(
 
 // ======================================================
 // DELETE OWN PROFILE IMAGE
-//
-// DELETE /api/users/me/profile-image
 //
 // Trainer and Trainee only
 // ======================================================
