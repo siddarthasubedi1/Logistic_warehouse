@@ -1,4 +1,5 @@
 import {
+    useEffect,
     useState,
 } from "react";
 
@@ -13,35 +14,10 @@ import FeedbackAlert from "../ui/FeedbackAlert";
 
 import {
     clearAuthSession,
+    getDashboardPath,
+    normalizeRole,
+    saveAuthSession,
 } from "../../utils/session";
-
-
-function getDashboardPath(
-    role
-) {
-    if (
-        role === "admin"
-    ) {
-        return "/admin";
-    }
-
-
-    if (
-        role === "trainer"
-    ) {
-        return "/trainer";
-    }
-
-
-    if (
-        role === "trainee"
-    ) {
-        return "/trainee";
-    }
-
-
-    return null;
-}
 
 
 function LoginForm({
@@ -65,6 +41,12 @@ function LoginForm({
 
 
     const [
+        rememberMe,
+        setRememberMe,
+    ] = useState(true);
+
+
+    const [
         loading,
         setLoading,
     ] = useState(false);
@@ -76,9 +58,26 @@ function LoginForm({
     ] = useState("");
 
 
-    // ======================================================
-    // LOGIN
-    // ======================================================
+    useEffect(() => {
+        const rememberedUsername =
+            localStorage.getItem(
+                "rememberUsername"
+            );
+
+
+        if (
+            rememberedUsername
+        ) {
+            setUsername(
+                rememberedUsername
+            );
+
+            setRememberMe(
+                true
+            );
+        }
+    }, []);
+
 
     const handleSubmit =
         async (
@@ -104,8 +103,14 @@ function LoginForm({
 
 
             try {
-                setLoading(true);
-                setError("");
+                setLoading(
+                    true
+                );
+
+
+                setError(
+                    ""
+                );
 
 
                 clearAuthSession();
@@ -123,28 +128,43 @@ function LoginForm({
                     );
 
 
-                const {
-                    accessToken,
-                    user,
-                } =
-                    response.data;
+                const accessToken =
+                    response.data
+                        ?.accessToken;
+
+
+                const user =
+                    response.data
+                        ?.user;
 
 
                 if (
                     !accessToken ||
                     !user
                 ) {
-                    setError(
-                        "Login response is incomplete. Please try again."
+                    throw new Error(
+                        "Login response is incomplete."
                     );
-
-                    return;
                 }
 
 
+                const role =
+                    normalizeRole(
+                        user.role
+                    );
+
+
                 if (
-                    !user.role
+                    ![
+                        "admin",
+                        "trainer",
+                        "trainee",
+                    ].includes(
+                        role
+                    )
                 ) {
+                    clearAuthSession();
+
                     setError(
                         "Your account does not have a valid role."
                     );
@@ -153,31 +173,36 @@ function LoginForm({
                 }
 
 
-                sessionStorage.setItem(
-                    "accessToken",
-                    accessToken
-                );
+                saveAuthSession({
+                    accessToken,
+
+                    user: {
+                        ...user,
+                        role,
+                    },
+                });
 
 
-                sessionStorage.setItem(
-                    "user",
-                    JSON.stringify(
-                        user
-                    )
-                );
+                if (
+                    rememberMe
+                ) {
+                    localStorage.setItem(
+                        "rememberUsername",
+                        cleanUsername
+                    );
+                } else {
+                    localStorage.removeItem(
+                        "rememberUsername"
+                    );
+                }
 
-
-                // ==================================================
-                // FORCE FIRST LOGIN CHANGE
-                // TRAINER + TRAINEE ONLY
-                // ==================================================
 
                 const requiresPasswordChange =
                     [
                         "trainer",
                         "trainee",
                     ].includes(
-                        user.role
+                        role
                     ) &&
                     user.mustChangePassword ===
                     true;
@@ -186,15 +211,10 @@ function LoginForm({
                 if (
                     requiresPasswordChange
                 ) {
-                    if (
-                        typeof onPasswordChangeRequired ===
-                        "function"
-                    ) {
-                        onPasswordChangeRequired(
-                            user
-                        );
-                    }
-
+                    onPasswordChangeRequired?.({
+                        ...user,
+                        role,
+                    });
 
                     return;
                 }
@@ -202,22 +222,8 @@ function LoginForm({
 
                 const dashboardPath =
                     getDashboardPath(
-                        user.role
+                        role
                     );
-
-
-                if (
-                    !dashboardPath
-                ) {
-                    clearAuthSession();
-
-
-                    setError(
-                        "Your account role is not authorised."
-                    );
-
-                    return;
-                }
 
 
                 navigate(
@@ -228,7 +234,9 @@ function LoginForm({
                     }
                 );
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Login error:",
                     error
@@ -238,17 +246,25 @@ function LoginForm({
                 clearAuthSession();
 
 
-                if (
+                const status =
                     error.response
-                        ?.status ===
-                    403 &&
+                        ?.status;
+
+
+                const code =
                     error.response
                         ?.data
-                        ?.code ===
+                        ?.code;
+
+
+                if (
+                    status ===
+                    403 &&
+                    code ===
                     "ACCOUNT_DEACTIVATED"
                 ) {
                     setError(
-                        "Your account has been deactivated. Please contact the administrator."
+                        "Your account has been deactivated. Please contact the Administrator."
                     );
 
                     return;
@@ -256,8 +272,7 @@ function LoginForm({
 
 
                 if (
-                    error.response
-                        ?.status ===
+                    status ===
                     401
                 ) {
                     setError(
@@ -272,8 +287,7 @@ function LoginForm({
 
 
                 if (
-                    error.response
-                        ?.status ===
+                    status ===
                     429
                 ) {
                     setError(
@@ -288,92 +302,74 @@ function LoginForm({
                     error.response
                         ?.data
                         ?.message ||
+                    error.message ||
                     "Unable to login. Please try again."
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         };
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <div
             className="
                 w-full
-                max-w-md
             "
         >
             <div
                 className="
-                    lg:hidden
+                    mb-8
                 "
             >
-                <p
+                <h1
                     className="
-                        text-[9px]
-                        font-medium
-                        uppercase
-                        tracking-wide
-                        text-blue-600
+                        text-[30px]
+                        font-bold
+                        tracking-[-0.02em]
+                        text-[#172033]
                     "
                 >
-                    UK LogiWare
+                    Welcome Back
+                </h1>
+
+
+                <p
+                    className="
+                        mt-3
+                        text-[12px]
+                        text-[#64748b]
+                    "
+                >
+                    Sign in to continue to UK LogiWare Safety Training.
                 </p>
             </div>
-
-
-            <h1
-                className="
-                    mt-2
-                    text-[24px]
-                    font-semibold
-                    text-slate-800
-                    sm:text-[28px]
-                "
-            >
-                Welcome back
-            </h1>
-
-
-            <p
-                className="
-                    mt-2
-                    text-[10px]
-                    leading-5
-                    text-slate-500
-                "
-            >
-                Sign in to access your workplace safety training account.
-            </p>
 
 
             <form
                 onSubmit={
                     handleSubmit
                 }
-                className="
-                    mt-7
-                    space-y-4
-                "
             >
                 <FeedbackAlert
                     type="error"
-                    message={error}
+                    message={
+                        error
+                    }
                     onClose={() =>
-                        setError("")
+                        setError(
+                            ""
+                        )
                     }
                 />
 
 
-                {/* USERNAME */}
-
                 <label
                     className="
+                        mt-5
                         block
                     "
                 >
@@ -381,9 +377,9 @@ function LoginForm({
                         className="
                             mb-2
                             block
-                            text-[9px]
-                            font-medium
-                            text-slate-600
+                            text-[10px]
+                            font-semibold
+                            text-[#172033]
                         "
                     >
                         Username
@@ -403,7 +399,7 @@ function LoginForm({
                                 left-0
                                 flex
                                 items-center
-                                pl-3
+                                pl-4
                                 text-slate-400
                             "
                         >
@@ -412,7 +408,10 @@ function LoginForm({
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.8"
-                                className="h-4 w-4"
+                                className="
+                                    h-4
+                                    w-4
+                                "
                             >
                                 <circle
                                     cx="12"
@@ -427,7 +426,13 @@ function LoginForm({
 
                         <input
                             type="text"
-                            value={username}
+                            value={
+                                username
+                            }
+                            disabled={
+                                loading
+                            }
+                            autoComplete="username"
                             onChange={(
                                 event
                             ) => {
@@ -435,40 +440,54 @@ function LoginForm({
                                     event.target.value
                                 );
 
-                                if (error) {
-                                    setError("");
-                                }
+                                setError(
+                                    ""
+                                );
                             }}
-                            disabled={
-                                loading
-                            }
-                            autoComplete="username"
-                            placeholder="Enter username"
                             className="
-                                h-11
+                                h-[50px]
                                 w-full
                                 rounded-lg
                                 border
-                                border-slate-300
-                                bg-white
-                                pl-9
-                                pr-3
-                                text-[10px]
-                                text-slate-700
+                                border-[#cbd5e1]
+                                bg-[#edf4ff]
+                                pl-11
+                                pr-10
+                                text-[13px]
+                                text-[#172033]
                                 outline-none
-                                placeholder:text-slate-400
-                                focus:border-blue-500
-                                disabled:bg-slate-50
+                                transition
+                                focus:border-[#3b82f6]
+                                focus:ring-2
+                                focus:ring-blue-100
                             "
                         />
+
+
+                        {username.trim() && (
+                            <span
+                                className="
+                                    pointer-events-none
+                                    absolute
+                                    inset-y-0
+                                    right-0
+                                    flex
+                                    items-center
+                                    pr-4
+                                    font-bold
+                                    text-emerald-500
+                                "
+                            >
+                                ✓
+                            </span>
+                        )}
                     </div>
                 </label>
 
 
-                {/* PASSWORD */}
-
                 <label
                     className="
+                        mt-5
                         block
                     "
                 >
@@ -476,9 +495,9 @@ function LoginForm({
                         className="
                             mb-2
                             block
-                            text-[9px]
-                            font-medium
-                            text-slate-600
+                            text-[10px]
+                            font-semibold
+                            text-[#172033]
                         "
                     >
                         Password
@@ -486,8 +505,11 @@ function LoginForm({
 
 
                     <PasswordInput
-                        id="login-password"
-                        value={password}
+                        id="password"
+                        name="password"
+                        value={
+                            password
+                        }
                         onChange={(
                             event
                         ) => {
@@ -495,9 +517,9 @@ function LoginForm({
                                 event.target.value
                             );
 
-                            if (error) {
-                                setError("");
-                            }
+                            setError(
+                                ""
+                            );
                         }}
                         disabled={
                             loading
@@ -506,38 +528,59 @@ function LoginForm({
                 </label>
 
 
-                {/* FORGOT */}
-
                 <div
                     className="
+                        mt-3
                         flex
-                        justify-end
+                        items-center
+                        justify-between
+                        gap-3
                     "
                 >
-                    {onForgotPassword && (
-                        <button
-                            type="button"
-                            onClick={
-                                onForgotPassword
+                    <label
+                        className="
+                            flex
+                            cursor-pointer
+                            items-center
+                            gap-2
+                            text-[9px]
+                            text-[#52627a]
+                        "
+                    >
+                        <input
+                            type="checkbox"
+                            checked={
+                                rememberMe
                             }
-                            disabled={
-                                loading
+                            onChange={(
+                                event
+                            ) =>
+                                setRememberMe(
+                                    event.target.checked
+                                )
                             }
-                            className="
-                                text-[9px]
-                                font-medium
-                                text-blue-600
-                                hover:text-blue-700
-                                disabled:opacity-50
-                            "
-                        >
-                            Forgot password?
-                        </button>
-                    )}
+                        />
+
+                        Remember me
+                    </label>
+
+
+                    <button
+                        type="button"
+                        onClick={
+                            onForgotPassword
+                        }
+                        className="
+                            text-[10px]
+                            font-medium
+                            text-[#1769e8]
+                            hover:underline
+                        "
+                    >
+                        Forgot Password?
+                    </button>
                 </div>
 
-
-                {/* LOGIN */}
 
                 <button
                     type="submit"
@@ -545,49 +588,60 @@ function LoginForm({
                         loading
                     }
                     className="
+                        mt-6
                         flex
-                        h-11
+                        h-[50px]
                         w-full
                         items-center
                         justify-center
                         rounded-lg
-                        bg-blue-600
-                        px-4
-                        text-[10px]
+                        bg-[#1769e8]
+                        text-[13px]
                         font-medium
                         text-white
                         transition
-                        hover:bg-blue-700
+                        hover:bg-[#0b5ed7]
                         disabled:cursor-not-allowed
                         disabled:opacity-50
                     "
                 >
                     {loading
                         ? "Signing in..."
-                        : "Sign In"}
+                        : "Login"}
                 </button>
-            </form>
 
 
-            <div
-                className="
-                    mt-7
-                    border-t
-                    border-slate-100
-                    pt-4
-                "
-            >
-                <p
+                <div
                     className="
+                        mt-8
+                        border-t
+                        border-[#e2e8f0]
+                        pt-6
                         text-center
-                        text-[8px]
-                        leading-4
-                        text-slate-400
                     "
                 >
-                    Use the username and password provided by your Administrator.
-                </p>
-            </div>
+                    <p
+                        className="
+                            text-[9px]
+                            text-[#94a3b8]
+                        "
+                    >
+                        Having trouble signing in?
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[9px]
+                            font-medium
+                            text-[#1769e8]
+                        "
+                    >
+                        Contact your Administrator
+                    </p>
+                </div>
+            </form>
         </div>
     );
 }

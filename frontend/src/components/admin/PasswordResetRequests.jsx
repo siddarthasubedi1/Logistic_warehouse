@@ -1,644 +1,634 @@
 import {
+    useCallback,
     useEffect,
     useState,
 } from "react";
 
-import FeedbackAlert from "../ui/FeedbackAlert";
-
-import {
-    getUserDisplayName,
-} from "../../utils/training";
+import api from "../../services/api";
 
 
-const getInitialFormData = (
-    user
-) => ({
-    firstName:
-        user?.firstName ||
-        "",
-
-    lastName:
-        user?.lastName ||
-        "",
-
-    age:
-        user?.age ||
-        "",
-
-    email:
-        user?.email ||
-        "",
-
-    phoneNumber:
-        user?.phoneNumber ||
-        "",
-
-    address:
-        typeof user?.address ===
-            "string"
-            ? user.address
-            : "",
-
-    gender:
-        user?.gender ||
-        "",
-});
-
-
-function EditUserModal({
-    open = false,
-    user = null,
-    saving = false,
-    errorMessage = "",
-    onSave,
-    onClose,
+function PasswordResetRequests({
+    onManageUser,
 }) {
     const [
-        formData,
-        setFormData,
-    ] = useState(
-        getInitialFormData(
-            user
-        )
-    );
+        requests,
+        setRequests,
+    ] = useState([]);
 
 
-    useEffect(() => {
-        if (
-            open &&
-            user
-        ) {
-            setFormData(
-                getInitialFormData(
-                    user
-                )
-            );
-        }
-    }, [
-        open,
-        user,
-    ]);
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
 
 
-    useEffect(() => {
-        if (
-            !open
-        ) {
-            return undefined;
-        }
+    const [
+        error,
+        setError,
+    ] = useState("");
 
-        const handleKeyDown = (
-            event
+
+    const getUserId =
+        (
+            request
         ) => {
             if (
-                event.key ===
-                "Escape" &&
-                !saving
+                typeof request?.user ===
+                "string"
             ) {
-                onClose?.();
+                return request.user;
             }
-        };
 
-        window.addEventListener(
-            "keydown",
-            handleKeyDown
-        );
 
-        return () => {
-            window.removeEventListener(
-                "keydown",
-                handleKeyDown
+            return (
+                request?.user?._id ||
+                request?.user?.id ||
+                request?.userId ||
+                ""
             );
         };
+
+
+    const getUserName =
+        (
+            request
+        ) => {
+            const user =
+                request?.user;
+
+
+            const name =
+                `${user?.firstName || ""} ${user?.lastName || ""}`
+                    .trim();
+
+
+            return (
+                name ||
+                user?.username ||
+                request?.username ||
+                "User"
+            );
+        };
+
+
+    const loadRequests =
+        useCallback(
+            async () => {
+                try {
+                    setLoading(
+                        true
+                    );
+
+                    setError(
+                        ""
+                    );
+
+
+                    const response =
+                        await api.get(
+                            "/admin/password-reset-requests"
+                        );
+
+
+                    const data =
+                        Array.isArray(
+                            response.data
+                        )
+                            ? response.data
+                            : response.data?.requests ||
+                            [];
+
+
+                    setRequests(
+                        data.filter(
+                            (
+                                request
+                            ) =>
+                                !request.status ||
+                                request.status ===
+                                "pending"
+                        )
+                    );
+
+                } catch (error) {
+                    console.error(
+                        "Password reset requests error:",
+                        error
+                    );
+
+
+                    setError(
+                        error.response?.data?.message ||
+                        "Unable to load password reset requests."
+                    );
+
+                } finally {
+                    setLoading(
+                        false
+                    );
+                }
+            },
+            []
+        );
+
+
+    useEffect(() => {
+        loadRequests();
     }, [
-        open,
-        saving,
-        onClose,
+        loadRequests,
     ]);
 
 
-    if (
-        !open ||
-        !user
-    ) {
-        return null;
-    }
+    const formatDate =
+        (
+            value
+        ) => {
+            if (!value) {
+                return "—";
+            }
 
 
-    const handleChange = (
-        event
-    ) => {
-        const {
-            name,
-            value,
-        } =
-            event.target;
-
-        setFormData(
-            (
-                current
-            ) => ({
-                ...current,
-
-                [name]:
-                    value,
-            })
-        );
-    };
+            const date =
+                new Date(
+                    value
+                );
 
 
-    const handleSubmit = (
-        event
-    ) => {
-        event.preventDefault();
-
-        onSave?.({
-            firstName:
-                formData
-                    .firstName
-                    .trim(),
-
-            lastName:
-                formData
-                    .lastName
-                    .trim(),
-
-            age:
-                Number(
-                    formData.age
-                ),
-
-            email:
-                formData
-                    .email
-                    .trim(),
-
-            phoneNumber:
-                formData
-                    .phoneNumber
-                    .trim(),
-
-            address:
-                formData
-                    .address
-                    .trim(),
-
-            gender:
-                formData.gender,
-        });
-    };
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
 
 
-    const displayName =
-        getUserDisplayName(
-            user,
-            user.username ||
-            "User"
-        );
+            return date.toLocaleString(
+                [],
+                {
+                    month:
+                        "numeric",
+
+                    day:
+                        "numeric",
+
+                    year:
+                        "numeric",
+
+                    hour:
+                        "numeric",
+
+                    minute:
+                        "2-digit",
+                }
+            );
+        };
 
 
     return (
-        <div
+        <section
             className="
-                fixed
-                inset-0
-                z-[240]
-                flex
-                items-center
-                justify-center
-                overflow-y-auto
-                bg-slate-950/55
-                p-3
-                backdrop-blur-[1px]
-                sm:p-5
+                overflow-hidden
+                rounded-xl
+                border
+                border-[#dbe4ef]
+                bg-white
+                shadow-[0_1px_3px_rgba(15,23,42,0.08)]
             "
         >
-            <section
-                role="dialog"
-                aria-modal="true"
+            <div
                 className="
-                    my-auto
-                    w-full
-                    max-w-[720px]
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-white
-                    shadow-2xl
+                    flex
+                    flex-col
+                    gap-3
+                    border-b
+                    border-[#e8eef5]
+                    px-5
+                    py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                 "
             >
                 <div
                     className="
                         flex
-                        items-start
-                        justify-between
-                        gap-4
-                        border-b
-                        border-slate-200
-                        px-4
-                        py-4
-                        sm:px-5
+                        items-center
+                        gap-3
                     "
                 >
-                    <div>
-                        <p
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-blue-50
+                            text-blue-600
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
                             className="
-                                text-[7px]
-                                font-bold
-                                uppercase
-                                tracking-[0.12em]
-                                text-blue-600
+                                h-5
+                                w-5
                             "
                         >
-                            User Management
-                        </p>
+                            <circle
+                                cx="9"
+                                cy="8"
+                                r="3"
+                            />
 
+                            <path d="M3 20c.6-4 2.6-6 6-6" />
+
+                            <path d="M18 13v8" />
+
+                            <path d="M14 17h8" />
+                        </svg>
+                    </div>
+
+
+                    <div>
                         <h2
                             className="
-                                mt-1
                                 text-[14px]
                                 font-bold
                                 text-[#172033]
                             "
                         >
-                            Edit User
+                            Password Reset Requests
                         </h2>
+
 
                         <p
                             className="
                                 mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-500
+                                text-[9px]
+                                text-[#7c8da6]
                             "
                         >
-                            {displayName} · @{user.username}
+                            Pending requests from Trainers and Trainees
                         </p>
                     </div>
+                </div>
+
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-3
+                    "
+                >
+                    <span
+                        className="
+                            rounded-full
+                            bg-amber-50
+                            px-3
+                            py-1.5
+                            text-[9px]
+                            font-medium
+                            text-amber-600
+                        "
+                    >
+                        {requests.length} Pending
+                    </span>
 
 
                     <button
                         type="button"
                         onClick={
-                            onClose
+                            loadRequests
                         }
                         disabled={
-                            saving
+                            loading
                         }
                         className="
-                            flex
-                            h-8
-                            w-8
+                            inline-flex
+                            min-h-[38px]
                             items-center
-                            justify-center
-                            rounded-md
-                            text-lg
-                            text-slate-400
-                            hover:bg-slate-100
+                            gap-2
+                            rounded-lg
+                            border
+                            border-[#dbe4ef]
+                            bg-white
+                            px-4
+                            text-[11px]
+                            font-medium
+                            text-[#52627a]
+                            transition
+                            hover:bg-slate-50
+                            disabled:opacity-50
                         "
                     >
-                        ×
+                        ↻ Refresh
                     </button>
                 </div>
+            </div>
 
 
-                <form
-                    onSubmit={
-                        handleSubmit
-                    }
+            {error && (
+                <div
                     className="
-                        p-4
-                        sm:p-5
+                        border-b
+                        border-red-100
+                        bg-red-50
+                        px-5
+                        py-3
+                        text-[11px]
+                        text-red-700
                     "
                 >
-                    <FeedbackAlert
-                        type="error"
-                        message={
-                            errorMessage
-                        }
-                    />
+                    {error}
+                </div>
+            )}
 
 
-                    <div
-                        className="
-                            mt-4
-                            grid
-                            gap-4
-                            md:grid-cols-2
-                        "
-                    >
-                        <Field
-                            label="First Name"
-                        >
-                            <input
-                                type="text"
-                                name="firstName"
-                                value={
-                                    formData.firstName
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            />
-                        </Field>
-
-
-                        <Field
-                            label="Last Name"
-                        >
-                            <input
-                                type="text"
-                                name="lastName"
-                                value={
-                                    formData.lastName
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            />
-                        </Field>
-
-
-                        <Field
-                            label="Age"
-                        >
-                            <input
-                                type="number"
-                                name="age"
-                                min="16"
-                                value={
-                                    formData.age
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            />
-                        </Field>
-
-
-                        <Field
-                            label="Gender"
-                        >
-                            <select
-                                name="gender"
-                                value={
-                                    formData.gender
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            >
-                                <option value="">
-                                    Select gender
-                                </option>
-
-                                <option value="male">
-                                    Male
-                                </option>
-
-                                <option value="female">
-                                    Female
-                                </option>
-
-                                <option value="other">
-                                    Other
-                                </option>
-                            </select>
-                        </Field>
-
-
-                        <Field
-                            label="Email"
-                        >
-                            <input
-                                type="email"
-                                name="email"
-                                value={
-                                    formData.email
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            />
-                        </Field>
-
-
-                        <Field
-                            label="Phone Number"
-                        >
-                            <input
-                                type="text"
-                                name="phoneNumber"
-                                value={
-                                    formData.phoneNumber
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            />
-                        </Field>
-
-
-                        <div
-                            className="
-                                md:col-span-2
-                            "
-                        >
-                            <Field
-                                label="Address"
-                            >
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={
-                                        formData.address
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    disabled={
-                                        saving
-                                    }
-                                    className={
-                                        inputClass
-                                    }
-                                    required
-                                />
-                            </Field>
-                        </div>
-                    </div>
-
-
-                    <div
-                        className="
-                            mt-5
-                            rounded-lg
-                            bg-slate-50
-                            p-3
-                        "
-                    >
-                        <p
-                            className="
-                                text-[8px]
-                                font-medium
-                                text-slate-600
-                            "
-                        >
-                            Username, role and password are not changed from this form.
-                        </p>
-                    </div>
-
-
-                    <div
-                        className="
-                            mt-5
-                            flex
-                            flex-col-reverse
-                            gap-2
-                            border-t
-                            border-slate-100
-                            pt-5
-                            sm:flex-row
-                            sm:justify-end
-                        "
-                    >
-                        <button
-                            type="button"
-                            onClick={
-                                onClose
-                            }
-                            disabled={
-                                saving
-                            }
-                            className="
-                                min-h-[40px]
-                                rounded-lg
-                                border
-                                border-slate-300
-                                bg-white
-                                px-5
-                                text-[9px]
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
-                            Cancel
-                        </button>
-
-
-                        <button
-                            type="submit"
-                            disabled={
-                                saving
-                            }
-                            className="
-                                min-h-[40px]
-                                rounded-lg
-                                bg-blue-600
-                                px-5
-                                text-[9px]
-                                font-semibold
-                                text-white
-                                hover:bg-blue-700
-                                disabled:opacity-50
-                            "
-                        >
-                            {saving
-                                ? "Saving..."
-                                : "Save Changes"}
-                        </button>
-                    </div>
-                </form>
-            </section>
-        </div>
-    );
-}
-
-
-function Field({
-    label,
-    children,
-}) {
-    return (
-        <label>
-            <span
+            <div
                 className="
-                    mb-2
-                    block
-                    text-[8px]
-                    font-semibold
-                    text-slate-700
+                    min-h-[150px]
                 "
             >
-                {label}
-            </span>
+                {loading ? (
+                    <div
+                        className="
+                            flex
+                            min-h-[180px]
+                            items-center
+                            justify-center
+                            text-[11px]
+                            text-slate-500
+                        "
+                    >
+                        Loading password reset requests...
+                    </div>
+                ) : requests.length ===
+                    0 ? (
+                    <div
+                        className="
+                            flex
+                            min-h-[180px]
+                            flex-col
+                            items-center
+                            justify-center
+                            px-5
+                            text-center
+                        "
+                    >
+                        <div
+                            className="
+                                flex
+                                h-11
+                                w-11
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-emerald-50
+                                text-emerald-600
+                            "
+                        >
+                            ✓
+                        </div>
 
-            {children}
-        </label>
+
+                        <p
+                            className="
+                                mt-4
+                                text-[12px]
+                                font-semibold
+                                text-[#172033]
+                            "
+                        >
+                            No pending password reset requests
+                        </p>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[9px]
+                                text-[#94a3b8]
+                            "
+                        >
+                            New requests will appear here.
+                        </p>
+                    </div>
+                ) : (
+                    <div>
+                        {requests.map(
+                            (
+                                request
+                            ) => {
+                                const user =
+                                    request.user ||
+                                    {};
+
+
+                                const name =
+                                    getUserName(
+                                        request
+                                    );
+
+
+                                return (
+                                    <div
+                                        key={
+                                            request._id ||
+                                            getUserId(
+                                                request
+                                            )
+                                        }
+                                        className="
+                                            flex
+                                            flex-col
+                                            gap-4
+                                            border-b
+                                            border-[#edf1f6]
+                                            px-5
+                                            py-4
+                                            last:border-0
+                                            md:flex-row
+                                            md:items-center
+                                        "
+                                    >
+                                        <div
+                                            className="
+                                                flex
+                                                min-w-0
+                                                flex-1
+                                                items-center
+                                                gap-3
+                                            "
+                                        >
+                                            <div
+                                                className="
+                                                    flex
+                                                    h-10
+                                                    w-10
+                                                    shrink-0
+                                                    items-center
+                                                    justify-center
+                                                    rounded-full
+                                                    bg-[#073763]
+                                                    text-[11px]
+                                                    font-bold
+                                                    text-white
+                                                "
+                                            >
+                                                {name
+                                                    .charAt(
+                                                        0
+                                                    )
+                                                    .toUpperCase()}
+                                            </div>
+
+
+                                            <div
+                                                className="
+                                                    min-w-0
+                                                "
+                                            >
+                                                <p
+                                                    className="
+                                                        truncate
+                                                        text-[11px]
+                                                        font-semibold
+                                                        text-[#172033]
+                                                    "
+                                                >
+                                                    {name}
+                                                </p>
+
+
+                                                <div
+                                                    className="
+                                                        mt-1
+                                                        flex
+                                                        flex-wrap
+                                                        gap-x-3
+                                                        gap-y-1
+                                                        text-[9px]
+                                                        text-[#64748b]
+                                                    "
+                                                >
+                                                    <span>
+                                                        Username:{" "}
+                                                        {user.username ||
+                                                            "—"}
+                                                    </span>
+
+
+                                                    <span
+                                                        className="
+                                                            capitalize
+                                                        "
+                                                    >
+                                                        Role:{" "}
+                                                        {user.role ||
+                                                            "—"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div
+                                            className="
+                                                flex
+                                                flex-wrap
+                                                items-center
+                                                gap-3
+                                                md:justify-end
+                                            "
+                                        >
+                                            <div>
+                                                <p
+                                                    className="
+                                                        text-[7px]
+                                                        font-semibold
+                                                        uppercase
+                                                        tracking-wide
+                                                        text-[#94a3b8]
+                                                    "
+                                                >
+                                                    Requested
+                                                </p>
+
+
+                                                <p
+                                                    className="
+                                                        mt-1
+                                                        text-[9px]
+                                                        text-[#52627a]
+                                                    "
+                                                >
+                                                    {formatDate(
+                                                        request.requestedAt ||
+                                                        request.createdAt
+                                                    )}
+                                                </p>
+                                            </div>
+
+
+                                            <span
+                                                className="
+                                                    rounded-full
+                                                    border
+                                                    border-amber-200
+                                                    bg-amber-50
+                                                    px-3
+                                                    py-1.5
+                                                    text-[8px]
+                                                    font-semibold
+                                                    text-amber-600
+                                                "
+                                            >
+                                                PENDING
+                                            </span>
+
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    onManageUser?.(
+                                                        getUserId(
+                                                            request
+                                                        ),
+                                                        request
+                                                    )
+                                                }
+                                                className="
+                                                    min-h-[38px]
+                                                    rounded-lg
+                                                    bg-[#1769e8]
+                                                    px-4
+                                                    text-[11px]
+                                                    font-semibold
+                                                    text-white
+                                                    transition
+                                                    hover:bg-[#0b5ed7]
+                                                "
+                                            >
+                                                Manage User
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                        )}
+                    </div>
+                )}
+            </div>
+        </section>
     );
 }
 
 
-const inputClass = `
-    min-h-[40px]
-    w-full
-    rounded-lg
-    border
-    border-slate-300
-    bg-white
-    px-3
-    text-[9px]
-    font-medium
-    text-slate-800
-    outline-none
-    focus:border-blue-500
-    focus:ring-1
-    focus:ring-blue-100
-    disabled:bg-slate-50
-`;
-
-
-export default EditUserModal;
+export default PasswordResetRequests;

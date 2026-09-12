@@ -4,8 +4,6 @@ import {
 
 import api from "../../services/api";
 
-import FeedbackAlert from "../ui/FeedbackAlert";
-
 
 function ForgotPasswordForm({
     onBackToLogin,
@@ -34,10 +32,6 @@ function ForgotPasswordForm({
     ] = useState("");
 
 
-    // ======================================================
-    // SUBMIT
-    // ======================================================
-
     const handleSubmit =
         async (
             event
@@ -45,8 +39,13 @@ function ForgotPasswordForm({
             event.preventDefault();
 
 
-            setError("");
-            setSuccess("");
+            setError(
+                ""
+            );
+
+            setSuccess(
+                ""
+            );
 
 
             const cleanUsername =
@@ -65,7 +64,9 @@ function ForgotPasswordForm({
 
 
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
 
                 const response =
@@ -79,13 +80,14 @@ function ForgotPasswordForm({
 
 
                 setSuccess(
-                    response.data
-                        ?.message ||
-                    "Your password reset request has been submitted."
+                    response.data?.message ||
+                    "If this username belongs to an active Trainer or Trainee account, a password reset request has been sent to the administrator."
                 );
 
 
-                setUsername("");
+                setUsername(
+                    ""
+                );
 
             } catch (error) {
                 console.error(
@@ -95,112 +97,245 @@ function ForgotPasswordForm({
 
 
                 setError(
-                    error.response
-                        ?.data
-                        ?.message ||
+                    error.response?.data?.message ||
                     "Unable to submit password reset request."
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         };
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <div
             className="
                 w-full
-                max-w-md
             "
         >
-            <button
-                type="button"
-                onClick={
-                    onBackToLogin
-                }
-                disabled={
-                    loading
-                }
+            <div
                 className="
-                    inline-flex
+                    flex
+                    h-12
+                    w-12
                     items-center
-                    gap-2
-                    text-[9px]
-                    font-medium
-                    text-slate-500
-                    transition
-                    hover:text-blue-600
+                    justify-center
+                    rounded-xl
+                    border
+                    border-blue-100
+                    bg-blue-50
+                    text-blue-600
                 "
             >
-                ← Back to Login
-            </button>
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="
+                        h-5
+                        w-5
+                    "
+                >
+                    <rect
+                        x="6"
+                        y="10"
+                        width="12"
+                        height="10"
+                        rx="2"
+                    />
+
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+            </div>
+
+
+            <p
+                className="
+                    mt-6
+                    text-[10px]
+                    font-bold
+                    uppercase
+                    tracking-[0.16em]
+                    text-blue-600
+                "
+            >
+                Account Recovery
+            </p>
+
+
+            <h1
+                className="
+                    mt-3
+                    text-[29px]
+                    font-bold
+                    tracking-[-0.025em]
+                    text-[#111827]
+                "
+            >
+                Forgot Password?
+            </h1>
+
+
+            <p
+                className="
+                    mt-3
+                    max-w-[390px]
+                    text-[13px]
+                    leading-6
+                    text-slate-600
+                "
+            >
+                Enter your username and we will send a password reset request to the administrator.
+            </p>
 
 
             <div
                 className="
                     mt-6
+                    rounded-xl
+                    border
+                    border-blue-200
+                    bg-blue-50/70
+                    p-4
                 "
             >
                 <div
                     className="
                         flex
-                        h-11
-                        w-11
-                        items-center
-                        justify-center
-                        rounded-xl
-                        bg-blue-50
-                        text-blue-600
+                        gap-3
                     "
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-5 w-5"
+                    <div
+                        className="
+                            mt-0.5
+                            shrink-0
+                            text-blue-600
+                        "
                     >
-                        <circle
-                            cx="8"
-                            cy="12"
-                            r="4"
-                        />
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="
+                                h-5
+                                w-5
+                            "
+                        >
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="9"
+                            />
 
-                        <path d="M12 12h9" />
-                        <path d="M17 12v3" />
-                        <path d="M20 12v2" />
-                    </svg>
+                            <path d="M12 11v5" />
+
+                            <path d="M12 8h.01" />
+                        </svg>
+                    </div>
+
+
+                    <p
+                        className="
+                            text-[11px]
+                            leading-5
+                            text-slate-700
+                        "
+                    >
+                        The administrator will generate a new temporary password. Your username will remain the same.
+                    </p>
                 </div>
-
-
-                <h1
-                    className="
-                        mt-4
-                        text-[22px]
-                        font-semibold
-                        text-slate-800
-                    "
-                >
-                    Forgot Password
-                </h1>
-
-
-                <p
-                    className="
-                        mt-2
-                        text-[9px]
-                        leading-5
-                        text-slate-500
-                    "
-                >
-                    Enter your username to send a password reset request to the Administrator.
-                </p>
             </div>
+
+
+            {success && (
+                <div
+                    className="
+                        mt-5
+                        rounded-xl
+                        border
+                        border-emerald-300
+                        bg-emerald-50
+                        p-4
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-3
+                        "
+                    >
+                        <div
+                            className="
+                                mt-0.5
+                                flex
+                                h-5
+                                w-5
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-full
+                                border
+                                border-emerald-500
+                                text-[10px]
+                                font-bold
+                                text-emerald-600
+                            "
+                        >
+                            ✓
+                        </div>
+
+
+                        <div>
+                            <p
+                                className="
+                                    text-[11px]
+                                    font-bold
+                                    text-emerald-700
+                                "
+                            >
+                                Request Submitted
+                            </p>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[10px]
+                                    leading-5
+                                    text-emerald-700
+                                "
+                            >
+                                {success}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {error && (
+                <div
+                    className="
+                        mt-5
+                        rounded-xl
+                        border
+                        border-red-200
+                        bg-red-50
+                        px-4
+                        py-3
+                        text-[11px]
+                        font-medium
+                        text-red-700
+                    "
+                >
+                    {error}
+                </div>
+            )}
 
 
             <form
@@ -208,80 +343,103 @@ function ForgotPasswordForm({
                     handleSubmit
                 }
                 className="
-                    mt-6
-                    space-y-4
+                    mt-7
                 "
             >
-                <FeedbackAlert
-                    type="success"
-                    message={success}
-                    onClose={() =>
-                        setSuccess("")
-                    }
-                />
-
-
-                <FeedbackAlert
-                    type="error"
-                    message={error}
-                    onClose={() =>
-                        setError("")
-                    }
-                />
-
-
-                <label
-                    className="
-                        block
-                    "
-                >
+                <label>
                     <span
                         className="
                             mb-2
                             block
-                            text-[9px]
-                            font-medium
-                            text-slate-600
+                            text-[11px]
+                            font-semibold
+                            text-[#172033]
                         "
                     >
                         Username
                     </span>
 
 
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(
-                            event
-                        ) => {
-                            setUsername(
-                                event.target.value
-                            );
-
-                            setError("");
-                            setSuccess("");
-                        }}
-                        disabled={
-                            loading
-                        }
-                        autoComplete="username"
-                        placeholder="Enter your username"
+                    <div
                         className="
-                            h-11
-                            w-full
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            px-3
-                            text-[10px]
-                            text-slate-700
-                            outline-none
-                            placeholder:text-slate-400
-                            focus:border-blue-500
-                            disabled:bg-slate-50
+                            relative
                         "
-                    />
+                    >
+                        <div
+                            className="
+                                pointer-events-none
+                                absolute
+                                inset-y-0
+                                left-0
+                                flex
+                                w-11
+                                items-center
+                                justify-center
+                                text-[#8da2bd]
+                            "
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                className="
+                                    h-4
+                                    w-4
+                                "
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="8"
+                                    r="3"
+                                />
+
+                                <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
+                            </svg>
+                        </div>
+
+
+                        <input
+                            type="text"
+                            value={
+                                username
+                            }
+                            onChange={(
+                                event
+                            ) => {
+                                setUsername(
+                                    event.target.value
+                                );
+
+                                setError(
+                                    ""
+                                );
+                            }}
+                            disabled={
+                                loading
+                            }
+                            autoComplete="username"
+                            placeholder="Enter your username"
+                            className="
+                                h-[49px]
+                                w-full
+                                rounded-lg
+                                border
+                                border-[#d4deeb]
+                                bg-white
+                                pl-11
+                                pr-4
+                                text-[14px]
+                                text-[#172033]
+                                outline-none
+                                transition
+                                placeholder:text-[#9aabc1]
+                                focus:border-blue-500
+                                focus:ring-2
+                                focus:ring-blue-100
+                            "
+                        />
+                    </div>
                 </label>
 
 
@@ -291,44 +449,73 @@ function ForgotPasswordForm({
                         loading
                     }
                     className="
-                        h-11
+                        mt-5
+                        flex
+                        h-[49px]
                         w-full
+                        items-center
+                        justify-center
+                        gap-2
                         rounded-lg
-                        bg-blue-600
-                        px-4
-                        text-[10px]
-                        font-medium
+                        bg-[#1769e8]
+                        px-5
+                        text-[14px]
+                        font-semibold
                         text-white
                         transition
-                        hover:bg-blue-700
-                        disabled:cursor-not-allowed
+                        hover:bg-[#0b5ed7]
                         disabled:opacity-50
                     "
                 >
-                    {loading
-                        ? "Submitting..."
-                        : "Submit Reset Request"}
+                    <span>
+                        →
+                    </span>
+
+                    <span>
+                        {loading
+                            ? "Submitting Request..."
+                            : "Request Password Reset"}
+                    </span>
                 </button>
             </form>
 
 
             <div
                 className="
-                    mt-5
-                    rounded-lg
-                    bg-slate-50
-                    p-3
+                    mt-7
+                    border-t
+                    border-slate-100
+                    pt-6
+                    text-center
                 "
             >
-                <p
+                <button
+                    type="button"
+                    onClick={
+                        onBackToLogin
+                    }
+                    disabled={
+                        loading
+                    }
                     className="
-                        text-[8px]
-                        leading-4
-                        text-slate-500
+                        inline-flex
+                        items-center
+                        gap-2
+                        text-[13px]
+                        font-medium
+                        text-[#1769e8]
+                        transition
+                        hover:text-[#0b5ed7]
                     "
                 >
-                    Reset Password will become available to the Administrator only after your request is submitted.
-                </p>
+                    <span>
+                        ‹
+                    </span>
+
+                    <span>
+                        Back to Login
+                    </span>
+                </button>
             </div>
         </div>
     );

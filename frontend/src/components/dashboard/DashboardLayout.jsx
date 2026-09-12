@@ -35,9 +35,13 @@ function DashboardLayout({
 
 
     const displayRole =
-        role ||
-        currentUser?.role ||
-        "";
+        String(
+            role ||
+            currentUser?.role ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
 
 
     const fullName =
@@ -58,16 +62,17 @@ function DashboardLayout({
 
 
     useEffect(() => {
-        const handleResize = () => {
-            if (
-                window.innerWidth >=
-                1024
-            ) {
-                setMobileSidebarOpen(
-                    false
-                );
-            }
-        };
+        const handleResize =
+            () => {
+                if (
+                    window.innerWidth >=
+                    1024
+                ) {
+                    setMobileSidebarOpen(
+                        false
+                    );
+                }
+            };
 
 
         window.addEventListener(
@@ -86,10 +91,15 @@ function DashboardLayout({
 
 
     useEffect(() => {
-        document.body.style.overflow =
+        if (
             mobileSidebarOpen
-                ? "hidden"
-                : "";
+        ) {
+            document.body.style.overflow =
+                "hidden";
+        } else {
+            document.body.style.overflow =
+                "";
+        }
 
 
         return () => {
@@ -105,7 +115,7 @@ function DashboardLayout({
         <div
             className="
                 min-h-screen
-                bg-[#f4f7fb]
+                bg-[#f5f7fb]
                 text-[#172033]
             "
         >
@@ -120,7 +130,7 @@ function DashboardLayout({
                 <aside
                     className="
                         hidden
-                        w-[225px]
+                        w-[230px]
                         shrink-0
                         lg:block
                     "
@@ -131,7 +141,7 @@ function DashboardLayout({
                             inset-y-0
                             left-0
                             z-50
-                            w-[225px]
+                            w-[230px]
                         "
                     >
                         <Sidebar
@@ -150,7 +160,7 @@ function DashboardLayout({
                         className="
                             fixed
                             inset-0
-                            z-[100]
+                            z-[120]
                             lg:hidden
                         "
                     >
@@ -165,7 +175,7 @@ function DashboardLayout({
                             className="
                                 absolute
                                 inset-0
-                                bg-slate-950/50
+                                bg-slate-950/55
                             "
                         />
 
@@ -174,8 +184,8 @@ function DashboardLayout({
                             className="
                                 relative
                                 h-full
-                                w-[250px]
-                                max-w-[84vw]
+                                w-[260px]
+                                max-w-[86vw]
                                 shadow-2xl
                             "
                         >
@@ -194,7 +204,7 @@ function DashboardLayout({
                 )}
 
 
-                {/* CONTENT */}
+                {/* MAIN */}
 
                 <div
                     className="
@@ -202,7 +212,7 @@ function DashboardLayout({
                         flex-1
                     "
                 >
-                    {/* MOBILE BAR */}
+                    {/* MOBILE HEADER */}
 
                     <header
                         className="
@@ -210,104 +220,99 @@ function DashboardLayout({
                             top-0
                             z-40
                             flex
-                            h-[58px]
+                            h-[62px]
                             items-center
                             justify-between
                             border-b
-                            border-slate-200
+                            border-[#dbe4ef]
                             bg-white
-                            px-3
-                            sm:px-4
+                            px-4
                             lg:hidden
                         "
                     >
-                        <div
+                        <button
+                            type="button"
+                            aria-label="Open navigation"
+                            onClick={() =>
+                                setMobileSidebarOpen(
+                                    true
+                                )
+                            }
                             className="
                                 flex
-                                min-w-0
+                                h-10
+                                w-10
                                 items-center
-                                gap-3
+                                justify-center
+                                rounded-lg
+                                bg-[#073763]
+                                text-white
                             "
                         >
-                            <button
-                                type="button"
-                                aria-label="Open navigation"
-                                onClick={() =>
-                                    setMobileSidebarOpen(
-                                        true
-                                    )
-                                }
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
                                 className="
-                                    flex
-                                    h-9
-                                    w-9
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-md
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    text-[#073763]
+                                    h-5
+                                    w-5
                                 "
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    className="h-5 w-5"
-                                >
-                                    <path d="M4 7h16" />
-                                    <path d="M4 12h16" />
-                                    <path d="M4 17h16" />
-                                </svg>
-                            </button>
+                                <path d="M4 7h16" />
+
+                                <path d="M4 12h16" />
+
+                                <path d="M4 17h16" />
+                            </svg>
+                        </button>
 
 
-                            <div
+                        <div
+                            className="
+                                min-w-0
+                                flex-1
+                                px-3
+                            "
+                        >
+                            <p
                                 className="
-                                    min-w-0
+                                    truncate
+                                    text-[14px]
+                                    font-bold
+                                    text-[#172033]
                                 "
                             >
+                                {title ||
+                                    "UK LogiWare"}
+                            </p>
+
+
+                            {subtitle && (
                                 <p
                                     className="
                                         truncate
-                                        text-[11px]
-                                        font-bold
-                                        text-[#172033]
-                                    "
-                                >
-                                    UK LogiWare
-                                </p>
-
-                                <p
-                                    className="
-                                        truncate
-                                        text-[7px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.08em]
+                                        text-[10px]
                                         text-slate-500
                                     "
                                 >
-                                    Safety Training
+                                    {subtitle}
                                 </p>
-                            </div>
+                            )}
                         </div>
 
 
                         <div
                             className="
                                 flex
-                                h-8
-                                w-8
+                                h-9
+                                w-9
                                 shrink-0
                                 items-center
                                 justify-center
                                 rounded-full
                                 bg-blue-50
-                                text-[9px]
+                                text-[12px]
                                 font-bold
                                 text-blue-600
                             "
@@ -317,82 +322,129 @@ function DashboardLayout({
                     </header>
 
 
-                    {/* OPTIONAL PAGE HEADER */}
+                    {/* PAGE HEADER */}
 
                     {showHeader && (
                         <header
                             className="
+                                hidden
+                                min-h-[80px]
+                                items-center
+                                justify-between
+                                gap-6
                                 border-b
-                                border-slate-200
+                                border-[#dbe4ef]
                                 bg-white
+                                px-7
+                                py-4
+                                lg:flex
                             "
                         >
                             <div
                                 className="
-                                    mx-auto
-                                    flex
-                                    w-full
-                                    max-w-[1500px]
-                                    flex-col
-                                    gap-3
-                                    px-4
-                                    py-4
-                                    sm:px-5
-                                    md:flex-row
-                                    md:items-center
-                                    md:justify-between
-                                    lg:px-6
+                                    min-w-0
                                 "
                             >
-                                <div
-                                    className="
-                                        min-w-0
-                                    "
-                                >
+                                {title && (
                                     <h1
                                         className="
-                                            text-[19px]
+                                            truncate
+                                            text-[22px]
                                             font-bold
-                                            text-[#172033]
-                                            sm:text-[22px]
+                                            tracking-[-0.02em]
+                                            text-[#111827]
                                         "
                                     >
                                         {title}
                                     </h1>
+                                )}
 
-                                    {subtitle && (
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-[9px]
-                                                font-medium
-                                                text-slate-600
-                                            "
-                                        >
-                                            {subtitle}
-                                        </p>
-                                    )}
-                                </div>
+
+                                {subtitle && (
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-[11px]
+                                            font-medium
+                                            text-[#64748b]
+                                        "
+                                    >
+                                        {subtitle}
+                                    </p>
+                                )}
+                            </div>
+
+
+                            <div
+                                className="
+                                    flex
+                                    shrink-0
+                                    items-center
+                                    gap-4
+                                "
+                            >
+                                <button
+                                    type="button"
+                                    aria-label="Notifications"
+                                    className="
+                                        relative
+                                        flex
+                                        h-10
+                                        w-10
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        border
+                                        border-slate-200
+                                        bg-white
+                                        text-slate-600
+                                        transition
+                                        hover:bg-slate-50
+                                    "
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        className="
+                                            h-5
+                                            w-5
+                                        "
+                                    >
+                                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+
+                                        <path d="M10 21h4" />
+                                    </svg>
+                                </button>
 
 
                                 <div
                                     className="
-                                        hidden
+                                        h-8
+                                        w-px
+                                        bg-slate-200
+                                    "
+                                />
+
+
+                                <div
+                                    className="
+                                        flex
                                         items-center
                                         gap-3
-                                        md:flex
                                     "
                                 >
                                     <div
                                         className="
                                             flex
-                                            h-9
-                                            w-9
+                                            h-10
+                                            w-10
                                             items-center
                                             justify-center
                                             rounded-full
                                             bg-blue-50
-                                            text-[9px]
+                                            text-[12px]
                                             font-bold
                                             text-blue-600
                                         "
@@ -404,23 +456,25 @@ function DashboardLayout({
                                     <div>
                                         <p
                                             className="
-                                                text-[9px]
+                                                text-[11px]
                                                 font-semibold
-                                                text-slate-800
+                                                text-[#172033]
                                             "
                                         >
                                             {displayName}
                                         </p>
 
+
                                         <p
                                             className="
                                                 mt-0.5
-                                                text-[7px]
+                                                text-[9px]
                                                 capitalize
                                                 text-slate-500
                                             "
                                         >
-                                            {displayRole}
+                                            {displayRole ||
+                                                "User"}
                                         </p>
                                     </div>
                                 </div>
@@ -429,20 +483,28 @@ function DashboardLayout({
                     )}
 
 
-                    {/* PAGE */}
+                    {/* PAGE CONTENT */}
 
                     <main
                         className="
-                            mx-auto
-                            w-full
-                            max-w-[1500px]
+                            min-h-[calc(100vh-62px)]
+                            bg-[#f5f7fb]
                             p-3
                             sm:p-4
                             md:p-5
+                            lg:min-h-[calc(100vh-80px)]
                             lg:p-6
                         "
                     >
-                        {children}
+                        <div
+                            className="
+                                mx-auto
+                                w-full
+                                max-w-[1700px]
+                            "
+                        >
+                            {children}
+                        </div>
                     </main>
                 </div>
             </div>

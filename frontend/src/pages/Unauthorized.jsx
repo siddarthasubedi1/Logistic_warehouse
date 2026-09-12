@@ -1,6 +1,10 @@
 import {
     useNavigate,
 } from "react-router-dom";
+import {
+    clearAuthSession,
+} from "../utils/session";
+
 
 import Logo from "../components/layout/Logo";
 
