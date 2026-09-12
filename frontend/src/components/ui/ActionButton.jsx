@@ -7,23 +7,19 @@ function ActionButton({
     className = "",
     title,
 }) {
-    // ======================================================
-    // BUTTON VARIANTS
-    // ======================================================
-
     const variants = {
         primary: `
-            border-blue-600
-            bg-blue-600
+            border-[#0b4f87]
+            bg-[#0b4f87]
             text-white
-            hover:border-blue-700
-            hover:bg-blue-700
+            hover:border-[#073763]
+            hover:bg-[#073763]
         `,
 
         secondary: `
             border-slate-300
             bg-white
-            text-slate-600
+            text-slate-700
             hover:border-slate-400
             hover:bg-slate-50
         `,
@@ -55,23 +51,24 @@ function ActionButton({
         ghost: `
             border-transparent
             bg-transparent
-            text-slate-600
+            text-slate-700
             hover:bg-slate-100
-            hover:text-slate-800
+            hover:text-[#073763]
         `,
 
         light: `
             border-slate-200
             bg-white
-            text-blue-600
+            text-[#0b4f87]
+            hover:border-blue-200
             hover:bg-blue-50
         `,
 
         dark: `
-            border-[#0a4371]
-            bg-[#0a4371]
+            border-[#073763]
+            bg-[#073763]
             text-white
-            hover:bg-[#08375e]
+            hover:bg-[#052d52]
         `,
     };
 
@@ -81,10 +78,6 @@ function ActionButton({
         variants.primary;
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <button
             type={type}
@@ -93,7 +86,7 @@ function ActionButton({
             disabled={disabled}
             className={`
                 inline-flex
-                min-h-[36px]
+                min-h-[38px]
                 items-center
                 justify-center
                 gap-2
@@ -102,19 +95,20 @@ function ActionButton({
                 px-4
                 py-2
                 text-[9px]
-                font-medium
+                font-semibold
                 leading-none
                 transition
                 duration-150
+
                 focus:outline-none
                 focus:ring-2
-                focus:ring-blue-100
+                focus:ring-blue-200
                 focus:ring-offset-1
+
                 disabled:cursor-not-allowed
                 disabled:opacity-50
 
                 ${variantClass}
-
                 ${className}
             `}
         >

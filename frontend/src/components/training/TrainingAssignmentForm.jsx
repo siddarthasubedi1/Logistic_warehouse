@@ -58,10 +58,6 @@ function TrainingAssignmentForm({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* HEADER */}
-            {/* ================================================= */}
-
             <div
                 className="
                     border-b
@@ -74,29 +70,25 @@ function TrainingAssignmentForm({
                 <h2
                     className="
                         text-[12px]
-                        font-semibold
-                        text-slate-800
+                        font-bold
+                        text-[#172033]
                     "
                 >
                     Assign Training Programme
                 </h2>
 
-
                 <p
                     className="
                         mt-1
                         text-[8px]
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
                     Select an active programme and the Trainee who should receive access.
                 </p>
             </div>
 
-
-            {/* ================================================= */}
-            {/* BODY */}
-            {/* ================================================= */}
 
             <div
                 className="
@@ -112,25 +104,9 @@ function TrainingAssignmentForm({
                         md:grid-cols-2
                     "
                 >
-                    {/* PROGRAMME */}
-
-                    <label className="block">
-                        <span
-                            className="
-                                mb-2
-                                block
-                                text-[8px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            Training Programme{" "}
-                            <span className="text-red-500">
-                                *
-                            </span>
-                        </span>
-
-
+                    <Field
+                        label="Training Programme"
+                    >
                         <select
                             value={
                                 programmeId
@@ -154,7 +130,6 @@ function TrainingAssignmentForm({
                                 Select programme
                             </option>
 
-
                             {programmes.map(
                                 (
                                     programme
@@ -167,10 +142,7 @@ function TrainingAssignmentForm({
                                             programme._id
                                         }
                                     >
-                                        {
-                                            programme.title
-                                        }
-                                        {" — "}
+                                        {programme.title} —{" "}
                                         {formatProgrammeType(
                                             programme.programmeType
                                         )}
@@ -178,28 +150,12 @@ function TrainingAssignmentForm({
                                 )
                             )}
                         </select>
-                    </label>
+                    </Field>
 
 
-                    {/* TRAINEE */}
-
-                    <label className="block">
-                        <span
-                            className="
-                                mb-2
-                                block
-                                text-[8px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            Trainee{" "}
-                            <span className="text-red-500">
-                                *
-                            </span>
-                        </span>
-
-
+                    <Field
+                        label="Trainee"
+                    >
                         <select
                             value={
                                 traineeId
@@ -223,7 +179,6 @@ function TrainingAssignmentForm({
                                 Select Trainee
                             </option>
 
-
                             {trainees.map(
                                 (
                                     trainee
@@ -245,13 +200,9 @@ function TrainingAssignmentForm({
                                 )
                             )}
                         </select>
-                    </label>
+                    </Field>
                 </div>
 
-
-                {/* ================================================= */}
-                {/* SELECTION SUMMARY */}
-                {/* ================================================= */}
 
                 {(selectedProgramme ||
                     selectedTrainee) && (
@@ -268,8 +219,7 @@ function TrainingAssignmentForm({
                             <SelectionItem
                                 label="Programme"
                                 value={
-                                    selectedProgramme
-                                        ?.title ||
+                                    selectedProgramme?.title ||
                                     "Not selected"
                                 }
                                 extra={
@@ -280,7 +230,6 @@ function TrainingAssignmentForm({
                                         : ""
                                 }
                             />
-
 
                             <SelectionItem
                                 label="Trainee"
@@ -293,18 +242,14 @@ function TrainingAssignmentForm({
                                         : "Not selected"
                                 }
                                 extra={
-                                    selectedTrainee
-                                        ?.email ||
-                                    ""
+                                    selectedTrainee?.username
+                                        ? `@${selectedTrainee.username}`
+                                        : ""
                                 }
                             />
                         </div>
                     )}
 
-
-                {/* ================================================= */}
-                {/* SUBMIT */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -330,7 +275,7 @@ function TrainingAssignmentForm({
                     >
                         {saving
                             ? "Assigning..."
-                            : "Assign Training"}
+                            : "Assign Programme"}
                     </ActionButton>
                 </div>
             </div>
@@ -339,9 +284,36 @@ function TrainingAssignmentForm({
 }
 
 
-// ======================================================
-// SUMMARY
-// ======================================================
+function Field({
+    label,
+    children,
+}) {
+    return (
+        <label>
+            <span
+                className="
+                    mb-2
+                    block
+                    text-[8px]
+                    font-semibold
+                    text-slate-700
+                "
+            >
+                {label}{" "}
+                <span
+                    className="
+                        text-red-500
+                    "
+                >
+                    *
+                </span>
+            </span>
+
+            {children}
+        </label>
+    );
+}
+
 
 function SelectionItem({
     label,
@@ -351,7 +323,6 @@ function SelectionItem({
     return (
         <div
             className="
-                min-w-0
                 rounded-lg
                 bg-white
                 p-3
@@ -360,35 +331,33 @@ function SelectionItem({
             <p
                 className="
                     text-[7px]
+                    font-semibold
                     uppercase
                     tracking-wide
-                    text-slate-400
+                    text-slate-500
                 "
             >
                 {label}
             </p>
 
-
             <p
                 className="
                     mt-1
-                    break-words
                     text-[9px]
-                    font-medium
-                    text-slate-700
+                    font-bold
+                    text-slate-800
                 "
             >
                 {value}
             </p>
 
-
             {extra && (
                 <p
                     className="
                         mt-1
-                        break-words
                         text-[7px]
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
                     {extra}
@@ -399,12 +368,8 @@ function SelectionItem({
 }
 
 
-// ======================================================
-// SELECT CLASS
-// ======================================================
-
 const selectClass = `
-    h-10
+    min-h-[40px]
     w-full
     rounded-lg
     border
@@ -412,13 +377,12 @@ const selectClass = `
     bg-white
     px-3
     text-[9px]
-    text-slate-700
+    font-medium
+    text-slate-800
     outline-none
-    transition
     focus:border-blue-500
     focus:ring-1
     focus:ring-blue-100
-    disabled:cursor-not-allowed
     disabled:bg-slate-50
 `;
 

@@ -41,10 +41,6 @@ function ProfilePage({
     ] = useState("");
 
 
-    // ======================================================
-    // LOAD PROFILE
-    // ======================================================
-
     useEffect(() => {
         let mounted =
             true;
@@ -53,8 +49,13 @@ function ProfilePage({
         const loadProfile =
             async () => {
                 try {
-                    setLoading(true);
-                    setError("");
+                    setLoading(
+                        true
+                    );
+
+                    setError(
+                        ""
+                    );
 
 
                     const response =
@@ -96,18 +97,22 @@ function ProfilePage({
                     );
 
 
-                    if (mounted) {
+                    if (
+                        mounted
+                    ) {
                         setError(
-                            error.response
-                                ?.data
-                                ?.message ||
+                            error.response?.data?.message ||
                             "Unable to load profile."
                         );
                     }
 
                 } finally {
-                    if (mounted) {
-                        setLoading(false);
+                    if (
+                        mounted
+                    ) {
+                        setLoading(
+                            false
+                        );
                     }
                 }
             };
@@ -123,25 +128,20 @@ function ProfilePage({
     }, []);
 
 
-    // ======================================================
-    // DASHBOARD
-    // ======================================================
-
     const dashboardPath =
-        role === "trainer"
+        role ===
+            "trainer"
             ? "/trainer"
             : "/trainee";
 
-
-    // ======================================================
-    // PROFILE IMAGE UPDATED
-    // ======================================================
 
     const handleProfileImageUpdated = (
         updatedUser
     ) => {
         setUser(
-            (currentUser) => ({
+            (
+                currentUser
+            ) => ({
                 ...currentUser,
                 ...updatedUser,
             })
@@ -149,20 +149,18 @@ function ProfilePage({
     };
 
 
-    // ======================================================
-    // PAGE
-    // ======================================================
-
     return (
         <DashboardLayout
-            role={role}
+            role={
+                role
+            }
             showHeader={false}
         >
             <div
                 className="
                     mx-auto
                     w-full
-                    max-w-6xl
+                    max-w-[1200px]
                     space-y-4
                 "
             >
@@ -173,53 +171,50 @@ function ProfilePage({
                         flex
                         flex-col
                         gap-4
-                        rounded-xl
-                        border
-                        border-slate-200
                         bg-white
-                        p-4
-                        shadow-sm
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        sm:p-5
+                        px-4
+                        py-4
+                        sm:px-5
+                        md:flex-row
+                        md:items-center
+                        md:justify-between
                     "
                 >
                     <div>
                         <p
                             className="
-                                text-[8px]
-                                font-medium
+                                text-[7px]
+                                font-semibold
                                 uppercase
-                                tracking-wide
+                                tracking-[0.12em]
                                 text-blue-600
                             "
                         >
-                            My Account
+                            Account Center
                         </p>
 
 
                         <h1
                             className="
                                 mt-1
-                                text-[18px]
-                                font-semibold
-                                text-slate-800
-                                sm:text-[20px]
+                                text-[20px]
+                                font-bold
+                                text-[#172033]
                             "
                         >
-                            Profile
+                            My Profile
                         </h1>
 
 
                         <p
                             className="
                                 mt-1
-                                text-[9px]
-                                text-slate-500
+                                text-[8px]
+                                font-medium
+                                text-slate-600
                             "
                         >
-                            View your account information and update your profile image.
+                            Manage your personal details, profile image and account security.
                         </p>
                     </div>
 
@@ -239,9 +234,9 @@ function ProfilePage({
                             bg-white
                             px-4
                             py-2.5
-                            text-[9px]
-                            font-medium
-                            text-slate-600
+                            text-[8px]
+                            font-semibold
+                            text-slate-700
                             transition
                             hover:bg-slate-50
                             sm:w-auto
@@ -252,29 +247,135 @@ function ProfilePage({
                 </section>
 
 
+                {/* BLUE BANNER */}
+
+                <section
+                    className="
+                        rounded-xl
+                        bg-gradient-to-r
+                        from-[#073763]
+                        to-[#1f55c7]
+                        p-5
+                        text-white
+                        sm:p-6
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div>
+                            <p
+                                className="
+                                    text-[7px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-[0.14em]
+                                    text-blue-100
+                                "
+                            >
+                                UK LogiWare Safety Training
+                            </p>
+
+
+                            <h2
+                                className="
+                                    mt-2
+                                    text-[14px]
+                                    font-bold
+                                "
+                            >
+                                Keep your account secure and up to date
+                            </h2>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[8px]
+                                    text-blue-100
+                                "
+                            >
+                                Update your profile photo and manage your password from one secure place.
+                            </p>
+                        </div>
+
+
+                        <div
+                            className="
+                                rounded-lg
+                                bg-white/10
+                                px-4
+                                py-3
+                            "
+                        >
+                            <p
+                                className="
+                                    text-[7px]
+                                    text-blue-100
+                                "
+                            >
+                                Account Role
+                            </p>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    font-semibold
+                                    capitalize
+                                "
+                            >
+                                {role}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+
                 <FeedbackAlert
                     type="error"
-                    message={error}
+                    message={
+                        error
+                    }
                     onClose={() =>
-                        setError("")
+                        setError(
+                            ""
+                        )
                     }
                 />
 
 
-                {/* PROFILE */}
+                {/* TWO COLUMNS */}
 
-                <ProfileDetails
-                    user={user}
-                    loading={loading}
-                    onProfileImageUpdated={
-                        handleProfileImageUpdated
-                    }
-                />
+                <section
+                    className="
+                        grid
+                        gap-4
+                        lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.8fr)]
+                    "
+                >
+                    <ProfileDetails
+                        user={
+                            user
+                        }
+                        loading={
+                            loading
+                        }
+                        onProfileImageUpdated={
+                            handleProfileImageUpdated
+                        }
+                    />
 
 
-                {/* PASSWORD */}
-
-                <ChangePasswordForm />
+                    <ChangePasswordForm />
+                </section>
             </div>
         </DashboardLayout>
     );

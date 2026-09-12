@@ -27,26 +27,24 @@ import {
 } from "../../utils/training";
 
 
-// ======================================================
-// PROGRAMME TYPES
-// ======================================================
-
 const PROGRAMME_TYPES = [
     {
-        value: "manual-handling",
-        label: "Manual Handling",
+        value:
+            "manual-handling",
+
+        label:
+            "Manual Handling",
     },
 
     {
-        value: "working-at-height",
-        label: "Working at Height",
+        value:
+            "working-at-height",
+
+        label:
+            "Working at Height",
     },
 ];
 
-
-// ======================================================
-// STATUS VALUES
-// ======================================================
 
 const PROGRAMME_STATUSES = [
     "draft",
@@ -55,24 +53,30 @@ const PROGRAMME_STATUSES = [
 ];
 
 
-// ======================================================
-// INITIAL FORM
-// ======================================================
+const getInitialFormData =
+    () => ({
+        programmeType:
+            "",
 
-const getInitialFormData = () => ({
-    programmeType: "",
-    title: "",
-    description: "",
-    passMark: 70,
-    status: "draft",
-    ownerId: "",
-    authorizedTrainers: [],
-});
+        title:
+            "",
 
+        description:
+            "",
 
-// ======================================================
-// MANAGER
-// ======================================================
+        passMark:
+            70,
+
+        status:
+            "draft",
+
+        ownerId:
+            "",
+
+        authorizedTrainers:
+            [],
+    });
+
 
 function TrainingProgrammeManager({
     role,
@@ -82,50 +86,43 @@ function TrainingProgrammeManager({
 
 
     const isAdmin =
-        role === "admin";
-
+        role ===
+        "admin";
 
     const isTrainer =
-        role === "trainer";
+        role ===
+        "trainer";
 
-
-    // ======================================================
-    // DATA
-    // ======================================================
 
     const [
         programmes,
         setProgrammes,
     ] = useState([]);
 
-
     const [
         trainers,
         setTrainers,
     ] = useState([]);
-
 
     const [
         currentTrainer,
         setCurrentTrainer,
     ] = useState(null);
 
-
-    // ======================================================
-    // FORM
-    // ======================================================
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
 
     const [
         showForm,
         setShowForm,
     ] = useState(false);
 
-
     const [
         editingProgramme,
         setEditingProgramme,
     ] = useState(null);
-
 
     const [
         formData,
@@ -134,71 +131,40 @@ function TrainingProgrammeManager({
         getInitialFormData()
     );
 
-
-    // ======================================================
-    // FILTERS
-    // ======================================================
-
-    const [
-        searchTerm,
-        setSearchTerm,
-    ] = useState("");
-
-
-    const [
-        typeFilter,
-        setTypeFilter,
-    ] = useState("all");
-
-
-    const [
-        statusFilter,
-        setStatusFilter,
-    ] = useState("all");
-
-
-    // ======================================================
-    // PROCESSING
-    // ======================================================
-
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
-
     const [
         saving,
         setSaving,
     ] = useState(false);
-
 
     const [
         processingId,
         setProcessingId,
     ] = useState("");
 
+    const [
+        searchTerm,
+        setSearchTerm,
+    ] = useState("");
 
-    // ======================================================
-    // FEEDBACK
-    // ======================================================
+    const [
+        typeFilter,
+        setTypeFilter,
+    ] = useState("all");
+
+    const [
+        statusFilter,
+        setStatusFilter,
+    ] = useState("all");
 
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
 
-
     const [
         successMessage,
         setSuccessMessage,
     ] = useState("");
-
-
-    const clearFeedback = () => {
-        setErrorMessage("");
-        setSuccessMessage("");
-    };
 
 
     // ======================================================
@@ -208,123 +174,57 @@ function TrainingProgrammeManager({
     const loadProgrammes =
         useCallback(
             async () => {
-                try {
-                    const response =
-                        await api.get(
-                            "/training-programmes"
-                        );
-
-
-                    setProgrammes(
-                        parseArrayResponse(
-                            response.data,
-                            "programmes"
-                        )
+                const response =
+                    await api.get(
+                        "/training-programmes"
                     );
 
-                } catch (error) {
-                    console.error(
-                        "Load programmes error:",
-                        error
-                    );
-
-
-                    setErrorMessage(
-                        getApiErrorMessage(
-                            error,
-                            "Unable to load training programmes."
-                        )
-                    );
-                }
+                setProgrammes(
+                    parseArrayResponse(
+                        response.data,
+                        "programmes"
+                    )
+                );
             },
             []
         );
 
 
-    // ======================================================
-    // LOAD ADMIN TRAINERS
-    // ======================================================
-
     const loadAdminTrainers =
         useCallback(
             async () => {
-                if (!isAdmin) {
-                    setTrainers([]);
+                if (
+                    !isAdmin
+                ) {
+                    setTrainers(
+                        []
+                    );
 
                     return;
                 }
 
-
-                try {
-                    const response =
-                        await api.get(
-                            "/admin/users"
-                        );
-
-
-                    const users =
-                        parseArrayResponse(
-                            response.data,
-                            "users"
-                        );
-
-
-                    const trainerUsers =
-                        users.filter(
-                            (
-                                user
-                            ) => {
-                                const status =
-                                    String(
-                                        user.status ||
-                                        ""
-                                    )
-                                        .trim()
-                                        .toLowerCase();
-
-
-                                const accountStatus =
-                                    String(
-                                        user.accountStatus ||
-                                        ""
-                                    )
-                                        .trim()
-                                        .toLowerCase();
-
-
-                                return (
-                                    user.role ===
-                                    "trainer" &&
-                                    status ===
-                                    "active" &&
-                                    (
-                                        !accountStatus ||
-                                        accountStatus ===
-                                        "created"
-                                    )
-                                );
-                            }
-                        );
-
-
-                    setTrainers(
-                        trainerUsers
+                const response =
+                    await api.get(
+                        "/admin/users"
                     );
 
-                } catch (error) {
-                    console.error(
-                        "Load Trainers error:",
-                        error
+                const users =
+                    parseArrayResponse(
+                        response.data,
+                        "users"
                     );
 
-
-                    setErrorMessage(
-                        getApiErrorMessage(
-                            error,
-                            "Unable to load Trainers."
-                        )
-                    );
-                }
+                setTrainers(
+                    users.filter(
+                        (
+                            user
+                        ) =>
+                            user.role ===
+                            "trainer" &&
+                            user.status ===
+                            "active"
+                    )
+                );
             },
             [
                 isAdmin,
@@ -332,50 +232,26 @@ function TrainingProgrammeManager({
         );
 
 
-    // ======================================================
-    // LOAD CURRENT TRAINER
-    // ======================================================
-
     const loadCurrentTrainer =
         useCallback(
             async () => {
-                if (!isTrainer) {
-                    setCurrentTrainer(
-                        null
-                    );
-
+                if (
+                    !isTrainer
+                ) {
                     return;
                 }
 
-
-                try {
-                    const response =
-                        await api.get(
-                            "/users/me"
-                        );
-
-
-                    setCurrentTrainer(
-                        response.data
-                            ?.user ||
-                        response.data ||
-                        null
+                const response =
+                    await api.get(
+                        "/users/me"
                     );
 
-                } catch (error) {
-                    console.error(
-                        "Load Trainer error:",
-                        error
-                    );
-
-
-                    setErrorMessage(
-                        getApiErrorMessage(
-                            error,
-                            "Unable to load Trainer profile."
-                        )
-                    );
-                }
+                setCurrentTrainer(
+                    response.data
+                        ?.user ||
+                    response.data ||
+                    null
+                );
             },
             [
                 isTrainer,
@@ -383,21 +259,14 @@ function TrainingProgrammeManager({
         );
 
 
-    // ======================================================
-    // INITIAL LOAD
-    // ======================================================
-
     useEffect(() => {
-        const loadPage =
+        let active =
+            true;
+
+        const load =
             async () => {
                 try {
-                    setLoading(
-                        true
-                    );
-
-
-                    clearFeedback();
-
+                    setLoading(true);
 
                     await Promise.all([
                         loadProgrammes(),
@@ -405,16 +274,38 @@ function TrainingProgrammeManager({
                         loadCurrentTrainer(),
                     ]);
 
-                } finally {
-                    setLoading(
-                        false
+                } catch (error) {
+                    console.error(
+                        "Training programme load error:",
+                        error
                     );
+
+                    if (
+                        active
+                    ) {
+                        setErrorMessage(
+                            getApiErrorMessage(
+                                error,
+                                "Unable to load training programmes."
+                            )
+                        );
+                    }
+
+                } finally {
+                    if (
+                        active
+                    ) {
+                        setLoading(false);
+                    }
                 }
             };
 
+        load();
 
-        loadPage();
-
+        return () => {
+            active =
+                false;
+        };
     }, [
         loadProgrammes,
         loadAdminTrainers,
@@ -423,18 +314,19 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // TRAINER PROGRAMME TYPES
+    // PROGRAMME TYPES
     // ======================================================
 
-    const trainerProgrammeTypes =
+    const availableProgrammeTypes =
         useMemo(
             () => {
-                if (!isTrainer) {
+                if (
+                    !isTrainer
+                ) {
                     return PROGRAMME_TYPES;
                 }
 
-
-                const assignedSections =
+                const assigned =
                     Array.isArray(
                         currentTrainer
                             ?.assignedTrainingSections
@@ -443,13 +335,12 @@ function TrainingProgrammeManager({
                             .assignedTrainingSections
                         : [];
 
-
                 return PROGRAMME_TYPES.filter(
                     (
-                        programmeType
+                        type
                     ) =>
-                        assignedSections.includes(
-                            programmeType.value
+                        assigned.includes(
+                            type.value
                         )
                 );
             },
@@ -460,30 +351,20 @@ function TrainingProgrammeManager({
         );
 
 
-    const availableProgrammeTypes =
-        isTrainer
-            ? trainerProgrammeTypes
-            : PROGRAMME_TYPES;
-
-
-    // ======================================================
-    // OWNER TRAINERS
-    // ======================================================
-
     const eligibleOwnerTrainers =
         useMemo(
             () => {
-                if (!isAdmin) {
+                if (
+                    !isAdmin
+                ) {
                     return [];
                 }
-
 
                 if (
                     !formData.programmeType
                 ) {
                     return trainers;
                 }
-
 
                 return trainers.filter(
                     (
@@ -508,19 +389,10 @@ function TrainingProgrammeManager({
         );
 
 
-    // ======================================================
-    // AUTHORIZED TRAINERS
-    // ======================================================
-
     const eligibleAuthorizedTrainers =
         useMemo(
-            () => {
-                if (!isAdmin) {
-                    return [];
-                }
-
-
-                return eligibleOwnerTrainers.filter(
+            () =>
+                eligibleOwnerTrainers.filter(
                     (
                         trainer
                     ) =>
@@ -530,10 +402,8 @@ function TrainingProgrammeManager({
                         String(
                             formData.ownerId
                         )
-                );
-            },
+                ),
             [
-                isAdmin,
                 eligibleOwnerTrainers,
                 formData.ownerId,
             ]
@@ -541,7 +411,7 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // FILTER PROGRAMMES
+    // FILTER
     // ======================================================
 
     const filteredProgrammes =
@@ -551,7 +421,6 @@ function TrainingProgrammeManager({
                     searchTerm
                         .trim()
                         .toLowerCase();
-
 
                 return programmes.filter(
                     (
@@ -566,7 +435,6 @@ function TrainingProgrammeManager({
                             return false;
                         }
 
-
                         if (
                             statusFilter !==
                             "all" &&
@@ -576,40 +444,35 @@ function TrainingProgrammeManager({
                             return false;
                         }
 
-
-                        if (!query) {
+                        if (
+                            !query
+                        ) {
                             return true;
                         }
-
 
                         const owner =
                             programme.ownerTrainer ||
                             programme.owner ||
                             programme.trainer;
 
-
-                        const searchableText =
+                        const text =
                             [
                                 programme.title,
                                 programme.description,
-
                                 formatProgrammeType(
                                     programme.programmeType
                                 ),
-
                                 getUserDisplayName(
                                     owner,
                                     ""
                                 ),
-
                                 programme.status,
                             ]
                                 .filter(Boolean)
                                 .join(" ")
                                 .toLowerCase();
 
-
-                        return searchableText.includes(
+                        return text.includes(
                             query
                         );
                     }
@@ -623,662 +486,6 @@ function TrainingProgrammeManager({
             ]
         );
 
-
-    // ======================================================
-    // INPUT
-    // ======================================================
-
-    const handleInputChange = (
-        event
-    ) => {
-        const {
-            name,
-            value,
-        } =
-            event.target;
-
-
-        clearFeedback();
-
-
-        setFormData(
-            (
-                current
-            ) => {
-                if (
-                    name ===
-                    "programmeType"
-                ) {
-                    return {
-                        ...current,
-
-                        programmeType:
-                            value,
-
-                        ownerId:
-                            "",
-
-                        authorizedTrainers:
-                            [],
-                    };
-                }
-
-
-                if (
-                    name ===
-                    "ownerId"
-                ) {
-                    return {
-                        ...current,
-
-                        ownerId:
-                            value,
-
-                        authorizedTrainers:
-                            current.authorizedTrainers.filter(
-                                (
-                                    trainerId
-                                ) =>
-                                    String(
-                                        trainerId
-                                    ) !==
-                                    String(
-                                        value
-                                    )
-                            ),
-                    };
-                }
-
-
-                return {
-                    ...current,
-
-                    [name]:
-                        value,
-                };
-            }
-        );
-    };
-
-
-    // ======================================================
-    // AUTHORIZED TRAINER CHECKBOX
-    // ======================================================
-
-    const handleToggleAuthorizedTrainer = (
-        trainerId
-    ) => {
-        clearFeedback();
-
-
-        setFormData(
-            (
-                current
-            ) => {
-                if (
-                    current.authorizedTrainers.includes(
-                        trainerId
-                    )
-                ) {
-                    return {
-                        ...current,
-
-                        authorizedTrainers:
-                            current.authorizedTrainers.filter(
-                                (
-                                    id
-                                ) =>
-                                    id !==
-                                    trainerId
-                            ),
-                    };
-                }
-
-
-                return {
-                    ...current,
-
-                    authorizedTrainers: [
-                        ...current.authorizedTrainers,
-                        trainerId,
-                    ],
-                };
-            }
-        );
-    };
-
-
-    // ======================================================
-    // RESET FORM
-    // ======================================================
-
-    const resetForm = () => {
-        setFormData(
-            getInitialFormData()
-        );
-
-
-        setEditingProgramme(
-            null
-        );
-
-
-        setShowForm(
-            false
-        );
-    };
-
-
-    // ======================================================
-    // CREATE
-    // ======================================================
-
-    const handleCreateProgramme = () => {
-        clearFeedback();
-
-
-        setEditingProgramme(
-            null
-        );
-
-
-        setFormData(
-            getInitialFormData()
-        );
-
-
-        setShowForm(
-            true
-        );
-    };
-
-
-    // ======================================================
-    // EDIT
-    // ======================================================
-
-    const handleEditProgramme = (
-        programme
-    ) => {
-        clearFeedback();
-
-
-        const owner =
-            programme.ownerTrainer ||
-            programme.owner ||
-            programme.trainer;
-
-
-        const authorized =
-            Array.isArray(
-                programme.authorizedTrainers
-            )
-                ? programme.authorizedTrainers
-                    .map(
-                        (
-                            trainer
-                        ) =>
-                            typeof trainer ===
-                                "string"
-                                ? trainer
-                                : trainer._id
-                    )
-                    .filter(Boolean)
-                : [];
-
-
-        setEditingProgramme(
-            programme
-        );
-
-
-        setFormData({
-            programmeType:
-                programme.programmeType ||
-                "",
-
-            title:
-                programme.title ||
-                "",
-
-            description:
-                programme.description ||
-                "",
-
-            passMark:
-                programme.passMark ??
-                70,
-
-            status:
-                programme.status ||
-                "draft",
-
-            ownerId:
-                owner?._id ||
-                owner ||
-                "",
-
-            authorizedTrainers:
-                authorized,
-        });
-
-
-        setShowForm(
-            true
-        );
-
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    };
-
-
-    // ======================================================
-    // VALIDATION
-    // ======================================================
-
-    const validateForm = () => {
-        if (
-            !PROGRAMME_TYPES.some(
-                (
-                    type
-                ) =>
-                    type.value ===
-                    formData.programmeType
-            )
-        ) {
-            return "Please select a valid programme type.";
-        }
-
-
-        const title =
-            formData
-                .title
-                .trim();
-
-
-        if (
-            title.length <
-            3 ||
-            title.length >
-            150
-        ) {
-            return "Programme title must be between 3 and 150 characters.";
-        }
-
-
-        const description =
-            formData
-                .description
-                .trim();
-
-
-        if (
-            description.length <
-            10 ||
-            description.length >
-            3000
-        ) {
-            return "Programme description must be between 10 and 3000 characters.";
-        }
-
-
-        const passMark =
-            Number(
-                formData.passMark
-            );
-
-
-        if (
-            !Number.isFinite(
-                passMark
-            ) ||
-            passMark <
-            0 ||
-            passMark >
-            100
-        ) {
-            return "Pass mark must be a number between 0 and 100.";
-        }
-
-
-        if (
-            !PROGRAMME_STATUSES.includes(
-                formData.status
-            )
-        ) {
-            return "Please select a valid programme status.";
-        }
-
-
-        if (
-            isAdmin &&
-            !formData.ownerId
-        ) {
-            return "Please select an owner Trainer.";
-        }
-
-
-        if (
-            isAdmin &&
-            !eligibleOwnerTrainers.some(
-                (
-                    trainer
-                ) =>
-                    String(
-                        trainer._id
-                    ) ===
-                    String(
-                        formData.ownerId
-                    )
-            )
-        ) {
-            return "The selected owner Trainer is not assigned to this training area.";
-        }
-
-
-        if (
-            isTrainer &&
-            !availableProgrammeTypes.some(
-                (
-                    type
-                ) =>
-                    type.value ===
-                    formData.programmeType
-            )
-        ) {
-            return "You are not assigned to this training area.";
-        }
-
-
-        return "";
-    };
-
-
-    // ======================================================
-    // SUBMIT
-    // ======================================================
-
-    const handleSubmit =
-        async (
-            event
-        ) => {
-            event.preventDefault();
-
-
-            clearFeedback();
-
-
-            const validationError =
-                validateForm();
-
-
-            if (
-                validationError
-            ) {
-                setErrorMessage(
-                    validationError
-                );
-
-                return;
-            }
-
-
-            try {
-                setSaving(
-                    true
-                );
-
-
-                const payload = {
-                    programmeType:
-                        formData.programmeType,
-
-                    title:
-                        formData.title.trim(),
-
-                    description:
-                        formData.description.trim(),
-
-                    passMark:
-                        Number(
-                            formData.passMark
-                        ),
-
-                    status:
-                        formData.status,
-                };
-
-
-                if (
-                    isAdmin
-                ) {
-                    payload.ownerId =
-                        formData.ownerId;
-
-
-                    payload.authorizedTrainers =
-                        formData.authorizedTrainers;
-                }
-
-
-                if (
-                    editingProgramme
-                ) {
-                    const response =
-                        await api.patch(
-                            `/training-programmes/${editingProgramme._id}`,
-                            payload
-                        );
-
-
-                    setSuccessMessage(
-                        response.data
-                            ?.message ||
-                        "Training programme updated successfully."
-                    );
-
-                } else {
-                    const response =
-                        await api.post(
-                            "/training-programmes",
-                            payload
-                        );
-
-
-                    setSuccessMessage(
-                        response.data
-                            ?.message ||
-                        "Training programme created successfully."
-                    );
-                }
-
-
-                resetForm();
-
-
-                await loadProgrammes();
-
-            } catch (error) {
-                console.error(
-                    "Save programme error:",
-                    error
-                );
-
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to save the training programme."
-                    )
-                );
-
-            } finally {
-                setSaving(
-                    false
-                );
-            }
-        };
-
-
-    // ======================================================
-    // DEACTIVATE
-    // ======================================================
-
-    const handleDeactivate =
-        async (
-            programme
-        ) => {
-            if (
-                !programme?._id
-            ) {
-                return;
-            }
-
-
-            const confirmed =
-                window.confirm(
-                    `Deactivate "${programme.title}"?`
-                );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            clearFeedback();
-
-
-            setProcessingId(
-                programme._id
-            );
-
-
-            try {
-                const response =
-                    await api.delete(
-                        `/training-programmes/${programme._id}`
-                    );
-
-
-                setSuccessMessage(
-                    response.data
-                        ?.message ||
-                    "Training programme deactivated successfully."
-                );
-
-
-                await loadProgrammes();
-
-            } catch (error) {
-                console.error(
-                    "Deactivate programme error:",
-                    error
-                );
-
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to deactivate this programme."
-                    )
-                );
-
-            } finally {
-                setProcessingId(
-                    ""
-                );
-            }
-        };
-
-
-    // ======================================================
-    // REACTIVATE
-    // ======================================================
-
-    const handleReactivate =
-        async (
-            programme
-        ) => {
-            if (
-                !programme?._id
-            ) {
-                return;
-            }
-
-
-            clearFeedback();
-
-
-            setProcessingId(
-                programme._id
-            );
-
-
-            try {
-                const response =
-                    await api.patch(
-                        `/training-programmes/${programme._id}/reactivate`
-                    );
-
-
-                setSuccessMessage(
-                    response.data
-                        ?.message ||
-                    "Training programme reactivated successfully."
-                );
-
-
-                await loadProgrammes();
-
-            } catch (error) {
-                console.error(
-                    "Reactivate programme error:",
-                    error
-                );
-
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to reactivate this programme."
-                    )
-                );
-
-            } finally {
-                setProcessingId(
-                    ""
-                );
-            }
-        };
-
-
-    // ======================================================
-    // SECTIONS
-    // ======================================================
-
-    const handleManageSections = (
-        programme
-    ) => {
-        if (
-            !programme?._id
-        ) {
-            return;
-        }
-
-
-        navigate(
-            `/training-programmes/${programme._id}/sections`
-        );
-    };
-
-
-    // ======================================================
-    // COUNTS
-    // ======================================================
 
     const activeCount =
         programmes.filter(
@@ -1311,8 +518,531 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // LOADING
+    // FORM
     // ======================================================
+
+    const clearFeedback =
+        () => {
+            setErrorMessage("");
+            setSuccessMessage("");
+        };
+
+
+    const resetForm =
+        () => {
+            setFormData(
+                getInitialFormData()
+            );
+
+            setEditingProgramme(
+                null
+            );
+
+            setShowForm(
+                false
+            );
+        };
+
+
+    const handleCreateProgramme =
+        () => {
+            clearFeedback();
+
+            setEditingProgramme(
+                null
+            );
+
+            setFormData(
+                getInitialFormData()
+            );
+
+            setShowForm(
+                true
+            );
+        };
+
+
+    const handleEditProgramme =
+        (
+            programme
+        ) => {
+            clearFeedback();
+
+            const owner =
+                programme.ownerTrainer ||
+                programme.owner ||
+                programme.trainer;
+
+            const authorized =
+                Array.isArray(
+                    programme.authorizedTrainers
+                )
+                    ? programme
+                        .authorizedTrainers
+                        .map(
+                            (
+                                trainer
+                            ) =>
+                                typeof trainer ===
+                                    "string"
+                                    ? trainer
+                                    : trainer._id
+                        )
+                        .filter(Boolean)
+                    : [];
+
+            setEditingProgramme(
+                programme
+            );
+
+            setFormData({
+                programmeType:
+                    programme.programmeType ||
+                    "",
+
+                title:
+                    programme.title ||
+                    "",
+
+                description:
+                    programme.description ||
+                    "",
+
+                passMark:
+                    programme.passMark ??
+                    70,
+
+                status:
+                    programme.status ||
+                    "draft",
+
+                ownerId:
+                    owner?._id ||
+                    owner ||
+                    "",
+
+                authorizedTrainers:
+                    authorized,
+            });
+
+            setShowForm(
+                true
+            );
+
+            window.scrollTo({
+                top: 0,
+                behavior:
+                    "smooth",
+            });
+        };
+
+
+    const handleInputChange =
+        (
+            event
+        ) => {
+            const {
+                name,
+                value,
+            } =
+                event.target;
+
+            setFormData(
+                (
+                    current
+                ) => {
+                    if (
+                        name ===
+                        "programmeType"
+                    ) {
+                        return {
+                            ...current,
+
+                            programmeType:
+                                value,
+
+                            ownerId:
+                                "",
+
+                            authorizedTrainers:
+                                [],
+                        };
+                    }
+
+                    if (
+                        name ===
+                        "ownerId"
+                    ) {
+                        return {
+                            ...current,
+
+                            ownerId:
+                                value,
+
+                            authorizedTrainers:
+                                current
+                                    .authorizedTrainers
+                                    .filter(
+                                        (
+                                            id
+                                        ) =>
+                                            String(
+                                                id
+                                            ) !==
+                                            String(
+                                                value
+                                            )
+                                    ),
+                        };
+                    }
+
+                    return {
+                        ...current,
+
+                        [name]:
+                            value,
+                    };
+                }
+            );
+        };
+
+
+    const handleToggleAuthorizedTrainer =
+        (
+            trainerId
+        ) => {
+            setFormData(
+                (
+                    current
+                ) => {
+                    const selected =
+                        current
+                            .authorizedTrainers
+                            .includes(
+                                trainerId
+                            );
+
+                    return {
+                        ...current,
+
+                        authorizedTrainers:
+                            selected
+                                ? current
+                                    .authorizedTrainers
+                                    .filter(
+                                        (
+                                            id
+                                        ) =>
+                                            id !==
+                                            trainerId
+                                    )
+                                : [
+                                    ...current
+                                        .authorizedTrainers,
+                                    trainerId,
+                                ],
+                    };
+                }
+            );
+        };
+
+
+    const validateForm =
+        () => {
+            if (
+                !PROGRAMME_TYPES.some(
+                    (
+                        type
+                    ) =>
+                        type.value ===
+                        formData.programmeType
+                )
+            ) {
+                return "Please select a valid programme type.";
+            }
+
+            if (
+                formData
+                    .title
+                    .trim()
+                    .length <
+                3
+            ) {
+                return "Programme title must contain at least 3 characters.";
+            }
+
+            if (
+                formData
+                    .description
+                    .trim()
+                    .length <
+                10
+            ) {
+                return "Programme description must contain at least 10 characters.";
+            }
+
+            const passMark =
+                Number(
+                    formData.passMark
+                );
+
+            if (
+                !Number.isFinite(
+                    passMark
+                ) ||
+                passMark <
+                0 ||
+                passMark >
+                100
+            ) {
+                return "Pass mark must be between 0 and 100.";
+            }
+
+            if (
+                !PROGRAMME_STATUSES.includes(
+                    formData.status
+                )
+            ) {
+                return "Please select a valid programme status.";
+            }
+
+            if (
+                isAdmin &&
+                !formData.ownerId
+            ) {
+                return "Please select an owner Trainer.";
+            }
+
+            if (
+                isTrainer &&
+                !availableProgrammeTypes.some(
+                    (
+                        type
+                    ) =>
+                        type.value ===
+                        formData.programmeType
+                )
+            ) {
+                return "You are not assigned to this training area.";
+            }
+
+            return "";
+        };
+
+
+    const handleSubmit =
+        async (
+            event
+        ) => {
+            event.preventDefault();
+
+            clearFeedback();
+
+            const validationError =
+                validateForm();
+
+            if (
+                validationError
+            ) {
+                setErrorMessage(
+                    validationError
+                );
+
+                return;
+            }
+
+            const payload = {
+                programmeType:
+                    formData.programmeType,
+
+                title:
+                    formData
+                        .title
+                        .trim(),
+
+                description:
+                    formData
+                        .description
+                        .trim(),
+
+                passMark:
+                    Number(
+                        formData.passMark
+                    ),
+
+                status:
+                    formData.status,
+            };
+
+            if (
+                isAdmin
+            ) {
+                payload.ownerId =
+                    formData.ownerId;
+
+                payload.authorizedTrainers =
+                    formData.authorizedTrainers;
+            }
+
+            try {
+                setSaving(true);
+
+                if (
+                    editingProgramme
+                ) {
+                    const response =
+                        await api.patch(
+                            `/training-programmes/${editingProgramme._id}`,
+                            payload
+                        );
+
+                    setSuccessMessage(
+                        response.data?.message ||
+                        "Training programme updated successfully."
+                    );
+
+                } else {
+                    const response =
+                        await api.post(
+                            "/training-programmes",
+                            payload
+                        );
+
+                    setSuccessMessage(
+                        response.data?.message ||
+                        "Training programme created successfully."
+                    );
+                }
+
+                resetForm();
+
+                await loadProgrammes();
+
+            } catch (error) {
+                console.error(
+                    "Save programme error:",
+                    error
+                );
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to save the training programme."
+                    )
+                );
+
+            } finally {
+                setSaving(false);
+            }
+        };
+
+
+    // ======================================================
+    // STATUS ACTIONS
+    // ======================================================
+
+    const handleDeactivate =
+        async (
+            programme
+        ) => {
+            if (
+                !programme?._id
+            ) {
+                return;
+            }
+
+            const confirmed =
+                window.confirm(
+                    `Deactivate "${programme.title}"?`
+                );
+
+            if (
+                !confirmed
+            ) {
+                return;
+            }
+
+            try {
+                setProcessingId(
+                    programme._id
+                );
+
+                const response =
+                    await api.delete(
+                        `/training-programmes/${programme._id}`
+                    );
+
+                setSuccessMessage(
+                    response.data?.message ||
+                    "Programme deactivated successfully."
+                );
+
+                await loadProgrammes();
+
+            } catch (error) {
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to deactivate programme."
+                    )
+                );
+
+            } finally {
+                setProcessingId("");
+            }
+        };
+
+
+    const handleReactivate =
+        async (
+            programme
+        ) => {
+            if (
+                !programme?._id
+            ) {
+                return;
+            }
+
+            try {
+                setProcessingId(
+                    programme._id
+                );
+
+                const response =
+                    await api.patch(
+                        `/training-programmes/${programme._id}/reactivate`
+                    );
+
+                setSuccessMessage(
+                    response.data?.message ||
+                    "Programme reactivated successfully."
+                );
+
+                await loadProgrammes();
+
+            } catch (error) {
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to reactivate programme."
+                    )
+                );
+
+            } finally {
+                setProcessingId("");
+            }
+        };
+
+
+    const handleManageSections =
+        (
+            programme
+        ) => {
+            navigate(
+                `/training-programmes/${programme._id}/sections`
+            );
+        };
+
 
     if (
         loading
@@ -1324,10 +1054,6 @@ function TrainingProgrammeManager({
         );
     }
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <div
@@ -1350,39 +1076,30 @@ function TrainingProgrammeManager({
                     value={
                         programmes.length
                     }
-                    tone="blue"
                 />
-
 
                 <ManagerStat
                     label="Active"
                     value={
                         activeCount
                     }
-                    tone="green"
                 />
-
 
                 <ManagerStat
                     label="Draft"
                     value={
                         draftCount
                     }
-                    tone="amber"
                 />
-
 
                 <ManagerStat
                     label="Inactive"
                     value={
                         inactiveCount
                     }
-                    tone="slate"
                 />
             </section>
 
-
-            {/* FEEDBACK */}
 
             <FeedbackAlert
                 type="success"
@@ -1390,12 +1107,9 @@ function TrainingProgrammeManager({
                     successMessage
                 }
                 onClose={() =>
-                    setSuccessMessage(
-                        ""
-                    )
+                    setSuccessMessage("")
                 }
             />
-
 
             <FeedbackAlert
                 type="error"
@@ -1403,14 +1117,10 @@ function TrainingProgrammeManager({
                     errorMessage
                 }
                 onClose={() =>
-                    setErrorMessage(
-                        ""
-                    )
+                    setErrorMessage("")
                 }
             />
 
-
-            {/* CREATE BUTTON */}
 
             {!showForm && (
                 <div
@@ -1434,8 +1144,6 @@ function TrainingProgrammeManager({
                 </div>
             )}
 
-
-            {/* FORM */}
 
             {showForm && (
                 <TrainingProgrammeForm
@@ -1476,8 +1184,6 @@ function TrainingProgrammeManager({
             )}
 
 
-            {/* FILTERS */}
-
             <TrainingProgrammeFilters
                 searchTerm={
                     searchTerm
@@ -1508,8 +1214,6 @@ function TrainingProgrammeManager({
             />
 
 
-            {/* TABLE */}
-
             <TrainingProgrammeTable
                 programmes={
                     filteredProgrammes
@@ -1535,30 +1239,10 @@ function TrainingProgrammeManager({
 }
 
 
-// ======================================================
-// STAT CARD
-// ======================================================
-
 function ManagerStat({
     label,
     value,
-    tone,
 }) {
-    const styles = {
-        blue:
-            "bg-blue-50 text-blue-600",
-
-        green:
-            "bg-emerald-50 text-emerald-600",
-
-        amber:
-            "bg-amber-50 text-amber-600",
-
-        slate:
-            "bg-slate-100 text-slate-600",
-    };
-
-
     return (
         <article
             className="
@@ -1570,63 +1254,26 @@ function ManagerStat({
                 shadow-sm
             "
         >
-            <div
+            <p
                 className="
-                    flex
-                    items-center
-                    justify-between
-                    gap-3
+                    text-[8px]
+                    font-medium
+                    text-slate-500
                 "
             >
-                <div>
-                    <p
-                        className="
-                            text-[8px]
-                            text-slate-400
-                        "
-                    >
-                        {label}
-                    </p>
+                {label}
+            </p>
 
-
-                    <p
-                        className="
-                            mt-1
-                            text-xl
-                            font-bold
-                            text-slate-800
-                        "
-                    >
-                        {value}
-                    </p>
-                </div>
-
-
-                <div
-                    className={`
-                        flex
-                        h-8
-                        w-8
-                        items-center
-                        justify-center
-                        rounded-full
-
-                        ${styles[tone]
-                        }
-                    `}
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-4 w-4"
-                    >
-                        <path d="M4 5h7v14H4z" />
-                        <path d="M13 5h7v14h-7z" />
-                    </svg>
-                </div>
-            </div>
+            <p
+                className="
+                    mt-2
+                    text-[22px]
+                    font-bold
+                    text-[#172033]
+                "
+            >
+                {value}
+            </p>
         </article>
     );
 }

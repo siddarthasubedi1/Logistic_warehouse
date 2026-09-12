@@ -13,144 +13,187 @@ import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
 const ROLE_CONFIG = {
     administrator: {
-        name: "Administrator",
+        name:
+            "Administrator",
 
         description:
             "Full administrative access and control.",
 
-        editable: false,
+        editable:
+            false,
 
         permissions: [
             {
-                id: "view-users",
-                label: "View Users",
-                enabled: true,
+                id:
+                    "view-users",
+                label:
+                    "View Users",
+                enabled:
+                    true,
             },
-
             {
-                id: "create-users",
-                label: "Create Users",
-                enabled: true,
+                id:
+                    "create-users",
+                label:
+                    "Create Users",
+                enabled:
+                    true,
             },
-
             {
-                id: "manage-users",
-                label: "Manage User Accounts",
-                enabled: true,
+                id:
+                    "manage-users",
+                label:
+                    "Manage User Accounts",
+                enabled:
+                    true,
             },
-
             {
-                id: "reset-password",
-                label: "Reset User Passwords",
-                enabled: true,
+                id:
+                    "reset-password",
+                label:
+                    "Reset User Passwords",
+                enabled:
+                    true,
             },
-
             {
-                id: "training-programmes",
-                label: "Manage Training Programmes",
-                enabled: true,
+                id:
+                    "training-programmes",
+                label:
+                    "Manage Training Programmes",
+                enabled:
+                    true,
             },
-
             {
-                id: "learning-sections",
-                label: "Manage Learning Sections",
-                enabled: true,
+                id:
+                    "learning-sections",
+                label:
+                    "Manage Learning Sections",
+                enabled:
+                    true,
             },
-
             {
-                id: "training-assignment",
-                label: "Assign Training",
-                enabled: true,
+                id:
+                    "training-assignment",
+                label:
+                    "Assign Training",
+                enabled:
+                    true,
             },
-
             {
-                id: "audit-logs",
-                label: "View Audit Logs",
-                enabled: true,
+                id:
+                    "audit-logs",
+                label:
+                    "View Audit Logs",
+                enabled:
+                    true,
             },
         ],
     },
 
-
     trainer: {
-        name: "Trainer",
+        name:
+            "Trainer",
 
         description:
             "Manage assigned training programmes and learning content.",
 
-        editable: true,
+        editable:
+            true,
 
         permissions: [
             {
-                id: "trainer-dashboard",
-                label: "Access Trainer Dashboard",
-                enabled: true,
+                id:
+                    "trainer-dashboard",
+                label:
+                    "Access Trainer Dashboard",
+                enabled:
+                    true,
             },
-
             {
-                id: "manage-programmes",
-                label: "Manage Training Programmes",
-                enabled: true,
+                id:
+                    "manage-programmes",
+                label:
+                    "Manage Training Programmes",
+                enabled:
+                    true,
             },
-
             {
-                id: "manage-sections",
-                label: "Manage Learning Sections",
-                enabled: true,
+                id:
+                    "manage-sections",
+                label:
+                    "Manage Learning Sections",
+                enabled:
+                    true,
             },
-
             {
-                id: "view-profile",
-                label: "View Own Profile",
-                enabled: true,
+                id:
+                    "view-profile",
+                label:
+                    "View Own Profile",
+                enabled:
+                    true,
             },
-
             {
-                id: "change-password",
-                label: "Change Own Password",
-                enabled: true,
+                id:
+                    "change-password",
+                label:
+                    "Change Own Password",
+                enabled:
+                    true,
             },
         ],
     },
 
-
     trainee: {
-        name: "Trainee",
+        name:
+            "Trainee",
 
         description:
             "Access assigned training and personal account information.",
 
-        editable: false,
+        editable:
+            false,
 
         permissions: [
             {
-                id: "trainee-dashboard",
-                label: "Access Trainee Dashboard",
-                enabled: true,
+                id:
+                    "trainee-dashboard",
+                label:
+                    "Access Trainee Dashboard",
+                enabled:
+                    true,
             },
-
             {
-                id: "assigned-training",
-                label: "View Assigned Training",
-                enabled: true,
+                id:
+                    "assigned-training",
+                label:
+                    "View Assigned Training",
+                enabled:
+                    true,
             },
-
             {
-                id: "learning-content",
-                label: "View Learning Content",
-                enabled: true,
+                id:
+                    "learning-content",
+                label:
+                    "View Learning Content",
+                enabled:
+                    true,
             },
-
             {
-                id: "view-profile",
-                label: "View Own Profile",
-                enabled: true,
+                id:
+                    "view-profile",
+                label:
+                    "View Own Profile",
+                enabled:
+                    true,
             },
-
             {
-                id: "change-password",
-                label: "Change Own Password",
-                enabled: true,
+                id:
+                    "change-password",
+                label:
+                    "Change Own Password",
+                enabled:
+                    true,
             },
         ],
     },
@@ -161,18 +204,16 @@ function EditRolePage() {
     const navigate =
         useNavigate();
 
-
     const {
         roleName,
-    } = useParams();
-
+    } =
+        useParams();
 
     const roleKey =
         String(
             roleName ||
             ""
         ).toLowerCase();
-
 
     const originalRole =
         ROLE_CONFIG[
@@ -202,11 +243,9 @@ function EditRolePage() {
         description,
         setDescription,
     ] = useState(
-        originalRole
-            ?.description ||
+        originalRole?.description ||
         ""
     );
-
 
     const [
         permissions,
@@ -215,50 +254,40 @@ function EditRolePage() {
         initialPermissions
     );
 
-
     const [
         successMessage,
         setSuccessMessage,
     ] = useState("");
 
 
-    if (!originalRole) {
+    if (
+        !originalRole
+    ) {
         return (
             <DashboardLayout
                 role="admin"
                 title="Role Not Found"
                 subtitle="The requested role cannot be edited."
             >
-                <section
+                <button
+                    type="button"
+                    onClick={() =>
+                        navigate(
+                            "/admin/roles"
+                        )
+                    }
                     className="
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-8
-                        text-center
-                        shadow-sm
+                        rounded-lg
+                        bg-blue-600
+                        px-4
+                        py-2
+                        text-[9px]
+                        font-semibold
+                        text-white
                     "
                 >
-                    <button
-                        type="button"
-                        onClick={() =>
-                            navigate(
-                                "/admin/roles"
-                            )
-                        }
-                        className="
-                            rounded-lg
-                            bg-blue-600
-                            px-4
-                            py-2.5
-                            text-[9px]
-                            text-white
-                        "
-                    >
-                        Back to Roles
-                    </button>
-                </section>
+                    Back to Roles
+                </button>
             </DashboardLayout>
         );
     }
@@ -273,10 +302,6 @@ function EditRolePage() {
             return;
         }
 
-
-        setSuccessMessage("");
-
-
         setPermissions(
             (
                 current
@@ -289,56 +314,31 @@ function EditRolePage() {
                             permissionId
                             ? {
                                 ...permission,
+
                                 enabled:
                                     !permission.enabled,
                             }
                             : permission
                 )
         );
+
+        setSuccessMessage("");
     };
 
 
-    const handleReset =
-        () => {
-            setDescription(
-                originalRole.description
-            );
-
-
-            setPermissions(
-                originalRole.permissions.map(
-                    (
-                        permission
-                    ) => ({
-                        ...permission,
-                    })
-                )
-            );
-
-
-            setSuccessMessage("");
-        };
-
-
-    // ======================================================
-    // CURRENT PROJECT HAS NO BACKEND ROLE UPDATE API
-    // ======================================================
-
-    const handleSave = (
+    const handleSubmit = (
         event
     ) => {
         event.preventDefault();
 
-
-        if (
-            !originalRole.editable
-        ) {
-            return;
-        }
-
+        /*
+         * The current project uses the role definition as frontend
+         * configuration. No backend permission-write route exists here,
+         * so do not invent an API call.
+         */
 
         setSuccessMessage(
-            "Role settings updated."
+            "Role settings updated in the current view."
         );
     };
 
@@ -355,25 +355,64 @@ function EditRolePage() {
     return (
         <DashboardLayout
             role="admin"
-            title={`Edit ${originalRole.name}`}
-            subtitle="Review role description and available permissions."
+            title={`Edit ${originalRole.name} Role`}
+            subtitle="Review the role description and available permissions."
         >
-            <div
+            <form
+                onSubmit={
+                    handleSubmit
+                }
                 className="
-                    grid
-                    gap-4
-                    xl:grid-cols-[minmax(0,1fr)_280px]
+                    space-y-4
                 "
             >
+                {successMessage && (
+                    <div
+                        className="
+                            rounded-lg
+                            border
+                            border-emerald-200
+                            bg-emerald-50
+                            px-4
+                            py-3
+                            text-[9px]
+                            font-medium
+                            text-emerald-700
+                        "
+                    >
+                        {successMessage}
+                    </div>
+                )}
 
-                {/* ================================================= */}
-                {/* FORM */}
-                {/* ================================================= */}
 
-                <form
-                    onSubmit={
-                        handleSave
-                    }
+                {!originalRole.editable && (
+                    <div
+                        className="
+                            rounded-lg
+                            border
+                            border-amber-200
+                            bg-amber-50
+                            px-4
+                            py-3
+                        "
+                    >
+                        <p
+                            className="
+                                text-[8px]
+                                font-medium
+                                leading-5
+                                text-amber-800
+                            "
+                        >
+                            This role is fixed by the system and cannot be changed.
+                        </p>
+                    </div>
+                )}
+
+
+                {/* ROLE */}
+
+                <section
                     className="
                         overflow-hidden
                         rounded-xl
@@ -387,15 +426,16 @@ function EditRolePage() {
                         className="
                             border-b
                             border-slate-100
-                            px-5
+                            px-4
                             py-4
+                            sm:px-5
                         "
                     >
                         <h2
                             className="
                                 text-[12px]
-                                font-semibold
-                                text-slate-800
+                                font-bold
+                                text-[#172033]
                             "
                         >
                             Role Information
@@ -405,39 +445,22 @@ function EditRolePage() {
 
                     <div
                         className="
-                            space-y-5
-                            p-5
+                            p-4
+                            sm:p-5
                         "
                     >
-                        {successMessage && (
-                            <div
-                                className="
-                                    rounded-lg
-                                    border
-                                    border-emerald-200
-                                    bg-emerald-50
-                                    px-4
-                                    py-3
-                                    text-[9px]
-                                    text-emerald-700
-                                "
-                            >
-                                {successMessage}
-                            </div>
-                        )}
-
-
-                        <label className="block">
+                        <label>
                             <span
                                 className="
-                                    text-[9px]
-                                    font-medium
-                                    text-slate-600
+                                    mb-2
+                                    block
+                                    text-[8px]
+                                    font-semibold
+                                    text-slate-700
                                 "
                             >
                                 Role Name
                             </span>
-
 
                             <input
                                 type="text"
@@ -446,35 +469,40 @@ function EditRolePage() {
                                 }
                                 disabled
                                 className="
-                                    mt-2
-                                    h-11
+                                    h-10
                                     w-full
                                     rounded-lg
                                     border
                                     border-slate-200
                                     bg-slate-50
                                     px-3
-                                    text-[10px]
-                                    text-slate-500
+                                    text-[9px]
+                                    font-semibold
+                                    text-slate-600
                                 "
                             />
                         </label>
 
 
-                        <label className="block">
+                        <label
+                            className="
+                                mt-4
+                                block
+                            "
+                        >
                             <span
                                 className="
-                                    text-[9px]
-                                    font-medium
-                                    text-slate-600
+                                    mb-2
+                                    block
+                                    text-[8px]
+                                    font-semibold
+                                    text-slate-700
                                 "
                             >
                                 Description
                             </span>
 
-
                             <textarea
-                                rows="4"
                                 value={
                                     description
                                 }
@@ -482,15 +510,14 @@ function EditRolePage() {
                                     event
                                 ) =>
                                     setDescription(
-                                        event.target
-                                            .value
+                                        event.target.value
                                     )
                                 }
                                 disabled={
                                     !originalRole.editable
                                 }
+                                rows="4"
                                 className="
-                                    mt-2
                                     w-full
                                     rounded-lg
                                     border
@@ -498,304 +525,229 @@ function EditRolePage() {
                                     bg-white
                                     px-3
                                     py-3
-                                    text-[10px]
-                                    text-slate-700
+                                    text-[9px]
+                                    font-medium
+                                    leading-5
+                                    text-slate-800
                                     outline-none
                                     focus:border-blue-500
                                     disabled:bg-slate-50
                                 "
                             />
                         </label>
-
-
-                        <div
-                            className="
-                                border-t
-                                border-slate-100
-                                pt-5
-                            "
-                        >
-                            <div
-                                className="
-                                    flex
-                                    items-center
-                                    justify-between
-                                    gap-3
-                                "
-                            >
-                                <div>
-                                    <h3
-                                        className="
-                                            text-[11px]
-                                            font-semibold
-                                            text-slate-800
-                                        "
-                                    >
-                                        Permissions
-                                    </h3>
-
-
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-[8px]
-                                            text-slate-400
-                                        "
-                                    >
-                                        {enabledCount} enabled
-                                    </p>
-                                </div>
-                            </div>
-
-
-                            <div
-                                className="
-                                    mt-4
-                                    grid
-                                    gap-3
-                                    sm:grid-cols-2
-                                "
-                            >
-                                {permissions.map(
-                                    (
-                                        permission
-                                    ) => (
-                                        <label
-                                            key={
-                                                permission.id
-                                            }
-                                            className={`
-                                                flex
-                                                items-center
-                                                gap-3
-                                                rounded-lg
-                                                border
-                                                p-4
-
-                                                ${permission.enabled
-                                                    ? "border-blue-200 bg-blue-50"
-                                                    : "border-slate-200 bg-white"
-                                                }
-
-                                                ${originalRole.editable
-                                                    ? "cursor-pointer"
-                                                    : "cursor-default"
-                                                }
-                                            `}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    permission.enabled
-                                                }
-                                                disabled={
-                                                    !originalRole.editable
-                                                }
-                                                onChange={() =>
-                                                    handlePermissionChange(
-                                                        permission.id
-                                                    )
-                                                }
-                                            />
-
-
-                                            <span
-                                                className="
-                                                    text-[9px]
-                                                    font-medium
-                                                    text-slate-700
-                                                "
-                                            >
-                                                {permission.label}
-                                            </span>
-                                        </label>
-                                    )
-                                )}
-                            </div>
-                        </div>
-
-
-                        <div
-                            className="
-                                flex
-                                flex-col-reverse
-                                gap-2
-                                border-t
-                                border-slate-100
-                                pt-5
-                                sm:flex-row
-                                sm:justify-end
-                            "
-                        >
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    navigate(
-                                        `/admin/roles/${roleKey}`
-                                    )
-                                }
-                                className="
-                                    rounded-lg
-                                    border
-                                    border-slate-300
-                                    bg-white
-                                    px-4
-                                    py-2.5
-                                    text-[9px]
-                                    text-slate-600
-                                    hover:bg-slate-50
-                                "
-                            >
-                                Cancel
-                            </button>
-
-
-                            {originalRole.editable && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={
-                                            handleReset
-                                        }
-                                        className="
-                                            rounded-lg
-                                            border
-                                            border-slate-300
-                                            bg-white
-                                            px-4
-                                            py-2.5
-                                            text-[9px]
-                                            text-slate-600
-                                            hover:bg-slate-50
-                                        "
-                                    >
-                                        Reset
-                                    </button>
-
-
-                                    <button
-                                        type="submit"
-                                        className="
-                                            rounded-lg
-                                            bg-blue-600
-                                            px-5
-                                            py-2.5
-                                            text-[9px]
-                                            font-medium
-                                            text-white
-                                            hover:bg-blue-700
-                                        "
-                                    >
-                                        Save Changes
-                                    </button>
-                                </>
-                            )}
-                        </div>
                     </div>
-                </form>
+                </section>
 
 
-                {/* ================================================= */}
-                {/* SUMMARY */}
-                {/* ================================================= */}
+                {/* PERMISSIONS */}
 
-                <aside
+                <section
                     className="
-                        h-fit
+                        overflow-hidden
                         rounded-xl
                         border
                         border-slate-200
                         bg-white
-                        p-5
                         shadow-sm
                     "
                 >
-                    <h3
+                    <div
                         className="
-                            text-[11px]
-                            font-semibold
-                            text-slate-800
+                            flex
+                            items-center
+                            justify-between
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-4
+                            py-4
+                            sm:px-5
                         "
                     >
-                        Role Summary
-                    </h3>
+                        <div>
+                            <h2
+                                className="
+                                    text-[12px]
+                                    font-bold
+                                    text-[#172033]
+                                "
+                            >
+                                Permissions
+                            </h2>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[8px]
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                Select the actions available to this role.
+                            </p>
+                        </div>
+
+
+                        <span
+                            className="
+                                rounded-full
+                                bg-blue-50
+                                px-3
+                                py-1
+                                text-[8px]
+                                font-bold
+                                text-blue-600
+                            "
+                        >
+                            {enabledCount}/
+                            {permissions.length}
+                        </span>
+                    </div>
 
 
                     <div
                         className="
-                            mt-4
-                            space-y-3
+                            grid
+                            gap-3
+                            p-4
+                            md:grid-cols-2
+                            sm:p-5
                         "
                     >
-                        <SummaryItem
-                            label="Role"
-                            value={
-                                originalRole.name
-                            }
-                        />
+                        {permissions.map(
+                            (
+                                permission
+                            ) => (
+                                <label
+                                    key={
+                                        permission.id
+                                    }
+                                    className={`
+                                        flex
+                                        items-center
+                                        justify-between
+                                        gap-4
+                                        rounded-lg
+                                        border
+                                        p-4
+
+                                        ${permission.enabled
+                                            ? "border-blue-200 bg-blue-50"
+                                            : "border-slate-200 bg-white"
+                                        }
+
+                                        ${originalRole.editable
+                                            ? "cursor-pointer"
+                                            : "cursor-not-allowed"
+                                        }
+                                    `}
+                                >
+                                    <div>
+                                        <p
+                                            className="
+                                                text-[9px]
+                                                font-bold
+                                                text-slate-800
+                                            "
+                                        >
+                                            {permission.label}
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-[7px]
+                                                font-medium
+                                                text-slate-500
+                                            "
+                                        >
+                                            {permission.enabled
+                                                ? "Permission enabled"
+                                                : "Permission disabled"}
+                                        </p>
+                                    </div>
 
 
-                        <SummaryItem
-                            label="Permissions"
-                            value={
-                                `${enabledCount} enabled`
-                            }
-                        />
-
-
-                        <SummaryItem
-                            label="Editable"
-                            value={
-                                originalRole.editable
-                                    ? "Yes"
-                                    : "No"
-                            }
-                        />
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            permission.enabled
+                                        }
+                                        disabled={
+                                            !originalRole.editable
+                                        }
+                                        onChange={() =>
+                                            handlePermissionChange(
+                                                permission.id
+                                            )
+                                        }
+                                        className="
+                                            h-4
+                                            w-4
+                                            accent-blue-600
+                                        "
+                                    />
+                                </label>
+                            )
+                        )}
                     </div>
-                </aside>
+                </section>
 
-            </div>
+
+                {/* ACTIONS */}
+
+                <div
+                    className="
+                        flex
+                        flex-col-reverse
+                        gap-2
+                        sm:flex-row
+                        sm:justify-end
+                    "
+                >
+                    <button
+                        type="button"
+                        onClick={() =>
+                            navigate(
+                                `/admin/roles/${roleKey}`
+                            )
+                        }
+                        className="
+                            min-h-[40px]
+                            rounded-lg
+                            border
+                            border-slate-300
+                            bg-white
+                            px-5
+                            text-[9px]
+                            font-semibold
+                            text-slate-700
+                        "
+                    >
+                        Cancel
+                    </button>
+
+
+                    {originalRole.editable && (
+                        <button
+                            type="submit"
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                bg-blue-600
+                                px-5
+                                text-[9px]
+                                font-semibold
+                                text-white
+                                hover:bg-blue-700
+                            "
+                        >
+                            Save Permissions
+                        </button>
+                    )}
+                </div>
+            </form>
         </DashboardLayout>
-    );
-}
-
-
-function SummaryItem({
-    label,
-    value,
-}) {
-    return (
-        <div
-            className="
-                rounded-lg
-                bg-slate-50
-                px-3
-                py-3
-            "
-        >
-            <p
-                className="
-                    text-[7px]
-                    uppercase
-                    tracking-wide
-                    text-slate-400
-                "
-            >
-                {label}
-            </p>
-
-
-            <p
-                className="
-                    mt-1
-                    text-[9px]
-                    font-medium
-                    text-slate-700
-                "
-            >
-                {value}
-            </p>
-        </div>
     );
 }
 

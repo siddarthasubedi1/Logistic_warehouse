@@ -48,7 +48,7 @@ function AdminQuickActions({
                 "View Audit Logs",
 
             description:
-                "Review account and system activity",
+                "Review important account and system activity",
 
             icon:
                 "audit",
@@ -70,22 +70,20 @@ function AdminQuickActions({
                 shadow-sm
             "
         >
-
-            {/* HEADER */}
-
             <div
                 className="
                     border-b
                     border-slate-100
-                    px-5
+                    px-4
                     py-4
+                    sm:px-5
                 "
             >
                 <h2
                     className="
                         text-[12px]
-                        font-semibold
-                        text-slate-800
+                        font-bold
+                        text-[#172033]
                     "
                 >
                     Quick Actions
@@ -96,7 +94,8 @@ function AdminQuickActions({
                     className="
                         mt-1
                         text-[8px]
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
                     Common administrator tasks.
@@ -104,12 +103,11 @@ function AdminQuickActions({
             </div>
 
 
-            {/* ACTIONS */}
-
             <div
                 className="
                     space-y-3
-                    p-5
+                    p-4
+                    sm:p-5
                 "
             >
                 {actions.map(
@@ -134,21 +132,21 @@ function AdminQuickActions({
                                 gap-3
                                 rounded-lg
                                 border
-                                border-slate-200
+                                border-transparent
                                 bg-white
-                                px-4
+                                px-3
                                 py-3
                                 text-left
                                 transition
-                                hover:border-blue-200
-                                hover:bg-slate-50
+                                hover:border-blue-100
+                                hover:bg-blue-50/50
                             "
                         >
                             <div
                                 className="
                                     flex
-                                    h-9
-                                    w-9
+                                    h-10
+                                    w-10
                                     shrink-0
                                     items-center
                                     justify-center
@@ -157,7 +155,7 @@ function AdminQuickActions({
                                     text-blue-600
                                 "
                             >
-                                <QuickIcon
+                                <ActionIcon
                                     type={
                                         action.icon
                                     }
@@ -174,8 +172,8 @@ function AdminQuickActions({
                                 <p
                                     className="
                                         text-[9px]
-                                        font-medium
-                                        text-slate-700
+                                        font-bold
+                                        text-slate-800
                                     "
                                 >
                                     {action.title}
@@ -185,20 +183,25 @@ function AdminQuickActions({
                                 <p
                                     className="
                                         mt-1
-                                        truncate
                                         text-[7px]
-                                        text-slate-400
+                                        font-medium
+                                        leading-4
+                                        text-slate-500
                                     "
                                 >
-                                    {action.description}
+                                    {
+                                        action.description
+                                    }
                                 </p>
                             </div>
 
 
                             <span
                                 className="
-                                    text-[17px]
-                                    text-blue-500
+                                    shrink-0
+                                    text-[15px]
+                                    font-semibold
+                                    text-blue-600
                                     transition
                                     group-hover:translate-x-0.5
                                 "
@@ -214,13 +217,9 @@ function AdminQuickActions({
 }
 
 
-function QuickIcon({
+function ActionIcon({
     type,
 }) {
-    const className =
-        "h-[17px] w-[17px]";
-
-
     if (
         type ===
         "create"
@@ -231,9 +230,7 @@ function QuickIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={
-                    className
-                }
+                className="h-4 w-4"
             >
                 <circle
                     cx="9"
@@ -253,7 +250,7 @@ function QuickIcon({
 
     if (
         type ===
-        "audit"
+        "users"
     ) {
         return (
             <svg
@@ -261,17 +258,23 @@ function QuickIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={
-                    className
-                }
+                className="h-4 w-4"
             >
-                <path d="M6 3h12v18H6z" />
+                <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                />
 
-                <path d="M9 8h6" />
+                <circle
+                    cx="17"
+                    cy="9"
+                    r="2"
+                />
 
-                <path d="M9 12h6" />
+                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
 
-                <path d="M9 16h4" />
+                <path d="M15 15c3 0 5 1.5 6 5" />
             </svg>
         );
     }
@@ -283,23 +286,15 @@ function QuickIcon({
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
-            className={
-                className
-            }
+            className="h-4 w-4"
         >
-            <circle
-                cx="9"
-                cy="8"
-                r="3"
-            />
+            <path d="M6 3h12v18H6z" />
 
-            <circle
-                cx="17"
-                cy="9"
-                r="2"
-            />
+            <path d="M9 8h6" />
 
-            <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+            <path d="M9 12h6" />
+
+            <path d="M9 16h4" />
         </svg>
     );
 }

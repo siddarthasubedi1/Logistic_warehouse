@@ -7,16 +7,15 @@ function LearningSectionList({
     currentSectionIndex = 0,
     onSelectSection,
 }) {
-    // ======================================================
-    // EMPTY
-    // ======================================================
-
     if (
+        !Array.isArray(
+            sections
+        ) ||
         sections.length ===
         0
     ) {
         return (
-            <div
+            <section
                 className="
                     rounded-xl
                     border
@@ -30,20 +29,27 @@ function LearningSectionList({
                     description="This programme does not currently contain active learning content."
                     icon="training"
                 />
-            </div>
+            </section>
         );
     }
 
 
-    // ======================================================
-    // POSITION
-    // ======================================================
+    const safeIndex =
+        Math.min(
+            Math.max(
+                currentSectionIndex,
+                0
+            ),
+            sections.length -
+            1
+        );
+
 
     const progressPercentage =
         Math.round(
             (
                 (
-                    currentSectionIndex +
+                    safeIndex +
                     1
                 ) /
                 sections.length
@@ -51,10 +57,6 @@ function LearningSectionList({
             100
         );
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <aside
@@ -67,9 +69,7 @@ function LearningSectionList({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
             {/* HEADER */}
-            {/* ================================================= */}
 
             <div
                 className="
@@ -91,23 +91,30 @@ function LearningSectionList({
                         <h2
                             className="
                                 text-[11px]
-                                font-semibold
-                                text-slate-800
+                                font-bold
+                                text-[#172033]
                             "
                         >
                             Learning Sections
                         </h2>
 
-
                         <p
                             className="
                                 mt-1
                                 text-[8px]
-                                text-slate-400
+                                font-medium
+                                text-slate-500
                             "
                         >
-                            Section {currentSectionIndex + 1} of{" "}
-                            {sections.length}
+                            Section{" "}
+                            {
+                                safeIndex +
+                                1
+                            }{" "}
+                            of{" "}
+                            {
+                                sections.length
+                            }
                         </p>
                     </div>
 
@@ -115,11 +122,14 @@ function LearningSectionList({
                     <span
                         className="
                             text-[8px]
-                            font-medium
+                            font-bold
                             text-blue-600
                         "
                     >
-                        {progressPercentage}%
+                        {
+                            progressPercentage
+                        }
+                        %
                     </span>
                 </div>
 
@@ -150,9 +160,7 @@ function LearningSectionList({
             </div>
 
 
-            {/* ================================================= */}
-            {/* MOBILE NAVIGATION */}
-            {/* ================================================= */}
+            {/* MOBILE / TABLET */}
 
             <div
                 className="
@@ -177,8 +185,7 @@ function LearningSectionList({
                         ) => {
                             const selected =
                                 index ===
-                                currentSectionIndex;
-
+                                safeIndex;
 
                             return (
                                 <button
@@ -194,7 +201,7 @@ function LearningSectionList({
                                     }
                                     className={`
                                         flex
-                                        max-w-[210px]
+                                        max-w-[220px]
                                         items-center
                                         gap-2
                                         rounded-lg
@@ -202,10 +209,11 @@ function LearningSectionList({
                                         px-3
                                         py-2.5
                                         text-left
+                                        transition
 
                                         ${selected
                                             ? "border-blue-300 bg-blue-50"
-                                            : "border-slate-200 bg-white"
+                                            : "border-slate-200 bg-white hover:bg-slate-50"
                                         }
                                     `}
                                 >
@@ -219,13 +227,12 @@ function LearningSectionList({
                                         }
                                     />
 
-
                                     <span
                                         className={`
                                             max-w-[150px]
                                             truncate
                                             text-[8px]
-                                            font-medium
+                                            font-semibold
 
                                             ${selected
                                                 ? "text-blue-700"
@@ -245,9 +252,7 @@ function LearningSectionList({
             </div>
 
 
-            {/* ================================================= */}
-            {/* DESKTOP LIST */}
-            {/* ================================================= */}
+            {/* DESKTOP */}
 
             <div
                 className="
@@ -264,8 +269,7 @@ function LearningSectionList({
                     ) => {
                         const selected =
                             index ===
-                            currentSectionIndex;
-
+                            safeIndex;
 
                         return (
                             <button
@@ -282,7 +286,7 @@ function LearningSectionList({
                                 className={`
                                     w-full
                                     px-4
-                                    py-3
+                                    py-3.5
                                     text-left
                                     transition
 
@@ -326,9 +330,10 @@ function LearningSectionList({
                                         >
                                             <p
                                                 className={`
-                                                    truncate
+                                                    break-words
                                                     text-[9px]
-                                                    font-medium
+                                                    font-bold
+                                                    leading-4
 
                                                     ${selected
                                                         ? "text-blue-700"
@@ -352,21 +357,18 @@ function LearningSectionList({
                                         </div>
 
 
-                                        {section.content && (
-                                            <p
-                                                className="
-                                                    mt-1
-                                                    line-clamp-2
-                                                    text-[7px]
-                                                    leading-4
-                                                    text-slate-400
-                                                "
-                                            >
-                                                {
-                                                    section.content
-                                                }
-                                            </p>
-                                        )}
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-[7px]
+                                                font-medium
+                                                text-slate-500
+                                            "
+                                        >
+                                            Section{" "}
+                                            {index +
+                                                1}
+                                        </p>
                                     </div>
                                 </div>
                             </button>
@@ -378,10 +380,6 @@ function LearningSectionList({
     );
 }
 
-
-// ======================================================
-// SECTION NUMBER
-// ======================================================
 
 function SectionNumber({
     number,
@@ -398,11 +396,11 @@ function SectionNumber({
                 justify-center
                 rounded-full
                 text-[8px]
-                font-semibold
+                font-bold
 
                 ${selected
                     ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-500"
+                    : "bg-slate-100 text-slate-600"
                 }
             `}
         >

@@ -29,6 +29,7 @@ function AdminUsersOverview({
     return (
         <section
             className="
+                min-w-0
                 overflow-hidden
                 rounded-xl
                 border
@@ -37,7 +38,6 @@ function AdminUsersOverview({
                 shadow-sm
             "
         >
-
             {/* HEADER */}
 
             <div
@@ -48,16 +48,21 @@ function AdminUsersOverview({
                     gap-4
                     border-b
                     border-slate-100
-                    px-5
+                    px-4
                     py-4
+                    sm:px-5
                 "
             >
-                <div>
+                <div
+                    className="
+                        min-w-0
+                    "
+                >
                     <h2
                         className="
                             text-[12px]
-                            font-semibold
-                            text-slate-800
+                            font-bold
+                            text-[#172033]
                         "
                     >
                         User Overview
@@ -68,7 +73,8 @@ function AdminUsersOverview({
                         className="
                             mt-1
                             text-[8px]
-                            text-slate-400
+                            font-medium
+                            text-slate-500
                         "
                     >
                         Recently generated Trainer and Trainee accounts.
@@ -84,8 +90,9 @@ function AdminUsersOverview({
                         )
                     }
                     className="
+                        shrink-0
                         text-[9px]
-                        font-medium
+                        font-semibold
                         text-blue-600
                         transition
                         hover:text-blue-700
@@ -98,10 +105,10 @@ function AdminUsersOverview({
 
             <div
                 className="
-                    p-5
+                    p-4
+                    sm:p-5
                 "
             >
-
                 {/* COUNTS */}
 
                 <div
@@ -125,233 +132,138 @@ function AdminUsersOverview({
                             trainers
                         }
                         label="Trainers"
-                        tone="purple"
+                        tone="violet"
                     />
                 </div>
 
 
-                {/* TABLE */}
+                {/* LOADING */}
 
-                <div
-                    className="
-                        mt-5
-                        overflow-x-auto
-                    "
-                >
-                    <table
+                {loading ? (
+                    <div
                         className="
-                            min-w-[650px]
-                            w-full
-                            border-collapse
+                            py-10
+                            text-center
                         "
                     >
-                        <thead>
-                            <tr
+                        <p
+                            className="
+                                text-[9px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Loading users...
+                        </p>
+                    </div>
+                ) : recentUsers.length ===
+                    0 ? (
+                    <div
+                        className="
+                            py-10
+                            text-center
+                        "
+                    >
+                        <p
+                            className="
+                                text-[9px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            No generated users found.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* MOBILE */}
+
+                        <div
+                            className="
+                                mt-5
+                                space-y-3
+                                md:hidden
+                            "
+                        >
+                            {recentUsers.map(
+                                (
+                                    user
+                                ) => (
+                                    <UserCard
+                                        key={
+                                            user._id
+                                        }
+                                        user={
+                                            user
+                                        }
+                                    />
+                                )
+                            )}
+                        </div>
+
+
+                        {/* DESKTOP */}
+
+                        <div
+                            className="
+                                mt-5
+                                hidden
+                                overflow-x-auto
+                                md:block
+                            "
+                        >
+                            <table
                                 className="
-                                    border-b
-                                    border-slate-200
+                                    w-full
+                                    min-w-[650px]
                                 "
                             >
-                                <TableHeading>
-                                    User
-                                </TableHeading>
-
-                                <TableHeading>
-                                    Role
-                                </TableHeading>
-
-                                <TableHeading>
-                                    Username
-                                </TableHeading>
-
-                                <TableHeading>
-                                    Status
-                                </TableHeading>
-                            </tr>
-                        </thead>
-
-
-                        <tbody>
-                            {loading && (
-                                <tr>
-                                    <td
-                                        colSpan="4"
+                                <thead>
+                                    <tr
                                         className="
-                                            py-8
-                                            text-center
-                                            text-[9px]
-                                            text-slate-400
+                                            border-b
+                                            border-slate-200
                                         "
                                     >
-                                        Loading users...
-                                    </td>
-                                </tr>
-                            )}
+                                        <Head>
+                                            User
+                                        </Head>
 
+                                        <Head>
+                                            Role
+                                        </Head>
 
-                            {!loading &&
-                                recentUsers.length ===
-                                0 && (
-                                    <tr>
-                                        <td
-                                            colSpan="4"
-                                            className="
-                                            py-8
-                                            text-center
-                                            text-[9px]
-                                            text-slate-400
-                                        "
-                                        >
-                                            No users available.
-                                        </td>
+                                        <Head>
+                                            Username
+                                        </Head>
+
+                                        <Head>
+                                            Status
+                                        </Head>
                                     </tr>
-                                )}
+                                </thead>
 
 
-                            {!loading &&
-                                recentUsers.map(
-                                    (
-                                        currentUser
-                                    ) => {
-                                        const name =
-                                            getDisplayName(
-                                                currentUser
-                                            );
-
-
-                                        const initial =
-                                            name
-                                                .charAt(
-                                                    0
-                                                )
-                                                .toUpperCase();
-
-
-                                        return (
-                                            <tr
+                                <tbody>
+                                    {recentUsers.map(
+                                        (
+                                            user
+                                        ) => (
+                                            <UserRow
                                                 key={
-                                                    currentUser._id ||
-                                                    currentUser.username
+                                                    user._id
                                                 }
-                                                className="
-                                                    border-b
-                                                    border-slate-100
-                                                    last:border-b-0
-                                                "
-                                            >
-                                                <td
-                                                    className="
-                                                        py-3
-                                                        pr-4
-                                                    "
-                                                >
-                                                    <div
-                                                        className="
-                                                            flex
-                                                            items-center
-                                                            gap-3
-                                                        "
-                                                    >
-                                                        <div
-                                                            className="
-                                                                flex
-                                                                h-8
-                                                                w-8
-                                                                shrink-0
-                                                                items-center
-                                                                justify-center
-                                                                rounded-full
-                                                                bg-blue-50
-                                                                text-[9px]
-                                                                font-semibold
-                                                                text-blue-600
-                                                            "
-                                                        >
-                                                            {initial ||
-                                                                "U"}
-                                                        </div>
-
-
-                                                        <div
-                                                            className="
-                                                                min-w-0
-                                                            "
-                                                        >
-                                                            <p
-                                                                className="
-                                                                    max-w-[170px]
-                                                                    truncate
-                                                                    text-[9px]
-                                                                    font-medium
-                                                                    text-slate-700
-                                                                "
-                                                            >
-                                                                {name}
-                                                            </p>
-
-
-                                                            <p
-                                                                className="
-                                                                    mt-0.5
-                                                                    max-w-[180px]
-                                                                    truncate
-                                                                    text-[7px]
-                                                                    text-slate-400
-                                                                "
-                                                            >
-                                                                {currentUser.email ||
-                                                                    "—"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        py-3
-                                                        pr-4
-                                                    "
-                                                >
-                                                    <RoleBadge
-                                                        role={
-                                                            currentUser.role
-                                                        }
-                                                    />
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        py-3
-                                                        pr-4
-                                                        text-[8px]
-                                                        text-slate-500
-                                                    "
-                                                >
-                                                    {currentUser.username ||
-                                                        "—"}
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        py-3
-                                                    "
-                                                >
-                                                    <StatusBadge
-                                                        status={
-                                                            currentUser.status
-                                                        }
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
-                                )}
-                        </tbody>
-                    </table>
-                </div>
+                                                user={
+                                                    user
+                                                }
+                                            />
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
             </div>
         </section>
     );
@@ -363,10 +275,10 @@ function OverviewCount({
     label,
     tone,
 }) {
-    const iconClass =
+    const toneClasses =
         tone ===
-            "purple"
-            ? "bg-purple-50 text-purple-600"
+            "violet"
+            ? "bg-violet-50 text-violet-600"
             : "bg-blue-50 text-blue-600";
 
 
@@ -378,19 +290,20 @@ function OverviewCount({
                 gap-3
                 rounded-lg
                 bg-slate-50
-                px-4
-                py-3
+                p-3
             "
         >
             <div
                 className={`
                     flex
-                    h-8
-                    w-8
+                    h-9
+                    w-9
+                    shrink-0
                     items-center
                     justify-center
                     rounded-full
-                    ${iconClass}
+
+                    ${toneClasses}
                 `}
             >
                 <svg
@@ -414,9 +327,8 @@ function OverviewCount({
             <div>
                 <p
                     className="
-                        text-[17px]
+                        text-[18px]
                         font-bold
-                        leading-none
                         text-slate-800
                     "
                 >
@@ -426,8 +338,8 @@ function OverviewCount({
 
                 <p
                     className="
-                        mt-1
-                        text-[8px]
+                        text-[7px]
+                        font-medium
                         text-slate-500
                     "
                 >
@@ -439,78 +351,268 @@ function OverviewCount({
 }
 
 
-function TableHeading({
+function UserRow({
+    user,
+}) {
+    const fullName =
+        [
+            user.firstName,
+            user.lastName,
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .trim() ||
+        user.username ||
+        "User";
+
+
+    const initial =
+        fullName
+            .charAt(0)
+            .toUpperCase();
+
+
+    return (
+        <tr
+            className="
+                border-b
+                border-slate-100
+                last:border-0
+            "
+        >
+            <td
+                className="
+                    py-3
+                    pr-4
+                "
+            >
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-3
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-blue-50
+                            text-[8px]
+                            font-bold
+                            text-blue-600
+                        "
+                    >
+                        {initial}
+                    </div>
+
+
+                    <div
+                        className="
+                            min-w-0
+                        "
+                    >
+                        <p
+                            className="
+                                truncate
+                                text-[8px]
+                                font-semibold
+                                text-slate-800
+                            "
+                        >
+                            {fullName}
+                        </p>
+
+
+                        <p
+                            className="
+                                mt-0.5
+                                max-w-[220px]
+                                truncate
+                                text-[7px]
+                                text-slate-500
+                            "
+                        >
+                            {user.email ||
+                                "—"}
+                        </p>
+                    </div>
+                </div>
+            </td>
+
+
+            <td
+                className="
+                    px-4
+                    py-3
+                "
+            >
+                <StatusBadge
+                    status={
+                        user.role
+                    }
+                />
+            </td>
+
+
+            <td
+                className="
+                    px-4
+                    py-3
+                    text-[8px]
+                    font-medium
+                    text-slate-600
+                "
+            >
+                {user.username ||
+                    "—"}
+            </td>
+
+
+            <td
+                className="
+                    pl-4
+                    py-3
+                "
+            >
+                <StatusBadge
+                    status={
+                        user.status
+                    }
+                />
+            </td>
+        </tr>
+    );
+}
+
+
+function UserCard({
+    user,
+}) {
+    const fullName =
+        [
+            user.firstName,
+            user.lastName,
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .trim() ||
+        user.username ||
+        "User";
+
+
+    return (
+        <article
+            className="
+                rounded-lg
+                border
+                border-slate-200
+                bg-white
+                p-4
+            "
+        >
+            <div
+                className="
+                    flex
+                    items-start
+                    justify-between
+                    gap-3
+                "
+            >
+                <div
+                    className="
+                        min-w-0
+                    "
+                >
+                    <p
+                        className="
+                            truncate
+                            text-[10px]
+                            font-bold
+                            text-slate-800
+                        "
+                    >
+                        {fullName}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            truncate
+                            text-[8px]
+                            text-slate-500
+                        "
+                    >
+                        {user.email ||
+                            "—"}
+                    </p>
+                </div>
+
+
+                <StatusBadge
+                    status={
+                        user.status
+                    }
+                />
+            </div>
+
+
+            <div
+                className="
+                    mt-3
+                    flex
+                    flex-wrap
+                    items-center
+                    gap-2
+                "
+            >
+                <StatusBadge
+                    status={
+                        user.role
+                    }
+                />
+
+
+                <span
+                    className="
+                        text-[8px]
+                        font-medium
+                        text-slate-500
+                    "
+                >
+                    @{user.username ||
+                        "—"}
+                </span>
+            </div>
+        </article>
+    );
+}
+
+
+function Head({
     children,
 }) {
     return (
         <th
             className="
-                py-2.5
+                py-2
                 pr-4
                 text-left
                 text-[7px]
                 font-semibold
                 uppercase
                 tracking-wide
-                text-slate-400
+                text-slate-500
             "
         >
             {children}
         </th>
-    );
-}
-
-
-function RoleBadge({
-    role,
-}) {
-    const isTrainer =
-        role ===
-        "trainer";
-
-
-    return (
-        <span
-            className={`
-                inline-flex
-                items-center
-                rounded-full
-                px-2.5
-                py-1
-                text-[7px]
-                font-medium
-                capitalize
-
-                ${isTrainer
-                    ? "bg-purple-50 text-purple-600"
-                    : "bg-blue-50 text-blue-600"
-                }
-            `}
-        >
-            {role ||
-                "User"}
-        </span>
-    );
-}
-
-
-function getDisplayName(
-    user
-) {
-    const name =
-        [
-            user?.firstName,
-            user?.lastName,
-        ]
-            .filter(Boolean)
-            .join(" ")
-            .trim();
-
-
-    return (
-        name ||
-        user?.username ||
-        "User"
     );
 }
 

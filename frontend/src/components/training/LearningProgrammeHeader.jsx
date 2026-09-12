@@ -1,7 +1,6 @@
 import StatusBadge from "../ui/StatusBadge";
 
 import {
-    calculateSectionPercentage,
     formatProgrammeType,
     getProgrammeTrainerName,
 } from "../../utils/training";
@@ -17,27 +16,28 @@ function LearningProgrammeHeader({
     }
 
 
-    const percentage =
-        calculateSectionPercentage(
-            currentSection,
-            totalSections
-        );
-
+    const workingAtHeight =
+        programme.programmeType ===
+        "working-at-height";
 
     const sectionNumber =
-        totalSections >
-            0
+        totalSections > 0
             ? Math.min(
-                currentSection +
-                1,
+                currentSection + 1,
                 totalSections
             )
             : 0;
 
-
-    const workingAtHeight =
-        programme.programmeType ===
-        "working-at-height";
+    const percentage =
+        totalSections > 0
+            ? Math.round(
+                (
+                    sectionNumber /
+                    totalSections
+                ) *
+                100
+            )
+            : 0;
 
 
     return (
@@ -51,9 +51,18 @@ function LearningProgrammeHeader({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* MAIN */}
-            {/* ================================================= */}
+            <div
+                className={`
+                    h-1.5
+                    w-full
+
+                    ${workingAtHeight
+                        ? "bg-amber-500"
+                        : "bg-blue-600"
+                    }
+                `}
+            />
+
 
             <div
                 className="
@@ -71,8 +80,6 @@ function LearningProgrammeHeader({
                         lg:justify-between
                     "
                 >
-                    {/* PROGRAMME */}
-
                     <div
                         className="
                             min-w-0
@@ -89,28 +96,18 @@ function LearningProgrammeHeader({
                         >
                             <span
                                 className={`
-                                    inline-flex
-                                    items-center
-                                    gap-1.5
                                     rounded-full
                                     px-2.5
                                     py-1
                                     text-[7px]
-                                    font-medium
+                                    font-bold
 
                                     ${workingAtHeight
-                                        ? "bg-amber-50 text-amber-600"
-                                        : "bg-blue-50 text-blue-600"
+                                        ? "bg-amber-50 text-amber-700"
+                                        : "bg-blue-50 text-blue-700"
                                     }
                                 `}
                             >
-                                <ProgrammeIcon
-                                    workingAtHeight={
-                                        workingAtHeight
-                                    }
-                                />
-
-
                                 {formatProgrammeType(
                                     programme.programmeType
                                 )}
@@ -130,10 +127,11 @@ function LearningProgrammeHeader({
                             className="
                                 mt-3
                                 break-words
-                                text-[17px]
-                                font-semibold
-                                text-slate-800
-                                sm:text-[19px]
+                                text-[18px]
+                                font-bold
+                                leading-6
+                                text-[#172033]
+                                sm:text-[20px]
                             "
                         >
                             {programme.title}
@@ -146,27 +144,24 @@ function LearningProgrammeHeader({
                                     mt-2
                                     max-w-3xl
                                     text-[9px]
+                                    font-medium
                                     leading-5
-                                    text-slate-500
+                                    text-slate-600
                                 "
                             >
-                                {
-                                    programme.description
-                                }
+                                {programme.description}
                             </p>
                         )}
                     </div>
 
 
-                    {/* META */}
-
                     <div
                         className="
                             grid
                             w-full
-                            gap-3
+                            gap-2
                             sm:grid-cols-2
-                            lg:w-[320px]
+                            lg:w-[330px]
                             lg:shrink-0
                         "
                     >
@@ -179,21 +174,14 @@ function LearningProgrammeHeader({
                             }
                         />
 
-
                         <InformationItem
                             label="Pass Mark"
-                            value={`${programme.passMark ??
-                                0
-                                }%`}
+                            value={`${programme.passMark ?? 0}%`}
                         />
                     </div>
                 </div>
             </div>
 
-
-            {/* ================================================= */}
-            {/* SECTION POSITION */}
-            {/* ================================================= */}
 
             <div
                 className="
@@ -208,90 +196,81 @@ function LearningProgrammeHeader({
                 <div
                     className="
                         flex
-                        flex-col
-                        gap-2
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
+                        items-center
+                        justify-between
+                        gap-3
                     "
                 >
                     <div>
                         <p
                             className="
                                 text-[8px]
-                                font-medium
-                                text-slate-600
+                                font-bold
+                                text-slate-700
                             "
                         >
                             Learning Position
                         </p>
 
-
                         <p
                             className="
                                 mt-0.5
                                 text-[7px]
-                                text-slate-400
+                                font-medium
+                                text-slate-500
                             "
                         >
-                            {totalSections >
-                                0
+                            {totalSections > 0
                                 ? `Section ${sectionNumber} of ${totalSections}`
                                 : "No learning sections available"}
                         </p>
                     </div>
 
 
-                    {totalSections >
-                        0 && (
-                            <span
-                                className="
+                    {totalSections > 0 && (
+                        <span
+                            className="
                                 text-[8px]
-                                font-medium
+                                font-bold
                                 text-blue-600
                             "
-                            >
-                                {percentage}%
-                            </span>
-                        )}
+                        >
+                            {percentage}%
+                        </span>
+                    )}
                 </div>
 
 
-                {totalSections >
-                    0 && (
-                        <div
-                            className="
+                {totalSections > 0 && (
+                    <div
+                        className="
                             mt-2
                             h-1.5
                             overflow-hidden
                             rounded-full
                             bg-slate-200
                         "
-                        >
-                            <div
-                                className="
+                    >
+                        <div
+                            className="
                                 h-full
                                 rounded-full
                                 bg-blue-600
                                 transition-all
                                 duration-300
                             "
-                                style={{
-                                    width:
-                                        `${percentage}%`,
-                                }}
-                            />
-                        </div>
-                    )}
+                            style={{
+                                width:
+                                    `${percentage}%`,
+                            }}
+                        />
+                    </div>
+                )}
             </div>
         </section>
     );
 }
 
-
-// ======================================================
-// META ITEM
-// ======================================================
 
 function InformationItem({
     label,
@@ -309,78 +288,27 @@ function InformationItem({
             <p
                 className="
                     text-[7px]
+                    font-semibold
                     uppercase
                     tracking-wide
-                    text-slate-400
+                    text-slate-500
                 "
             >
                 {label}
             </p>
-
 
             <p
                 className="
                     mt-1
                     truncate
                     text-[9px]
-                    font-medium
+                    font-bold
                     text-slate-700
                 "
             >
-                {value ||
-                    "—"}
+                {value || "—"}
             </p>
         </div>
-    );
-}
-
-
-// ======================================================
-// ICON
-// ======================================================
-
-function ProgrammeIcon({
-    workingAtHeight,
-}) {
-    if (
-        workingAtHeight
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-3 w-3"
-            >
-                <path d="M5 21V5" />
-                <path d="M19 21V5" />
-                <path d="M5 9h14" />
-                <path d="M5 14h14" />
-                <path d="M5 19h14" />
-            </svg>
-        );
-    }
-
-
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-3 w-3"
-        >
-            <rect
-                x="3"
-                y="8"
-                width="18"
-                height="10"
-                rx="2"
-            />
-
-            <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
-        </svg>
     );
 }
 

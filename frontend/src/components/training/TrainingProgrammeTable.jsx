@@ -16,9 +16,12 @@ function TrainingProgrammeTable({
     onDeactivate,
     onReactivate,
 }) {
-    if (programmes.length === 0) {
+    if (
+        programmes.length ===
+        0
+    ) {
         return (
-            <div
+            <section
                 className="
                     rounded-xl
                     border
@@ -32,7 +35,7 @@ function TrainingProgrammeTable({
                     description="Create a programme or change the current filters."
                     icon="training"
                 />
-            </div>
+            </section>
         );
     }
 
@@ -48,8 +51,6 @@ function TrainingProgrammeTable({
                 shadow-sm
             "
         >
-            {/* HEADER */}
-
             <div
                 className="
                     flex
@@ -69,8 +70,8 @@ function TrainingProgrammeTable({
                     <h2
                         className="
                             text-[11px]
-                            font-semibold
-                            text-slate-800
+                            font-bold
+                            text-[#172033]
                         "
                     >
                         Training Programmes
@@ -80,12 +81,14 @@ function TrainingProgrammeTable({
                         className="
                             mt-1
                             text-[8px]
-                            text-slate-400
+                            font-medium
+                            text-slate-500
                         "
                     >
-                        Manage programme details, sections and status.
+                        Manage programme details, content and status.
                     </p>
                 </div>
+
 
                 <span
                     className="
@@ -95,19 +98,20 @@ function TrainingProgrammeTable({
                         px-3
                         py-1
                         text-[8px]
-                        font-medium
-                        text-slate-500
+                        font-semibold
+                        text-slate-600
                     "
                 >
                     {programmes.length} Programme
-                    {programmes.length === 1
+                    {programmes.length ===
+                        1
                         ? ""
                         : "s"}
                 </span>
             </div>
 
 
-            {/* MOBILE / TABLET */}
+            {/* MOBILE */}
 
             <div
                 className="
@@ -119,14 +123,22 @@ function TrainingProgrammeTable({
                 "
             >
                 {programmes.map(
-                    (programme) => (
+                    (
+                        programme
+                    ) => (
                         <ProgrammeCard
-                            key={programme._id}
-                            programme={programme}
+                            key={
+                                programme._id
+                            }
+                            programme={
+                                programme
+                            }
                             processingId={
                                 processingId
                             }
-                            onEdit={onEdit}
+                            onEdit={
+                                onEdit
+                            }
                             onManageSections={
                                 onManageSections
                             }
@@ -142,7 +154,7 @@ function TrainingProgrammeTable({
             </div>
 
 
-            {/* DESKTOP TABLE */}
+            {/* DESKTOP */}
 
             <div
                 className="
@@ -153,67 +165,53 @@ function TrainingProgrammeTable({
             >
                 <table
                     className="
+                        min-w-[900px]
                         w-full
-                        min-w-[850px]
                     "
                 >
                     <thead
                         className="
-                            border-b
-                            border-slate-200
                             bg-slate-50
                         "
                     >
-                        <tr
-                            className="
-                                text-left
-                                text-[8px]
-                                font-medium
-                                uppercase
-                                tracking-wide
-                                text-slate-500
-                            "
-                        >
-                            <th className="px-5 py-3">
+                        <tr>
+                            <Head>
                                 Programme
-                            </th>
+                            </Head>
 
-                            <th className="px-4 py-3">
-                                Training Area
-                            </th>
+                            <Head>
+                                Type
+                            </Head>
 
-                            <th className="px-4 py-3">
+                            <Head>
                                 Owner
-                            </th>
+                            </Head>
 
-                            <th className="px-4 py-3">
+                            <Head>
                                 Pass Mark
-                            </th>
+                            </Head>
 
-                            <th className="px-4 py-3">
+                            <Head>
                                 Status
-                            </th>
+                            </Head>
 
-                            <th
-                                className="
-                                    px-5
-                                    py-3
-                                    text-right
-                                "
-                            >
+                            <Head right>
                                 Actions
-                            </th>
+                            </Head>
                         </tr>
                     </thead>
 
-                    <tbody
-                        className="
-                            divide-y
-                            divide-slate-100
-                        "
-                    >
+
+                    <tbody>
                         {programmes.map(
-                            (programme) => {
+                            (
+                                programme
+                            ) => {
+                                const owner =
+                                    programme.ownerTrainer ||
+                                    programme.owner ||
+                                    programme.trainer;
+
                                 const processing =
                                     processingId ===
                                     programme._id;
@@ -222,24 +220,17 @@ function TrainingProgrammeTable({
                                     programme.status ===
                                     "inactive";
 
-                                const owner =
-                                    programme.ownerTrainer ||
-                                    programme.owner ||
-                                    null;
-
                                 return (
                                     <tr
                                         key={
                                             programme._id
                                         }
                                         className="
-                                            bg-white
-                                            transition
-                                            hover:bg-slate-50
+                                            border-t
+                                            border-slate-100
+                                            hover:bg-slate-50/60
                                         "
                                     >
-                                        {/* PROGRAMME */}
-
                                         <td
                                             className="
                                                 px-5
@@ -248,79 +239,72 @@ function TrainingProgrammeTable({
                                         >
                                             <div
                                                 className="
-                                                    flex
-                                                    items-center
-                                                    gap-3
+                                                    max-w-[240px]
                                                 "
                                             >
-                                                <ProgrammeIcon
-                                                    type={
-                                                        programme.programmeType
-                                                    }
-                                                />
-
-                                                <div
+                                                <p
                                                     className="
-                                                        min-w-0
+                                                        truncate
+                                                        text-[9px]
+                                                        font-bold
+                                                        text-slate-800
                                                     "
                                                 >
+                                                    {
+                                                        programme.title
+                                                    }
+                                                </p>
+
+                                                {programme.description && (
                                                     <p
                                                         className="
-                                                            max-w-[230px]
-                                                            truncate
-                                                            text-[9px]
-                                                            font-semibold
-                                                            text-slate-700
+                                                            mt-1
+                                                            line-clamp-2
+                                                            text-[7px]
+                                                            font-medium
+                                                            leading-4
+                                                            text-slate-500
                                                         "
                                                     >
                                                         {
-                                                            programme.title
+                                                            programme.description
                                                         }
                                                     </p>
-
-                                                    {programme.description && (
-                                                        <p
-                                                            className="
-                                                                mt-1
-                                                                max-w-[230px]
-                                                                truncate
-                                                                text-[7px]
-                                                                text-slate-400
-                                                            "
-                                                        >
-                                                            {
-                                                                programme.description
-                                                            }
-                                                        </p>
-                                                    )}
-                                                </div>
+                                                )}
                                             </div>
                                         </td>
 
 
-                                        {/* TYPE */}
-
                                         <td
                                             className="
-                                                px-4
+                                                px-5
                                                 py-4
                                             "
                                         >
-                                            <ProgrammeTypeBadge
-                                                type={
+                                            <span
+                                                className="
+                                                    rounded-full
+                                                    bg-blue-50
+                                                    px-2.5
+                                                    py-1
+                                                    text-[7px]
+                                                    font-semibold
+                                                    text-blue-700
+                                                "
+                                            >
+                                                {formatProgrammeType(
                                                     programme.programmeType
-                                                }
-                                            />
+                                                )}
+                                            </span>
                                         </td>
 
 
-                                        {/* OWNER */}
-
                                         <td
                                             className="
-                                                px-4
+                                                px-5
                                                 py-4
                                                 text-[8px]
+                                                font-semibold
                                                 text-slate-600
                                             "
                                         >
@@ -331,33 +315,24 @@ function TrainingProgrammeTable({
                                         </td>
 
 
-                                        {/* PASS */}
-
                                         <td
                                             className="
-                                                px-4
+                                                px-5
                                                 py-4
+                                                text-[8px]
+                                                font-semibold
+                                                text-slate-700
                                             "
                                         >
-                                            <span
-                                                className="
-                                                    text-[9px]
-                                                    font-medium
-                                                    text-slate-700
-                                                "
-                                            >
-                                                {programme.passMark ??
-                                                    0}
-                                                %
-                                            </span>
+                                            {programme.passMark ??
+                                                0}
+                                            %
                                         </td>
 
 
-                                        {/* STATUS */}
-
                                         <td
                                             className="
-                                                px-4
+                                                px-5
                                                 py-4
                                             "
                                         >
@@ -368,8 +343,6 @@ function TrainingProgrammeTable({
                                             />
                                         </td>
 
-
-                                        {/* ACTIONS */}
 
                                         <td
                                             className="
@@ -396,8 +369,9 @@ function TrainingProgrammeTable({
                                                         )
                                                     }
                                                 >
-                                                    Sections
+                                                    Learning Sections
                                                 </ActionButton>
+
 
                                                 <ActionButton
                                                     variant="secondary"
@@ -413,6 +387,7 @@ function TrainingProgrammeTable({
                                                     Edit
                                                 </ActionButton>
 
+
                                                 {inactive ? (
                                                     <ActionButton
                                                         variant="success"
@@ -425,9 +400,7 @@ function TrainingProgrammeTable({
                                                             )
                                                         }
                                                     >
-                                                        {processing
-                                                            ? "Processing..."
-                                                            : "Reactivate"}
+                                                        Reactivate
                                                     </ActionButton>
                                                 ) : (
                                                     <ActionButton
@@ -441,9 +414,7 @@ function TrainingProgrammeTable({
                                                             )
                                                         }
                                                     >
-                                                        {processing
-                                                            ? "Processing..."
-                                                            : "Deactivate"}
+                                                        Deactivate
                                                     </ActionButton>
                                                 )}
                                             </div>
@@ -460,10 +431,6 @@ function TrainingProgrammeTable({
 }
 
 
-// ======================================================
-// MOBILE PROGRAMME CARD
-// ======================================================
-
 function ProgrammeCard({
     programme,
     processingId,
@@ -472,6 +439,11 @@ function ProgrammeCard({
     onDeactivate,
     onReactivate,
 }) {
+    const owner =
+        programme.ownerTrainer ||
+        programme.owner ||
+        programme.trainer;
+
     const processing =
         processingId ===
         programme._id;
@@ -480,16 +452,11 @@ function ProgrammeCard({
         programme.status ===
         "inactive";
 
-    const owner =
-        programme.ownerTrainer ||
-        programme.owner ||
-        null;
-
 
     return (
         <article
             className="
-                rounded-lg
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -500,99 +467,62 @@ function ProgrammeCard({
                 className="
                     flex
                     items-start
+                    justify-between
                     gap-3
                 "
             >
-                <ProgrammeIcon
-                    type={
-                        programme.programmeType
-                    }
-                />
-
-                <div
+                <span
                     className="
-                        min-w-0
-                        flex-1
+                        rounded-full
+                        bg-blue-50
+                        px-2.5
+                        py-1
+                        text-[7px]
+                        font-semibold
+                        text-blue-700
                     "
                 >
-                    <h3
-                        className="
-                            break-words
-                            text-[10px]
-                            font-semibold
-                            text-slate-700
-                        "
-                    >
-                        {programme.title}
-                    </h3>
+                    {formatProgrammeType(
+                        programme.programmeType
+                    )}
+                </span>
 
-                    <div
-                        className="
-                            mt-2
-                            flex
-                            flex-wrap
-                            gap-2
-                        "
-                    >
-                        <ProgrammeTypeBadge
-                            type={
-                                programme.programmeType
-                            }
-                        />
-
-                        <StatusBadge
-                            status={
-                                programme.status
-                            }
-                        />
-                    </div>
-                </div>
+                <StatusBadge
+                    status={
+                        programme.status
+                    }
+                />
             </div>
+
+
+            <h3
+                className="
+                    mt-3
+                    text-[11px]
+                    font-bold
+                    text-slate-800
+                "
+            >
+                {programme.title}
+            </h3>
 
 
             {programme.description && (
                 <p
                     className="
-                        mt-3
-                        line-clamp-2
+                        mt-2
+                        line-clamp-3
                         text-[8px]
-                        leading-4
-                        text-slate-400
+                        font-medium
+                        leading-5
+                        text-slate-600
                     "
                 >
-                    {programme.description}
+                    {
+                        programme.description
+                    }
                 </p>
             )}
-
-
-            <div
-                className="
-                    mt-4
-                    grid
-                    grid-cols-2
-                    gap-3
-                    border-t
-                    border-slate-100
-                    pt-4
-                "
-            >
-                <ProgrammeDetail
-                    label="Owner"
-                    value={
-                        getUserDisplayName(
-                            owner,
-                            "—"
-                        )
-                    }
-                />
-
-                <ProgrammeDetail
-                    label="Pass Mark"
-                    value={`${programme.passMark ??
-                        0
-                        }%`}
-                />
-            </div>
 
 
             <div
@@ -603,75 +533,89 @@ function ProgrammeCard({
                     gap-2
                 "
             >
+                <Info
+                    label="Owner"
+                    value={
+                        getUserDisplayName(
+                            owner,
+                            "—"
+                        )
+                    }
+                />
+
+                <Info
+                    label="Pass Mark"
+                    value={`${programme.passMark ??
+                        0}%`}
+                />
+            </div>
+
+
+            <div
+                className="
+                    mt-4
+                    grid
+                    gap-2
+                    sm:grid-cols-2
+                "
+            >
                 <ActionButton
-                    variant="secondary"
-                    disabled={processing}
+                    variant="primary"
+                    disabled={
+                        processing
+                    }
                     onClick={() =>
                         onManageSections?.(
                             programme
                         )
                     }
-                    className="
-                        w-full
-                        justify-center
-                    "
                 >
-                    Sections
+                    Learning Sections
                 </ActionButton>
+
 
                 <ActionButton
                     variant="secondary"
-                    disabled={processing}
+                    disabled={
+                        processing
+                    }
                     onClick={() =>
                         onEdit?.(
                             programme
                         )
                     }
-                    className="
-                        w-full
-                        justify-center
-                    "
                 >
                     Edit
                 </ActionButton>
 
+
                 {inactive ? (
                     <ActionButton
                         variant="success"
-                        disabled={processing}
+                        disabled={
+                            processing
+                        }
                         onClick={() =>
                             onReactivate?.(
                                 programme
                             )
                         }
-                        className="
-                            col-span-2
-                            w-full
-                            justify-center
-                        "
                     >
-                        {processing
-                            ? "Processing..."
-                            : "Reactivate"}
+                        Reactivate
                     </ActionButton>
                 ) : (
                     <ActionButton
                         variant="warning"
-                        disabled={processing}
+                        disabled={
+                            processing
+                        }
                         onClick={() =>
                             onDeactivate?.(
                                 programme
                             )
                         }
-                        className="
-                            col-span-2
-                            w-full
-                            justify-center
-                        "
                     >
-                        {processing
-                            ? "Processing..."
-                            : "Deactivate"}
+                        Deactivate
                     </ActionButton>
                 )}
             </div>
@@ -680,128 +624,23 @@ function ProgrammeCard({
 }
 
 
-// ======================================================
-// PROGRAMME ICON
-// ======================================================
-
-function ProgrammeIcon({
-    type,
-}) {
-    const workingAtHeight =
-        type ===
-        "working-at-height";
-
-
-    return (
-        <div
-            className={`
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-lg
-
-                ${workingAtHeight
-                    ? "bg-amber-50 text-amber-600"
-                    : "bg-blue-50 text-blue-600"
-                }
-            `}
-        >
-            {workingAtHeight ? (
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-4 w-4"
-                >
-                    <path d="M5 21V6" />
-                    <path d="M19 21V6" />
-                    <path d="M5 9h14" />
-                    <path d="M5 14h14" />
-                    <path d="M5 19h14" />
-                </svg>
-            ) : (
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-4 w-4"
-                >
-                    <rect
-                        x="3"
-                        y="8"
-                        width="18"
-                        height="10"
-                        rx="2"
-                    />
-
-                    <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
-
-                    <path d="M8 13h8" />
-                </svg>
-            )}
-        </div>
-    );
-}
-
-
-// ======================================================
-// PROGRAMME TYPE
-// ======================================================
-
-function ProgrammeTypeBadge({
-    type,
-}) {
-    const workingAtHeight =
-        type ===
-        "working-at-height";
-
-
-    return (
-        <span
-            className={`
-                inline-flex
-                whitespace-nowrap
-                rounded-full
-                px-2.5
-                py-1
-                text-[7px]
-                font-medium
-
-                ${workingAtHeight
-                    ? "bg-amber-50 text-amber-600"
-                    : "bg-blue-50 text-blue-600"
-                }
-            `}
-        >
-            {formatProgrammeType(
-                type
-            )}
-        </span>
-    );
-}
-
-
-// ======================================================
-// DETAIL
-// ======================================================
-
-function ProgrammeDetail({
+function Info({
     label,
     value,
 }) {
     return (
-        <div className="min-w-0">
+        <div
+            className="
+                rounded-lg
+                bg-slate-50
+                p-3
+            "
+        >
             <p
                 className="
                     text-[7px]
-                    uppercase
-                    tracking-wide
-                    text-slate-400
+                    font-semibold
+                    text-slate-500
                 "
             >
                 {label}
@@ -810,15 +649,42 @@ function ProgrammeDetail({
             <p
                 className="
                     mt-1
-                    break-words
+                    truncate
                     text-[8px]
-                    font-medium
-                    text-slate-600
+                    font-bold
+                    text-slate-700
                 "
             >
-                {value || "—"}
+                {value}
             </p>
         </div>
+    );
+}
+
+
+function Head({
+    children,
+    right = false,
+}) {
+    return (
+        <th
+            className={`
+                px-5
+                py-3
+                text-[7px]
+                font-bold
+                uppercase
+                tracking-wide
+                text-slate-500
+
+                ${right
+                    ? "text-right"
+                    : "text-left"
+                }
+            `}
+        >
+            {children}
+        </th>
     );
 }
 

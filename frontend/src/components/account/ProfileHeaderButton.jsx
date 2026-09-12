@@ -15,10 +15,6 @@ function ProfileHeaderButton({
         useNavigate();
 
 
-    // ======================================================
-    // USER INFORMATION
-    // ======================================================
-
     const firstName =
         user?.firstName ||
         (
@@ -58,10 +54,6 @@ function ProfileHeaderButton({
             : "";
 
 
-    // ======================================================
-    // OPEN PROFILE
-    // ======================================================
-
     const handleOpenProfile =
         () => {
             navigate(
@@ -69,10 +61,6 @@ function ProfileHeaderButton({
             );
         };
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <button
@@ -99,10 +87,6 @@ function ProfileHeaderButton({
                 focus:ring-blue-100
             "
         >
-            {/* ================================================= */}
-            {/* PROFILE IMAGE */}
-            {/* ================================================= */}
-
             <div
                 className="
                     relative
@@ -137,7 +121,7 @@ function ProfileHeaderButton({
                             rounded-full
                             bg-blue-50
                             text-[10px]
-                            font-semibold
+                            font-bold
                             text-blue-600
                         "
                     >
@@ -162,10 +146,6 @@ function ProfileHeaderButton({
             </div>
 
 
-            {/* ================================================= */}
-            {/* USER */}
-            {/* ================================================= */}
-
             <div
                 className="
                     hidden
@@ -178,7 +158,7 @@ function ProfileHeaderButton({
                         max-w-[150px]
                         truncate
                         text-[9px]
-                        font-semibold
+                        font-bold
                         text-slate-800
                     "
                 >
@@ -190,18 +170,15 @@ function ProfileHeaderButton({
                     className="
                         mt-0.5
                         text-[7px]
+                        font-medium
                         capitalize
-                        text-slate-400
+                        text-slate-500
                     "
                 >
                     {role}
                 </p>
             </div>
 
-
-            {/* ================================================= */}
-            {/* ARROW */}
-            {/* ================================================= */}
 
             <svg
                 viewBox="0 0 24 24"

@@ -26,40 +26,25 @@ import {
 } from "../../utils/training";
 
 
-// ======================================================
-// MY TRAINING
-// ======================================================
-
 function MyTrainingPage() {
     const navigate =
         useNavigate();
 
-
-    // ======================================================
-    // ASSIGNMENTS
-    // ======================================================
 
     const [
         assignments,
         setAssignments,
     ] = useState([]);
 
-
-    // ======================================================
-    // STATE
-    // ======================================================
-
     const [
         loading,
         setLoading,
     ] = useState(true);
 
-
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
-
 
     const [
         typeFilter,
@@ -67,39 +52,23 @@ function MyTrainingPage() {
     ] = useState("all");
 
 
-    // ======================================================
-    // LOAD
-    // ======================================================
-
     const loadTraining =
         useCallback(
             async () => {
                 try {
-                    setLoading(
-                        true
-                    );
-
-
-                    setErrorMessage(
-                        ""
-                    );
-
+                    setLoading(true);
+                    setErrorMessage("");
 
                     const response =
                         await api.get(
                             "/my-training"
                         );
 
-
-                    const assignmentList =
+                    setAssignments(
                         parseArrayResponse(
                             response.data,
                             "assignments"
-                        );
-
-
-                    setAssignments(
-                        assignmentList
+                        )
                     );
 
                 } catch (error) {
@@ -107,7 +76,6 @@ function MyTrainingPage() {
                         "Load my training error:",
                         error
                     );
-
 
                     setErrorMessage(
                         getApiErrorMessage(
@@ -117,9 +85,7 @@ function MyTrainingPage() {
                     );
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
                 }
             },
             []
@@ -133,14 +99,10 @@ function MyTrainingPage() {
     ]);
 
 
-    // ======================================================
-    // AVAILABLE ASSIGNMENTS
-    // ======================================================
-
     const availableAssignments =
         useMemo(
-            () => {
-                return assignments.filter(
+            () =>
+                assignments.filter(
                     (
                         assignment
                     ) =>
@@ -149,17 +111,12 @@ function MyTrainingPage() {
                                 assignment
                             )
                         )
-                );
-            },
+                ),
             [
                 assignments,
             ]
         );
 
-
-    // ======================================================
-    // FILTERED ASSIGNMENTS
-    // ======================================================
 
     const filteredAssignments =
         useMemo(
@@ -170,7 +127,6 @@ function MyTrainingPage() {
                 ) {
                     return availableAssignments;
                 }
-
 
                 return availableAssignments.filter(
                     (
@@ -189,10 +145,6 @@ function MyTrainingPage() {
         );
 
 
-    // ======================================================
-    // COUNTS
-    // ======================================================
-
     const activeAssignments =
         availableAssignments.filter(
             (
@@ -202,7 +154,6 @@ function MyTrainingPage() {
                     getAssignmentProgramme(
                         assignment
                     );
-
 
                 return (
                     assignment.status !==
@@ -238,10 +189,6 @@ function MyTrainingPage() {
         ).length;
 
 
-    // ======================================================
-    // START LEARNING
-    // ======================================================
-
     const handleStartLearning = (
         assignment
     ) => {
@@ -250,13 +197,11 @@ function MyTrainingPage() {
                 assignment
             );
 
-
         if (
             !programme?._id
         ) {
             return;
         }
-
 
         navigate(
             `/my-training/${programme._id}`
@@ -264,13 +209,7 @@ function MyTrainingPage() {
     };
 
 
-    // ======================================================
-    // LOADING
-    // ======================================================
-
-    if (
-        loading
-    ) {
+    if (loading) {
         return (
             <DashboardLayout
                 role="trainee"
@@ -285,10 +224,6 @@ function MyTrainingPage() {
     }
 
 
-    // ======================================================
-    // PAGE
-    // ======================================================
-
     return (
         <DashboardLayout
             role="trainee"
@@ -300,26 +235,16 @@ function MyTrainingPage() {
                     space-y-4
                 "
             >
-                {/* ================================================= */}
-                {/* FEEDBACK */}
-                {/* ================================================= */}
-
                 <FeedbackAlert
                     type="error"
                     message={
                         errorMessage
                     }
                     onClose={() =>
-                        setErrorMessage(
-                            ""
-                        )
+                        setErrorMessage("")
                     }
                 />
 
-
-                {/* ================================================= */}
-                {/* STATS */}
-                {/* ================================================= */}
 
                 <section
                     className="
@@ -336,7 +261,6 @@ function MyTrainingPage() {
                         }
                     />
 
-
                     <TrainingStat
                         label="Available"
                         value={
@@ -344,14 +268,12 @@ function MyTrainingPage() {
                         }
                     />
 
-
                     <TrainingStat
                         label="Manual Handling"
                         value={
                             manualHandlingCount
                         }
                     />
-
 
                     <TrainingStat
                         label="Working at Height"
@@ -361,10 +283,6 @@ function MyTrainingPage() {
                     />
                 </section>
 
-
-                {/* ================================================= */}
-                {/* FILTER */}
-                {/* ================================================= */}
 
                 {availableAssignments.length >
                     0 && (
@@ -382,28 +300,29 @@ function MyTrainingPage() {
                             sm:flex-row
                             sm:items-center
                             sm:justify-between
+                            sm:p-5
                         "
                         >
                             <div>
                                 <h2
                                     className="
                                     text-[11px]
-                                    font-semibold
-                                    text-slate-800
+                                    font-bold
+                                    text-[#172033]
                                 "
                                 >
                                     Training Programmes
                                 </h2>
 
-
                                 <p
                                     className="
                                     mt-1
                                     text-[8px]
-                                    text-slate-400
+                                    font-medium
+                                    text-slate-500
                                 "
                                 >
-                                    Select a training area to filter your programmes.
+                                    Filter your assigned safety training.
                                 </p>
                             </div>
 
@@ -428,14 +347,15 @@ function MyTrainingPage() {
                                 bg-white
                                 px-3
                                 text-[9px]
-                                text-slate-700
+                                font-medium
+                                text-slate-800
                                 outline-none
                                 focus:border-blue-500
                                 sm:w-[220px]
                             "
                             >
                                 <option value="all">
-                                    All Training Areas
+                                    All Training
                                 </option>
 
                                 <option value="manual-handling">
@@ -450,24 +370,23 @@ function MyTrainingPage() {
                     )}
 
 
-                {/* ================================================= */}
-                {/* PROGRAMMES */}
-                {/* ================================================= */}
-
-                {availableAssignments.length ===
+                {filteredAssignments.length ===
                     0 ? (
-                    <EmptyState
-                        title="No training has been assigned yet."
-                        description="Your assigned training programmes will appear here."
-                        icon="training"
-                    />
-                ) : filteredAssignments.length ===
-                    0 ? (
-                    <EmptyState
-                        title="No programmes found."
-                        description="There are no assigned programmes for this training area."
-                        icon="training"
-                    />
+                    <section
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            shadow-sm
+                        "
+                    >
+                        <EmptyState
+                            title="No assigned training found."
+                            description="There are no programmes matching the current filter."
+                            icon="training"
+                        />
+                    </section>
                 ) : (
                     <section
                         className="
@@ -502,10 +421,6 @@ function MyTrainingPage() {
 }
 
 
-// ======================================================
-// STAT
-// ======================================================
-
 function TrainingStat({
     label,
     value,
@@ -524,19 +439,19 @@ function TrainingStat({
             <p
                 className="
                     text-[8px]
-                    text-slate-400
+                    font-medium
+                    text-slate-500
                 "
             >
                 {label}
             </p>
 
-
             <p
                 className="
-                    mt-1
-                    text-xl
+                    mt-2
+                    text-[22px]
                     font-bold
-                    text-slate-800
+                    text-[#172033]
                 "
             >
                 {value}

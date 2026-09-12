@@ -9,22 +9,13 @@ import {
 
 
 function TrainingProgrammeSectionsPage() {
-    // ======================================================
-    // CURRENT USER
-    // ======================================================
-
     const user =
         getSessionUser();
-
 
     const role =
         user?.role ||
         "";
 
-
-    // ======================================================
-    // DESCRIPTION
-    // ======================================================
 
 <<<<<<< HEAD
     const isAdmin =
@@ -61,12 +52,7 @@ function TrainingProgrammeSectionsPage() {
             "admin"
             ? "Create, edit, reorder, activate and deactivate learning sections."
             : "Manage learning content for programmes you are authorised to work with.";
->>>>>>> sprint2
 
-
-    // ======================================================
-    // PAGE
-    // ======================================================
 
     return (
         <DashboardLayout
@@ -413,7 +399,7 @@ function TrainingProgrammeSectionsPage() {
                 />
             </TrainingManagementShell>
 >>>>>>> sprint2
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }
 

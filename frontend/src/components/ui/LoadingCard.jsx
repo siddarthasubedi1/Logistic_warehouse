@@ -5,7 +5,8 @@ function LoadingCard({
         <div
             className="
                 flex
-                min-h-[160px]
+                min-h-[180px]
+                w-full
                 items-center
                 justify-center
                 rounded-xl
@@ -17,15 +18,9 @@ function LoadingCard({
                 shadow-sm
             "
         >
-            <div
-                className="
-                    text-center
-                "
-            >
+            <div className="text-center">
 
-                {/* ================================================= */}
                 {/* SPINNER */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -36,20 +31,19 @@ function LoadingCard({
                         rounded-full
                         border-[3px]
                         border-slate-200
-                        border-t-blue-600
+                        border-t-[#0b4f87]
                     "
                 />
 
 
-                {/* ================================================= */}
                 {/* MESSAGE */}
-                {/* ================================================= */}
 
                 <p
                     className="
                         mt-4
                         text-[9px]
-                        text-slate-500
+                        font-medium
+                        text-slate-600
                     "
                 >
                     {message}

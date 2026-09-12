@@ -9,101 +9,90 @@ import api from "../../services/api";
 
 import UserFilters from "./UserFilters";
 import UserTable from "./UserTable";
+import EditUserModal from "./EditUserModal";
 import ConfirmDialog from "./ConfirmDialog";
 import GeneratedCredentialsModal from "./GeneratedCredentialsModal";
-import EditUserModal from "./EditUserModal";
 
 import FeedbackAlert from "../ui/FeedbackAlert";
-import LoadingCard from "../ui/LoadingCard";
 
 import {
     getApiErrorMessage,
-    getUserDisplayName,
     parseArrayResponse,
 } from "../../utils/training";
 
 
 function ManageUsersTable({
     selectedUserId = null,
-    passwordResetRequest = null,
 }) {
     const [
         users,
         setUsers,
     ] = useState([]);
 
-
     const [
         pendingResetUserIds,
         setPendingResetUserIds,
     ] = useState([]);
-
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
-
-    const [
-        processingId,
-        setProcessingId,
-    ] = useState("");
-
-
     const [
         searchTerm,
         setSearchTerm,
     ] = useState("");
-
 
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("all");
 
-
     const [
         statusFilter,
         setStatusFilter,
     ] = useState("all");
-
 
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
 
-
     const [
         successMessage,
         setSuccessMessage,
     ] = useState("");
-
-
-    const [
-        confirmAction,
-        setConfirmAction,
-    ] = useState(null);
-
 
     const [
         editingUser,
         setEditingUser,
     ] = useState(null);
 
-
-    const [
-        editSaving,
-        setEditSaving,
-    ] = useState(false);
-
-
     const [
         editError,
         setEditError,
     ] = useState("");
 
+    const [
+        savingEdit,
+        setSavingEdit,
+    ] = useState(false);
+
+    const [
+        processingId,
+        setProcessingId,
+    ] = useState("");
+
+    const [
+        confirmAction,
+        setConfirmAction,
+    ] = useState(null);
+
+    const [
+        credentialUser,
+        setCredentialUser,
+    ] = useState(null);
 
     const [
         resetCredentials,
@@ -111,64 +100,47 @@ function ManageUsersTable({
     ] = useState(null);
 
 
-    const [
-        credentialUser,
-        setCredentialUser,
-    ] = useState(null);
-
-
-    const clearFeedback =
-        () => {
-            setErrorMessage("");
-            setSuccessMessage("");
-        };
-
-
     // ======================================================
-    // USERS
+    // LOAD USERS
     // ======================================================
 
     const loadUsers =
-        useCallback(async () => {
-            try {
-                setLoading(
-                    true
-                );
+        useCallback(
+            async () => {
+                try {
+                    setLoading(true);
 
+                    const response =
+                        await api.get(
+                            "/admin/users"
+                        );
 
-                const response =
-                    await api.get(
-                        "/admin/users"
+                    setUsers(
+                        parseArrayResponse(
+                            response.data,
+                            "users"
+                        )
                     );
 
+                } catch (error) {
+                    console.error(
+                        "Load users error:",
+                        error
+                    );
 
-                setUsers(
-                    parseArrayResponse(
-                        response.data,
-                        "users"
-                    )
-                );
+                    setErrorMessage(
+                        getApiErrorMessage(
+                            error,
+                            "Unable to load users."
+                        )
+                    );
 
-            } catch (error) {
-                console.error(
-                    "Load users error:",
-                    error
-                );
-
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to load users."
-                    )
-                );
-
-            } finally {
-                setLoading(
-                    false
-                );
-            }
-        }, []);
+                } finally {
+                    setLoading(false);
+                }
+            },
+            []
+        );
 
 
     // ======================================================
@@ -176,83 +148,62 @@ function ManageUsersTable({
     // ======================================================
 
     const loadPasswordResetRequests =
-        useCallback(async () => {
-            try {
-                const response =
-                    await api.get(
-                        "/admin/password-reset-requests"
-                    );
+        useCallback(
+            async () => {
+                try {
+                    const response =
+                        await api.get(
+                            "/admin/password-reset-requests"
+                        );
 
+                    const requests =
+                        parseArrayResponse(
+                            response.data,
+                            "requests"
+                        );
 
-                const requests =
-                    parseArrayResponse(
-                        response.data,
-                        "requests"
-                    );
-
-
-                const ids =
-                    requests
-                        .filter(
-                            (
-                                request
-                            ) =>
-                                request?.status ===
-                                "pending"
-                        )
-                        .map(
-                            (
-                                request
-                            ) => {
-                                const user =
-                                    request?.user;
-
-
-                                if (!user) {
-                                    return "";
-                                }
-
-
-                                if (
-                                    typeof user ===
-                                    "object"
-                                ) {
-                                    return String(
-                                        user._id ||
-                                        user.id ||
+                    const ids =
+                        requests
+                            .filter(
+                                (
+                                    request
+                                ) =>
+                                    String(
+                                        request?.status ||
+                                        "pending"
+                                    ).toLowerCase() ===
+                                    "pending"
+                            )
+                            .map(
+                                (
+                                    request
+                                ) =>
+                                    String(
+                                        request.user?._id ||
+                                        request.user ||
+                                        request.userId ||
                                         ""
-                                    );
-                                }
+                                    )
+                            )
+                            .filter(Boolean);
 
+                    setPendingResetUserIds(
+                        ids
+                    );
 
-                                return String(
-                                    user
-                                );
-                            }
-                        )
-                        .filter(Boolean);
+                } catch (error) {
+                    console.error(
+                        "Load password reset requests error:",
+                        error
+                    );
 
-
-                setPendingResetUserIds(
-                    [
-                        ...new Set(
-                            ids
-                        ),
-                    ]
-                );
-
-            } catch (error) {
-                console.error(
-                    "Load reset requests error:",
-                    error
-                );
-
-
-                setPendingResetUserIds(
-                    []
-                );
-            }
-        }, []);
+                    setPendingResetUserIds(
+                        []
+                    );
+                }
+            },
+            []
+        );
 
 
     useEffect(() => {
@@ -264,188 +215,120 @@ function ManageUsersTable({
     ]);
 
 
-    // ======================================================
-    // SCROLL TO RESET USER
-    // ======================================================
-
     useEffect(() => {
         if (
-            loading ||
             !selectedUserId
         ) {
             return;
         }
 
+        window.setTimeout(
+            () => {
+                document
+                    .getElementById(
+                        "selected-admin-user"
+                    )
+                    ?.scrollIntoView({
+                        behavior:
+                            "smooth",
 
-        const timer =
-            window.setTimeout(
-                () => {
-                    document
-                        .getElementById(
-                            "selected-admin-user"
-                        )
-                        ?.scrollIntoView({
-                            behavior:
-                                "smooth",
-
-                            block:
-                                "center",
-                        });
-                },
-                100
-            );
-
-
-        return () =>
-            window.clearTimeout(
-                timer
-            );
-
+                        block:
+                            "center",
+                    });
+            },
+            300
+        );
     }, [
-        loading,
         selectedUserId,
+        users,
     ]);
 
 
     // ======================================================
-    // FILTERING
+    // FILTER
     // ======================================================
 
     const filteredUsers =
-        useMemo(() => {
-            const query =
-                searchTerm
-                    .trim()
-                    .toLowerCase();
+        useMemo(
+            () => {
+                const query =
+                    searchTerm
+                        .trim()
+                        .toLowerCase();
 
+                return users.filter(
+                    (
+                        user
+                    ) => {
+                        const searchable =
+                            [
+                                user.firstName,
+                                user.lastName,
+                                user.username,
+                                user.email,
+                            ]
+                                .filter(Boolean)
+                                .join(" ")
+                                .toLowerCase();
 
-            return users.filter(
-                (
-                    user
-                ) => {
-                    if (
-                        roleFilter !==
-                        "all" &&
-                        user.role !==
-                        roleFilter
-                    ) {
-                        return false;
-                    }
+                        const matchesSearch =
+                            !query ||
+                            searchable.includes(
+                                query
+                            );
 
+                        const matchesRole =
+                            roleFilter ===
+                            "all" ||
+                            user.role ===
+                            roleFilter;
 
-                    if (
-                        statusFilter !==
-                        "all"
-                    ) {
-                        const status =
+                        const userStatus =
                             String(
                                 user.status ||
                                 ""
-                            )
-                                .toLowerCase();
+                            ).toLowerCase();
 
-
-                        if (
+                        const matchesStatus =
                             statusFilter ===
-                            "active" &&
-                            status !==
-                            "active"
-                        ) {
-                            return false;
-                        }
+                            "all" ||
+                            userStatus ===
+                            statusFilter;
 
-
-                        if (
-                            statusFilter ===
-                            "deactivated" &&
-                            ![
-                                "deactivated",
-                                "inactive",
-                            ].includes(
-                                status
-                            )
-                        ) {
-                            return false;
-                        }
+                        return (
+                            matchesSearch &&
+                            matchesRole &&
+                            matchesStatus
+                        );
                     }
-
-
-                    if (!query) {
-                        return true;
-                    }
-
-
-                    const searchable =
-                        [
-                            getUserDisplayName(
-                                user,
-                                ""
-                            ),
-
-                            user.username,
-                            user.email,
-                            user.role,
-                            user.status,
-                        ]
-                            .filter(Boolean)
-                            .join(" ")
-                            .toLowerCase();
-
-
-                    return searchable.includes(
-                        query
-                    );
-                }
-            );
-
-        }, [
-            users,
-            searchTerm,
-            roleFilter,
-            statusFilter,
-        ]);
+                );
+            },
+            [
+                users,
+                searchTerm,
+                roleFilter,
+                statusFilter,
+            ]
+        );
 
 
     // ======================================================
     // EDIT
     // ======================================================
 
-    const handleEditUser = (
-        user
-    ) => {
-        clearFeedback();
-
-        setEditingUser(
-            user
-        );
-
-        setEditError(
-            ""
-        );
-    };
-
-
-    const handleSaveEditedUser =
+    const handleSaveEdit =
         async (
             formData
         ) => {
             if (
-                !editingUser
-                    ?._id
+                !editingUser?._id
             ) {
                 return;
             }
 
-
             try {
-                setEditSaving(
-                    true
-                );
-
-                setEditError(
-                    ""
-                );
-
+                setSavingEdit(true);
+                setEditError("");
 
                 const response =
                     await api.patch(
@@ -453,214 +336,96 @@ function ManageUsersTable({
                         formData
                     );
 
-
                 setSuccessMessage(
-                    response.data
-                        ?.message ||
+                    response.data?.message ||
                     "User updated successfully."
                 );
 
-
-                setEditingUser(
-                    null
-                );
-
+                setEditingUser(null);
 
                 await loadUsers();
 
             } catch (error) {
                 console.error(
-                    "Update user error:",
+                    "Edit user error:",
                     error
                 );
-
 
                 setEditError(
                     getApiErrorMessage(
                         error,
-                        "Unable to update this user."
+                        "Unable to update user."
                     )
                 );
 
             } finally {
-                setEditSaving(
-                    false
-                );
+                setSavingEdit(false);
             }
         };
 
 
     // ======================================================
-    // ACTION REQUESTS
+    // CONFIRM ACTION
     // ======================================================
 
-    const requestDeactivate = (
+    const requestAction = (
+        type,
         user
     ) => {
-        clearFeedback();
-
-
-        setConfirmAction({
-            type:
-                "deactivate",
-
-            user,
-
-            title:
+        const labels = {
+            deactivate:
                 "Deactivate User",
 
-            message:
-                `Deactivate ${getUserDisplayName(
-                    user,
-                    "this user"
-                )}?`,
-
-            confirmText:
-                "Deactivate",
-
-            variant:
-                "warning",
-        });
-    };
-
-
-    const requestReactivate = (
-        user
-    ) => {
-        clearFeedback();
-
-
-        setConfirmAction({
-            type:
-                "reactivate",
-
-            user,
-
-            title:
+            reactivate:
                 "Reactivate User",
 
-            message:
-                `Reactivate ${getUserDisplayName(
-                    user,
-                    "this user"
-                )}?`,
-
-            confirmText:
-                "Reactivate",
-
-            variant:
-                "success",
-        });
-    };
-
-
-    const requestDelete = (
-        user
-    ) => {
-        clearFeedback();
-
-
-        setConfirmAction({
-            type:
-                "delete",
-
-            user,
-
-            title:
+            delete:
                 "Delete User",
+        };
 
-            message:
-                `Delete ${getUserDisplayName(
-                    user,
-                    "this user"
-                )}? This action cannot be undone.`,
+        const messages = {
+            deactivate:
+                "This user will no longer be able to sign in.",
 
-            confirmText:
-                "Delete",
+            reactivate:
+                "This user will regain access to their account.",
 
-            variant:
-                "danger",
-        });
-    };
-
-
-    const requestResetPassword = (
-        user
-    ) => {
-        if (
-            !user?._id ||
-            !pendingResetUserIds.includes(
-                String(
-                    user._id
-                )
-            )
-        ) {
-            setErrorMessage(
-                "This user does not have a pending password reset request."
-            );
-
-            return;
-        }
-
-
-        clearFeedback();
-
+            delete:
+                "This action permanently removes the user account.",
+        };
 
         setConfirmAction({
-            type:
-                "reset-password",
-
+            type,
             user,
-
             title:
-                "Reset Password",
+                labels[type],
 
             message:
-                `Generate a new temporary password for ${getUserDisplayName(
-                    user,
-                    user.username ||
-                    "this user"
-                )}?`,
-
-            confirmText:
-                "Reset Password",
-
-            variant:
-                "warning",
+                messages[type],
         });
     };
 
 
-    // ======================================================
-    // USER ACTION
-    // ======================================================
-
-    const handleNormalAction =
-        async (
-            action
-        ) => {
-            const user =
-                action?.user;
-
+    const handleConfirmedAction =
+        async () => {
+            const action =
+                confirmAction;
 
             if (
-                !action ||
-                !user?._id
+                !action?.user?._id
             ) {
                 return;
             }
 
+            const user =
+                action.user;
 
             try {
                 setProcessingId(
                     user._id
                 );
 
-                clearFeedback();
-
-
                 let response;
-
 
                 if (
                     action.type ===
@@ -672,7 +437,6 @@ function ManageUsersTable({
                         );
                 }
 
-
                 if (
                     action.type ===
                     "reactivate"
@@ -682,7 +446,6 @@ function ManageUsersTable({
                             `/admin/users/${user._id}/reactivate`
                         );
                 }
-
 
                 if (
                     action.type ===
@@ -694,18 +457,12 @@ function ManageUsersTable({
                         );
                 }
 
-
                 setSuccessMessage(
-                    response?.data
-                        ?.message ||
+                    response?.data?.message ||
                     "Action completed successfully."
                 );
 
-
-                setConfirmAction(
-                    null
-                );
-
+                setConfirmAction(null);
 
                 await loadUsers();
 
@@ -715,79 +472,80 @@ function ManageUsersTable({
                     error
                 );
 
-
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to complete the action."
+                        "Unable to complete this action."
                     )
                 );
 
             } finally {
-                setProcessingId(
-                    ""
-                );
+                setProcessingId("");
             }
         };
 
 
     // ======================================================
-    // PASSWORD RESET
+    // RESET PASSWORD
+    // ONLY AFTER REQUEST
     // ======================================================
 
     const handleResetPassword =
         async (
             user
         ) => {
+            const allowed =
+                pendingResetUserIds.includes(
+                    String(
+                        user._id
+                    )
+                );
+
+            if (
+                !allowed
+            ) {
+                setErrorMessage(
+                    "Reset Password is available only after the Trainer or Trainee submits a reset request."
+                );
+
+                return;
+            }
+
             try {
                 setProcessingId(
                     user._id
                 );
-
 
                 const response =
                     await api.post(
                         `/admin/users/${user._id}/reset-password`
                     );
 
-
                 const credentials =
-                    response.data
-                        ?.credentials;
+                    response.data?.credentials;
 
-
-                if (!credentials) {
+                if (
+                    !credentials
+                ) {
                     throw new Error(
                         "Credential information was not returned."
                     );
                 }
 
-
-                setCredentialUser({
-                    ...user,
-
-                    ...(response.data
-                        ?.user ||
-                        {}),
-                });
-
+                setCredentialUser(
+                    user
+                );
 
                 setResetCredentials(
                     credentials
                 );
 
-
                 setSuccessMessage(
-                    response.data
-                        ?.message ||
+                    response.data?.message ||
                     "Temporary password generated successfully."
                 );
 
-
-                await Promise.all([
-                    loadUsers(),
-                    loadPasswordResetRequests(),
-                ]);
+                await loadPasswordResetRequests();
 
             } catch (error) {
                 console.error(
@@ -795,99 +553,18 @@ function ManageUsersTable({
                     error
                 );
 
-
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to reset this user's password."
+                        "Unable to reset password."
                     )
                 );
 
             } finally {
-                setProcessingId(
-                    ""
-                );
+                setProcessingId("");
             }
         };
 
-
-    const handleConfirmDialog =
-        async () => {
-            const action =
-                confirmAction;
-
-
-            if (
-                action?.type ===
-                "reset-password"
-            ) {
-                setConfirmAction(
-                    null
-                );
-
-
-                await handleResetPassword(
-                    action.user
-                );
-
-
-                return;
-            }
-
-
-            await handleNormalAction(
-                action
-            );
-        };
-
-
-    // ======================================================
-    // NOTICE
-    // ======================================================
-
-    const showPendingResetNotice =
-        Boolean(
-            selectedUserId &&
-            (
-                pendingResetUserIds.includes(
-                    String(
-                        selectedUserId
-                    )
-                ) ||
-                passwordResetRequest
-                    ?.status ===
-                "pending"
-            )
-        );
-
-
-    // ======================================================
-    // COUNTS
-    // ======================================================
-
-    const trainerCount =
-        users.filter(
-            (
-                user
-            ) =>
-                user.role ===
-                "trainer"
-        ).length;
-
-
-    const traineeCount =
-        users.filter(
-            (
-                user
-            ) =>
-                user.role ===
-                "trainee"
-        ).length;
-
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <section
@@ -900,101 +577,83 @@ function ManageUsersTable({
                 shadow-sm
             "
         >
-
-            {/* HEADER */}
-
             <div
                 className="
-                    flex
-                    flex-col
-                    gap-3
                     border-b
                     border-slate-100
-                    px-5
+                    px-4
                     py-4
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
+                    sm:px-5
                 "
             >
-                <div>
-                    <h2
-                        className="
-                            text-[12px]
-                            font-semibold
-                            text-slate-800
-                        "
-                    >
-                        Trainer & Trainee Accounts
-                    </h2>
-
-
-                    <p
-                        className="
-                            mt-1
-                            text-[8px]
-                            text-slate-400
-                        "
-                    >
-                        Search and manage user accounts.
-                    </p>
-                </div>
-
-
                 <div
                     className="
                         flex
+                        flex-col
                         gap-2
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
                     "
                 >
-                    <CountBadge
-                        label="Trainers"
-                        value={
-                            trainerCount
-                        }
-                    />
+                    <div>
+                        <h2
+                            className="
+                                text-[12px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            User Accounts
+                        </h2>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Manage Trainer and Trainee accounts.
+                        </p>
+                    </div>
 
 
-                    <CountBadge
-                        label="Trainees"
-                        value={
-                            traineeCount
-                        }
-                    />
+                    <span
+                        className="
+                            w-fit
+                            rounded-full
+                            bg-slate-100
+                            px-3
+                            py-1
+                            text-[8px]
+                            font-semibold
+                            text-slate-600
+                        "
+                    >
+                        {filteredUsers.length} Users
+                    </span>
                 </div>
             </div>
 
 
-            {/* FILTER AREA */}
-
             <div
                 className="
-                    space-y-3
-                    border-b
-                    border-slate-100
-                    p-5
+                    space-y-4
+                    p-4
+                    sm:p-5
                 "
             >
-                {showPendingResetNotice && (
-                    <FeedbackAlert
-                        type="info"
-                        message="This user has a pending password reset request. Reset Password is now available."
-                    />
-                )}
-
-
                 <FeedbackAlert
                     type="success"
                     message={
                         successMessage
                     }
                     onClose={() =>
-                        setSuccessMessage(
-                            ""
-                        )
+                        setSuccessMessage("")
                     }
                 />
-
 
                 <FeedbackAlert
                     type="error"
@@ -1002,9 +661,7 @@ function ManageUsersTable({
                         errorMessage
                     }
                     onClose={() =>
-                        setErrorMessage(
-                            ""
-                        )
+                        setErrorMessage("")
                     }
                 />
 
@@ -1029,51 +686,73 @@ function ManageUsersTable({
                         setStatusFilter
                     }
                 />
+
+
+                {loading ? (
+                    <div
+                        className="
+                            py-12
+                            text-center
+                        "
+                    >
+                        <p
+                            className="
+                                text-[9px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Loading users...
+                        </p>
+                    </div>
+                ) : (
+                    <UserTable
+                        users={
+                            filteredUsers
+                        }
+                        pendingResetUserIds={
+                            pendingResetUserIds
+                        }
+                        processingId={
+                            processingId
+                        }
+                        selectedUserId={
+                            selectedUserId
+                        }
+                        onEdit={
+                            setEditingUser
+                        }
+                        onResetPassword={
+                            handleResetPassword
+                        }
+                        onDeactivate={(
+                            user
+                        ) =>
+                            requestAction(
+                                "deactivate",
+                                user
+                            )
+                        }
+                        onReactivate={(
+                            user
+                        ) =>
+                            requestAction(
+                                "reactivate",
+                                user
+                            )
+                        }
+                        onDelete={(
+                            user
+                        ) =>
+                            requestAction(
+                                "delete",
+                                user
+                            )
+                        }
+                    />
+                )}
             </div>
 
-
-            {/* TABLE */}
-
-            {loading ? (
-                <div className="p-5">
-                    <LoadingCard
-                        message="Loading users..."
-                    />
-                </div>
-            ) : (
-                <UserTable
-                    users={
-                        filteredUsers
-                    }
-                    pendingResetUserIds={
-                        pendingResetUserIds
-                    }
-                    processingId={
-                        processingId
-                    }
-                    selectedUserId={
-                        selectedUserId
-                    }
-                    onEdit={
-                        handleEditUser
-                    }
-                    onResetPassword={
-                        requestResetPassword
-                    }
-                    onDeactivate={
-                        requestDeactivate
-                    }
-                    onReactivate={
-                        requestReactivate
-                    }
-                    onDelete={
-                        requestDelete
-                    }
-                />
-            )}
-
-
-            {/* EDIT USER */}
 
             <EditUserModal
                 open={
@@ -1085,31 +764,20 @@ function ManageUsersTable({
                     editingUser
                 }
                 saving={
-                    editSaving
+                    savingEdit
                 }
                 errorMessage={
                     editError
                 }
                 onSave={
-                    handleSaveEditedUser
+                    handleSaveEdit
                 }
                 onClose={() => {
-                    if (
-                        !editSaving
-                    ) {
-                        setEditingUser(
-                            null
-                        );
-
-                        setEditError(
-                            ""
-                        );
-                    }
+                    setEditingUser(null);
+                    setEditError("");
                 }}
             />
 
-
-            {/* CONFIRM */}
 
             <ConfirmDialog
                 open={
@@ -1118,24 +786,22 @@ function ManageUsersTable({
                     )
                 }
                 title={
-                    confirmAction
-                        ?.title ||
-                    ""
+                    confirmAction?.title
                 }
                 message={
-                    confirmAction
-                        ?.message ||
-                    ""
+                    confirmAction?.message
                 }
                 confirmText={
-                    confirmAction
-                        ?.confirmText ||
-                    "Confirm"
+                    confirmAction?.type ===
+                        "delete"
+                        ? "Delete"
+                        : "Confirm"
                 }
                 variant={
-                    confirmAction
-                        ?.variant ||
-                    "danger"
+                    confirmAction?.type ===
+                        "reactivate"
+                        ? "success"
+                        : "danger"
                 }
                 loading={
                     Boolean(
@@ -1143,7 +809,7 @@ function ManageUsersTable({
                     )
                 }
                 onConfirm={
-                    handleConfirmDialog
+                    handleConfirmedAction
                 }
                 onCancel={() =>
                     setConfirmAction(
@@ -1152,8 +818,6 @@ function ManageUsersTable({
                 }
             />
 
-
-            {/* RESET CREDENTIALS */}
 
             <GeneratedCredentialsModal
                 open={
@@ -1168,46 +832,11 @@ function ManageUsersTable({
                     credentialUser
                 }
                 onClose={() => {
-                    setResetCredentials(
-                        null
-                    );
-
-                    setCredentialUser(
-                        null
-                    );
+                    setResetCredentials(null);
+                    setCredentialUser(null);
                 }}
             />
-
         </section>
-    );
-}
-
-
-function CountBadge({
-    label,
-    value,
-}) {
-    return (
-        <span
-            className="
-                rounded-full
-                bg-slate-100
-                px-3
-                py-1.5
-                text-[8px]
-                text-slate-500
-            "
-        >
-            {label}:{" "}
-
-            <strong
-                className="
-                    text-slate-700
-                "
-            >
-                {value}
-            </strong>
-        </span>
     );
 }
 

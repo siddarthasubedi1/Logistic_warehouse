@@ -1,79 +1,74 @@
 function StatusBadge({
     status = "",
 }) {
-    // ======================================================
-    // NORMALIZE
-    // ======================================================
-
     const normalizedStatus =
-        String(
-            status
-        )
+        String(status)
             .trim()
             .toLowerCase();
 
 
-    // ======================================================
-    // BADGE STYLES
-    // ======================================================
-
     const styles = {
         active:
-            "bg-emerald-50 text-emerald-600",
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
 
         inactive:
-            "bg-red-50 text-red-600",
+            "border-red-200 bg-red-50 text-red-700",
 
         deactivated:
-            "bg-red-50 text-red-600",
+            "border-red-200 bg-red-50 text-red-700",
 
         draft:
-            "bg-amber-50 text-amber-600",
+            "border-amber-200 bg-amber-50 text-amber-700",
 
         pending:
-            "bg-amber-50 text-amber-600",
+            "border-amber-200 bg-amber-50 text-amber-700",
 
         created:
-            "bg-blue-50 text-blue-600",
+            "border-blue-200 bg-blue-50 text-blue-700",
 
         completed:
-            "bg-emerald-50 text-emerald-600",
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+        complete:
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
 
         passed:
-            "bg-emerald-50 text-emerald-600",
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+        pass:
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
 
         failed:
-            "bg-red-50 text-red-600",
+            "border-red-200 bg-red-50 text-red-700",
+
+        fail:
+            "border-red-200 bg-red-50 text-red-700",
 
         assigned:
-            "bg-blue-50 text-blue-600",
+            "border-blue-200 bg-blue-50 text-blue-700",
 
         trainer:
-            "bg-purple-50 text-purple-600",
+            "border-violet-200 bg-violet-50 text-violet-700",
 
         trainee:
-            "bg-blue-50 text-blue-600",
+            "border-blue-200 bg-blue-50 text-blue-700",
 
         admin:
-            "bg-violet-50 text-violet-600",
+            "border-indigo-200 bg-indigo-50 text-indigo-700",
 
         administrator:
-            "bg-violet-50 text-violet-600",
+            "border-indigo-200 bg-indigo-50 text-indigo-700",
 
         success:
-            "bg-emerald-50 text-emerald-600",
+            "border-emerald-200 bg-emerald-50 text-emerald-700",
 
         failure:
-            "bg-red-50 text-red-600",
+            "border-red-200 bg-red-50 text-red-700",
 
         warning:
-            "bg-amber-50 text-amber-600",
+            "border-amber-200 bg-amber-50 text-amber-700",
     };
 
-
-    // ======================================================
-    // DOT
-    // ======================================================
 
     const dotStyles = {
         active:
@@ -97,26 +92,35 @@ function StatusBadge({
         completed:
             "bg-emerald-500",
 
+        complete:
+            "bg-emerald-500",
+
         passed:
             "bg-emerald-500",
 
+        pass:
+            "bg-emerald-500",
+
         failed:
+            "bg-red-500",
+
+        fail:
             "bg-red-500",
 
         assigned:
             "bg-blue-500",
 
         trainer:
-            "bg-purple-500",
+            "bg-violet-500",
 
         trainee:
             "bg-blue-500",
 
         admin:
-            "bg-violet-500",
+            "bg-indigo-500",
 
         administrator:
-            "bg-violet-500",
+            "bg-indigo-500",
 
         success:
             "bg-emerald-500",
@@ -130,43 +134,29 @@ function StatusBadge({
 
 
     const badgeStyle =
-        styles[
-        normalizedStatus
-        ] ||
-        "bg-slate-100 text-slate-500";
+        styles[normalizedStatus] ||
+        "border-slate-200 bg-slate-100 text-slate-700";
 
 
     const dotStyle =
-        dotStyles[
-        normalizedStatus
-        ] ||
-        "bg-slate-400";
+        dotStyles[normalizedStatus] ||
+        "bg-slate-500";
 
-
-    // ======================================================
-    // LABEL
-    // ======================================================
 
     const label =
         normalizedStatus
             ? normalizedStatus
                 .replace(
-                    /-/g,
+                    /[-_]+/g,
                     " "
                 )
                 .replace(
                     /\b\w/g,
-                    (
-                        character
-                    ) =>
+                    (character) =>
                         character.toUpperCase()
                 )
             : "Unknown";
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <span
@@ -176,10 +166,11 @@ function StatusBadge({
                 gap-1.5
                 whitespace-nowrap
                 rounded-full
+                border
                 px-2.5
                 py-1
                 text-[7px]
-                font-medium
+                font-semibold
 
                 ${badgeStyle}
             `}

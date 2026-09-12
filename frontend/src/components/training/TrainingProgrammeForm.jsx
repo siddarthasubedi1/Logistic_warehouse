@@ -53,10 +53,6 @@ function TrainingProgrammeForm({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* HEADER */}
-            {/* ================================================= */}
-
             <div
                 className="
 <<<<<<< HEAD
@@ -123,8 +119,8 @@ function TrainingProgrammeForm({
                 <h2
                     className="
                         text-[12px]
-                        font-semibold
-                        text-slate-800
+                        font-bold
+                        text-[#172033]
                     "
                 >
                     {editingProgramme
@@ -132,13 +128,12 @@ function TrainingProgrammeForm({
                         : "Create Training Programme"}
                 </h2>
 
-
                 <p
                     className="
                         mt-1
                         text-[8px]
-                        leading-4
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
                     Enter programme information and Trainer access.
@@ -153,20 +148,16 @@ function TrainingProgrammeForm({
                     sm:p-5
                 "
             >
-                {/* ================================================= */}
-                {/* BASIC INFORMATION */}
-                {/* ================================================= */}
+                {/* INFORMATION */}
 
-                <div>
-                    <h3
-                        className="
-                            text-[10px]
-                            font-semibold
-                            text-slate-700
-                        "
-                    >
+                <section>
+                    <SectionTitle>
                         Programme Information
+<<<<<<< HEAD
                     </h3>
+>>>>>>> sprint2
+=======
+                    </SectionTitle>
 >>>>>>> sprint2
 
                         <svg
@@ -195,8 +186,6 @@ function TrainingProgrammeForm({
                             md:grid-cols-2
                         "
                     >
-                        {/* PROGRAMME TYPE */}
-
                         <FormField
                             label="Programme Type"
                             required
@@ -233,6 +222,7 @@ function TrainingProgrammeForm({
 
                     </div>
 
+<<<<<<< HEAD
 
                     <div>
 
@@ -321,6 +311,8 @@ function TrainingProgrammeForm({
                             required
                         >
 =======
+=======
+>>>>>>> sprint2
                                 {availableProgrammeTypes.map(
                                     (
                                         programme
@@ -340,23 +332,8 @@ function TrainingProgrammeForm({
                                     )
                                 )}
                             </select>
-
-
-                            {editingProgramme && (
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[7px]
-                                        text-slate-400
-                                    "
-                                >
-                                    Programme type cannot be changed after creation.
-                                </p>
-                            )}
                         </FormField>
 
-
-                        {/* PASS MARK */}
 
                         <FormField
                             label="Pass Mark (%)"
@@ -367,7 +344,6 @@ function TrainingProgrammeForm({
                                 name="passMark"
                                 min="0"
                                 max="100"
-                                step="1"
                                 value={
                                     formData.passMark
                                 }
@@ -377,7 +353,6 @@ function TrainingProgrammeForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Example: 70"
                                 className={
                                     inputClass
                                 }
@@ -385,8 +360,6 @@ function TrainingProgrammeForm({
                             />
                         </FormField>
 
-
-                        {/* TITLE */}
 
                         <div
                             className="
@@ -417,37 +390,9 @@ function TrainingProgrammeForm({
                                     }
                                     required
                                 />
-
-
-                                <div
-                                    className="
-                                        mt-1
-                                        flex
-                                        justify-between
-                                        gap-3
-                                        text-[7px]
-                                        text-slate-400
-                                    "
-                                >
-                                    <span>
-                                        Minimum 3 characters
-                                    </span>
-
-
-                                    <span>
-                                        {
-                                            formData
-                                                .title
-                                                .length
-                                        }
-                                        /150
-                                    </span>
-                                </div>
                             </FormField>
                         </div>
 
-
-                        {/* DESCRIPTION */}
 
                         <div
                             className="
@@ -472,70 +417,38 @@ function TrainingProgrammeForm({
                                     disabled={
                                         saving
                                     }
-                                    placeholder="Describe the training programme"
+                                    placeholder="Describe this training programme"
                                     className={`
                                         ${inputClass}
-                                        min-h-[110px]
+                                        min-h-[120px]
                                         resize-y
                                         py-3
+                                        leading-5
                                     `}
                                     required
                                 />
-
-
-                                <div
-                                    className="
-                                        mt-1
-                                        flex
-                                        justify-between
-                                        gap-3
-                                        text-[7px]
-                                        text-slate-400
-                                    "
-                                >
-                                    <span>
-                                        Minimum 10 characters
-                                    </span>
-
-
-                                    <span>
-                                        {
-                                            formData
-                                                .description
-                                                .length
-                                        }
-                                        /3000
-                                    </span>
-                                </div>
                             </FormField>
                         </div>
                     </div>
-                </div>
+                </section>
 
 
-                {/* ================================================= */}
-                {/* ADMIN TRAINER MANAGEMENT */}
-                {/* ================================================= */}
+                {/* TRAINER MANAGEMENT */}
 
                 {isAdmin && (
-                    <div
+                    <section
                         className="
                             border-t
                             border-slate-100
                             pt-5
                         "
                     >
-                        <h3
-                            className="
-                                text-[10px]
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
+                        <SectionTitle>
                             Trainer Management
-                        </h3>
+                        </SectionTitle>
 
 
+<<<<<<< HEAD
                         <p
                             className="
                                 mt-1
@@ -558,6 +471,8 @@ function TrainingProgrammeForm({
 =======
                         {/* OWNER */}
 
+=======
+>>>>>>> sprint2
                         <div
                             className="
                                 mt-4
@@ -1223,11 +1138,8 @@ function TrainingProgrammeForm({
                                     required
                                 >
                                     <option value="">
-                                        {formData.programmeType
-                                            ? "Select owner Trainer"
-                                            : "Select programme type first"}
+                                        Select owner Trainer
                                     </option>
-
 
                                     {eligibleOwnerTrainers.map(
                                         (
@@ -1254,8 +1166,6 @@ function TrainingProgrammeForm({
                         </div>
 
 
-                        {/* AUTHORIZED TRAINERS */}
-
                         <div
                             className="
                                 mt-5
@@ -1264,39 +1174,45 @@ function TrainingProgrammeForm({
                             <p
                                 className="
                                     text-[8px]
-                                    font-medium
-                                    text-slate-500
+                                    font-semibold
+                                    text-slate-700
                                 "
                             >
                                 Authorised Trainers
                             </p>
 
-
                             <p
                                 className="
                                     mt-1
                                     text-[7px]
-                                    leading-4
-                                    text-slate-400
+                                    font-medium
+                                    text-slate-500
                                 "
                             >
-                                Additional Trainers who can manage this programme.
+                                Optional additional Trainers who may manage this programme.
                             </p>
 
 
-                            {!formData.programmeType ? (
-                                <InformationBox>
-                                    Select a programme type first.
-                                </InformationBox>
-                            ) : !formData.ownerId ? (
-                                <InformationBox>
-                                    Select an owner Trainer first.
-                                </InformationBox>
-                            ) : eligibleAuthorizedTrainers.length ===
+                            {eligibleAuthorizedTrainers.length ===
                                 0 ? (
-                                <InformationBox>
-                                    No additional eligible Trainers are available.
-                                </InformationBox>
+                                <div
+                                    className="
+                                        mt-3
+                                        rounded-lg
+                                        bg-slate-50
+                                        p-3
+                                    "
+                                >
+                                    <p
+                                        className="
+                                            text-[8px]
+                                            font-medium
+                                            text-slate-500
+                                        "
+                                    >
+                                        No additional eligible Trainers available.
+                                    </p>
+                                </div>
                             ) : (
                                 <div
                                     className="
@@ -1310,11 +1226,12 @@ function TrainingProgrammeForm({
                                         (
                                             trainer
                                         ) => {
-                                            const checked =
-                                                formData.authorizedTrainers.includes(
-                                                    trainer._id
-                                                );
-
+                                            const selected =
+                                                formData
+                                                    .authorizedTrainers
+                                                    .includes(
+                                                        trainer._id
+                                                    );
 
                                             return (
                                                 <label
@@ -1329,39 +1246,32 @@ function TrainingProgrammeForm({
                                                         rounded-lg
                                                         border
                                                         p-3
-                                                        transition
 
-                                                        ${checked
+                                                        ${selected
                                                             ? "border-blue-300 bg-blue-50"
-                                                            : "border-slate-200 bg-white hover:border-blue-200"
-                                                        }
-
-                                                        ${saving
-                                                            ? "cursor-not-allowed opacity-60"
-                                                            : ""
+                                                            : "border-slate-200 bg-white"
                                                         }
                                                     `}
                                                 >
                                                     <input
                                                         type="checkbox"
                                                         checked={
-                                                            checked
+                                                            selected
+                                                        }
+                                                        onChange={() =>
+                                                            onToggleAuthorizedTrainer?.(
+                                                                trainer._id
+                                                            )
                                                         }
                                                         disabled={
                                                             saving
                                                         }
-                                                        onChange={() =>
-                                                            onToggleAuthorizedTrainer(
-                                                                trainer._id
-                                                            )
-                                                        }
                                                         className="
-                                                            h-3.5
-                                                            w-3.5
+                                                            h-4
+                                                            w-4
                                                             accent-blue-600
                                                         "
                                                     />
-
 
                                                     <div
                                                         className="
@@ -1372,32 +1282,25 @@ function TrainingProgrammeForm({
                                                             className="
                                                                 truncate
                                                                 text-[9px]
-                                                                font-medium
-                                                                text-slate-700
+                                                                font-bold
+                                                                text-slate-800
                                                             "
                                                         >
                                                             {getUserDisplayName(
                                                                 trainer,
-                                                                trainer.username ||
-                                                                "Trainer"
+                                                                trainer.username
                                                             )}
                                                         </p>
 
-
-                                                        {trainer.username && (
-                                                            <p
-                                                                className="
-                                                                    mt-0.5
-                                                                    truncate
-                                                                    text-[7px]
-                                                                    text-slate-400
-                                                                "
-                                                            >
-                                                                {
-                                                                    trainer.username
-                                                                }
-                                                            </p>
-                                                        )}
+                                                        <p
+                                                            className="
+                                                                mt-1
+                                                                text-[7px]
+                                                                text-slate-500
+                                                            "
+                                                        >
+                                                            @{trainer.username}
+                                                        </p>
                                                     </div>
                                                 </label>
                                             );
@@ -1406,15 +1309,18 @@ function TrainingProgrammeForm({
                                 </div>
                             )}
                         </div>
+<<<<<<< HEAD
                     </div>
+>>>>>>> sprint2
+=======
+                    </section>
 >>>>>>> sprint2
                 )}
 
 
-                {/* ================================================= */}
                 {/* STATUS */}
-                {/* ================================================= */}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                 <FormSection
                     title="Programme Availability"
@@ -1431,6 +1337,9 @@ function TrainingProgrammeForm({
 
 =======
                 <div
+=======
+                <section
+>>>>>>> sprint2
                     className="
                         border-t
                         border-slate-100
@@ -1439,7 +1348,7 @@ function TrainingProgrammeForm({
                 >
                     <div
                         className="
-                            max-w-md
+                            max-w-sm
                         "
                     >
                         <FormField
@@ -1465,7 +1374,6 @@ function TrainingProgrammeForm({
                                     inputClass
 >>>>>>> sprint2
                                 }
-                                required
                             >
                                 <option value="draft">
                                     Draft
@@ -1533,13 +1441,15 @@ function TrainingProgrammeForm({
 =======
                         </FormField>
                     </div>
+<<<<<<< HEAD
                 </div>
+>>>>>>> sprint2
+=======
+                </section>
 >>>>>>> sprint2
 
 
-                {/* ================================================= */}
                 {/* ACTIONS */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -1565,11 +1475,11 @@ function TrainingProgrammeForm({
                         type="button"
 >>>>>>> sprint2
                         variant="secondary"
-                        onClick={
-                            onCancel
-                        }
                         disabled={
                             saving
+                        }
+                        onClick={
+                            onCancel
                         }
                         className="
                             w-full
@@ -1620,6 +1530,7 @@ function TrainingProgrammeForm({
 }
 
 
+<<<<<<< HEAD
 // ======================================================
 <<<<<<< HEAD
 // FORM SECTION
@@ -1705,6 +1616,24 @@ function FormSection({
 >>>>>>> sprint2
 // FIELD
 // ======================================================
+=======
+function SectionTitle({
+    children,
+}) {
+    return (
+        <h3
+            className="
+                text-[10px]
+                font-bold
+                text-slate-800
+            "
+        >
+            {children}
+        </h3>
+    );
+}
+
+>>>>>>> sprint2
 
 function FormField({
     label,
@@ -1732,13 +1661,17 @@ function FormField({
                     text-slate-700
 =======
                     text-[8px]
+<<<<<<< HEAD
                     font-medium
                     text-slate-500
+>>>>>>> sprint2
+=======
+                    font-semibold
+                    text-slate-700
 >>>>>>> sprint2
                 "
             >
                 {label}
-
 
                 {required && (
                     <span
@@ -1760,13 +1693,13 @@ function FormField({
 
             </span>
 
-
             {children}
         </label>
     );
 }
 
 
+<<<<<<< HEAD
 // ======================================================
 <<<<<<< HEAD
 // HELPER
@@ -2083,6 +2016,8 @@ function SectionIcon({
 >>>>>>> sprint2
 // ======================================================
 
+=======
+>>>>>>> sprint2
 const inputClass = `
     min-h-[40px]
     w-full
@@ -2122,17 +2057,20 @@ const selectClass = `
 =======
     px-3
     text-[9px]
+<<<<<<< HEAD
     text-slate-700
 >>>>>>> sprint2
+=======
+    font-medium
+    text-slate-800
+>>>>>>> sprint2
     outline-none
-    transition
     placeholder:text-slate-400
     focus:border-blue-500
     focus:ring-1
     focus:ring-blue-100
     disabled:cursor-not-allowed
     disabled:bg-slate-50
-    disabled:text-slate-400
 `;
 
 

@@ -7,7 +7,7 @@ function CreateUserPage() {
         <DashboardLayout
             role="admin"
             title="Create User"
-            subtitle="Add Trainer or Trainee information and generate login credentials."
+            subtitle="Add Trainer or Trainee information and generate secure login credentials."
         >
             <CreateUserForm />
         </DashboardLayout>

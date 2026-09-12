@@ -9,10 +9,6 @@ function LearningContentCard({
     onNext,
     onFinish,
 }) {
-    // ======================================================
-    // EMPTY
-    // ======================================================
-
     if (!section) {
         return (
             <section
@@ -21,7 +17,7 @@ function LearningContentCard({
                     border
                     border-slate-200
                     bg-white
-                    p-6
+                    p-8
                     text-center
                     shadow-sm
                 "
@@ -35,8 +31,8 @@ function LearningContentCard({
                         items-center
                         justify-center
                         rounded-full
-                        bg-slate-100
-                        text-slate-400
+                        bg-blue-50
+                        text-blue-600
                     "
                 >
                     <svg
@@ -52,81 +48,63 @@ function LearningContentCard({
                     </svg>
                 </div>
 
-
                 <h2
                     className="
                         mt-3
                         text-[12px]
-                        font-semibold
-                        text-slate-700
+                        font-bold
+                        text-slate-800
                     "
                 >
                     No learning content available
                 </h2>
-
-
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        text-slate-400
-                    "
-                >
-                    Select a learning section to continue.
-                </p>
             </section>
         );
     }
 
 
-    // ======================================================
-    // POSITION
-    // ======================================================
-
     const isFirst =
         currentIndex <= 0;
 
-
     const isLast =
         totalSections > 0 &&
-        currentIndex >= totalSections - 1;
-
+        currentIndex >=
+        totalSections - 1;
 
     const sectionNumber =
         currentIndex + 1;
 
-
     const progress =
         totalSections > 0
             ? Math.round(
-                (sectionNumber / totalSections) *
+                (
+                    sectionNumber /
+                    totalSections
+                ) *
                 100
             )
             : 0;
 
 
-    // ======================================================
-    // CONTENT PARAGRAPHS
-    // ======================================================
-
-    const contentParagraphs =
+    const paragraphs =
         String(
-            section.content || ""
+            section.content ||
+            ""
         )
             .split(/\n+/)
-            .map((paragraph) =>
-                paragraph.trim()
+            .map(
+                (
+                    paragraph
+                ) =>
+                    paragraph.trim()
             )
             .filter(Boolean);
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <article
             className="
+                min-w-0
                 overflow-hidden
                 rounded-xl
                 border
@@ -135,9 +113,7 @@ function LearningContentCard({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* TOP */}
-            {/* ================================================= */}
+            {/* HEADER */}
 
             <div
                 className="
@@ -158,169 +134,149 @@ function LearningContentCard({
                         sm:justify-between
                     "
                 >
-                    <div
-                        className="
-                            min-w-0
-                            flex-1
-                        "
-                    >
-                        <div
+                    <div>
+                        <p
                             className="
-                                flex
-                                flex-wrap
-                                items-center
-                                gap-2
+                                text-[7px]
+                                font-bold
+                                uppercase
+                                tracking-[0.12em]
+                                text-blue-600
                             "
                         >
-                            <span
-                                className="
-                                    inline-flex
-                                    items-center
-                                    rounded-full
-                                    bg-blue-50
-                                    px-2.5
-                                    py-1
-                                    text-[7px]
-                                    font-medium
-                                    text-blue-600
-                                "
-                            >
-                                Section {sectionNumber}
-                            </span>
+                            Learning Section {sectionNumber}
+                        </p>
 
-
-                            {totalSections > 0 && (
-                                <span
-                                    className="
-                                        text-[7px]
-                                        text-slate-400
-                                    "
-                                >
-                                    of {totalSections}
-                                </span>
-                            )}
-                        </div>
-
-
-                        <h1
+                        <h2
                             className="
-                                mt-3
-                                break-words
+                                mt-1
                                 text-[16px]
-                                font-semibold
+                                font-bold
                                 leading-6
-                                text-slate-800
-                                sm:text-[18px]
+                                text-[#172033]
                             "
                         >
                             {section.title}
-                        </h1>
+                        </h2>
                     </div>
 
 
-                    {totalSections > 0 && (
-                        <div
-                            className="
-                                shrink-0
-                                rounded-lg
-                                bg-slate-50
-                                px-3
-                                py-2
-                            "
-                        >
-                            <p
-                                className="
-                                    text-[7px]
-                                    text-slate-400
-                                "
-                            >
-                                Position
-                            </p>
+                    <span
+                        className="
+                            w-fit
+                            rounded-full
+                            bg-blue-50
+                            px-3
+                            py-1
+                            text-[8px]
+                            font-bold
+                            text-blue-600
+                        "
+                    >
+                        {progress}%
+                    </span>
+                </div>
 
 
-                            <p
-                                className="
-                                    mt-0.5
-                                    text-[10px]
-                                    font-semibold
-                                    text-blue-600
-                                "
-                            >
-                                {progress}%
-                            </p>
-                        </div>
-                    )}
+                <div
+                    className="
+                        mt-4
+                        h-1.5
+                        overflow-hidden
+                        rounded-full
+                        bg-slate-200
+                    "
+                >
+                    <div
+                        className="
+                            h-full
+                            rounded-full
+                            bg-blue-600
+                        "
+                        style={{
+                            width:
+                                `${progress}%`,
+                        }}
+                    />
                 </div>
             </div>
 
 
-            {/* ================================================= */}
+            {/* IMAGE */}
+
+            {section.imageUrl && (
+                <div
+                    className="
+                        border-b
+                        border-slate-100
+                        bg-slate-50
+                        p-4
+                        sm:p-5
+                    "
+                >
+                    <img
+                        src={
+                            section.imageUrl
+                        }
+                        alt={
+                            section.imageAltText ||
+                            section.title
+                        }
+                        className="
+                            mx-auto
+                            max-h-[420px]
+                            w-full
+                            rounded-xl
+                            object-cover
+                        "
+                    />
+
+                    {section.imageAltText && (
+                        <p
+                            className="
+                                mt-2
+                                text-center
+                                text-[7px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            {section.imageAltText}
+                        </p>
+                    )}
+                </div>
+            )}
+
+
             {/* CONTENT */}
-            {/* ================================================= */}
 
             <div
                 className="
                     p-4
-                    sm:p-5
-                    md:p-6
+                    sm:p-6
                 "
             >
-                {/* IMAGE */}
-
-                {section.imageUrl && (
-                    <div
-                        className="
-                            mb-5
-                            overflow-hidden
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-slate-50
-                        "
-                    >
-                        <img
-                            src={
-                                section.imageUrl
-                            }
-                            alt={
-                                section.imageAltText ||
-                                section.title ||
-                                "Learning content"
-                            }
-                            className="
-                                max-h-[420px]
-                                w-full
-                                object-cover
-                            "
-                        />
-                    </div>
-                )}
-
-
-                {/* TEXT */}
-
-                {contentParagraphs.length >
-                    0 ? (
+                {paragraphs.length > 0 ? (
                     <div
                         className="
                             space-y-4
                         "
                     >
-                        {contentParagraphs.map(
+                        {paragraphs.map(
                             (
                                 paragraph,
                                 index
                             ) => (
                                 <p
                                     key={
-                                        `${section._id || "section"}-${index}`
+                                        index
                                     }
                                     className="
-                                        whitespace-pre-wrap
-                                        break-words
                                         text-[10px]
+                                        font-medium
                                         leading-6
-                                        text-slate-600
+                                        text-slate-700
+                                        sm:text-[11px]
                                     "
                                 >
                                     {paragraph}
@@ -329,158 +285,93 @@ function LearningContentCard({
                         )}
                     </div>
                 ) : (
-                    <div
+                    <p
                         className="
-                            rounded-lg
-                            border
-                            border-dashed
-                            border-slate-200
-                            bg-slate-50
-                            p-5
-                            text-center
+                            text-[9px]
+                            font-medium
+                            text-slate-500
                         "
                     >
-                        <p
-                            className="
-                                text-[9px]
-                                text-slate-400
-                            "
-                        >
-                            This section does not contain text content.
-                        </p>
-                    </div>
+                        No text content has been added to this section.
+                    </p>
                 )}
             </div>
 
 
-            {/* ================================================= */}
             {/* NAVIGATION */}
-            {/* ================================================= */}
 
             <div
                 className="
+                    flex
+                    flex-col
+                    gap-3
                     border-t
                     border-slate-100
-                    bg-slate-50
+                    bg-slate-50/50
                     px-4
                     py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                     sm:px-5
                 "
             >
-                <div
+                <ActionButton
+                    variant="secondary"
+                    disabled={
+                        isFirst
+                    }
+                    onClick={
+                        onPrevious
+                    }
                     className="
-                        flex
-                        flex-col
-                        gap-3
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
+                        w-full
+                        sm:w-auto
                     "
                 >
-                    {/* PREVIOUS */}
+                    ← Previous
+                </ActionButton>
 
+
+                <p
+                    className="
+                        text-center
+                        text-[8px]
+                        font-semibold
+                        text-slate-600
+                    "
+                >
+                    Section {sectionNumber} of {totalSections}
+                </p>
+
+
+                {isLast ? (
                     <ActionButton
-                        type="button"
-                        variant="secondary"
-                        disabled={
-                            isFirst
-                        }
+                        variant="primary"
                         onClick={
-                            onPrevious
+                            onFinish
                         }
                         className="
                             w-full
-                            justify-center
                             sm:w-auto
                         "
                     >
-                        ← Previous
+                        Finish Learning
                     </ActionButton>
-
-
-                    {/* POSITION */}
-
-                    <div
+                ) : (
+                    <ActionButton
+                        variant="primary"
+                        onClick={
+                            onNext
+                        }
                         className="
-                            order-first
-                            text-center
-                            sm:order-none
+                            w-full
+                            sm:w-auto
                         "
                     >
-                        <p
-                            className="
-                                text-[8px]
-                                font-medium
-                                text-slate-600
-                            "
-                        >
-                            Section {sectionNumber} of{" "}
-                            {totalSections}
-                        </p>
-
-
-                        <div
-                            className="
-                                mx-auto
-                                mt-2
-                                h-1.5
-                                w-28
-                                overflow-hidden
-                                rounded-full
-                                bg-slate-200
-                            "
-                        >
-                            <div
-                                className="
-                                    h-full
-                                    rounded-full
-                                    bg-blue-600
-                                    transition-all
-                                    duration-300
-                                "
-                                style={{
-                                    width:
-                                        `${progress}%`,
-                                }}
-                            />
-                        </div>
-                    </div>
-
-
-                    {/* NEXT / FINISH */}
-
-                    {isLast ? (
-                        <ActionButton
-                            type="button"
-                            variant="primary"
-                            onClick={
-                                onFinish
-                            }
-                            className="
-                                w-full
-                                justify-center
-                                sm:w-auto
-                            "
-                        >
-                            Finish
-                        </ActionButton>
-                    ) : (
-                        <ActionButton
-                            type="button"
-                            variant="primary"
-                            onClick={
-                                onNext
-                            }
-                            className="
-                                w-full
-                                justify-center
-                                sm:w-auto
-                            "
-                        >
-                            Next →
-                        </ActionButton>
-                    )}
-                </div>
+                        Next Section →
+                    </ActionButton>
+                )}
             </div>
         </article>
     );

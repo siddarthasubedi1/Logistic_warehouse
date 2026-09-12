@@ -21,9 +21,14 @@ function ChangePasswordForm() {
         formData,
         setFormData,
     ] = useState({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+        currentPassword:
+            "",
+
+        newPassword:
+            "",
+
+        confirmPassword:
+            "",
     });
 
 
@@ -44,10 +49,6 @@ function ChangePasswordForm() {
         setSuccess,
     ] = useState("");
 
-
-    // ======================================================
-    // CHANGE
-    // ======================================================
 
     const handleChange = (
         event
@@ -71,14 +72,15 @@ function ChangePasswordForm() {
         );
 
 
-        setError("");
-        setSuccess("");
+        setError(
+            ""
+        );
+
+        setSuccess(
+            ""
+        );
     };
 
-
-    // ======================================================
-    // SUBMIT
-    // ======================================================
 
     const handleSubmit =
         async (
@@ -87,8 +89,13 @@ function ChangePasswordForm() {
             event.preventDefault();
 
 
-            setError("");
-            setSuccess("");
+            setError(
+                ""
+            );
+
+            setSuccess(
+                ""
+            );
 
 
             if (
@@ -141,7 +148,9 @@ function ChangePasswordForm() {
 
 
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
 
                 const response =
@@ -165,9 +174,14 @@ function ChangePasswordForm() {
 
 
                 setFormData({
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
+                    currentPassword:
+                        "",
+
+                    newPassword:
+                        "",
+
+                    confirmPassword:
+                        "",
                 });
 
 
@@ -209,7 +223,9 @@ function ChangePasswordForm() {
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         };
 
@@ -225,35 +241,96 @@ function ChangePasswordForm() {
                 shadow-sm
             "
         >
+            {/* HEADER */}
+
             <div
                 className="
                     border-b
                     border-slate-100
+                    bg-slate-50/50
                     px-4
                     py-4
                     sm:px-5
                 "
             >
-                <h2
+                <div
                     className="
-                        text-[11px]
-                        font-semibold
-                        text-slate-800
+                        flex
+                        items-start
+                        gap-3
                     "
                 >
-                    Change Password
-                </h2>
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-blue-600
+                            text-white
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-5 w-5"
+                        >
+                            <rect
+                                x="5"
+                                y="10"
+                                width="14"
+                                height="10"
+                                rx="2"
+                            />
+
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                    </div>
 
 
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        text-slate-400
-                    "
-                >
-                    Change your account password.
-                </p>
+                    <div>
+                        <p
+                            className="
+                                text-[7px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.12em]
+                                text-blue-600
+                            "
+                        >
+                            Security
+                        </p>
+
+
+                        <h2
+                            className="
+                                mt-1
+                                text-[12px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            Change Password
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Create a strong password to keep your account protected.
+                        </p>
+                    </div>
+                </div>
             </div>
 
 
@@ -269,13 +346,17 @@ function ChangePasswordForm() {
             >
                 <FeedbackAlert
                     type="success"
-                    message={success}
+                    message={
+                        success
+                    }
                 />
 
 
                 <FeedbackAlert
                     type="error"
-                    message={error}
+                    message={
+                        error
+                    }
                 />
 
 
@@ -300,110 +381,178 @@ function ChangePasswordForm() {
                 </FormField>
 
 
-                <div
-                    className="
-                        grid
-                        gap-4
-                        md:grid-cols-2
-                    "
+                <FormField
+                    label="New Password"
                 >
-                    <FormField
-                        label="New Password"
-                    >
-                        <PasswordInput
-                            id="new-password"
-                            name="newPassword"
-                            value={
-                                formData.newPassword
-                            }
-                            onChange={
-                                handleChange
-                            }
-                            disabled={
-                                loading
-                            }
-                            autoComplete="new-password"
-                            placeholder="Enter new password"
-                        />
-                    </FormField>
+                    <PasswordInput
+                        id="new-password"
+                        name="newPassword"
+                        value={
+                            formData.newPassword
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        disabled={
+                            loading
+                        }
+                        autoComplete="new-password"
+                        placeholder="Create new password"
+                    />
+                </FormField>
 
 
-                    <FormField
-                        label="Confirm Password"
-                    >
-                        <PasswordInput
-                            id="confirm-password"
-                            name="confirmPassword"
-                            value={
-                                formData.confirmPassword
-                            }
-                            onChange={
-                                handleChange
-                            }
-                            disabled={
-                                loading
-                            }
-                            autoComplete="new-password"
-                            placeholder="Confirm new password"
-                        />
-                    </FormField>
-                </div>
+                <FormField
+                    label="Confirm New Password"
+                >
+                    <PasswordInput
+                        id="confirm-password"
+                        name="confirmPassword"
+                        value={
+                            formData.confirmPassword
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        disabled={
+                            loading
+                        }
+                        autoComplete="new-password"
+                        placeholder="Confirm new password"
+                    />
+                </FormField>
 
 
-                {/* RULE */}
+                {/* REQUIREMENTS */}
 
                 <div
                     className="
                         rounded-lg
+                        border
+                        border-slate-200
                         bg-slate-50
                         p-3
                     "
                 >
                     <p
                         className="
-                            text-[8px]
-                            text-slate-500
+                            text-[7px]
+                            font-semibold
+                            uppercase
+                            tracking-wide
+                            text-slate-600
                         "
                     >
-                        New password must contain at least 12 characters and must be different from your current password.
+                        Password Requirements
                     </p>
+
+
+                    <div
+                        className="
+                            mt-3
+                            space-y-2
+                        "
+                    >
+                        <Requirement
+                            passed={
+                                formData.newPassword.length >=
+                                12
+                            }
+                        >
+                            At least 12 characters
+                        </Requirement>
+
+
+                        <Requirement
+                            passed={
+                                Boolean(
+                                    formData.currentPassword &&
+                                    formData.newPassword &&
+                                    formData.currentPassword !==
+                                    formData.newPassword
+                                )
+                            }
+                        >
+                            Different from current password
+                        </Requirement>
+
+
+                        <Requirement
+                            passed={
+                                Boolean(
+                                    formData.confirmPassword &&
+                                    formData.newPassword ===
+                                    formData.confirmPassword
+                                )
+                            }
+                        >
+                            New passwords match
+                        </Requirement>
+                    </div>
                 </div>
+
+
+                <button
+                    type="submit"
+                    disabled={
+                        loading
+                    }
+                    className="
+                        flex
+                        min-h-[42px]
+                        w-full
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-lg
+                        bg-blue-600
+                        px-5
+                        text-[9px]
+                        font-semibold
+                        text-white
+                        transition
+                        hover:bg-blue-700
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                    "
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                    >
+                        <path d="M12 3 4 6v5c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
+
+                        <path d="m8.5 12 2 2 5-5" />
+                    </svg>
+
+
+                    {loading
+                        ? "Changing Password..."
+                        : "Change Password"}
+                </button>
 
 
                 <div
                     className="
-                        flex
-                        justify-end
                         border-t
                         border-slate-100
                         pt-4
+                        text-center
                     "
                 >
-                    <button
-                        type="submit"
-                        disabled={
-                            loading
-                        }
+                    <p
                         className="
-                            w-full
-                            rounded-lg
-                            bg-blue-600
-                            px-5
-                            py-2.5
-                            text-[9px]
+                            text-[7px]
                             font-medium
-                            text-white
-                            transition
-                            hover:bg-blue-700
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                            sm:w-auto
+                            leading-4
+                            text-slate-500
                         "
                     >
-                        {loading
-                            ? "Changing..."
-                            : "Change Password"}
-                    </button>
+                        For your security, you will be signed out after changing your password and must sign in again.
+                    </p>
                 </div>
             </form>
         </section>
@@ -426,15 +575,70 @@ function FormField({
                     mb-2
                     block
                     text-[8px]
-                    font-medium
-                    text-slate-500
+                    font-semibold
+                    text-slate-700
                 "
             >
                 {label}
             </span>
 
+
             {children}
         </label>
+    );
+}
+
+
+function Requirement({
+    passed,
+    children,
+}) {
+    return (
+        <div
+            className="
+                flex
+                items-center
+                gap-2
+            "
+        >
+            <span
+                className={`
+                    flex
+                    h-4
+                    w-4
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-[7px]
+                    font-bold
+
+                    ${passed
+                        ? "bg-emerald-100 text-emerald-600"
+                        : "bg-slate-200 text-slate-500"
+                    }
+                `}
+            >
+                {passed
+                    ? "✓"
+                    : "•"}
+            </span>
+
+
+            <span
+                className={`
+                    text-[8px]
+                    font-medium
+
+                    ${passed
+                        ? "text-emerald-700"
+                        : "text-slate-600"
+                    }
+                `}
+            >
+                {children}
+            </span>
+        </div>
     );
 }
 

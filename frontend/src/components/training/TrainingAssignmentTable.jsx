@@ -18,16 +18,13 @@ function TrainingAssignmentTable({
     onReactivate,
 }) {
     if (
-        !Array.isArray(
-            assignments
-        ) ||
-        assignments.length ===
-        0
+        !Array.isArray(assignments) ||
+        assignments.length === 0
     ) {
         return (
             <EmptyState
                 title="No training assignments found."
-                description="Assign a training programme to a Trainee to see it here."
+                description="Assign an active training programme to a Trainee."
                 icon="training"
             />
         );
@@ -35,87 +32,15 @@ function TrainingAssignmentTable({
 
 
     return (
-        <section
-            className="
-                overflow-hidden
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                shadow-sm
-            "
-        >
-            {/* ================================================= */}
-            {/* HEADER */}
-            {/* ================================================= */}
-
-            <div
-                className="
-                    flex
-                    flex-col
-                    gap-2
-                    border-b
-                    border-slate-100
-                    px-4
-                    py-4
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    sm:px-5
-                "
-            >
-                <div>
-                    <h2
-                        className="
-                            text-[11px]
-                            font-semibold
-                            text-slate-800
-                        "
-                    >
-                        Assigned Training
-                    </h2>
-
-
-                    <p
-                        className="
-                            mt-1
-                            text-[8px]
-                            text-slate-400
-                        "
-                    >
-                        Current programme-to-Trainee access records.
-                    </p>
-                </div>
-
-
-                <span
-                    className="
-                        w-fit
-                        rounded-full
-                        bg-slate-100
-                        px-3
-                        py-1
-                        text-[8px]
-                        text-slate-500
-                    "
-                >
-                    {assignments.length} Assignment
-                    {assignments.length ===
-                        1
-                        ? ""
-                        : "s"}
-                </span>
-            </div>
-
-
-            {/* ================================================= */}
+        <>
             {/* MOBILE */}
-            {/* ================================================= */}
 
             <div
                 className="
-                    space-y-3
+                    grid
+                    gap-3
                     p-4
+                    md:grid-cols-2
                     lg:hidden
                 "
             >
@@ -145,9 +70,7 @@ function TrainingAssignmentTable({
             </div>
 
 
-            {/* ================================================= */}
-            {/* DESKTOP TABLE */}
-            {/* ================================================= */}
+            {/* DESKTOP */}
 
             <div
                 className="
@@ -158,42 +81,35 @@ function TrainingAssignmentTable({
             >
                 <table
                     className="
-                        min-w-[900px]
+                        min-w-[950px]
                         w-full
-                        border-collapse
                     "
                 >
                     <thead
                         className="
-                            border-b
-                            border-slate-200
                             bg-slate-50
                         "
                     >
                         <tr>
-                            <TableHead>
-                                Trainee
-                            </TableHead>
-
-                            <TableHead>
+                            <Head>
                                 Programme
-                            </TableHead>
+                            </Head>
 
-                            <TableHead>
-                                Type
-                            </TableHead>
+                            <Head>
+                                Trainee
+                            </Head>
 
-                            <TableHead>
+                            <Head>
                                 Assigned
-                            </TableHead>
+                            </Head>
 
-                            <TableHead>
+                            <Head>
                                 Status
-                            </TableHead>
+                            </Head>
 
-                            <TableHead right>
-                                Actions
-                            </TableHead>
+                            <Head right>
+                                Action
+                            </Head>
                         </tr>
                     </thead>
 
@@ -208,22 +124,18 @@ function TrainingAssignmentTable({
                                         assignment
                                     );
 
-
                                 const trainee =
                                     getAssignmentTrainee(
                                         assignment
                                     );
 
-
-                                const inactive =
-                                    assignment.status ===
-                                    "inactive";
-
-
                                 const processing =
                                     actionLoadingId ===
                                     assignment._id;
 
+                                const inactive =
+                                    assignment.status ===
+                                    "inactive";
 
                                 return (
                                     <tr
@@ -231,78 +143,44 @@ function TrainingAssignmentTable({
                                             assignment._id
                                         }
                                         className="
-                                            border-b
+                                            border-t
                                             border-slate-100
-                                            bg-white
-                                            last:border-0
                                             hover:bg-slate-50/60
                                         "
                                     >
-                                        {/* TRAINEE */}
-
                                         <td
                                             className="
                                                 px-5
                                                 py-4
                                             "
                                         >
-                                            <div
+                                            <p
                                                 className="
-                                                    flex
-                                                    items-center
-                                                    gap-3
+                                                    max-w-[230px]
+                                                    truncate
+                                                    text-[9px]
+                                                    font-bold
+                                                    text-slate-800
                                                 "
                                             >
-                                                <Avatar
-                                                    name={
-                                                        getUserDisplayName(
-                                                            trainee,
-                                                            "T"
-                                                        )
-                                                    }
-                                                />
+                                                {programme?.title ||
+                                                    "Programme unavailable"}
+                                            </p>
 
-
-                                                <div
-                                                    className="
-                                                        min-w-0
-                                                    "
-                                                >
-                                                    <p
-                                                        className="
-                                                            max-w-[170px]
-                                                            truncate
-                                                            text-[9px]
-                                                            font-medium
-                                                            text-slate-700
-                                                        "
-                                                    >
-                                                        {getUserDisplayName(
-                                                            trainee,
-                                                            trainee?.username ||
-                                                            "Trainee"
-                                                        )}
-                                                    </p>
-
-
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            max-w-[170px]
-                                                            truncate
-                                                            text-[7px]
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        {trainee?.email ||
-                                                            "—"}
-                                                    </p>
-                                                </div>
-                                            </div>
+                                            <p
+                                                className="
+                                                    mt-1
+                                                    text-[7px]
+                                                    font-medium
+                                                    text-blue-600
+                                                "
+                                            >
+                                                {formatProgrammeType(
+                                                    programme?.programmeType
+                                                )}
+                                            </p>
                                         </td>
 
-
-                                        {/* PROGRAMME */}
 
                                         <td
                                             className="
@@ -312,53 +190,38 @@ function TrainingAssignmentTable({
                                         >
                                             <p
                                                 className="
-                                                    max-w-[220px]
-                                                    truncate
                                                     text-[9px]
-                                                    font-medium
+                                                    font-bold
                                                     text-slate-700
                                                 "
                                             >
-                                                {programme?.title ||
+                                                {getUserDisplayName(
+                                                    trainee,
+                                                    trainee?.username ||
+                                                    "Trainee"
+                                                )}
+                                            </p>
+
+                                            <p
+                                                className="
+                                                    mt-1
+                                                    text-[7px]
+                                                    text-slate-500
+                                                "
+                                            >
+                                                @{trainee?.username ||
                                                     "—"}
                                             </p>
                                         </td>
 
-
-                                        {/* TYPE */}
-
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <span
-                                                className="
-                                                    inline-flex
-                                                    rounded-full
-                                                    bg-blue-50
-                                                    px-2.5
-                                                    py-1
-                                                    text-[7px]
-                                                    text-blue-600
-                                                "
-                                            >
-                                                {formatProgrammeType(
-                                                    programme?.programmeType
-                                                )}
-                                            </span>
-                                        </td>
-
-
-                                        {/* DATE */}
 
                                         <td
                                             className="
                                                 px-5
                                                 py-4
                                                 text-[8px]
-                                                text-slate-500
+                                                font-medium
+                                                text-slate-600
                                             "
                                         >
                                             {formatTrainingDate(
@@ -367,8 +230,6 @@ function TrainingAssignmentTable({
                                             )}
                                         </td>
 
-
-                                        {/* STATUS */}
 
                                         <td
                                             className="
@@ -385,54 +246,42 @@ function TrainingAssignmentTable({
                                         </td>
 
 
-                                        {/* ACTION */}
-
                                         <td
                                             className="
                                                 px-5
                                                 py-4
+                                                text-right
                                             "
                                         >
-                                            <div
-                                                className="
-                                                    flex
-                                                    justify-end
-                                                "
-                                            >
-                                                {inactive ? (
-                                                    <ActionButton
-                                                        variant="success"
-                                                        disabled={
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onReactivate?.(
-                                                                assignment
-                                                            )
-                                                        }
-                                                    >
-                                                        {processing
-                                                            ? "Processing..."
-                                                            : "Reactivate"}
-                                                    </ActionButton>
-                                                ) : (
-                                                    <ActionButton
-                                                        variant="warning"
-                                                        disabled={
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onDeactivate?.(
-                                                                assignment
-                                                            )
-                                                        }
-                                                    >
-                                                        {processing
-                                                            ? "Processing..."
-                                                            : "Deactivate"}
-                                                    </ActionButton>
-                                                )}
-                                            </div>
+                                            {inactive ? (
+                                                <ActionButton
+                                                    variant="success"
+                                                    disabled={
+                                                        processing
+                                                    }
+                                                    onClick={() =>
+                                                        onReactivate?.(
+                                                            assignment
+                                                        )
+                                                    }
+                                                >
+                                                    Reactivate
+                                                </ActionButton>
+                                            ) : (
+                                                <ActionButton
+                                                    variant="warning"
+                                                    disabled={
+                                                        processing
+                                                    }
+                                                    onClick={() =>
+                                                        onDeactivate?.(
+                                                            assignment
+                                                        )
+                                                    }
+                                                >
+                                                    Deactivate
+                                                </ActionButton>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -441,14 +290,10 @@ function TrainingAssignmentTable({
                     </tbody>
                 </table>
             </div>
-        </section>
+        </>
     );
 }
 
-
-// ======================================================
-// MOBILE CARD
-// ======================================================
 
 function AssignmentCard({
     assignment,
@@ -461,27 +306,24 @@ function AssignmentCard({
             assignment
         );
 
-
     const trainee =
         getAssignmentTrainee(
             assignment
         );
 
+    const processing =
+        actionLoadingId ===
+        assignment._id;
 
     const inactive =
         assignment.status ===
         "inactive";
 
 
-    const processing =
-        actionLoadingId ===
-        assignment._id;
-
-
     return (
         <article
             className="
-                rounded-lg
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -496,59 +338,21 @@ function AssignmentCard({
                     gap-3
                 "
             >
-                <div
+                <span
                     className="
-                        flex
-                        min-w-0
-                        items-center
-                        gap-3
+                        rounded-full
+                        bg-blue-50
+                        px-2.5
+                        py-1
+                        text-[7px]
+                        font-bold
+                        text-blue-600
                     "
                 >
-                    <Avatar
-                        name={
-                            getUserDisplayName(
-                                trainee,
-                                "T"
-                            )
-                        }
-                    />
-
-
-                    <div
-                        className="
-                            min-w-0
-                        "
-                    >
-                        <p
-                            className="
-                                truncate
-                                text-[10px]
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
-                            {getUserDisplayName(
-                                trainee,
-                                trainee?.username ||
-                                "Trainee"
-                            )}
-                        </p>
-
-
-                        <p
-                            className="
-                                mt-1
-                                truncate
-                                text-[8px]
-                                text-slate-400
-                            "
-                        >
-                            {trainee?.email ||
-                                "—"}
-                        </p>
-                    </div>
-                </div>
-
+                    {formatProgrammeType(
+                        programme?.programmeType
+                    )}
+                </span>
 
                 <StatusBadge
                     status={
@@ -559,75 +363,53 @@ function AssignmentCard({
             </div>
 
 
+            <h3
+                className="
+                    mt-3
+                    text-[11px]
+                    font-bold
+                    text-slate-800
+                "
+            >
+                {programme?.title ||
+                    "Programme unavailable"}
+            </h3>
+
+
             <div
                 className="
                     mt-4
-                    rounded-lg
-                    bg-slate-50
-                    p-3
+                    grid
+                    grid-cols-2
+                    gap-2
                 "
             >
-                <p
-                    className="
-                        text-[9px]
-                        font-medium
-                        text-slate-700
-                    "
-                >
-                    {programme?.title ||
-                        "Programme unavailable"}
-                </p>
+                <Info
+                    label="Trainee"
+                    value={
+                        getUserDisplayName(
+                            trainee,
+                            trainee?.username ||
+                            "—"
+                        )
+                    }
+                />
 
-
-                <div
-                    className="
-                        mt-2
-                        flex
-                        flex-wrap
-                        gap-2
-                    "
-                >
-                    <span
-                        className="
-                            rounded-full
-                            bg-blue-50
-                            px-2.5
-                            py-1
-                            text-[7px]
-                            text-blue-600
-                        "
-                    >
-                        {formatProgrammeType(
-                            programme?.programmeType
-                        )}
-                    </span>
-
-
-                    <span
-                        className="
-                            rounded-full
-                            bg-white
-                            px-2.5
-                            py-1
-                            text-[7px]
-                            text-slate-500
-                        "
-                    >
-                        {formatTrainingDate(
+                <Info
+                    label="Assigned"
+                    value={
+                        formatTrainingDate(
                             assignment.assignedAt ||
                             assignment.createdAt
-                        )}
-                    </span>
-                </div>
+                        )
+                    }
+                />
             </div>
 
 
             <div
                 className="
                     mt-4
-                    border-t
-                    border-slate-100
-                    pt-4
                 "
             >
                 {inactive ? (
@@ -643,12 +425,9 @@ function AssignmentCard({
                         }
                         className="
                             w-full
-                            justify-center
                         "
                     >
-                        {processing
-                            ? "Processing..."
-                            : "Reactivate"}
+                        Reactivate Assignment
                     </ActionButton>
                 ) : (
                     <ActionButton
@@ -663,12 +442,9 @@ function AssignmentCard({
                         }
                         className="
                             w-full
-                            justify-center
                         "
                     >
-                        {processing
-                            ? "Processing..."
-                            : "Deactivate"}
+                        Deactivate Assignment
                     </ActionButton>
                 )}
             </div>
@@ -677,45 +453,46 @@ function AssignmentCard({
 }
 
 
-// ======================================================
-// AVATAR
-// ======================================================
-
-function Avatar({
-    name,
+function Info({
+    label,
+    value,
 }) {
     return (
         <div
             className="
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-full
-                bg-blue-50
-                text-[10px]
-                font-semibold
-                text-blue-600
+                min-w-0
+                rounded-lg
+                bg-slate-50
+                p-3
             "
         >
-            {String(
-                name ||
-                "T"
-            )
-                .charAt(0)
-                .toUpperCase()}
+            <p
+                className="
+                    text-[7px]
+                    font-semibold
+                    text-slate-500
+                "
+            >
+                {label}
+            </p>
+
+            <p
+                className="
+                    mt-1
+                    truncate
+                    text-[8px]
+                    font-bold
+                    text-slate-700
+                "
+            >
+                {value}
+            </p>
         </div>
     );
 }
 
 
-// ======================================================
-// TABLE HEAD
-// ======================================================
-
-function TableHead({
+function Head({
     children,
     right = false,
 }) {
@@ -725,10 +502,10 @@ function TableHead({
                 px-5
                 py-3
                 text-[7px]
-                font-semibold
+                font-bold
                 uppercase
                 tracking-wide
-                text-slate-400
+                text-slate-500
 
                 ${right
                     ? "text-right"

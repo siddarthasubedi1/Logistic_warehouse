@@ -8,7 +8,8 @@ function EmptyState({
         <div
             className="
                 flex
-                min-h-[180px]
+                min-h-[190px]
+                w-full
                 items-center
                 justify-center
                 px-4
@@ -22,61 +23,53 @@ function EmptyState({
                     max-w-sm
                 "
             >
-
-                {/* ================================================= */}
                 {/* ICON */}
-                {/* ================================================= */}
 
                 <div
                     className="
                         mx-auto
                         flex
-                        h-10
-                        w-10
+                        h-11
+                        w-11
                         items-center
                         justify-center
                         rounded-full
                         bg-blue-50
-                        text-blue-500
+                        text-[#0b4f87]
                     "
                 >
                     <EmptyIcon
-                        icon={
-                            icon
-                        }
+                        icon={icon}
                     />
                 </div>
 
 
-                {/* ================================================= */}
                 {/* TITLE */}
-                {/* ================================================= */}
 
                 <h3
                     className="
                         mt-3
                         text-[11px]
-                        font-medium
-                        text-slate-700
+                        font-semibold
+                        text-slate-800
                     "
                 >
                     {title}
                 </h3>
 
 
-                {/* ================================================= */}
                 {/* DESCRIPTION */}
-                {/* ================================================= */}
 
                 {description && (
                     <p
                         className="
                             mx-auto
-                            mt-1
+                            mt-1.5
                             max-w-xs
                             text-[8px]
+                            font-medium
                             leading-4
-                            text-slate-400
+                            text-slate-500
                         "
                     >
                         {description}
@@ -84,9 +77,7 @@ function EmptyState({
                 )}
 
 
-                {/* ================================================= */}
                 {/* ACTION */}
-                {/* ================================================= */}
 
                 {action && (
                     <div
@@ -107,7 +98,7 @@ function EmptyState({
 
 
 // ======================================================
-// ICON
+// EMPTY ICON
 // ======================================================
 
 function EmptyIcon({
@@ -138,6 +129,8 @@ function EmptyIcon({
                 />
 
                 <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+
+                <path d="M15 15c3 0 5 1.5 6 5" />
             </svg>
         );
     }
@@ -160,6 +153,32 @@ function EmptyIcon({
                 <path d="M8 9h8" />
 
                 <path d="M8 13h5" />
+
+                <path d="M8 17h3" />
+            </svg>
+        );
+    }
+
+
+    if (
+        icon ===
+        "audit"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <path d="M6 3h12v18H6z" />
+
+                <path d="M9 8h6" />
+
+                <path d="M9 12h6" />
+
+                <path d="M9 16h4" />
             </svg>
         );
     }
