@@ -8,14 +8,16 @@ import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
 const ROLES = {
     administrator: {
-        name: "Administrator",
+        name:
+            "Administrator",
 
         description:
             "Full administrative access to user management, training management and audit information.",
 
         permissions: [
             {
-                module: "User Management",
+                module:
+                    "User Management",
 
                 items: [
                     "View users",
@@ -26,9 +28,9 @@ const ROLES = {
                     "Reset passwords after a reset request",
                 ],
             },
-
             {
-                module: "Training Management",
+                module:
+                    "Training Management",
 
                 items: [
                     "Create training programmes",
@@ -37,9 +39,9 @@ const ROLES = {
                     "Assign programmes to Trainees",
                 ],
             },
-
             {
-                module: "Administration",
+                module:
+                    "Administration",
 
                 items: [
                     "Access Admin Dashboard",
@@ -50,29 +52,30 @@ const ROLES = {
         ],
     },
 
-
     trainer: {
-        name: "Trainer",
+        name:
+            "Trainer",
 
         description:
             "Manage training programmes and learning content available to the Trainer.",
 
         permissions: [
             {
-                module: "Training Management",
+                module:
+                    "Training Management",
 
                 items: [
                     "Access Trainer Dashboard",
-                    "Create programmes for assigned training areas",
+                    "Create programmes for assigned training area",
                     "Manage owned programmes",
                     "Manage authorised programmes",
                     "Create and edit learning sections",
                     "Deactivate or reactivate learning sections",
                 ],
             },
-
             {
-                module: "Account",
+                module:
+                    "Account",
 
                 items: [
                     "View own profile",
@@ -82,16 +85,17 @@ const ROLES = {
         ],
     },
 
-
     trainee: {
-        name: "Trainee",
+        name:
+            "Trainee",
 
         description:
             "Access training programmes and learning content assigned to the Trainee.",
 
         permissions: [
             {
-                module: "Training",
+                module:
+                    "Training",
 
                 items: [
                     "Access Trainee Dashboard",
@@ -100,9 +104,9 @@ const ROLES = {
                     "Navigate available learning content",
                 ],
             },
-
             {
-                module: "Account",
+                module:
+                    "Account",
 
                 items: [
                     "View own profile",
@@ -118,11 +122,10 @@ function RoleDetailsPage() {
     const navigate =
         useNavigate();
 
-
     const {
         roleName,
-    } = useParams();
-
+    } =
+        useParams();
 
     const roleKey =
         String(
@@ -130,14 +133,15 @@ function RoleDetailsPage() {
             ""
         ).toLowerCase();
 
-
     const role =
         ROLES[
         roleKey
         ];
 
 
-    if (!role) {
+    if (
+        !role
+    ) {
         return (
             <DashboardLayout
                 role="admin"
@@ -157,13 +161,13 @@ function RoleDetailsPage() {
                 >
                     <p
                         className="
-                            text-[11px]
-                            text-slate-500
+                            text-[10px]
+                            font-medium
+                            text-slate-600
                         "
                     >
                         The requested role could not be found.
                     </p>
-
 
                     <button
                         type="button"
@@ -179,9 +183,8 @@ function RoleDetailsPage() {
                             px-4
                             py-2.5
                             text-[9px]
-                            font-medium
+                            font-semibold
                             text-white
-                            hover:bg-blue-700
                         "
                     >
                         Back to Roles
@@ -208,13 +211,16 @@ function RoleDetailsPage() {
         <DashboardLayout
             role="admin"
             title={`${role.name} Role`}
-            subtitle={role.description}
+            subtitle={
+                role.description
+            }
         >
-            <div className="space-y-4">
-
-                {/* ================================================= */}
+            <div
+                className="
+                    space-y-4
+                "
+            >
                 {/* SUMMARY */}
-                {/* ================================================= */}
 
                 <section
                     className="
@@ -231,26 +237,27 @@ function RoleDetailsPage() {
                             flex
                             flex-col
                             gap-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
+                            md:flex-row
+                            md:items-center
+                            md:justify-between
                         "
                     >
                         <div
                             className="
                                 flex
-                                items-center
-                                gap-3
+                                items-start
+                                gap-4
                             "
                         >
                             <div
                                 className="
                                     flex
-                                    h-10
-                                    w-10
+                                    h-12
+                                    w-12
+                                    shrink-0
                                     items-center
                                     justify-center
-                                    rounded-full
+                                    rounded-xl
                                     bg-blue-50
                                     text-blue-600
                                 "
@@ -260,17 +267,15 @@ function RoleDetailsPage() {
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="1.8"
-                                    className="h-5 w-5"
+                                    className="h-6 w-6"
                                 >
                                     <circle
-                                        cx="9"
+                                        cx="12"
                                         cy="8"
                                         r="3"
                                     />
 
-                                    <path d="M3 20c.5-4 2.5-6 6-6" />
-
-                                    <path d="m16 8 2 2 3-4" />
+                                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
                                 </svg>
                             </div>
 
@@ -278,23 +283,27 @@ function RoleDetailsPage() {
                             <div>
                                 <h2
                                     className="
-                                        text-[13px]
-                                        font-semibold
-                                        text-slate-800
+                                        text-[16px]
+                                        font-bold
+                                        text-[#172033]
                                     "
                                 >
                                     {role.name}
                                 </h2>
 
-
                                 <p
                                     className="
                                         mt-1
-                                        text-[8px]
-                                        text-slate-400
+                                        max-w-2xl
+                                        text-[9px]
+                                        font-medium
+                                        leading-5
+                                        text-slate-600
                                     "
                                 >
-                                    {totalPermissions} permissions
+                                    {
+                                        role.description
+                                    }
                                 </p>
                             </div>
                         </div>
@@ -308,6 +317,30 @@ function RoleDetailsPage() {
                                 sm:flex-row
                             "
                         >
+                            {roleKey ===
+                                "trainer" && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate(
+                                                `/admin/roles/${roleKey}/edit`
+                                            )
+                                        }
+                                        className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        bg-blue-600
+                                        px-4
+                                        text-[9px]
+                                        font-semibold
+                                        text-white
+                                    "
+                                    >
+                                        Edit Permissions
+                                    </button>
+                                )}
+
+
                             <button
                                 type="button"
                                 onClick={() =>
@@ -316,56 +349,55 @@ function RoleDetailsPage() {
                                     )
                                 }
                                 className="
+                                    min-h-[40px]
                                     rounded-lg
                                     border
                                     border-slate-300
                                     bg-white
                                     px-4
-                                    py-2.5
                                     text-[9px]
-                                    font-medium
-                                    text-slate-600
-                                    hover:bg-slate-50
+                                    font-semibold
+                                    text-slate-700
                                 "
                             >
                                 Back
                             </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    navigate(
-                                        `/admin/roles/${roleKey}/edit`
-                                    )
-                                }
-                                className="
-                                    rounded-lg
-                                    bg-blue-600
-                                    px-4
-                                    py-2.5
-                                    text-[9px]
-                                    font-medium
-                                    text-white
-                                    hover:bg-blue-700
-                                "
-                            >
-                                Edit Role
-                            </button>
                         </div>
+                    </div>
+
+
+                    <div
+                        className="
+                            mt-5
+                            grid
+                            gap-3
+                            sm:grid-cols-2
+                        "
+                    >
+                        <Summary
+                            label="Permission Groups"
+                            value={
+                                role.permissions.length
+                            }
+                        />
+
+                        <Summary
+                            label="Total Permissions"
+                            value={
+                                totalPermissions
+                            }
+                        />
                     </div>
                 </section>
 
 
-                {/* ================================================= */}
-                {/* PERMISSION GROUPS */}
-                {/* ================================================= */}
+                {/* PERMISSIONS */}
 
                 <section
                     className="
                         grid
                         gap-4
-                        lg:grid-cols-2
+                        md:grid-cols-2
                     "
                 >
                     {role.permissions.map(
@@ -377,55 +409,39 @@ function RoleDetailsPage() {
                                     group.module
                                 }
                                 className="
+                                    overflow-hidden
                                     rounded-xl
                                     border
                                     border-slate-200
                                     bg-white
-                                    p-5
                                     shadow-sm
                                 "
                             >
                                 <div
                                     className="
-                                        flex
-                                        items-center
-                                        justify-between
-                                        gap-3
                                         border-b
                                         border-slate-100
-                                        pb-4
+                                        bg-slate-50
+                                        px-4
+                                        py-3
                                     "
                                 >
                                     <h3
                                         className="
-                                            text-[11px]
-                                            font-semibold
+                                            text-[10px]
+                                            font-bold
                                             text-slate-800
                                         "
                                     >
                                         {group.module}
                                     </h3>
-
-
-                                    <span
-                                        className="
-                                            rounded-full
-                                            bg-blue-50
-                                            px-2.5
-                                            py-1
-                                            text-[8px]
-                                            text-blue-600
-                                        "
-                                    >
-                                        {group.items.length}
-                                    </span>
                                 </div>
 
 
                                 <div
                                     className="
-                                        mt-4
                                         space-y-3
+                                        p-4
                                     "
                                 >
                                     {group.items.map(
@@ -444,7 +460,7 @@ function RoleDetailsPage() {
                                             >
                                                 <span
                                                     className="
-                                                        mt-[1px]
+                                                        mt-0.5
                                                         flex
                                                         h-5
                                                         w-5
@@ -452,8 +468,8 @@ function RoleDetailsPage() {
                                                         items-center
                                                         justify-center
                                                         rounded-full
-                                                        bg-emerald-50
-                                                        text-[8px]
+                                                        bg-emerald-100
+                                                        text-[7px]
                                                         font-bold
                                                         text-emerald-600
                                                     "
@@ -461,10 +477,10 @@ function RoleDetailsPage() {
                                                     ✓
                                                 </span>
 
-
                                                 <p
                                                     className="
-                                                        text-[9px]
+                                                        text-[8px]
+                                                        font-medium
                                                         leading-5
                                                         text-slate-600
                                                     "
@@ -479,9 +495,47 @@ function RoleDetailsPage() {
                         )
                     )}
                 </section>
-
             </div>
         </DashboardLayout>
+    );
+}
+
+
+function Summary({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                bg-slate-50
+                p-4
+            "
+        >
+            <p
+                className="
+                    text-[7px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-slate-500
+                "
+            >
+                {label}
+            </p>
+
+            <p
+                className="
+                    mt-1
+                    text-[20px]
+                    font-bold
+                    text-[#172033]
+                "
+            >
+                {value}
+            </p>
+        </div>
     );
 }
 

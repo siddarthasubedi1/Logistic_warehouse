@@ -6,18 +6,29 @@ function UserFilters({
     onRoleChange,
     onStatusChange,
 }) {
-    const handleClearFilters = () => {
-        onSearchChange?.("");
-        onRoleChange?.("all");
-        onStatusChange?.("all");
-    };
+    const handleClearFilters =
+        () => {
+            onSearchChange?.(
+                ""
+            );
+
+            onRoleChange?.(
+                "all"
+            );
+
+            onStatusChange?.(
+                "all"
+            );
+        };
 
 
     const filtersActive =
         Boolean(
             searchTerm ||
-            roleFilter !== "all" ||
-            statusFilter !== "all"
+            roleFilter !==
+            "all" ||
+            statusFilter !==
+            "all"
         );
 
 
@@ -28,7 +39,8 @@ function UserFilters({
                 border
                 border-slate-200
                 bg-slate-50
-                p-4
+                p-3
+                sm:p-4
             "
         >
             <div
@@ -39,10 +51,7 @@ function UserFilters({
                     xl:grid-cols-[minmax(260px,2fr)_1fr_1fr_auto]
                 "
             >
-
-                {/* ================================================= */}
                 {/* SEARCH */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -104,18 +113,19 @@ function UserFilters({
                             pl-9
                             pr-3
                             text-[9px]
+                            font-medium
                             text-slate-700
                             outline-none
                             placeholder:text-slate-400
                             focus:border-blue-500
+                            focus:ring-1
+                            focus:ring-blue-100
                         "
                     />
                 </div>
 
 
-                {/* ================================================= */}
                 {/* ROLE */}
-                {/* ================================================= */}
 
                 <select
                     value={
@@ -137,9 +147,12 @@ function UserFilters({
                         bg-white
                         px-3
                         text-[9px]
+                        font-medium
                         text-slate-700
                         outline-none
                         focus:border-blue-500
+                        focus:ring-1
+                        focus:ring-blue-100
                     "
                 >
                     <option value="all">
@@ -156,9 +169,7 @@ function UserFilters({
                 </select>
 
 
-                {/* ================================================= */}
                 {/* STATUS */}
-                {/* ================================================= */}
 
                 <select
                     value={
@@ -180,9 +191,12 @@ function UserFilters({
                         bg-white
                         px-3
                         text-[9px]
+                        font-medium
                         text-slate-700
                         outline-none
                         focus:border-blue-500
+                        focus:ring-1
+                        focus:ring-blue-100
                     "
                 >
                     <option value="all">
@@ -196,20 +210,22 @@ function UserFilters({
                     <option value="deactivated">
                         Deactivated
                     </option>
+
+                    <option value="inactive">
+                        Inactive
+                    </option>
                 </select>
 
 
-                {/* ================================================= */}
                 {/* CLEAR */}
-                {/* ================================================= */}
 
                 <button
                     type="button"
-                    disabled={
-                        !filtersActive
-                    }
                     onClick={
                         handleClearFilters
+                    }
+                    disabled={
+                        !filtersActive
                     }
                     className="
                         h-10
@@ -218,18 +234,19 @@ function UserFilters({
                         border-slate-300
                         bg-white
                         px-4
-                        text-[9px]
-                        font-medium
+                        text-[8px]
+                        font-semibold
                         text-slate-600
                         transition
                         hover:bg-slate-100
                         disabled:cursor-not-allowed
                         disabled:opacity-40
+                        md:col-span-2
+                        xl:col-span-1
                     "
                 >
                     Clear
                 </button>
-
             </div>
         </div>
     );

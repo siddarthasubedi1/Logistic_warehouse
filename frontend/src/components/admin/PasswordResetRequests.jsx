@@ -1,561 +1,644 @@
 import {
-    useCallback,
     useEffect,
     useState,
 } from "react";
 
-import api from "../../services/api";
+import FeedbackAlert from "../ui/FeedbackAlert";
+
+import {
+    getUserDisplayName,
+} from "../../utils/training";
 
 
-function PasswordResetRequests({
-    onManageUser,
+const getInitialFormData = (
+    user
+) => ({
+    firstName:
+        user?.firstName ||
+        "",
+
+    lastName:
+        user?.lastName ||
+        "",
+
+    age:
+        user?.age ||
+        "",
+
+    email:
+        user?.email ||
+        "",
+
+    phoneNumber:
+        user?.phoneNumber ||
+        "",
+
+    address:
+        typeof user?.address ===
+            "string"
+            ? user.address
+            : "",
+
+    gender:
+        user?.gender ||
+        "",
+});
+
+
+function EditUserModal({
+    open = false,
+    user = null,
+    saving = false,
+    errorMessage = "",
+    onSave,
+    onClose,
 }) {
     const [
-        requests,
-        setRequests,
-    ] = useState([]);
-
-
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
-
-    const [
-        refreshing,
-        setRefreshing,
-    ] = useState(false);
-
-
-    const [
-        error,
-        setError,
-    ] = useState("");
-
-
-    // ======================================================
-    // LOAD
-    // ======================================================
-
-    const loadRequests =
-        useCallback(
-            async (
-                refresh = false
-            ) => {
-                try {
-                    if (
-                        refresh
-                    ) {
-                        setRefreshing(
-                            true
-                        );
-                    } else {
-                        setLoading(
-                            true
-                        );
-                    }
-
-
-                    setError(
-                        ""
-                    );
-
-
-                    const response =
-                        await api.get(
-                            "/admin/password-reset-requests"
-                        );
-
-
-                    const data =
-                        Array.isArray(
-                            response.data
-                        )
-                            ? response.data
-                            : response.data
-                                ?.requests ||
-                            [];
-
-
-                    setRequests(
-                        data
-                    );
-
-                } catch (error) {
-                    console.error(
-                        "Password reset requests error:",
-                        error
-                    );
-
-
-                    setError(
-                        error.response
-                            ?.data
-                            ?.message ||
-                        "Unable to load password reset requests."
-                    );
-
-                } finally {
-                    setLoading(
-                        false
-                    );
-
-                    setRefreshing(
-                        false
-                    );
-                }
-            },
-            []
-        );
+        formData,
+        setFormData,
+    ] = useState(
+        getInitialFormData(
+            user
+        )
+    );
 
 
     useEffect(() => {
-        loadRequests();
+        if (
+            open &&
+            user
+        ) {
+            setFormData(
+                getInitialFormData(
+                    user
+                )
+            );
+        }
     }, [
-        loadRequests,
+        open,
+        user,
     ]);
 
 
-    const pendingRequests =
-        requests.filter(
-            (
-                request
-            ) =>
-                request?.status ===
-                "pending"
-        );
-
-
-    const getUserId = (
-        request
-    ) => {
+    useEffect(() => {
         if (
-            typeof request?.user ===
-            "string"
+            !open
         ) {
-            return request.user;
+            return undefined;
         }
 
+        const handleKeyDown = (
+            event
+        ) => {
+            if (
+                event.key ===
+                "Escape" &&
+                !saving
+            ) {
+                onClose?.();
+            }
+        };
 
-        return (
-            request?.user?._id ||
-            request?.user?.id ||
-            null
+        window.addEventListener(
+            "keydown",
+            handleKeyDown
         );
-    };
 
-
-    const getUserName = (
-        request
-    ) => {
-        const user =
-            request?.user;
-
-
-        const fullName =
-            [
-                user?.firstName,
-                user?.lastName,
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .trim();
-
-
-        return (
-            fullName ||
-            request?.username ||
-            user?.username ||
-            "Unknown User"
-        );
-    };
-
-
-    const formatDate = (
-        date
-    ) => {
-        if (!date) {
-            return "—";
-        }
-
-
-        const parsed =
-            new Date(
-                date
+        return () => {
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown
             );
+        };
+    }, [
+        open,
+        saving,
+        onClose,
+    ]);
 
 
-        if (
-            Number.isNaN(
-                parsed.getTime()
-            )
-        ) {
-            return "—";
-        }
+    if (
+        !open ||
+        !user
+    ) {
+        return null;
+    }
 
 
-        return parsed.toLocaleString();
+    const handleChange = (
+        event
+    ) => {
+        const {
+            name,
+            value,
+        } =
+            event.target;
+
+        setFormData(
+            (
+                current
+            ) => ({
+                ...current,
+
+                [name]:
+                    value,
+            })
+        );
     };
+
+
+    const handleSubmit = (
+        event
+    ) => {
+        event.preventDefault();
+
+        onSave?.({
+            firstName:
+                formData
+                    .firstName
+                    .trim(),
+
+            lastName:
+                formData
+                    .lastName
+                    .trim(),
+
+            age:
+                Number(
+                    formData.age
+                ),
+
+            email:
+                formData
+                    .email
+                    .trim(),
+
+            phoneNumber:
+                formData
+                    .phoneNumber
+                    .trim(),
+
+            address:
+                formData
+                    .address
+                    .trim(),
+
+            gender:
+                formData.gender,
+        });
+    };
+
+
+    const displayName =
+        getUserDisplayName(
+            user,
+            user.username ||
+            "User"
+        );
 
 
     return (
-        <section
+        <div
             className="
-                overflow-hidden
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                shadow-sm
+                fixed
+                inset-0
+                z-[240]
+                flex
+                items-center
+                justify-center
+                overflow-y-auto
+                bg-slate-950/55
+                p-3
+                backdrop-blur-[1px]
+                sm:p-5
             "
         >
-
-            {/* HEADER */}
-
-            <div
+            <section
+                role="dialog"
+                aria-modal="true"
                 className="
-                    flex
-                    flex-col
-                    gap-3
-                    border-b
-                    border-slate-100
-                    px-5
-                    py-4
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
+                    my-auto
+                    w-full
+                    max-w-[720px]
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-2xl
                 "
             >
-                <div>
-                    <h2
-                        className="
-                            text-[12px]
-                            font-semibold
-                            text-slate-800
-                        "
-                    >
-                        Password Reset Requests
-                    </h2>
-
-
-                    <p
-                        className="
-                            mt-1
-                            text-[8px]
-                            text-slate-400
-                        "
-                    >
-                        Requests submitted by Trainers and Trainees.
-                    </p>
-                </div>
-
-
                 <div
                     className="
                         flex
-                        items-center
-                        gap-2
+                        items-start
+                        justify-between
+                        gap-4
+                        border-b
+                        border-slate-200
+                        px-4
+                        py-4
+                        sm:px-5
                     "
                 >
-                    <span
-                        className="
-                            rounded-full
-                            bg-amber-50
-                            px-3
-                            py-1.5
-                            text-[8px]
-                            font-medium
-                            text-amber-600
-                        "
-                    >
-                        {pendingRequests.length} Pending
-                    </span>
+                    <div>
+                        <p
+                            className="
+                                text-[7px]
+                                font-bold
+                                uppercase
+                                tracking-[0.12em]
+                                text-blue-600
+                            "
+                        >
+                            User Management
+                        </p>
+
+                        <h2
+                            className="
+                                mt-1
+                                text-[14px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            Edit User
+                        </h2>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            {displayName} · @{user.username}
+                        </p>
+                    </div>
 
 
                     <button
                         type="button"
-                        onClick={() =>
-                            loadRequests(
-                                true
-                            )
+                        onClick={
+                            onClose
                         }
                         disabled={
-                            refreshing
+                            saving
                         }
                         className="
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            px-4
-                            py-2
-                            text-[9px]
-                            text-slate-600
-                            hover:bg-slate-50
-                            disabled:opacity-50
+                            flex
+                            h-8
+                            w-8
+                            items-center
+                            justify-center
+                            rounded-md
+                            text-lg
+                            text-slate-400
+                            hover:bg-slate-100
                         "
                     >
-                        {refreshing
-                            ? "Refreshing..."
-                            : "Refresh"}
+                        ×
                     </button>
                 </div>
-            </div>
 
 
-            {/* CONTENT */}
+                <form
+                    onSubmit={
+                        handleSubmit
+                    }
+                    className="
+                        p-4
+                        sm:p-5
+                    "
+                >
+                    <FeedbackAlert
+                        type="error"
+                        message={
+                            errorMessage
+                        }
+                    />
 
-            <div
-                className="
-                    p-5
-                "
-            >
-                {loading && (
+
                     <div
                         className="
-                            py-10
-                            text-center
-                            text-[9px]
-                            text-slate-400
+                            mt-4
+                            grid
+                            gap-4
+                            md:grid-cols-2
                         "
                     >
-                        Loading password reset requests...
-                    </div>
-                )}
-
-
-                {!loading &&
-                    error && (
-                        <div
-                            className="
-                            rounded-lg
-                            border
-                            border-red-200
-                            bg-red-50
-                            px-4
-                            py-3
-                            text-[9px]
-                            text-red-600
-                        "
+                        <Field
+                            label="First Name"
                         >
-                            {error}
-                        </div>
-                    )}
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={
+                                    formData.firstName
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </Field>
 
 
-                {!loading &&
-                    !error &&
-                    pendingRequests.length ===
-                    0 && (
-                        <div
-                            className="
-                            py-12
-                            text-center
-                        "
+                        <Field
+                            label="Last Name"
                         >
-                            <div
-                                className="
-                                mx-auto
-                                flex
-                                h-10
-                                w-10
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-blue-50
-                                text-blue-500
-                            "
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={
+                                    formData.lastName
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </Field>
+
+
+                        <Field
+                            label="Age"
+                        >
+                            <input
+                                type="number"
+                                name="age"
+                                min="16"
+                                value={
+                                    formData.age
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </Field>
+
+
+                        <Field
+                            label="Gender"
+                        >
+                            <select
+                                name="gender"
+                                value={
+                                    formData.gender
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-5 w-5"
-                                >
-                                    <path d="M15 7a4 4 0 1 0-7.9 1H3v4h4v3h3v-3h2.1A4 4 0 0 0 15 7Z" />
-                                </svg>
-                            </div>
+                                <option value="">
+                                    Select gender
+                                </option>
+
+                                <option value="male">
+                                    Male
+                                </option>
+
+                                <option value="female">
+                                    Female
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+                            </select>
+                        </Field>
 
 
-                            <p
-                                className="
-                                mt-3
-                                text-[11px]
+                        <Field
+                            label="Email"
+                        >
+                            <input
+                                type="email"
+                                name="email"
+                                value={
+                                    formData.email
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </Field>
+
+
+                        <Field
+                            label="Phone Number"
+                        >
+                            <input
+                                type="text"
+                                name="phoneNumber"
+                                value={
+                                    formData.phoneNumber
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </Field>
+
+
+                        <div
+                            className="
+                                md:col-span-2
+                            "
+                        >
+                            <Field
+                                label="Address"
+                            >
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={
+                                        formData.address
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
+                                    required
+                                />
+                            </Field>
+                        </div>
+                    </div>
+
+
+                    <div
+                        className="
+                            mt-5
+                            rounded-lg
+                            bg-slate-50
+                            p-3
+                        "
+                    >
+                        <p
+                            className="
+                                text-[8px]
                                 font-medium
+                                text-slate-600
+                            "
+                        >
+                            Username, role and password are not changed from this form.
+                        </p>
+                    </div>
+
+
+                    <div
+                        className="
+                            mt-5
+                            flex
+                            flex-col-reverse
+                            gap-2
+                            border-t
+                            border-slate-100
+                            pt-5
+                            sm:flex-row
+                            sm:justify-end
+                        "
+                    >
+                        <button
+                            type="button"
+                            onClick={
+                                onClose
+                            }
+                            disabled={
+                                saving
+                            }
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                border
+                                border-slate-300
+                                bg-white
+                                px-5
+                                text-[9px]
+                                font-semibold
                                 text-slate-700
                             "
-                            >
-                                No pending password reset requests
-                            </p>
-
-
-                            <p
-                                className="
-                                mt-1
-                                text-[8px]
-                                text-slate-400
-                            "
-                            >
-                                New reset requests will appear here.
-                            </p>
-                        </div>
-                    )}
-
-
-                {!loading &&
-                    !error &&
-                    pendingRequests.length >
-                    0 && (
-                        <div
-                            className="
-                            divide-y
-                            divide-slate-100
-                        "
                         >
-                            {pendingRequests.map(
-                                (
-                                    request
-                                ) => {
-                                    const userId =
-                                        getUserId(
-                                            request
-                                        );
+                            Cancel
+                        </button>
 
 
-                                    const userName =
-                                        getUserName(
-                                            request
-                                        );
-
-
-                                    const role =
-                                        request.role ||
-                                        request.user
-                                            ?.role ||
-                                        "User";
-
-
-                                    return (
-                                        <div
-                                            key={
-                                                request._id
-                                            }
-                                            className="
-                                            flex
-                                            flex-col
-                                            gap-3
-                                            py-4
-                                            sm:flex-row
-                                            sm:items-center
-                                            sm:justify-between
-                                        "
-                                        >
-                                            <div
-                                                className="
-                                                flex
-                                                min-w-0
-                                                items-center
-                                                gap-3
-                                            "
-                                            >
-                                                <div
-                                                    className="
-                                                    flex
-                                                    h-9
-                                                    w-9
-                                                    shrink-0
-                                                    items-center
-                                                    justify-center
-                                                    rounded-full
-                                                    bg-blue-50
-                                                    text-[10px]
-                                                    font-semibold
-                                                    text-blue-600
-                                                "
-                                                >
-                                                    {userName
-                                                        .charAt(
-                                                            0
-                                                        )
-                                                        .toUpperCase()}
-                                                </div>
-
-
-                                                <div
-                                                    className="
-                                                    min-w-0
-                                                "
-                                                >
-                                                    <p
-                                                        className="
-                                                        truncate
-                                                        text-[10px]
-                                                        font-medium
-                                                        text-slate-700
-                                                    "
-                                                    >
-                                                        {userName}
-                                                    </p>
-
-
-                                                    <p
-                                                        className="
-                                                        mt-1
-                                                        text-[8px]
-                                                        capitalize
-                                                        text-slate-400
-                                                    "
-                                                    >
-                                                        {role}
-                                                        {" · "}
-                                                        {formatDate(
-                                                            request.requestedAt
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-
-                                            {onManageUser && (
-                                                <button
-                                                    type="button"
-                                                    disabled={
-                                                        !userId
-                                                    }
-                                                    onClick={() =>
-                                                        onManageUser(
-                                                            userId,
-                                                            request
-                                                        )
-                                                    }
-                                                    className="
-                                                    rounded-lg
-                                                    bg-blue-600
-                                                    px-4
-                                                    py-2
-                                                    text-[9px]
-                                                    font-medium
-                                                    text-white
-                                                    hover:bg-blue-700
-                                                    disabled:opacity-50
-                                                "
-                                                >
-                                                    Manage User
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                }
-                            )}
-                        </div>
-                    )}
-            </div>
-
-        </section>
+                        <button
+                            type="submit"
+                            disabled={
+                                saving
+                            }
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                bg-blue-600
+                                px-5
+                                text-[9px]
+                                font-semibold
+                                text-white
+                                hover:bg-blue-700
+                                disabled:opacity-50
+                            "
+                        >
+                            {saving
+                                ? "Saving..."
+                                : "Save Changes"}
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
     );
 }
 
 
-export default PasswordResetRequests;
+function Field({
+    label,
+    children,
+}) {
+    return (
+        <label>
+            <span
+                className="
+                    mb-2
+                    block
+                    text-[8px]
+                    font-semibold
+                    text-slate-700
+                "
+            >
+                {label}
+            </span>
+
+            {children}
+        </label>
+    );
+}
+
+
+const inputClass = `
+    min-h-[40px]
+    w-full
+    rounded-lg
+    border
+    border-slate-300
+    bg-white
+    px-3
+    text-[9px]
+    font-medium
+    text-slate-800
+    outline-none
+    focus:border-blue-500
+    focus:ring-1
+    focus:ring-blue-100
+    disabled:bg-slate-50
+`;
+
+
+export default EditUserModal;

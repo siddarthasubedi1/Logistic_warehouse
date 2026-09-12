@@ -4,7 +4,6 @@ import {
 
 import api from "../../services/api";
 
-import ActionButton from "../ui/ActionButton";
 import FeedbackAlert from "../ui/FeedbackAlert";
 
 import {
@@ -56,36 +55,6 @@ function ForcePasswordChangeModal({
     ] = useState(false);
 
 
-    // ======================================================
-    // VALIDATION STATES
-    // ======================================================
-
-    const hasMinimumLength =
-        newPassword.length >=
-        12;
-
-
-    const isDifferent =
-        Boolean(
-            currentPassword &&
-            newPassword &&
-            currentPassword !==
-            newPassword
-        );
-
-
-    const passwordsMatch =
-        Boolean(
-            confirmPassword &&
-            newPassword ===
-            confirmPassword
-        );
-
-
-    // ======================================================
-    // SUBMIT
-    // ======================================================
-
     const handleSubmit =
         async (
             event
@@ -93,7 +62,9 @@ function ForcePasswordChangeModal({
             event.preventDefault();
 
 
-            setError("");
+            setError(
+                ""
+            );
 
 
             if (
@@ -126,7 +97,7 @@ function ForcePasswordChangeModal({
                 confirmPassword
             ) {
                 setError(
-                    "New password and confirm password do not match."
+                    "New password and confirmation do not match."
                 );
 
                 return;
@@ -138,7 +109,7 @@ function ForcePasswordChangeModal({
                 currentPassword
             ) {
                 setError(
-                    "Your new password must be different from the temporary password."
+                    "The new password must be different from the temporary password."
                 );
 
                 return;
@@ -146,7 +117,9 @@ function ForcePasswordChangeModal({
 
 
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
 
                 await api.post(
@@ -161,12 +134,9 @@ function ForcePasswordChangeModal({
                 clearAuthSession();
 
 
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
-
-
-                setCompleted(true);
+                setCompleted(
+                    true
+                );
 
             } catch (error) {
                 console.error(
@@ -176,30 +146,27 @@ function ForcePasswordChangeModal({
 
 
                 setError(
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "Unable to change password. Please try again."
+                    error.response?.data?.message ||
+                    "Unable to change password."
                 );
 
             } finally {
-                setLoading(false);
+                setLoading(
+                    false
+                );
             }
         };
 
 
-    // ======================================================
-    // SUCCESS
-    // ======================================================
-
-    if (completed) {
+    if (
+        completed
+    ) {
         return (
             <ModalWrapper>
                 <div
                     className="
-                        p-5
+                        p-6
                         text-center
-                        sm:p-6
                     "
                 >
                     <div
@@ -211,7 +178,9 @@ function ForcePasswordChangeModal({
                             items-center
                             justify-center
                             rounded-full
-                            bg-emerald-50
+                            bg-emerald-100
+                            text-[18px]
+                            font-bold
                             text-emerald-600
                         "
                     >
@@ -222,61 +191,69 @@ function ForcePasswordChangeModal({
                     <h2
                         className="
                             mt-4
-                            text-[16px]
-                            font-semibold
-                            text-slate-800
+                            text-[15px]
+                            font-bold
+                            text-[#172033]
                         "
                     >
-                        Password Changed
+                        Password Changed Successfully.
                     </h2>
 
 
                     <p
                         className="
                             mt-2
-                            text-[9px]
+                            text-[8px]
+                            font-medium
                             leading-5
-                            text-slate-500
+                            text-slate-600
                         "
                     >
-                        Your temporary password has been replaced. Sign in again using your new password.
+                        Your temporary password is no longer valid. Please sign in again using your new password.
                     </p>
 
 
-                    <div
+                    <button
+                        type="button"
+                        onClick={
+                            onCompleted
+                        }
                         className="
                             mt-6
+                            h-10
+                            w-full
+                            rounded-md
+                            bg-[#1769e8]
+                            text-[9px]
+                            font-semibold
+                            text-white
+                            hover:bg-[#0f5dce]
                         "
                     >
-                        <ActionButton
-                            variant="primary"
-                            onClick={
-                                onCompleted
-                            }
-                            className="
-                                w-full
-                                justify-center
-                            "
-                        >
-                            Return to Login
-                        </ActionButton>
-                    </div>
+                        Back to Login
+                    </button>
                 </div>
             </ModalWrapper>
         );
     }
 
 
-    // ======================================================
-    // FORM
-    // ======================================================
+    const accountName =
+        getUserDisplayName(
+            user,
+            user?.username ||
+            "Account"
+        );
+
 
     return (
         <ModalWrapper>
+            {/* HEADER */}
+
             <div
                 className="
                     border-b
-                    border-slate-100
+                    border-slate-200
                     px-5
                     py-4
                 "
@@ -284,7 +261,7 @@ function ForcePasswordChangeModal({
                 <div
                     className="
                         flex
-                        items-center
+                        items-start
                         gap-3
                     "
                 >
@@ -293,11 +270,12 @@ function ForcePasswordChangeModal({
                             flex
                             h-9
                             w-9
+                            shrink-0
                             items-center
                             justify-center
                             rounded-lg
-                            bg-blue-50
-                            text-blue-600
+                            bg-amber-50
+                            text-amber-600
                         "
                     >
                         <svg
@@ -323,9 +301,9 @@ function ForcePasswordChangeModal({
                     <div>
                         <h2
                             className="
-                                text-[13px]
-                                font-semibold
-                                text-slate-800
+                                text-[12px]
+                                font-bold
+                                text-[#172033]
                             "
                         >
                             Password Change Required
@@ -336,14 +314,12 @@ function ForcePasswordChangeModal({
                             className="
                                 mt-1
                                 text-[8px]
-                                text-slate-400
+                                font-medium
+                                leading-4
+                                text-slate-600
                             "
                         >
-                            {getUserDisplayName(
-                                user,
-                                user?.username ||
-                                "Account"
-                            )}
+                            You are using a temporary password generated by the Administrator. Create a new password before accessing your account.
                         </p>
                     </div>
                 </div>
@@ -359,28 +335,73 @@ function ForcePasswordChangeModal({
                     p-5
                 "
             >
-                <p
+                {/* ACCOUNT */}
+
+                <div
                     className="
-                        text-[9px]
-                        leading-5
-                        text-slate-500
+                        rounded-lg
+                        border
+                        border-blue-100
+                        bg-blue-50
+                        p-3
                     "
                 >
-                    Your Administrator-generated password is temporary. Create a new password before continuing.
-                </p>
+                    <p
+                        className="
+                            text-[7px]
+                            font-semibold
+                            uppercase
+                            tracking-wide
+                            text-blue-600
+                        "
+                    >
+                        Account
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[10px]
+                            font-bold
+                            text-slate-800
+                        "
+                    >
+                        {accountName}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[8px]
+                            capitalize
+                            text-slate-600
+                        "
+                    >
+                        {user?.username || ""}
+                        {user?.role
+                            ? ` · ${user.role}`
+                            : ""}
+                    </p>
+                </div>
 
 
                 <FeedbackAlert
                     type="error"
-                    message={error}
+                    message={
+                        error
+                    }
                     onClose={() =>
-                        setError("")
+                        setError(
+                            ""
+                        )
                     }
                 />
 
 
                 <PasswordField
-                    label="Temporary Password"
+                    label="Current Temporary Password"
                     value={
                         currentPassword
                     }
@@ -390,7 +411,6 @@ function ForcePasswordChangeModal({
                     disabled={
                         loading
                     }
-                    autoComplete="current-password"
                 />
 
 
@@ -405,8 +425,19 @@ function ForcePasswordChangeModal({
                     disabled={
                         loading
                     }
-                    autoComplete="new-password"
                 />
+
+
+                <p
+                    className="
+                        -mt-2
+                        text-[7px]
+                        font-medium
+                        text-slate-500
+                    "
+                >
+                    Use at least 12 characters and do not reuse the temporary password.
+                </p>
 
 
                 <PasswordField
@@ -420,72 +451,50 @@ function ForcePasswordChangeModal({
                     disabled={
                         loading
                     }
-                    autoComplete="new-password"
                 />
 
 
-                {/* RULES */}
-
-                <div
-                    className="
-                        space-y-2
-                        rounded-lg
-                        bg-slate-50
-                        p-3
-                    "
-                >
-                    <PasswordRule
-                        passed={
-                            hasMinimumLength
-                        }
-                    >
-                        At least 12 characters
-                    </PasswordRule>
-
-
-                    <PasswordRule
-                        passed={
-                            isDifferent
-                        }
-                    >
-                        Different from temporary password
-                    </PasswordRule>
-
-
-                    <PasswordRule
-                        passed={
-                            passwordsMatch
-                        }
-                    >
-                        New passwords match
-                    </PasswordRule>
-                </div>
-
-
-                <ActionButton
+                <button
                     type="submit"
-                    variant="primary"
                     disabled={
                         loading
                     }
                     className="
+                        h-10
                         w-full
-                        justify-center
+                        rounded-md
+                        bg-[#1769e8]
+                        text-[9px]
+                        font-semibold
+                        text-white
+                        transition
+                        hover:bg-[#0f5dce]
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
                     "
                 >
                     {loading
                         ? "Changing Password..."
                         : "Change Password"}
-                </ActionButton>
+                </button>
+
+
+                <p
+                    className="
+                        text-center
+                        text-[7px]
+                        font-medium
+                        leading-4
+                        text-slate-500
+                    "
+                >
+                    This window cannot be skipped. Dashboard access remains blocked until the password is changed.
+                </p>
             </form>
         </ModalWrapper>
     );
 }
 
-
-// ======================================================
-// MODAL
-// ======================================================
 
 function ModalWrapper({
     children,
@@ -501,7 +510,9 @@ function ModalWrapper({
                 justify-center
                 overflow-y-auto
                 bg-slate-950/60
-                p-4
+                p-3
+                backdrop-blur-[2px]
+                sm:p-4
             "
         >
             <section
@@ -510,13 +521,13 @@ function ModalWrapper({
                 className="
                     my-auto
                     w-full
-                    max-w-md
+                    max-w-[470px]
                     overflow-hidden
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    shadow-xl
+                    shadow-2xl
                 "
             >
                 {children}
@@ -526,16 +537,11 @@ function ModalWrapper({
 }
 
 
-// ======================================================
-// PASSWORD FIELD
-// ======================================================
-
 function PasswordField({
     label,
     value,
     onChange,
     disabled,
-    autoComplete,
 }) {
     const [
         visible,
@@ -554,8 +560,8 @@ function PasswordField({
                     mb-2
                     block
                     text-[8px]
-                    font-medium
-                    text-slate-500
+                    font-semibold
+                    text-slate-700
                 "
             >
                 {label}
@@ -573,7 +579,9 @@ function PasswordField({
                             ? "text"
                             : "password"
                     }
-                    value={value}
+                    value={
+                        value
+                    }
                     onChange={(
                         event
                     ) =>
@@ -584,23 +592,21 @@ function PasswordField({
                     disabled={
                         disabled
                     }
-                    autoComplete={
-                        autoComplete
-                    }
                     className="
-                        h-11
+                        h-10
                         w-full
-                        rounded-lg
+                        rounded-md
                         border
                         border-slate-300
                         bg-white
                         px-3
                         pr-11
-                        text-[10px]
-                        text-slate-700
+                        text-[9px]
+                        text-slate-800
                         outline-none
                         focus:border-blue-500
-                        disabled:bg-slate-50
+                        focus:ring-1
+                        focus:ring-blue-100
                     "
                 />
 
@@ -626,8 +632,8 @@ function PasswordField({
                         w-10
                         items-center
                         justify-center
-                        text-[8px]
-                        font-medium
+                        text-[7px]
+                        font-semibold
                         text-blue-600
                     "
                 >
@@ -637,62 +643,6 @@ function PasswordField({
                 </button>
             </div>
         </label>
-    );
-}
-
-
-// ======================================================
-// RULE
-// ======================================================
-
-function PasswordRule({
-    passed,
-    children,
-}) {
-    return (
-        <div
-            className="
-                flex
-                items-center
-                gap-2
-            "
-        >
-            <span
-                className={`
-                    flex
-                    h-4
-                    w-4
-                    items-center
-                    justify-center
-                    rounded-full
-                    text-[7px]
-                    font-bold
-
-                    ${passed
-                        ? "bg-emerald-100 text-emerald-600"
-                        : "bg-slate-200 text-slate-400"
-                    }
-                `}
-            >
-                {passed
-                    ? "✓"
-                    : "•"}
-            </span>
-
-
-            <span
-                className={`
-                    text-[8px]
-
-                    ${passed
-                        ? "text-emerald-600"
-                        : "text-slate-500"
-                    }
-                `}
-            >
-                {children}
-            </span>
-        </div>
     );
 }
 

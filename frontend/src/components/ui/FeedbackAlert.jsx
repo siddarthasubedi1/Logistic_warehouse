@@ -8,20 +8,16 @@ function FeedbackAlert({
     }
 
 
-    // ======================================================
-    // ALERT STYLES
-    // ======================================================
-
     const config = {
         success: {
             wrapper:
                 "border-emerald-200 bg-emerald-50",
 
             icon:
-                "bg-emerald-100 text-emerald-600",
+                "bg-emerald-100 text-emerald-700",
 
             text:
-                "text-emerald-700",
+                "text-emerald-800",
         },
 
         error: {
@@ -29,10 +25,10 @@ function FeedbackAlert({
                 "border-red-200 bg-red-50",
 
             icon:
-                "bg-red-100 text-red-600",
+                "bg-red-100 text-red-700",
 
             text:
-                "text-red-700",
+                "text-red-800",
         },
 
         warning: {
@@ -40,10 +36,10 @@ function FeedbackAlert({
                 "border-amber-200 bg-amber-50",
 
             icon:
-                "bg-amber-100 text-amber-600",
+                "bg-amber-100 text-amber-700",
 
             text:
-                "text-amber-700",
+                "text-amber-800",
         },
 
         info: {
@@ -51,10 +47,10 @@ function FeedbackAlert({
                 "border-blue-200 bg-blue-50",
 
             icon:
-                "bg-blue-100 text-blue-600",
+                "bg-blue-100 text-blue-700",
 
             text:
-                "text-blue-700",
+                "text-blue-800",
         },
     };
 
@@ -63,10 +59,6 @@ function FeedbackAlert({
         config[type] ||
         config.info;
 
-
-    // ======================================================
-    // ICON
-    // ======================================================
 
     const renderIcon =
         () => {
@@ -164,10 +156,6 @@ function FeedbackAlert({
         };
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <div
             role="alert"
@@ -207,6 +195,7 @@ function FeedbackAlert({
                     break-words
                     pt-1
                     text-[9px]
+                    font-medium
                     leading-5
 
                     ${current.text}
@@ -219,9 +208,7 @@ function FeedbackAlert({
             {onClose && (
                 <button
                     type="button"
-                    onClick={
-                        onClose
-                    }
+                    onClick={onClose}
                     aria-label="Close message"
                     className={`
                         flex
@@ -231,9 +218,9 @@ function FeedbackAlert({
                         items-center
                         justify-center
                         rounded-md
-                        text-sm
+                        text-base
                         transition
-                        hover:bg-white/60
+                        hover:bg-white/70
 
                         ${current.text}
                     `}

@@ -9,10 +9,12 @@ import {
 } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import TraineeHeader from "../components/trainee/TraineeHeader";
 
 import ActionButton from "../components/ui/ActionButton";
 import FeedbackAlert from "../components/ui/FeedbackAlert";
 import LoadingCard from "../components/ui/LoadingCard";
+import StatusBadge from "../components/ui/StatusBadge";
 
 import api from "../services/api";
 
@@ -27,6 +29,7 @@ import {
     getSessionUser,
 } from "../utils/session";
 
+
 function TraineeDashboard() {
     const navigate =
         useNavigate();
@@ -36,19 +39,11 @@ function TraineeDashboard() {
         getSessionUser();
 
 
-    // ======================================================
-    // DATA
-    // ======================================================
-
     const [
         assignments,
         setAssignments,
     ] = useState([]);
 
-
-    // ======================================================
-    // STATE
-    // ======================================================
 
     const [
         loading,
@@ -62,10 +57,6 @@ function TraineeDashboard() {
     ] = useState("");
 
 
-    // ======================================================
-    // LOAD
-    // ======================================================
-
     useEffect(() => {
         let active =
             true;
@@ -77,7 +68,6 @@ function TraineeDashboard() {
                     setLoading(
                         true
                     );
-
 
                     setErrorMessage(
                         ""
@@ -109,7 +99,9 @@ function TraineeDashboard() {
                     );
 
 
-                    if (active) {
+                    if (
+                        active
+                    ) {
                         setErrorMessage(
                             getApiErrorMessage(
                                 error,
@@ -119,7 +111,9 @@ function TraineeDashboard() {
                     }
 
                 } finally {
-                    if (active) {
+                    if (
+                        active
+                    ) {
                         setLoading(
                             false
                         );
@@ -137,10 +131,6 @@ function TraineeDashboard() {
         };
     }, []);
 
-
-    // ======================================================
-    // VALID ASSIGNMENTS
-    // ======================================================
 
     const validAssignments =
         useMemo(
@@ -160,10 +150,6 @@ function TraineeDashboard() {
             ]
         );
 
-
-    // ======================================================
-    // ACTIVE
-    // ======================================================
 
     const activeAssignments =
         useMemo(
@@ -192,103 +178,39 @@ function TraineeDashboard() {
         );
 
 
-    // ======================================================
-    // COUNTS
-    // ======================================================
-
-    const manualHandlingCount =
-        validAssignments.filter(
-            (
-                assignment
-            ) =>
-                getAssignmentProgramme(
-                    assignment
-                )?.programmeType ===
-                "manual-handling"
-        ).length;
-
-
-    const workingAtHeightCount =
-        validAssignments.filter(
-            (
-                assignment
-            ) =>
-                getAssignmentProgramme(
-                    assignment
-                )?.programmeType ===
-                "working-at-height"
-        ).length;
-
-
-    // ======================================================
-    // DISPLAY
-    // ======================================================
-
-    const recentAssignments =
-        activeAssignments.slice(
-            0,
-            3
-        );
-
-
-    // ======================================================
-    // START
-    // ======================================================
-
-    const handleStart = (
-        assignment
-    ) => {
-        const programme =
-            getAssignmentProgramme(
-                assignment
-            );
-
-
-        if (
-            !programme?._id
-        ) {
-            return;
-        }
-
-
-        navigate(
-            `/my-training/${programme._id}`
-        );
-    };
-
-
-    // ======================================================
-    // LOADING
-    // ======================================================
-
-    if (loading) {
+    if (
+        loading
+    ) {
         return (
             <DashboardLayout
                 role="trainee"
-                title="Dashboard"
-                subtitle="Your workplace safety training."
+                showHeader={false}
             >
                 <LoadingCard
-                    message="Loading your dashboard..."
+                    message="Loading your training..."
                 />
             </DashboardLayout>
         );
     }
 
 
-    // ======================================================
-    // PAGE
-    // ======================================================
-
     return (
         <DashboardLayout
             role="trainee"
-            title="Dashboard"
-            subtitle="Your workplace safety training."
+            showHeader={false}
         >
+            <TraineeHeader
+                user={
+                    user
+                }
+            />
+
+
             <div
                 className="
                     space-y-4
+                    pt-4
+                    sm:pt-5
                 "
             >
                 <FeedbackAlert
@@ -304,224 +226,67 @@ function TraineeDashboard() {
                 />
 
 
-                {/* ================================================= */}
-                {/* WELCOME */}
-                {/* ================================================= */}
+                {/* TRAINING SUMMARY */}
 
                 <section
                     className="
-                        overflow-hidden
+                        flex
+                        flex-col
+                        gap-3
                         rounded-xl
                         border
                         border-slate-200
                         bg-white
+                        p-4
                         shadow-sm
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                        sm:p-5
                     "
                 >
-                    <div
-                        className="
-                            grid
-                            gap-5
-                            p-5
-                            md:grid-cols-[1fr_auto]
-                            md:items-center
-                            lg:p-6
-                        "
-                    >
-                        <div>
-                            <span
-                                className="
-                                    inline-flex
-                                    rounded-full
-                                    bg-blue-50
-                                    px-3
-                                    py-1
-                                    text-[7px]
-                                    font-medium
-                                    text-blue-600
-                                "
-                            >
-                                WORKPLACE SAFETY
-                            </span>
-
-
-                            <h2
-                                className="
-                                    mt-3
-                                    text-[18px]
-                                    font-semibold
-                                    text-slate-800
-                                    sm:text-[20px]
-                                "
-                            >
-                                Welcome
-                                {user?.firstName
-                                    ? `, ${user.firstName}`
-                                    : ""}
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-2
-                                    max-w-xl
-                                    text-[9px]
-                                    leading-5
-                                    text-slate-500
-                                "
-                            >
-                                Access your assigned safety training and continue learning from your available programmes.
-                            </p>
-
-
-                            <div
-                                className="
-                                    mt-4
-                                "
-                            >
-                                <ActionButton
-                                    variant="primary"
-                                    onClick={() =>
-                                        navigate(
-                                            "/my-training"
-                                        )
-                                    }
-                                    className="
-                                        w-full
-                                        justify-center
-                                        sm:w-auto
-                                    "
-                                >
-                                    View My Training
-                                </ActionButton>
-                            </div>
-                        </div>
-
-
-                        <div
+                    <div>
+                        <h2
                             className="
-                                hidden
-                                h-20
-                                w-20
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-blue-50
-                                text-blue-600
-                                md:flex
+                                text-[12px]
+                                font-bold
+                                text-[#172033]
                             "
                         >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                className="h-9 w-9"
-                            >
-                                <path d="M12 3 4 6v5c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
-                                <path d="m8.5 12 2 2 5-5" />
-                            </svg>
-                        </div>
+                            My Training Modules
+                        </h2>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                font-medium
+                                text-slate-600
+                            "
+                        >
+                            Training programmes assigned to your account.
+                        </p>
                     </div>
-                </section>
 
 
-                {/* ================================================= */}
-                {/* STATS */}
-                {/* ================================================= */}
-
-                <section
-                    className="
-                        grid
-                        gap-3
-                        sm:grid-cols-2
-                        xl:grid-cols-4
-                    "
-                >
-                    <TraineeStat
-                        label="Assigned Training"
-                        value={
-                            validAssignments.length
-                        }
-                    />
-
-
-                    <TraineeStat
-                        label="Available"
-                        value={
-                            activeAssignments.length
-                        }
-                    />
-
-
-                    <TraineeStat
-                        label="Manual Handling"
-                        value={
-                            manualHandlingCount
-                        }
-                    />
-
-
-                    <TraineeStat
-                        label="Working at Height"
-                        value={
-                            workingAtHeightCount
-                        }
-                    />
-                </section>
-
-
-                {/* ================================================= */}
-                {/* TRAINING */}
-                {/* ================================================= */}
-
-                <section
-                    className="
-                        overflow-hidden
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        shadow-sm
-                    "
-                >
                     <div
                         className="
                             flex
-                            flex-col
-                            gap-3
-                            border-b
-                            border-slate-100
-                            px-4
-                            py-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                            sm:px-5
+                            items-center
+                            gap-2
                         "
                     >
-                        <div>
-                            <h2
-                                className="
-                                    text-[11px]
-                                    font-semibold
-                                    text-slate-800
-                                "
-                            >
-                                My Training
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    text-slate-400
-                                "
-                            >
-                                Your available workplace safety programmes.
-                            </p>
-                        </div>
+                        <span
+                            className="
+                                text-[8px]
+                                font-medium
+                                text-slate-600
+                            "
+                        >
+                            {
+                                activeAssignments.length
+                            } available
+                        </span>
 
 
                         <ActionButton
@@ -531,135 +296,118 @@ function TraineeDashboard() {
                                     "/my-training"
                                 )
                             }
-                            className="
-                                w-full
-                                justify-center
-                                sm:w-auto
-                            "
                         >
                             View All
                         </ActionButton>
                     </div>
+                </section>
 
 
-                    {recentAssignments.length ===
-                        0 ? (
-                        <div
+                {/* MODULES */}
+
+                {activeAssignments.length ===
+                    0 ? (
+                    <section
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            p-8
+                            text-center
+                            shadow-sm
+                        "
+                    >
+                        <p
                             className="
-                                p-7
-                                text-center
+                                text-[10px]
+                                font-semibold
+                                text-slate-700
                             "
                         >
-                            <div
-                                className="
-                                    mx-auto
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-full
-                                    bg-slate-100
-                                    text-slate-400
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.7"
-                                    className="h-5 w-5"
-                                >
-                                    <path d="M4 5h16v14H4z" />
-                                    <path d="M8 9h8" />
-                                    <path d="M8 13h5" />
-                                </svg>
-                            </div>
+                            No training has been assigned yet.
+                        </p>
+                    </section>
+                ) : (
+                    <section
+                        className="
+                            grid
+                            gap-4
+                            md:grid-cols-2
+                        "
+                    >
+                        {activeAssignments.map(
+                            (
+                                assignment
+                            ) => {
+                                const programme =
+                                    getAssignmentProgramme(
+                                        assignment
+                                    );
 
 
-                            <p
-                                className="
-                                    mt-3
-                                    text-[10px]
-                                    font-medium
-                                    text-slate-600
-                                "
-                            >
-                                No training available
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    text-slate-400
-                                "
-                            >
-                                Assigned training programmes will appear here.
-                            </p>
-                        </div>
-                    ) : (
-                        <div
-                            className="
-                                grid
-                                gap-3
-                                p-4
-                                md:grid-cols-2
-                                xl:grid-cols-3
-                                sm:p-5
-                            "
-                        >
-                            {recentAssignments.map(
-                                (
-                                    assignment
-                                ) => {
-                                    const programme =
-                                        getAssignmentProgramme(
-                                            assignment
-                                        );
-
-
-                                    return (
-                                        <article
-                                            key={
-                                                assignment._id
-                                            }
+                                return (
+                                    <article
+                                        key={
+                                            assignment._id
+                                        }
+                                        className="
+                                            overflow-hidden
+                                            rounded-xl
+                                            border
+                                            border-slate-200
+                                            bg-white
+                                            shadow-sm
+                                        "
+                                    >
+                                        <div
                                             className="
-                                                flex
-                                                flex-col
-                                                rounded-xl
-                                                border
-                                                border-slate-200
-                                                bg-slate-50
+                                                border-b
+                                                border-slate-100
                                                 p-4
+                                                sm:p-5
                                             "
                                         >
-                                            <span
+                                            <div
                                                 className="
-                                                    w-fit
-                                                    rounded-full
-                                                    bg-blue-50
-                                                    px-2.5
-                                                    py-1
-                                                    text-[7px]
-                                                    font-medium
-                                                    text-blue-600
+                                                    flex
+                                                    items-start
+                                                    justify-between
+                                                    gap-3
                                                 "
                                             >
-                                                {formatProgrammeType(
-                                                    programme?.programmeType
-                                                )}
-                                            </span>
+                                                <span
+                                                    className="
+                                                        rounded-full
+                                                        bg-blue-50
+                                                        px-2.5
+                                                        py-1
+                                                        text-[7px]
+                                                        font-semibold
+                                                        text-blue-600
+                                                    "
+                                                >
+                                                    {formatProgrammeType(
+                                                        programme?.programmeType
+                                                    )}
+                                                </span>
+
+
+                                                <StatusBadge
+                                                    status={
+                                                        programme?.status ||
+                                                        "active"
+                                                    }
+                                                />
+                                            </div>
 
 
                                             <h3
                                                 className="
-                                                    mt-3
-                                                    text-[11px]
-                                                    font-semibold
-                                                    leading-5
-                                                    text-slate-700
+                                                    mt-4
+                                                    text-[15px]
+                                                    font-bold
+                                                    text-[#172033]
                                                 "
                                             >
                                                 {
@@ -672,10 +420,11 @@ function TraineeDashboard() {
                                                 <p
                                                     className="
                                                         mt-2
-                                                        line-clamp-2
-                                                        text-[8px]
-                                                        leading-4
-                                                        text-slate-400
+                                                        line-clamp-3
+                                                        text-[9px]
+                                                        font-medium
+                                                        leading-5
+                                                        text-slate-600
                                                     "
                                                 >
                                                     {
@@ -683,35 +432,64 @@ function TraineeDashboard() {
                                                     }
                                                 </p>
                                             )}
+                                        </div>
 
 
-                                            <div
+                                        <div
+                                            className="
+                                                p-4
+                                                sm:p-5
+                                            "
+                                        >
+                                            <ActionButton
+                                                variant="primary"
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/my-training/${programme._id}`
+                                                    )
+                                                }
                                                 className="
-                                                    mt-auto
-                                                    pt-4
+                                                    w-full
                                                 "
                                             >
-                                                <ActionButton
-                                                    variant="primary"
-                                                    onClick={() =>
-                                                        handleStart(
-                                                            assignment
-                                                        )
-                                                    }
-                                                    className="
-                                                        w-full
-                                                        justify-center
-                                                    "
-                                                >
-                                                    Start Learning
-                                                </ActionButton>
-                                            </div>
-                                        </article>
-                                    );
-                                }
-                            )}
-                        </div>
-                    )}
+                                                Start Learning
+                                            </ActionButton>
+                                        </div>
+                                    </article>
+                                );
+                            }
+                        )}
+                    </section>
+                )}
+
+
+                {/* SMALL STATS */}
+
+                <section
+                    className="
+                        grid
+                        gap-3
+                        sm:grid-cols-3
+                    "
+                >
+                    <SmallStat
+                        label="Assigned"
+                        value={
+                            validAssignments.length
+                        }
+                    />
+
+                    <SmallStat
+                        label="Available"
+                        value={
+                            activeAssignments.length
+                        }
+                    />
+
+                    <SmallStat
+                        label="Account"
+                        value="Active"
+                    />
                 </section>
             </div>
         </DashboardLayout>
@@ -719,11 +497,7 @@ function TraineeDashboard() {
 }
 
 
-// ======================================================
-// STAT
-// ======================================================
-
-function TraineeStat({
+function SmallStat({
     label,
     value,
 }) {
@@ -741,7 +515,8 @@ function TraineeStat({
             <p
                 className="
                     text-[8px]
-                    text-slate-400
+                    font-medium
+                    text-slate-600
                 "
             >
                 {label}
@@ -750,10 +525,10 @@ function TraineeStat({
 
             <p
                 className="
-                    mt-1
-                    text-xl
+                    mt-2
+                    text-[18px]
                     font-bold
-                    text-slate-800
+                    text-[#172033]
                 "
             >
                 {value}

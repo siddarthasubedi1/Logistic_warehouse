@@ -14,15 +14,13 @@ function LearningSectionTable({
     onMoveDown,
 }) {
     if (
-        !Array.isArray(
-            sections
-        ) ||
+        !Array.isArray(sections) ||
         sections.length === 0
     ) {
         return (
             <EmptyState
                 title="No learning sections found."
-                description="Add the first learning section to this programme."
+                description="Add the first learning section to this training programme."
                 icon="training"
             />
         );
@@ -30,16 +28,13 @@ function LearningSectionTable({
 
 
     const reordering =
-        processingId ===
-        "reorder";
+        processingId === "reorder";
 
 
     return (
-        <div className="w-full">
+        <div className="w-full min-w-0">
 
-            {/* ================================================= */}
-            {/* NOTICE */}
-            {/* ================================================= */}
+            {/* PROGRAMME INACTIVE */}
 
             {programmeInactive && (
                 <div
@@ -62,19 +57,19 @@ function LearningSectionTable({
                         <div
                             className="
                                 flex
-                                h-7
-                                w-7
+                                h-8
+                                w-8
                                 shrink-0
                                 items-center
                                 justify-center
                                 rounded-full
                                 bg-white
+                                text-[11px]
+                                font-bold
                                 text-amber-600
                             "
                         >
-                            <span className="text-[10px] font-bold">
-                                !
-                            </span>
+                            !
                         </div>
 
 
@@ -82,23 +77,23 @@ function LearningSectionTable({
                             <p
                                 className="
                                     text-[9px]
-                                    font-medium
-                                    text-amber-700
+                                    font-bold
+                                    text-amber-800
                                 "
                             >
-                                This programme is inactive.
+                                Programme inactive
                             </p>
-
 
                             <p
                                 className="
                                     mt-1
                                     text-[8px]
+                                    font-medium
                                     leading-4
-                                    text-amber-600
+                                    text-amber-700
                                 "
                             >
-                                Sections cannot be edited or reordered until the programme is reactivated.
+                                Reactivate the programme before editing or reordering its learning sections.
                             </p>
                         </div>
                     </div>
@@ -115,24 +110,24 @@ function LearningSectionTable({
                         px-4
                         py-2.5
                         text-[8px]
-                        font-medium
-                        text-blue-600
+                        font-semibold
+                        text-blue-700
                         sm:px-5
                     "
                 >
-                    Updating section order...
+                    Updating learning section order...
                 </div>
             )}
 
 
-            {/* ================================================= */}
-            {/* MOBILE */}
-            {/* ================================================= */}
+            {/* MOBILE / TABLET */}
 
             <div
                 className="
-                    space-y-3
+                    grid
+                    gap-3
                     p-4
+                    md:grid-cols-2
                     lg:hidden
                 "
             >
@@ -141,9 +136,10 @@ function LearningSectionTable({
                         section,
                         index
                     ) => (
-                        <LearningSectionCard
+                        <SectionCard
                             key={
-                                section._id
+                                section._id ||
+                                index
                             }
                             section={
                                 section
@@ -181,9 +177,7 @@ function LearningSectionTable({
             </div>
 
 
-            {/* ================================================= */}
-            {/* DESKTOP TABLE */}
-            {/* ================================================= */}
+            {/* DESKTOP */}
 
             <div
                 className="
@@ -196,13 +190,10 @@ function LearningSectionTable({
                     className="
                         min-w-[900px]
                         w-full
-                        border-collapse
                     "
                 >
                     <thead
                         className="
-                            border-b
-                            border-slate-200
                             bg-slate-50
                         "
                     >
@@ -212,7 +203,7 @@ function LearningSectionTable({
                             </TableHead>
 
                             <TableHead>
-                                Section
+                                Learning Section
                             </TableHead>
 
                             <TableHead>
@@ -241,27 +232,23 @@ function LearningSectionTable({
                                     section._id ||
                                     reordering;
 
-
                                 const inactive =
                                     section.status ===
                                     "inactive";
 
-
                                 return (
                                     <tr
                                         key={
-                                            section._id
+                                            section._id ||
+                                            index
                                         }
                                         className="
-                                            border-b
+                                            border-t
                                             border-slate-100
-                                            bg-white
-                                            last:border-0
+                                            transition
                                             hover:bg-slate-50/60
                                         "
                                     >
-                                        {/* ORDER */}
-
                                         <td
                                             className="
                                                 px-5
@@ -280,20 +267,17 @@ function LearningSectionTable({
                                                         flex
                                                         h-7
                                                         w-7
+                                                        shrink-0
                                                         items-center
                                                         justify-center
                                                         rounded-full
                                                         bg-blue-50
                                                         text-[8px]
-                                                        font-semibold
+                                                        font-bold
                                                         text-blue-600
                                                     "
                                                 >
-                                                    {
-                                                        section.order ??
-                                                        index +
-                                                        1
-                                                    }
+                                                    {index + 1}
                                                 </span>
 
 
@@ -304,8 +288,8 @@ function LearningSectionTable({
                                                         gap-1
                                                     "
                                                 >
-                                                    <OrderButton
-                                                        direction="up"
+                                                    <button
+                                                        type="button"
                                                         disabled={
                                                             programmeInactive ||
                                                             processing ||
@@ -314,15 +298,23 @@ function LearningSectionTable({
                                                         }
                                                         onClick={() =>
                                                             onMoveUp?.(
-                                                                section,
-                                                                index
+                                                                section
                                                             )
                                                         }
-                                                    />
+                                                        className="
+                                                            text-[9px]
+                                                            font-bold
+                                                            text-slate-500
+                                                            hover:text-blue-600
+                                                            disabled:cursor-not-allowed
+                                                            disabled:opacity-30
+                                                        "
+                                                    >
+                                                        ↑
+                                                    </button>
 
-
-                                                    <OrderButton
-                                                        direction="down"
+                                                    <button
+                                                        type="button"
                                                         disabled={
                                                             programmeInactive ||
                                                             processing ||
@@ -332,17 +324,24 @@ function LearningSectionTable({
                                                         }
                                                         onClick={() =>
                                                             onMoveDown?.(
-                                                                section,
-                                                                index
+                                                                section
                                                             )
                                                         }
-                                                    />
+                                                        className="
+                                                            text-[9px]
+                                                            font-bold
+                                                            text-slate-500
+                                                            hover:text-blue-600
+                                                            disabled:cursor-not-allowed
+                                                            disabled:opacity-30
+                                                        "
+                                                    >
+                                                        ↓
+                                                    </button>
                                                 </div>
                                             </div>
                                         </td>
 
-
-                                        {/* SECTION */}
 
                                         <td
                                             className="
@@ -357,38 +356,30 @@ function LearningSectionTable({
                                             >
                                                 <p
                                                     className="
-                                                        truncate
                                                         text-[9px]
-                                                        font-semibold
-                                                        text-slate-700
+                                                        font-bold
+                                                        text-slate-800
                                                     "
                                                 >
-                                                    {
-                                                        section.title
-                                                    }
+                                                    {section.title}
                                                 </p>
 
-
-                                                {section.content && (
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            line-clamp-2
-                                                            text-[7px]
-                                                            leading-4
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        {
-                                                            section.content
-                                                        }
-                                                    </p>
-                                                )}
+                                                <p
+                                                    className="
+                                                        mt-1
+                                                        line-clamp-2
+                                                        text-[7px]
+                                                        font-medium
+                                                        leading-4
+                                                        text-slate-500
+                                                    "
+                                                >
+                                                    {section.content ||
+                                                        "No content"}
+                                                </p>
                                             </div>
                                         </td>
 
-
-                                        {/* IMAGE */}
 
                                         <td
                                             className="
@@ -406,9 +397,9 @@ function LearningSectionTable({
                                                         section.title
                                                     }
                                                     className="
-                                                        h-10
-                                                        w-14
-                                                        rounded-md
+                                                        h-12
+                                                        w-16
+                                                        rounded-lg
                                                         border
                                                         border-slate-200
                                                         object-cover
@@ -418,16 +409,15 @@ function LearningSectionTable({
                                                 <span
                                                     className="
                                                         text-[8px]
+                                                        font-medium
                                                         text-slate-400
                                                     "
                                                 >
-                                                    —
+                                                    No image
                                                 </span>
                                             )}
                                         </td>
 
-
-                                        {/* STATUS */}
 
                                         <td
                                             className="
@@ -437,13 +427,12 @@ function LearningSectionTable({
                                         >
                                             <StatusBadge
                                                 status={
-                                                    section.status
+                                                    section.status ||
+                                                    "active"
                                                 }
                                             />
                                         </td>
 
-
-                                        {/* ACTIONS */}
 
                                         <td
                                             className="
@@ -520,11 +509,7 @@ function LearningSectionTable({
 }
 
 
-// ======================================================
-// MOBILE CARD
-// ======================================================
-
-function LearningSectionCard({
+function SectionCard({
     section,
     index,
     total,
@@ -542,7 +527,6 @@ function LearningSectionCard({
         processingId ===
         "reorder";
 
-
     const inactive =
         section.status ===
         "inactive";
@@ -551,142 +535,13 @@ function LearningSectionCard({
     return (
         <article
             className="
-                rounded-lg
+                overflow-hidden
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
-                p-4
             "
         >
-            <div
-                className="
-                    flex
-                    items-start
-                    justify-between
-                    gap-3
-                "
-            >
-                <div
-                    className="
-                        flex
-                        min-w-0
-                        items-start
-                        gap-3
-                    "
-                >
-                    <span
-                        className="
-                            flex
-                            h-7
-                            w-7
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-blue-50
-                            text-[8px]
-                            font-semibold
-                            text-blue-600
-                        "
-                    >
-                        {
-                            section.order ??
-                            index +
-                            1
-                        }
-                    </span>
-
-
-                    <div
-                        className="
-                            min-w-0
-                        "
-                    >
-                        <h3
-                            className="
-                                break-words
-                                text-[10px]
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
-                            {section.title}
-                        </h3>
-
-
-                        <div
-                            className="
-                                mt-2
-                            "
-                        >
-                            <StatusBadge
-                                status={
-                                    section.status
-                                }
-                            />
-                        </div>
-                    </div>
-                </div>
-
-
-                <div
-                    className="
-                        flex
-                        gap-1
-                    "
-                >
-                    <OrderButton
-                        direction="up"
-                        disabled={
-                            programmeInactive ||
-                            processing ||
-                            index ===
-                            0
-                        }
-                        onClick={() =>
-                            onMoveUp?.(
-                                section,
-                                index
-                            )
-                        }
-                    />
-
-
-                    <OrderButton
-                        direction="down"
-                        disabled={
-                            programmeInactive ||
-                            processing ||
-                            index ===
-                            total -
-                            1
-                        }
-                        onClick={() =>
-                            onMoveDown?.(
-                                section,
-                                index
-                            )
-                        }
-                    />
-                </div>
-            </div>
-
-
-            {section.content && (
-                <p
-                    className="
-                        mt-3
-                        line-clamp-3
-                        text-[8px]
-                        leading-4
-                        text-slate-500
-                    "
-                >
-                    {section.content}
-                </p>
-            )}
-
-
             {section.imageUrl && (
                 <img
                     src={
@@ -697,12 +552,8 @@ function LearningSectionCard({
                         section.title
                     }
                     className="
-                        mt-3
-                        max-h-[170px]
+                        h-36
                         w-full
-                        rounded-lg
-                        border
-                        border-slate-200
                         object-cover
                     "
                 />
@@ -711,128 +562,197 @@ function LearningSectionCard({
 
             <div
                 className="
-                    mt-4
-                    grid
-                    grid-cols-2
-                    gap-2
-                    border-t
-                    border-slate-100
-                    pt-4
+                    p-4
                 "
             >
-                <ActionButton
-                    variant="secondary"
-                    disabled={
-                        programmeInactive ||
-                        processing
-                    }
-                    onClick={() =>
-                        onEdit?.(
-                            section
-                        )
-                    }
+                <div
                     className="
-                        w-full
-                        justify-center
+                        flex
+                        items-start
+                        justify-between
+                        gap-3
                     "
                 >
-                    Edit
-                </ActionButton>
+                    <span
+                        className="
+                            flex
+                            h-7
+                            w-7
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-blue-50
+                            text-[8px]
+                            font-bold
+                            text-blue-600
+                        "
+                    >
+                        {index + 1}
+                    </span>
+
+                    <StatusBadge
+                        status={
+                            section.status ||
+                            "active"
+                        }
+                    />
+                </div>
 
 
-                {inactive ? (
+                <h3
+                    className="
+                        mt-3
+                        text-[10px]
+                        font-bold
+                        text-slate-800
+                    "
+                >
+                    {section.title}
+                </h3>
+
+
+                <p
+                    className="
+                        mt-2
+                        line-clamp-3
+                        text-[8px]
+                        font-medium
+                        leading-5
+                        text-slate-600
+                    "
+                >
+                    {section.content ||
+                        "No learning content."}
+                </p>
+
+
+                <div
+                    className="
+                        mt-4
+                        flex
+                        gap-2
+                    "
+                >
+                    <button
+                        type="button"
+                        disabled={
+                            programmeInactive ||
+                            processing ||
+                            index === 0
+                        }
+                        onClick={() =>
+                            onMoveUp?.(
+                                section
+                            )
+                        }
+                        className="
+                            min-h-[36px]
+                            flex-1
+                            rounded-lg
+                            border
+                            border-slate-300
+                            bg-white
+                            text-[8px]
+                            font-semibold
+                            text-slate-600
+                            disabled:opacity-40
+                        "
+                    >
+                        ↑ Up
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled={
+                            programmeInactive ||
+                            processing ||
+                            index ===
+                            total - 1
+                        }
+                        onClick={() =>
+                            onMoveDown?.(
+                                section
+                            )
+                        }
+                        className="
+                            min-h-[36px]
+                            flex-1
+                            rounded-lg
+                            border
+                            border-slate-300
+                            bg-white
+                            text-[8px]
+                            font-semibold
+                            text-slate-600
+                            disabled:opacity-40
+                        "
+                    >
+                        ↓ Down
+                    </button>
+                </div>
+
+
+                <div
+                    className="
+                        mt-3
+                        grid
+                        grid-cols-2
+                        gap-2
+                    "
+                >
                     <ActionButton
-                        variant="success"
+                        variant="secondary"
                         disabled={
                             programmeInactive ||
                             processing
                         }
                         onClick={() =>
-                            onReactivate?.(
+                            onEdit?.(
                                 section
                             )
                         }
-                        className="
-                            w-full
-                            justify-center
-                        "
                     >
-                        Reactivate
+                        Edit
                     </ActionButton>
-                ) : (
-                    <ActionButton
-                        variant="warning"
-                        disabled={
-                            programmeInactive ||
-                            processing
-                        }
-                        onClick={() =>
-                            onDeactivate?.(
-                                section
-                            )
-                        }
-                        className="
-                            w-full
-                            justify-center
-                        "
-                    >
-                        Deactivate
-                    </ActionButton>
-                )}
+
+
+                    {inactive ? (
+                        <ActionButton
+                            variant="success"
+                            disabled={
+                                programmeInactive ||
+                                processing
+                            }
+                            onClick={() =>
+                                onReactivate?.(
+                                    section
+                                )
+                            }
+                        >
+                            Reactivate
+                        </ActionButton>
+                    ) : (
+                        <ActionButton
+                            variant="warning"
+                            disabled={
+                                programmeInactive ||
+                                processing
+                            }
+                            onClick={() =>
+                                onDeactivate?.(
+                                    section
+                                )
+                            }
+                        >
+                            Deactivate
+                        </ActionButton>
+                    )}
+                </div>
             </div>
         </article>
     );
 }
 
-
-// ======================================================
-// ORDER BUTTON
-// ======================================================
-
-function OrderButton({
-    direction,
-    disabled,
-    onClick,
-}) {
-    return (
-        <button
-            type="button"
-            disabled={
-                disabled
-            }
-            onClick={
-                onClick
-            }
-            className="
-                flex
-                h-6
-                w-6
-                items-center
-                justify-center
-                rounded-md
-                border
-                border-slate-200
-                bg-white
-                text-[9px]
-                text-slate-500
-                transition
-                hover:bg-slate-50
-                disabled:cursor-not-allowed
-                disabled:opacity-30
-            "
-        >
-            {direction ===
-                "up"
-                ? "↑"
-                : "↓"}
-        </button>
-    );
-}
-
-
-// ======================================================
-// TABLE HEAD
-// ======================================================
 
 function TableHead({
     children,
@@ -844,10 +764,10 @@ function TableHead({
                 px-5
                 py-3
                 text-[7px]
-                font-semibold
+                font-bold
                 uppercase
                 tracking-wide
-                text-slate-400
+                text-slate-500
 
                 ${right
                     ? "text-right"

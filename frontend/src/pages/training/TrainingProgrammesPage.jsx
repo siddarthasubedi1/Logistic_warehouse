@@ -9,33 +9,20 @@ import {
 
 
 function TrainingProgrammesPage() {
-    // ======================================================
-    // CURRENT USER
-    // ======================================================
-
     const user =
         getSessionUser();
-
 
     const role =
         user?.role ||
         "";
 
 
-    // ======================================================
-    // PAGE DESCRIPTION
-    // ======================================================
-
     const description =
         role ===
             "admin"
-            ? "Create and manage workplace safety training programmes."
-            : "Create and manage training programmes available to your Trainer account.";
+            ? "Create, manage and control workplace safety training programmes."
+            : "Create and manage programmes available to your assigned training area.";
 
-
-    // ======================================================
-    // PAGE
-    // ======================================================
 
     return (
         <DashboardLayout

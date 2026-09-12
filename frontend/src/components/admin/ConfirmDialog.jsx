@@ -9,7 +9,9 @@ function ConfirmDialog({
     onConfirm,
     onCancel,
 }) {
-    if (!open) {
+    if (
+        !open
+    ) {
         return null;
     }
 
@@ -48,7 +50,7 @@ function ConfirmDialog({
                 "✓",
         },
 
-        primary: {
+        info: {
             icon:
                 "bg-blue-50 text-blue-600",
 
@@ -56,7 +58,7 @@ function ConfirmDialog({
                 "bg-blue-600 hover:bg-blue-700",
 
             symbol:
-                "?",
+                "i",
         },
     };
 
@@ -65,7 +67,7 @@ function ConfirmDialog({
         variants[
         variant
         ] ||
-        variants.primary;
+        variants.danger;
 
 
     return (
@@ -73,37 +75,28 @@ function ConfirmDialog({
             className="
                 fixed
                 inset-0
-                z-[110]
+                z-[250]
                 flex
                 items-center
                 justify-center
-                bg-slate-950/45
+                overflow-y-auto
+                bg-slate-950/55
                 p-4
+                backdrop-blur-[1px]
             "
-            onMouseDown={(
-                event
-            ) => {
-                if (
-                    event.target ===
-                    event.currentTarget &&
-                    !loading
-                ) {
-                    onCancel?.();
-                }
-            }}
         >
-            <div
+            <section
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="confirm-dialog-title"
                 className="
                     w-full
                     max-w-[420px]
+                    overflow-hidden
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    shadow-xl
+                    shadow-2xl
                 "
             >
                 <div
@@ -122,18 +115,21 @@ function ConfirmDialog({
                         <div
                             className={`
                                 flex
-                                h-9
-                                w-9
+                                h-10
+                                w-10
                                 shrink-0
                                 items-center
                                 justify-center
                                 rounded-full
-                                text-[12px]
+                                text-[15px]
                                 font-bold
+
                                 ${current.icon}
                             `}
                         >
-                            {current.symbol}
+                            {
+                                current.symbol
+                            }
                         </div>
 
 
@@ -144,11 +140,10 @@ function ConfirmDialog({
                             "
                         >
                             <h2
-                                id="confirm-dialog-title"
                                 className="
                                     text-[13px]
-                                    font-semibold
-                                    text-slate-800
+                                    font-bold
+                                    text-[#172033]
                                 "
                             >
                                 {title}
@@ -160,8 +155,9 @@ function ConfirmDialog({
                                     className="
                                         mt-2
                                         text-[9px]
+                                        font-medium
                                         leading-5
-                                        text-slate-500
+                                        text-slate-600
                                     "
                                 >
                                     {message}
@@ -183,22 +179,23 @@ function ConfirmDialog({
                     >
                         <button
                             type="button"
-                            disabled={
-                                loading
-                            }
                             onClick={
                                 onCancel
                             }
+                            disabled={
+                                loading
+                            }
                             className="
+                                min-h-[38px]
                                 rounded-lg
                                 border
                                 border-slate-300
                                 bg-white
                                 px-4
-                                py-2.5
                                 text-[9px]
-                                font-medium
-                                text-slate-600
+                                font-semibold
+                                text-slate-700
+                                transition
                                 hover:bg-slate-50
                                 disabled:opacity-50
                             "
@@ -209,20 +206,23 @@ function ConfirmDialog({
 
                         <button
                             type="button"
-                            disabled={
-                                loading
-                            }
                             onClick={
                                 onConfirm
                             }
+                            disabled={
+                                loading
+                            }
                             className={`
+                                min-h-[38px]
                                 rounded-lg
                                 px-4
-                                py-2.5
                                 text-[9px]
-                                font-medium
+                                font-semibold
                                 text-white
+                                transition
+                                disabled:cursor-not-allowed
                                 disabled:opacity-50
+
                                 ${current.button}
                             `}
                         >
@@ -232,7 +232,7 @@ function ConfirmDialog({
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

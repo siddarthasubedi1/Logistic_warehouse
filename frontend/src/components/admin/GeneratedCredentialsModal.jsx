@@ -3,10 +3,6 @@ import {
 } from "react";
 
 
-// ======================================================
-// GENERATED CREDENTIALS
-// ======================================================
-
 function GeneratedCredentialsModal({
     open = false,
     credentials = null,
@@ -52,16 +48,19 @@ function GeneratedCredentialsModal({
         "";
 
 
-    // ======================================================
-    // COPY
-    // ======================================================
+    const role =
+        user?.role ||
+        "";
+
 
     const copyValue =
         async (
             type,
             value
         ) => {
-            if (!value) {
+            if (
+                !value
+            ) {
                 return;
             }
 
@@ -97,10 +96,6 @@ function GeneratedCredentialsModal({
         };
 
 
-    // ======================================================
-    // GMAIL
-    // ======================================================
-
     const handleSendEmail =
         () => {
             if (
@@ -113,35 +108,28 @@ function GeneratedCredentialsModal({
 
 
             const subject =
-                "UK LogiWare - Password Reset Credentials";
+                "UK LogiWare - Temporary Login Credentials";
 
 
             const body =
                 `Hello ${fullName || username},
 
-Your UK LogiWare password has been reset.
+Your UK LogiWare temporary login credentials are:
 
 Username: ${username}
 Temporary Password: ${password}
 
-Login here:
-http://localhost:5173/login
+Please sign in using these credentials. You will be required to create a new password before accessing your account.
 
-Please change your temporary password after logging in.
-
-Regards,
-UK LogiWare Administrator`;
+UK LogiWare Safety Training`;
 
 
             const gmailUrl =
-                "https://mail.google.com/mail/?view=cm&fs=1" +
-                `&to=${encodeURIComponent(
+                `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
                     email
-                )}` +
-                `&su=${encodeURIComponent(
+                )}&su=${encodeURIComponent(
                     subject
-                )}` +
-                `&body=${encodeURIComponent(
+                )}&body=${encodeURIComponent(
                     body
                 )}`;
 
@@ -154,43 +142,38 @@ UK LogiWare Administrator`;
         };
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <div
             className="
                 fixed
                 inset-0
-                z-[120]
+                z-[260]
                 flex
                 items-center
                 justify-center
                 overflow-y-auto
-                bg-slate-950/45
-                p-4
+                bg-slate-950/60
+                p-3
+                backdrop-blur-[2px]
+                sm:p-4
             "
         >
-            <div
+            <section
                 role="dialog"
                 aria-modal="true"
                 className="
                     my-auto
                     w-full
-                    max-w-lg
+                    max-w-[550px]
                     overflow-hidden
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    shadow-xl
+                    shadow-2xl
                 "
             >
-
-                {/* ================================================= */}
                 {/* HEADER */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -205,51 +188,40 @@ UK LogiWare Administrator`;
                     "
                 >
                     <div>
-                        <div
+                        <p
                             className="
-                                flex
-                                items-center
-                                gap-2
+                                text-[7px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.12em]
+                                text-emerald-600
                             "
                         >
-                            <span
-                                className="
-                                    flex
-                                    h-7
-                                    w-7
-                                    items-center
-                                    justify-center
-                                    rounded-full
-                                    bg-emerald-50
-                                    text-[10px]
-                                    font-bold
-                                    text-emerald-600
-                                "
-                            >
-                                ✓
-                            </span>
+                            Account Created
+                        </p>
 
 
-                            <h2
-                                className="
-                                    text-[13px]
-                                    font-semibold
-                                    text-slate-800
-                                "
-                            >
-                                Password Reset Complete
-                            </h2>
-                        </div>
+                        <h2
+                            className="
+                                mt-1
+                                text-[15px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            Credentials Generated Successfully
+                        </h2>
 
 
                         <p
                             className="
-                                mt-2
+                                mt-1
                                 text-[8px]
-                                text-slate-400
+                                font-medium
+                                text-slate-500
                             "
                         >
-                            Save or send these temporary credentials.
+                            These temporary credentials are shown only once.
                         </p>
                     </div>
 
@@ -264,11 +236,13 @@ UK LogiWare Administrator`;
                             flex
                             h-8
                             w-8
+                            shrink-0
                             items-center
                             justify-center
                             rounded-md
                             text-lg
                             text-slate-400
+                            transition
                             hover:bg-slate-100
                             hover:text-slate-700
                         "
@@ -278,22 +252,20 @@ UK LogiWare Administrator`;
                 </div>
 
 
-                {/* ================================================= */}
                 {/* BODY */}
-                {/* ================================================= */}
 
                 <div
                     className="
-                        p-5
+                        p-4
+                        sm:p-5
                     "
                 >
-
-                    {/* USER */}
-
                     {user && (
                         <div
                             className="
                                 rounded-lg
+                                border
+                                border-slate-200
                                 bg-slate-50
                                 p-4
                             "
@@ -301,9 +273,10 @@ UK LogiWare Administrator`;
                             <p
                                 className="
                                     text-[7px]
+                                    font-semibold
                                     uppercase
                                     tracking-wide
-                                    text-slate-400
+                                    text-slate-500
                                 "
                             >
                                 Account
@@ -314,8 +287,8 @@ UK LogiWare Administrator`;
                                 className="
                                     mt-1
                                     text-[10px]
-                                    font-semibold
-                                    text-slate-700
+                                    font-bold
+                                    text-slate-800
                                 "
                             >
                                 {fullName ||
@@ -329,17 +302,31 @@ UK LogiWare Administrator`;
                                         mt-1
                                         break-all
                                         text-[8px]
-                                        text-slate-400
+                                        font-medium
+                                        text-slate-500
                                     "
                                 >
                                     {email}
                                 </p>
                             )}
+
+
+                            {role && (
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[8px]
+                                        font-medium
+                                        capitalize
+                                        text-slate-500
+                                    "
+                                >
+                                    Role: {role}
+                                </p>
+                            )}
                         </div>
                     )}
 
-
-                    {/* CREDENTIALS */}
 
                     <div
                         className="
@@ -386,8 +373,6 @@ UK LogiWare Administrator`;
                     </div>
 
 
-                    {/* INFO */}
-
                     <div
                         className="
                             mt-4
@@ -402,18 +387,15 @@ UK LogiWare Administrator`;
                         <p
                             className="
                                 text-[8px]
+                                font-medium
                                 leading-5
-                                text-amber-700
+                                text-amber-800
                             "
                         >
-                            The Trainer or Trainee should use this
-                            temporary password to log in and then
-                            create a new password.
+                            The Trainer or Trainee must change this temporary password after signing in before accessing the dashboard.
                         </p>
                     </div>
 
-
-                    {/* ACTIONS */}
 
                     <div
                         className="
@@ -432,19 +414,20 @@ UK LogiWare Administrator`;
                                     handleSendEmail
                                 }
                                 className="
+                                    min-h-[40px]
                                     rounded-lg
                                     border
                                     border-slate-300
                                     bg-white
                                     px-4
-                                    py-2.5
                                     text-[9px]
-                                    font-medium
-                                    text-slate-600
+                                    font-semibold
+                                    text-slate-700
+                                    transition
                                     hover:bg-slate-50
                                 "
                             >
-                                Send by Gmail
+                                Send Credentials by Gmail
                             </button>
                         )}
 
@@ -455,13 +438,14 @@ UK LogiWare Administrator`;
                                 onClose
                             }
                             className="
+                                min-h-[40px]
                                 rounded-lg
                                 bg-blue-600
                                 px-5
-                                py-2.5
                                 text-[9px]
-                                font-medium
+                                font-semibold
                                 text-white
+                                transition
                                 hover:bg-blue-700
                             "
                         >
@@ -469,15 +453,11 @@ UK LogiWare Administrator`;
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }
 
-
-// ======================================================
-// CREDENTIAL
-// ======================================================
 
 function CredentialItem({
     label,
@@ -488,6 +468,7 @@ function CredentialItem({
     return (
         <div
             className="
+                min-w-0
                 rounded-lg
                 border
                 border-slate-200
@@ -506,9 +487,10 @@ function CredentialItem({
                 <p
                     className="
                         text-[7px]
+                        font-semibold
                         uppercase
                         tracking-wide
-                        text-slate-400
+                        text-slate-500
                     "
                 >
                     {label}
@@ -521,8 +503,9 @@ function CredentialItem({
                         onCopy
                     }
                     className="
+                        shrink-0
                         text-[8px]
-                        font-medium
+                        font-semibold
                         text-blue-600
                         hover:text-blue-700
                     "
@@ -544,7 +527,7 @@ function CredentialItem({
                     py-2.5
                     font-mono
                     text-[10px]
-                    font-semibold
+                    font-bold
                     text-slate-800
                 "
             >

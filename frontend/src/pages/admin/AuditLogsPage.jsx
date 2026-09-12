@@ -6,12 +6,13 @@ import {
 } from "react";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import FeedbackAlert from "../../components/ui/FeedbackAlert";
 
 import api from "../../services/api";
 
 
 // ======================================================
-// FORMAT HELPERS
+// HELPERS
 // ======================================================
 
 const formatDateTime = (
@@ -21,12 +22,10 @@ const formatDateTime = (
         return "—";
     }
 
-
     const date =
         new Date(
             value
         );
-
 
     if (
         Number.isNaN(
@@ -35,7 +34,6 @@ const formatDateTime = (
     ) {
         return "—";
     }
-
 
     return date.toLocaleString();
 };
@@ -48,10 +46,7 @@ const formatAction = (
         return "Unknown Action";
     }
 
-
-    return String(
-        value
-    )
+    return String(value)
         .replace(
             /_/g,
             " "
@@ -74,18 +69,22 @@ const getTargetUser = (
         log?.details
             ?.targetUser;
 
-
     if (!target) {
         return "—";
     }
 
+    if (
+        typeof target ===
+        "string"
+    ) {
+        return target;
+    }
 
     if (
         target.fullName
     ) {
         return target.fullName;
     }
-
 
     const fullName =
         [
@@ -95,7 +94,6 @@ const getTargetUser = (
             .filter(Boolean)
             .join(" ")
             .trim();
-
 
     return (
         fullName ||
@@ -115,17 +113,19 @@ const getDetailsMessage = (
         return log.details.message;
     }
 
-
     const target =
         getTargetUser(
             log
         );
 
-
-    return target !==
+    if (
+        target !==
         "—"
-        ? `Affected user: ${target}`
-        : "—";
+    ) {
+        return `Affected user: ${target}`;
+    }
+
+    return "—";
 };
 
 
@@ -139,7 +139,6 @@ function AuditLogsPage() {
         setLogs,
     ] = useState([]);
 
-
     const [
         pagination,
         setPagination,
@@ -150,30 +149,25 @@ function AuditLogsPage() {
         totalPages: 1,
     });
 
-
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("");
-
 
     const [
         statusFilter,
         setStatusFilter,
     ] = useState("");
 
-
     const [
         searchTerm,
         setSearchTerm,
     ] = useState("");
 
-
     const [
         loading,
         setLoading,
     ] = useState(true);
-
 
     const [
         error,
@@ -182,7 +176,7 @@ function AuditLogsPage() {
 
 
     // ======================================================
-    // LOAD AUDIT LOGS
+    // LOAD
     // ======================================================
 
     const loadAuditLogs =
@@ -194,12 +188,10 @@ function AuditLogsPage() {
                     setLoading(true);
                     setError("");
 
-
                     const params = {
                         page,
                         limit: 50,
                     };
-
 
                     if (
                         roleFilter
@@ -208,14 +200,12 @@ function AuditLogsPage() {
                             roleFilter;
                     }
 
-
                     if (
                         statusFilter
                     ) {
                         params.status =
                             statusFilter;
                     }
-
 
                     const response =
                         await api.get(
@@ -225,21 +215,16 @@ function AuditLogsPage() {
                             }
                         );
 
-
                     const responseLogs =
                         Array.isArray(
-                            response.data
-                                ?.logs
+                            response.data?.logs
                         )
-                            ? response.data
-                                .logs
+                            ? response.data.logs
                             : [];
-
 
                     setLogs(
                         responseLogs
                     );
-
 
                     setPagination(
                         response.data
@@ -258,7 +243,6 @@ function AuditLogsPage() {
                         "Load audit logs error:",
                         error
                     );
-
 
                     setError(
                         error.response
@@ -279,7 +263,9 @@ function AuditLogsPage() {
 
 
     useEffect(() => {
-        loadAuditLogs(1);
+        loadAuditLogs(
+            1
+        );
     }, [
         loadAuditLogs,
     ]);
@@ -290,50 +276,50 @@ function AuditLogsPage() {
     // ======================================================
 
     const visibleLogs =
-        useMemo(() => {
-            const query =
-                searchTerm
-                    .trim()
-                    .toLowerCase();
+        useMemo(
+            () => {
+                const query =
+                    searchTerm
+                        .trim()
+                        .toLowerCase();
 
-
-            if (!query) {
-                return logs;
-            }
-
-
-            return logs.filter(
-                (
-                    log
-                ) => {
-                    const text =
-                        [
-                            log.username,
-                            log.role,
-                            log.action,
-                            log.status,
-                            log.ipAddress,
-                            getTargetUser(
-                                log
-                            ),
-                            getDetailsMessage(
-                                log
-                            ),
-                        ]
-                            .filter(Boolean)
-                            .join(" ")
-                            .toLowerCase();
-
-
-                    return text.includes(
-                        query
-                    );
+                if (!query) {
+                    return logs;
                 }
-            );
-        }, [
-            logs,
-            searchTerm,
-        ]);
+
+                return logs.filter(
+                    (
+                        log
+                    ) => {
+                        const searchable =
+                            [
+                                log.username,
+                                log.role,
+                                log.action,
+                                log.status,
+                                log.ipAddress,
+                                getTargetUser(
+                                    log
+                                ),
+                                getDetailsMessage(
+                                    log
+                                ),
+                            ]
+                                .filter(Boolean)
+                                .join(" ")
+                                .toLowerCase();
+
+                        return searchable.includes(
+                            query
+                        );
+                    }
+                );
+            },
+            [
+                logs,
+                searchTerm,
+            ]
+        );
 
 
     const successCount =
@@ -349,7 +335,7 @@ function AuditLogsPage() {
         ).length;
 
 
-    const failureCount =
+    const failedCount =
         logs.filter(
             (
                 log
@@ -357,8 +343,8 @@ function AuditLogsPage() {
                 String(
                     log.status ||
                     ""
-                ).toLowerCase() ===
-                "failure"
+                ).toLowerCase() !==
+                "success"
         ).length;
 
 
@@ -366,28 +352,48 @@ function AuditLogsPage() {
         <DashboardLayout
             role="admin"
             title="Audit Logs"
-            subtitle="Review account and system activity."
+            subtitle="Review account activity and important system actions."
         >
-            <div className="space-y-4">
+            <div
+                className="
+                    space-y-4
+                "
+            >
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        error
+                    }
+                    onClose={() =>
+                        setError("")
+                    }
+                />
 
-                {/* ================================================= */}
+
                 {/* STATS */}
-                {/* ================================================= */}
 
                 <section
                     className="
                         grid
                         gap-3
-                        sm:grid-cols-3
+                        sm:grid-cols-2
+                        xl:grid-cols-4
                     "
                 >
                     <AuditStat
-                        label="Loaded Records"
+                        label="Total Records"
                         value={
+                            pagination.total ||
                             logs.length
                         }
                     />
 
+                    <AuditStat
+                        label="Current Page"
+                        value={
+                            logs.length
+                        }
+                    />
 
                     <AuditStat
                         label="Successful"
@@ -396,19 +402,16 @@ function AuditLogsPage() {
                         }
                     />
 
-
                     <AuditStat
-                        label="Failed"
+                        label="Other / Failed"
                         value={
-                            failureCount
+                            failedCount
                         }
                     />
                 </section>
 
 
-                {/* ================================================= */}
-                {/* MAIN CARD */}
-                {/* ================================================= */}
+                {/* LOGS */}
 
                 <section
                     className="
@@ -424,76 +427,35 @@ function AuditLogsPage() {
                         className="
                             border-b
                             border-slate-100
-                            px-5
+                            px-4
                             py-4
+                            sm:px-5
                         "
                     >
-                        <div
+                        <h2
                             className="
-                                flex
-                                flex-col
-                                gap-3
-                                lg:flex-row
-                                lg:items-center
-                                lg:justify-between
+                                text-[12px]
+                                font-bold
+                                text-[#172033]
                             "
                         >
-                            <div>
-                                <h2
-                                    className="
-                                        text-[12px]
-                                        font-semibold
-                                        text-slate-800
-                                    "
-                                >
-                                    Activity Records
-                                </h2>
+                            System Activity
+                        </h2>
 
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[8px]
-                                        text-slate-400
-                                    "
-                                >
-                                    {pagination.total} total records
-                                </p>
-                            </div>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    loadAuditLogs(
-                                        pagination.page
-                                    )
-                                }
-                                disabled={
-                                    loading
-                                }
-                                className="
-                                    rounded-lg
-                                    border
-                                    border-slate-300
-                                    bg-white
-                                    px-4
-                                    py-2.5
-                                    text-[9px]
-                                    text-slate-600
-                                    hover:bg-slate-50
-                                    disabled:opacity-50
-                                "
-                            >
-                                Refresh
-                            </button>
-                        </div>
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Search and filter recorded system activity.
+                        </p>
                     </div>
 
 
-                    {/* ================================================= */}
                     {/* FILTERS */}
-                    {/* ================================================= */}
 
                     <div
                         className="
@@ -501,8 +463,11 @@ function AuditLogsPage() {
                             gap-3
                             border-b
                             border-slate-100
-                            p-5
-                            md:grid-cols-3
+                            bg-slate-50/60
+                            p-4
+                            md:grid-cols-2
+                            xl:grid-cols-[2fr_1fr_1fr_auto]
+                            sm:p-5
                         "
                     >
                         <input
@@ -514,11 +479,10 @@ function AuditLogsPage() {
                                 event
                             ) =>
                                 setSearchTerm(
-                                    event.target
-                                        .value
+                                    event.target.value
                                 )
                             }
-                            placeholder="Search logs..."
+                            placeholder="Search action, username, IP or target..."
                             className={
                                 inputClass
                             }
@@ -533,8 +497,7 @@ function AuditLogsPage() {
                                 event
                             ) =>
                                 setRoleFilter(
-                                    event.target
-                                        .value
+                                    event.target.value
                                 )
                             }
                             className={
@@ -546,7 +509,7 @@ function AuditLogsPage() {
                             </option>
 
                             <option value="admin">
-                                Administrator
+                                Admin
                             </option>
 
                             <option value="trainer">
@@ -567,8 +530,7 @@ function AuditLogsPage() {
                                 event
                             ) =>
                                 setStatusFilter(
-                                    event.target
-                                        .value
+                                    event.target.value
                                 )
                             }
                             className={
@@ -583,64 +545,69 @@ function AuditLogsPage() {
                                 Success
                             </option>
 
-                            <option value="failure">
-                                Failure
+                            <option value="failed">
+                                Failed
                             </option>
                         </select>
+
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearchTerm("");
+                                setRoleFilter("");
+                                setStatusFilter("");
+                            }}
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                border
+                                border-slate-300
+                                bg-white
+                                px-4
+                                text-[8px]
+                                font-semibold
+                                text-slate-700
+                                hover:bg-slate-100
+                            "
+                        >
+                            Clear
+                        </button>
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* ERROR */}
-                    {/* ================================================= */}
-
-                    {error && (
-                        <div
-                            className="
-                                m-5
-                                rounded-lg
-                                border
-                                border-red-200
-                                bg-red-50
-                                p-4
-                                text-[9px]
-                                text-red-600
-                            "
-                        >
-                            {error}
-                        </div>
-                    )}
-
-
-                    {/* ================================================= */}
                     {/* LOADING */}
-                    {/* ================================================= */}
 
                     {loading && (
                         <div
                             className="
                                 py-12
                                 text-center
-                                text-[9px]
-                                text-slate-400
                             "
                         >
-                            Loading audit logs...
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                Loading audit logs...
+                            </p>
                         </div>
                     )}
 
 
-                    {/* ================================================= */}
-                    {/* MOBILE CARDS */}
-                    {/* ================================================= */}
+                    {/* MOBILE */}
 
                     {!loading &&
-                        !error && (
+                        visibleLogs.length >
+                        0 && (
                             <div
                                 className="
                                 divide-y
                                 divide-slate-100
-                                md:hidden
+                                lg:hidden
                             "
                             >
                                 {visibleLogs.map(
@@ -668,8 +635,8 @@ function AuditLogsPage() {
                                                     <p
                                                         className="
                                                         text-[10px]
-                                                        font-semibold
-                                                        text-slate-700
+                                                        font-bold
+                                                        text-slate-800
                                                     "
                                                     >
                                                         {formatAction(
@@ -677,12 +644,12 @@ function AuditLogsPage() {
                                                         )}
                                                     </p>
 
-
                                                     <p
                                                         className="
                                                         mt-1
                                                         text-[8px]
-                                                        text-slate-400
+                                                        font-medium
+                                                        text-slate-500
                                                     "
                                                     >
                                                         {formatDateTime(
@@ -690,7 +657,6 @@ function AuditLogsPage() {
                                                         )}
                                                     </p>
                                                 </div>
-
 
                                                 <AuditStatusBadge
                                                     status={
@@ -715,7 +681,6 @@ function AuditLogsPage() {
                                                     }
                                                 />
 
-
                                                 <MobileInfo
                                                     label="Role"
                                                     value={
@@ -723,7 +688,6 @@ function AuditLogsPage() {
                                                         "—"
                                                     }
                                                 />
-
 
                                                 <MobileInfo
                                                     label="Target"
@@ -733,7 +697,6 @@ function AuditLogsPage() {
                                                         )
                                                     }
                                                 />
-
 
                                                 <MobileInfo
                                                     label="IP Address"
@@ -745,17 +708,26 @@ function AuditLogsPage() {
                                             </div>
 
 
-                                            <p
+                                            <div
                                                 className="
-                                                text-[8px]
-                                                leading-4
-                                                text-slate-500
+                                                rounded-lg
+                                                bg-slate-50
+                                                p-3
                                             "
                                             >
-                                                {getDetailsMessage(
-                                                    log
-                                                )}
-                                            </p>
+                                                <p
+                                                    className="
+                                                    text-[8px]
+                                                    font-medium
+                                                    leading-5
+                                                    text-slate-600
+                                                "
+                                                >
+                                                    {getDetailsMessage(
+                                                        log
+                                                    )}
+                                                </p>
+                                            </div>
                                         </article>
                                     )
                                 )}
@@ -763,36 +735,32 @@ function AuditLogsPage() {
                         )}
 
 
-                    {/* ================================================= */}
-                    {/* DESKTOP TABLE */}
-                    {/* ================================================= */}
+                    {/* DESKTOP */}
 
                     {!loading &&
-                        !error && (
+                        visibleLogs.length >
+                        0 && (
                             <div
                                 className="
                                 hidden
                                 overflow-x-auto
-                                md:block
+                                lg:block
                             "
                             >
                                 <table
                                     className="
-                                    min-w-[950px]
+                                    min-w-[1000px]
                                     w-full
-                                    border-collapse
                                 "
                                 >
-                                    <thead>
-                                        <tr
-                                            className="
-                                            border-b
-                                            border-slate-200
-                                            bg-slate-50
-                                        "
-                                        >
+                                    <thead
+                                        className="
+                                        bg-slate-50
+                                    "
+                                    >
+                                        <tr>
                                             <AuditHead>
-                                                Date
+                                                Date & Time
                                             </AuditHead>
 
                                             <AuditHead>
@@ -808,15 +776,15 @@ function AuditLogsPage() {
                                             </AuditHead>
 
                                             <AuditHead>
-                                                Target User
-                                            </AuditHead>
-
-                                            <AuditHead>
-                                                IP Address
+                                                Target
                                             </AuditHead>
 
                                             <AuditHead>
                                                 Status
+                                            </AuditHead>
+
+                                            <AuditHead>
+                                                IP Address
                                             </AuditHead>
                                         </tr>
                                     </thead>
@@ -832,9 +800,9 @@ function AuditLogsPage() {
                                                         log._id
                                                     }
                                                     className="
-                                                    border-b
+                                                    border-t
                                                     border-slate-100
-                                                    last:border-0
+                                                    hover:bg-slate-50/60
                                                 "
                                                 >
                                                     <AuditCell>
@@ -843,12 +811,10 @@ function AuditLogsPage() {
                                                         )}
                                                     </AuditCell>
 
-
                                                     <AuditCell strong>
                                                         {log.username ||
                                                             "—"}
                                                     </AuditCell>
-
 
                                                     <AuditCell>
                                                         <AuditRoleBadge
@@ -858,13 +824,11 @@ function AuditLogsPage() {
                                                         />
                                                     </AuditCell>
 
-
-                                                    <AuditCell>
+                                                    <AuditCell strong>
                                                         {formatAction(
                                                             log.action
                                                         )}
                                                     </AuditCell>
-
 
                                                     <AuditCell>
                                                         {getTargetUser(
@@ -872,19 +836,17 @@ function AuditLogsPage() {
                                                         )}
                                                     </AuditCell>
 
-
-                                                    <AuditCell>
-                                                        {log.ipAddress ||
-                                                            "—"}
-                                                    </AuditCell>
-
-
                                                     <AuditCell>
                                                         <AuditStatusBadge
                                                             status={
                                                                 log.status
                                                             }
                                                         />
+                                                    </AuditCell>
+
+                                                    <AuditCell>
+                                                        {log.ipAddress ||
+                                                            "—"}
                                                     </AuditCell>
                                                 </tr>
                                             )
@@ -898,25 +860,38 @@ function AuditLogsPage() {
                     {/* EMPTY */}
 
                     {!loading &&
-                        !error &&
                         visibleLogs.length ===
                         0 && (
                             <div
                                 className="
                                 py-12
                                 text-center
-                                text-[9px]
-                                text-slate-400
                             "
                             >
-                                No audit logs found.
+                                <p
+                                    className="
+                                    text-[10px]
+                                    font-bold
+                                    text-slate-700
+                                "
+                                >
+                                    No audit logs found
+                                </p>
+
+                                <p
+                                    className="
+                                    mt-1
+                                    text-[8px]
+                                    text-slate-500
+                                "
+                                >
+                                    Try changing the current filters.
+                                </p>
                             </div>
                         )}
 
 
-                    {/* ================================================= */}
                     {/* PAGINATION */}
-                    {/* ================================================= */}
 
                     <div
                         className="
@@ -925,20 +900,26 @@ function AuditLogsPage() {
                             gap-3
                             border-t
                             border-slate-100
-                            px-5
+                            px-4
                             py-4
                             sm:flex-row
                             sm:items-center
                             sm:justify-between
+                            sm:px-5
                         "
                     >
                         <p
                             className="
                                 text-[8px]
-                                text-slate-400
+                                font-medium
+                                text-slate-500
                             "
                         >
-                            Page {pagination.page} of{" "}
+                            Page{" "}
+                            {
+                                pagination.page
+                            }{" "}
+                            of{" "}
                             {pagination.totalPages ||
                                 1}
                         </p>
@@ -970,7 +951,6 @@ function AuditLogsPage() {
                                 Previous
                             </button>
 
-
                             <button
                                 type="button"
                                 disabled={
@@ -993,7 +973,6 @@ function AuditLogsPage() {
                         </div>
                     </div>
                 </section>
-
             </div>
         </DashboardLayout>
     );
@@ -1005,7 +984,7 @@ function AuditStat({
     value,
 }) {
     return (
-        <div
+        <article
             className="
                 rounded-xl
                 border
@@ -1018,24 +997,24 @@ function AuditStat({
             <p
                 className="
                     text-[8px]
-                    text-slate-400
+                    font-medium
+                    text-slate-500
                 "
             >
                 {label}
             </p>
 
-
             <p
                 className="
-                    mt-1
-                    text-xl
+                    mt-2
+                    text-[22px]
                     font-bold
-                    text-slate-800
+                    text-[#172033]
                 "
             >
                 {value}
             </p>
-        </div>
+        </article>
     );
 }
 
@@ -1047,14 +1026,14 @@ function AuditHead({
         <th
             className="
                 whitespace-nowrap
-                px-4
+                px-5
                 py-3
                 text-left
                 text-[7px]
-                font-semibold
+                font-bold
                 uppercase
                 tracking-wide
-                text-slate-400
+                text-slate-500
             "
         >
             {children}
@@ -1071,13 +1050,13 @@ function AuditCell({
         <td
             className={`
                 whitespace-nowrap
-                px-4
-                py-3
+                px-5
+                py-4
                 text-[8px]
 
                 ${strong
-                    ? "font-medium text-slate-700"
-                    : "text-slate-500"
+                    ? "font-semibold text-slate-700"
+                    : "font-medium text-slate-600"
                 }
             `}
         >
@@ -1097,7 +1076,6 @@ function AuditStatusBadge({
         ).toLowerCase() ===
         "success";
 
-
     return (
         <span
             className={`
@@ -1106,12 +1084,12 @@ function AuditStatusBadge({
                 px-2.5
                 py-1
                 text-[7px]
-                font-medium
+                font-semibold
                 capitalize
 
                 ${success
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-red-50 text-red-600"
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-700"
                 }
             `}
         >
@@ -1134,9 +1112,9 @@ function AuditRoleBadge({
                 px-2.5
                 py-1
                 text-[7px]
-                font-medium
+                font-semibold
                 capitalize
-                text-blue-600
+                text-blue-700
             "
         >
             {role ||
@@ -1161,20 +1139,20 @@ function MobileInfo({
             <p
                 className="
                     text-[7px]
-                    text-slate-400
+                    font-semibold
+                    text-slate-500
                 "
             >
                 {label}
             </p>
-
 
             <p
                 className="
                     mt-1
                     break-words
                     text-[8px]
-                    font-medium
-                    text-slate-600
+                    font-semibold
+                    text-slate-700
                 "
             >
                 {value}
@@ -1185,7 +1163,7 @@ function MobileInfo({
 
 
 const inputClass = `
-    h-10
+    min-h-[40px]
     w-full
     rounded-lg
     border
@@ -1193,21 +1171,26 @@ const inputClass = `
     bg-white
     px-3
     text-[9px]
-    text-slate-700
+    font-medium
+    text-slate-800
     outline-none
+    placeholder:text-slate-400
     focus:border-blue-500
+    focus:ring-1
+    focus:ring-blue-100
 `;
 
 
 const paginationButton = `
+    min-h-[38px]
     rounded-lg
     border
     border-slate-300
     bg-white
     px-4
-    py-2
     text-[8px]
-    text-slate-600
+    font-semibold
+    text-slate-700
     hover:bg-slate-50
     disabled:cursor-not-allowed
     disabled:opacity-40

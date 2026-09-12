@@ -36,81 +36,115 @@ function AdminStats({
             description: "Login access disabled",
             type: "deactivated",
             iconBox: "bg-slate-100 text-slate-500",
-            valueColor: "text-slate-700",
+            valueColor: "text-slate-800",
         },
     ];
+
 
     return (
         <section
             className="
                 grid
-                gap-4
+                gap-3
                 sm:grid-cols-2
                 xl:grid-cols-4
             "
         >
-            {cards.map((card) => (
-                <article
-                    key={card.title}
-                    className="
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-5
-                        shadow-sm
-                    "
-                >
-                    <div
-                        className={`
-                            flex
-                            h-9
-                            w-9
-                            items-center
-                            justify-center
-                            rounded-full
-                            ${card.iconBox}
-                        `}
+            {cards.map(
+                (
+                    card
+                ) => (
+                    <article
+                        key={
+                            card.title
+                        }
+                        className="
+                            min-w-0
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            p-4
+                            shadow-sm
+                            sm:p-5
+                        "
                     >
-                        <StatIcon type={card.type} />
-                    </div>
-
-                    <div className="mt-4">
-                        <p
+                        <div
                             className="
-                                text-[9px]
-                                font-medium
-                                text-slate-500
+                                flex
+                                items-start
+                                justify-between
+                                gap-3
                             "
                         >
-                            {card.title}
-                        </p>
+                            <div
+                                className={`
+                                    flex
+                                    h-10
+                                    w-10
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-full
 
-                        <p
-                            className={`
-                                mt-1
-                                text-2xl
-                                font-bold
-                                ${card.valueColor}
-                            `}
-                        >
-                            {loading
-                                ? "..."
-                                : card.value}
-                        </p>
+                                    ${card.iconBox}
+                                `}
+                            >
+                                <StatIcon
+                                    type={
+                                        card.type
+                                    }
+                                />
+                            </div>
+                        </div>
 
-                        <p
+
+                        <div
                             className="
-                                mt-1
-                                text-[8px]
-                                text-slate-400
+                                mt-4
                             "
                         >
-                            {card.description}
-                        </p>
-                    </div>
-                </article>
-            ))}
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-semibold
+                                    text-slate-600
+                                "
+                            >
+                                {card.title}
+                            </p>
+
+
+                            <p
+                                className={`
+                                    mt-1
+                                    text-[26px]
+                                    font-bold
+                                    leading-none
+
+                                    ${card.valueColor}
+                                `}
+                            >
+                                {loading
+                                    ? "..."
+                                    : card.value}
+                            </p>
+
+
+                            <p
+                                className="
+                                    mt-2
+                                    text-[8px]
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                {card.description}
+                            </p>
+                        </div>
+                    </article>
+                )
+            )}
         </section>
     );
 }
@@ -122,8 +156,10 @@ function StatIcon({
     const iconClass =
         "h-[17px] w-[17px]";
 
+
     if (
-        type === "users"
+        type ===
+        "users"
     ) {
         return (
             <svg
@@ -131,7 +167,9 @@ function StatIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="9"
@@ -154,7 +192,8 @@ function StatIcon({
 
 
     if (
-        type === "active"
+        type ===
+        "active"
     ) {
         return (
             <svg
@@ -162,7 +201,9 @@ function StatIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="12"
@@ -177,7 +218,8 @@ function StatIcon({
 
 
     if (
-        type === "pending"
+        type ===
+        "pending"
     ) {
         return (
             <svg
@@ -185,7 +227,9 @@ function StatIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className={iconClass}
+                className={
+                    iconClass
+                }
             >
                 <circle
                     cx="12"
@@ -205,7 +249,9 @@ function StatIcon({
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
-            className={iconClass}
+            className={
+                iconClass
+            }
         >
             <circle
                 cx="12"

@@ -19,9 +19,7 @@ function AssignedProgrammeCard({
         );
 
 
-    if (
-        !programme
-    ) {
+    if (!programme) {
         return null;
     }
 
@@ -30,16 +28,13 @@ function AssignedProgrammeCard({
         assignment?.status ===
         "inactive";
 
-
     const programmeInactive =
         programme?.status ===
         "inactive";
 
-
     const unavailable =
         assignmentInactive ||
         programmeInactive;
-
 
     const workingAtHeight =
         programme.programmeType ===
@@ -51,6 +46,7 @@ function AssignedProgrammeCard({
             className="
                 flex
                 h-full
+                min-w-0
                 flex-col
                 overflow-hidden
                 rounded-xl
@@ -60,13 +56,11 @@ function AssignedProgrammeCard({
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* ACCENT */}
-            {/* ================================================= */}
+            {/* TOP ACCENT */}
 
             <div
                 className={`
-                    h-1
+                    h-1.5
                     w-full
 
                     ${workingAtHeight
@@ -77,10 +71,6 @@ function AssignedProgrammeCard({
             />
 
 
-            {/* ================================================= */}
-            {/* CONTENT */}
-            {/* ================================================= */}
-
             <div
                 className="
                     flex
@@ -90,8 +80,6 @@ function AssignedProgrammeCard({
                     sm:p-5
                 "
             >
-                {/* TOP */}
-
                 <div
                     className="
                         flex
@@ -106,7 +94,6 @@ function AssignedProgrammeCard({
                         }
                     />
 
-
                     <StatusBadge
                         status={
                             unavailable
@@ -118,52 +105,41 @@ function AssignedProgrammeCard({
                 </div>
 
 
-                {/* TYPE */}
-
-                <div
-                    className="
+                <span
+                    className={`
                         mt-4
-                    "
+                        w-fit
+                        rounded-full
+                        px-2.5
+                        py-1
+                        text-[7px]
+                        font-bold
+
+                        ${workingAtHeight
+                            ? "bg-amber-50 text-amber-700"
+                            : "bg-blue-50 text-blue-700"
+                        }
+                    `}
                 >
-                    <span
-                        className={`
-                            inline-flex
-                            rounded-full
-                            px-2.5
-                            py-1
-                            text-[7px]
-                            font-medium
+                    {formatProgrammeType(
+                        programme.programmeType
+                    )}
+                </span>
 
-                            ${workingAtHeight
-                                ? "bg-amber-50 text-amber-600"
-                                : "bg-blue-50 text-blue-600"
-                            }
-                        `}
-                    >
-                        {formatProgrammeType(
-                            programme.programmeType
-                        )}
-                    </span>
-                </div>
-
-
-                {/* TITLE */}
 
                 <h2
                     className="
                         mt-3
                         break-words
                         text-[13px]
-                        font-semibold
+                        font-bold
                         leading-5
-                        text-slate-800
+                        text-[#172033]
                     "
                 >
                     {programme.title}
                 </h2>
 
-
-                {/* DESCRIPTION */}
 
                 {programme.description && (
                     <p
@@ -171,25 +147,22 @@ function AssignedProgrammeCard({
                             mt-2
                             line-clamp-3
                             text-[8px]
-                            leading-4
-                            text-slate-500
+                            font-medium
+                            leading-5
+                            text-slate-600
                         "
                     >
-                        {
-                            programme.description
-                        }
+                        {programme.description}
                     </p>
                 )}
 
-
-                {/* INFO */}
 
                 <div
                     className="
                         mt-4
                         grid
                         grid-cols-2
-                        gap-3
+                        gap-2
                     "
                 >
                     <InformationItem
@@ -201,14 +174,10 @@ function AssignedProgrammeCard({
                         }
                     />
 
-
                     <InformationItem
                         label="Pass Mark"
-                        value={`${programme.passMark ??
-                            0
-                            }%`}
+                        value={`${programme.passMark ?? 0}%`}
                     />
-
 
                     <InformationItem
                         label="Assigned"
@@ -220,7 +189,6 @@ function AssignedProgrammeCard({
                         }
                     />
 
-
                     <InformationItem
                         label="Availability"
                         value={
@@ -231,8 +199,6 @@ function AssignedProgrammeCard({
                     />
                 </div>
 
-
-                {/* ACTION */}
 
                 <div
                     className="
@@ -260,7 +226,7 @@ function AssignedProgrammeCard({
                         "
                     >
                         {unavailable
-                            ? "Unavailable"
+                            ? "Currently Unavailable"
                             : "Start Learning"}
                     </ActionButton>
                 </div>
@@ -269,74 +235,6 @@ function AssignedProgrammeCard({
     );
 }
 
-
-// ======================================================
-// ICON
-// ======================================================
-
-function ProgrammeIcon({
-    workingAtHeight,
-}) {
-    return (
-        <div
-            className={`
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-lg
-
-                ${workingAtHeight
-                    ? "bg-amber-50 text-amber-600"
-                    : "bg-blue-50 text-blue-600"
-                }
-            `}
-        >
-            {workingAtHeight ? (
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-4 w-4"
-                >
-                    <path d="M5 21V5" />
-                    <path d="M19 21V5" />
-                    <path d="M5 9h14" />
-                    <path d="M5 14h14" />
-                    <path d="M5 19h14" />
-                </svg>
-            ) : (
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-4 w-4"
-                >
-                    <rect
-                        x="3"
-                        y="8"
-                        width="18"
-                        height="10"
-                        rx="2"
-                    />
-
-                    <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
-
-                    <path d="M8 13h8" />
-                </svg>
-            )}
-        </div>
-    );
-}
-
-
-// ======================================================
-// INFORMATION
-// ======================================================
 
 function InformationItem({
     label,
@@ -354,27 +252,84 @@ function InformationItem({
             <p
                 className="
                     text-[7px]
+                    font-semibold
                     uppercase
                     tracking-wide
-                    text-slate-400
+                    text-slate-500
                 "
             >
                 {label}
             </p>
 
-
             <p
                 className="
                     mt-1
-                    break-words
+                    truncate
                     text-[8px]
-                    font-medium
+                    font-bold
                     text-slate-700
                 "
             >
-                {value ||
-                    "—"}
+                {value || "—"}
             </p>
+        </div>
+    );
+}
+
+
+function ProgrammeIcon({
+    workingAtHeight,
+}) {
+    return (
+        <div
+            className={`
+                flex
+                h-10
+                w-10
+                shrink-0
+                items-center
+                justify-center
+                rounded-lg
+
+                ${workingAtHeight
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-blue-50 text-blue-600"
+                }
+            `}
+        >
+            {workingAtHeight ? (
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-5 w-5"
+                >
+                    <path d="M5 21V4" />
+                    <path d="M19 21V4" />
+                    <path d="M5 8h14" />
+                    <path d="M5 13h14" />
+                    <path d="M5 18h14" />
+                </svg>
+            ) : (
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-5 w-5"
+                >
+                    <rect
+                        x="3"
+                        y="8"
+                        width="18"
+                        height="10"
+                        rx="2"
+                    />
+
+                    <path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
+                </svg>
+            )}
         </div>
     );
 }

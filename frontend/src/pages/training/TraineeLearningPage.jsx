@@ -30,69 +30,40 @@ import {
 } from "../../utils/training";
 
 
-// ======================================================
-// TRAINEE LEARNING PAGE
-// ======================================================
-
 function TraineeLearningPage() {
     const navigate =
         useNavigate();
 
-
     const {
         programmeId,
-    } = useParams();
+    } =
+        useParams();
 
-
-    // ======================================================
-    // PROGRAMME
-    // ======================================================
 
     const [
         programme,
         setProgramme,
     ] = useState(null);
 
-
-    // ======================================================
-    // ASSIGNMENT
-    // ======================================================
-
     const [
         assignment,
         setAssignment,
     ] = useState(null);
-
-
-    // ======================================================
-    // SECTIONS
-    // ======================================================
 
     const [
         sections,
         setSections,
     ] = useState([]);
 
-
-    // ======================================================
-    // CURRENT SECTION
-    // ======================================================
-
     const [
         currentSectionIndex,
         setCurrentSectionIndex,
     ] = useState(0);
 
-
-    // ======================================================
-    // PAGE STATE
-    // ======================================================
-
     const [
         loading,
         setLoading,
     ] = useState(true);
-
 
     const [
         errorMessage,
@@ -100,50 +71,24 @@ function TraineeLearningPage() {
     ] = useState("");
 
 
-    // ======================================================
-    // LOAD LEARNING
-    // ======================================================
-
     const loadLearning =
         useCallback(
             async () => {
                 if (
                     !programmeId
                 ) {
-                    setProgramme(
-                        null
-                    );
-
-                    setAssignment(
-                        null
-                    );
-
-                    setSections(
-                        []
-                    );
-
                     setErrorMessage(
                         "Training programme information is missing."
                     );
 
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
 
                     return;
                 }
 
-
                 try {
-                    setLoading(
-                        true
-                    );
-
-
-                    setErrorMessage(
-                        ""
-                    );
-
+                    setLoading(true);
+                    setErrorMessage("");
 
                     const [
                         programmeResponse,
@@ -192,9 +137,9 @@ function TraineeLearningPage() {
                             (
                                 section
                             ) =>
+                                !section.status ||
                                 section.status ===
-                                "active" ||
-                                !section.status
+                                "active"
                         );
 
 
@@ -203,7 +148,6 @@ function TraineeLearningPage() {
                             activeSections
                         )
                     );
-
 
                     setCurrentSectionIndex(
                         0
@@ -215,19 +159,9 @@ function TraineeLearningPage() {
                         error
                     );
 
-
-                    setProgramme(
-                        null
-                    );
-
-                    setAssignment(
-                        null
-                    );
-
-                    setSections(
-                        []
-                    );
-
+                    setProgramme(null);
+                    setAssignment(null);
+                    setSections([]);
 
                     setErrorMessage(
                         getApiErrorMessage(
@@ -237,9 +171,7 @@ function TraineeLearningPage() {
                     );
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
                 }
             },
             [
@@ -255,28 +187,13 @@ function TraineeLearningPage() {
     ]);
 
 
-    // ======================================================
-    // CURRENT SECTION
-    // ======================================================
-
     const currentSection =
         useMemo(
-            () => {
-                if (
-                    sections.length ===
-                    0
-                ) {
-                    return null;
-                }
-
-
-                return (
-                    sections[
-                    currentSectionIndex
-                    ] ||
-                    null
-                );
-            },
+            () =>
+                sections[
+                currentSectionIndex
+                ] ||
+                null,
             [
                 sections,
                 currentSectionIndex,
@@ -284,13 +201,8 @@ function TraineeLearningPage() {
         );
 
 
-    // ======================================================
-    // PROGRESS
-    // ======================================================
-
     const learningProgress =
-        sections.length >
-            0
+        sections.length > 0
             ? Math.round(
                 (
                     (
@@ -304,82 +216,66 @@ function TraineeLearningPage() {
             : 0;
 
 
-    // ======================================================
-    // SELECT SECTION
-    // ======================================================
-
     const handleSelectSection = (
         index
     ) => {
         if (
-            index <
-            0 ||
+            index < 0 ||
             index >=
             sections.length
         ) {
             return;
         }
 
-
         setCurrentSectionIndex(
             index
         );
 
-
         window.scrollTo({
             top: 0,
-            behavior:
-                "smooth",
+            behavior: "smooth",
         });
     };
 
 
-    // ======================================================
-    // PREVIOUS
-    // ======================================================
-
     const handlePrevious =
         () => {
-            if (
-                currentSectionIndex <=
-                0
-            ) {
-                return;
-            }
-
-
-            handleSelectSection(
-                currentSectionIndex -
-                1
+            setCurrentSectionIndex(
+                (
+                    current
+                ) =>
+                    Math.max(
+                        0,
+                        current - 1
+                    )
             );
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
         };
 
-
-    // ======================================================
-    // NEXT
-    // ======================================================
 
     const handleNext =
         () => {
-            if (
-                currentSectionIndex >=
-                sections.length -
-                1
-            ) {
-                return;
-            }
-
-
-            handleSelectSection(
-                currentSectionIndex +
-                1
+            setCurrentSectionIndex(
+                (
+                    current
+                ) =>
+                    Math.min(
+                        sections.length -
+                        1,
+                        current + 1
+                    )
             );
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
         };
 
-
-    // ======================================================
-    // FINISH
-    // ======================================================
 
     const handleFinish =
         () => {
@@ -389,44 +285,33 @@ function TraineeLearningPage() {
         };
 
 
-    // ======================================================
-    // LOADING
-    // ======================================================
-
-    if (
-        loading
-    ) {
+    if (loading) {
         return (
             <DashboardLayout
                 role="trainee"
-                title="Training"
-                subtitle="Loading workplace safety learning content."
+                title="Learning"
+                subtitle="Loading your workplace safety training."
             >
                 <LoadingCard
-                    message="Loading training content..."
+                    message="Loading learning content..."
                 />
             </DashboardLayout>
         );
     }
 
 
-    // ======================================================
-    // PAGE
-    // ======================================================
-
     return (
         <DashboardLayout
             role="trainee"
-            showHeader={false}
+            title="Learning"
+            subtitle="Complete your assigned workplace safety training."
         >
             <div
                 className="
                     space-y-4
                 "
             >
-                {/* ================================================= */}
-                {/* TOP BAR */}
-                {/* ================================================= */}
+                {/* TOP ACTION */}
 
                 <section
                     className="
@@ -444,6 +329,30 @@ function TraineeLearningPage() {
                         sm:justify-between
                     "
                 >
+                    <div>
+                        <p
+                            className="
+                                text-[8px]
+                                font-semibold
+                                text-slate-600
+                            "
+                        >
+                            Learning Progress
+                        </p>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[18px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            {learningProgress}%
+                        </p>
+                    </div>
+
+
                     <ActionButton
                         variant="secondary"
                         onClick={() =>
@@ -451,58 +360,11 @@ function TraineeLearningPage() {
                                 "/my-training"
                             )
                         }
-                        className="
-                            w-full
-                            sm:w-auto
-                        "
                     >
                         ← Back to My Training
                     </ActionButton>
-
-
-                    {programme &&
-                        sections.length >
-                        0 && (
-                            <div
-                                className="
-                                flex
-                                items-center
-                                justify-between
-                                gap-3
-                                sm:justify-end
-                            "
-                            >
-                                <span
-                                    className="
-                                    text-[8px]
-                                    text-slate-400
-                                "
-                                >
-                                    Learning Progress
-                                </span>
-
-
-                                <span
-                                    className="
-                                    rounded-full
-                                    bg-blue-50
-                                    px-3
-                                    py-1
-                                    text-[8px]
-                                    font-medium
-                                    text-blue-600
-                                "
-                                >
-                                    {learningProgress}%
-                                </span>
-                            </div>
-                        )}
                 </section>
 
-
-                {/* ================================================= */}
-                {/* ERROR */}
-                {/* ================================================= */}
 
                 <FeedbackAlert
                     type="error"
@@ -510,40 +372,40 @@ function TraineeLearningPage() {
                         errorMessage
                     }
                     onClose={() =>
-                        setErrorMessage(
-                            ""
-                        )
+                        setErrorMessage("")
                     }
                 />
 
 
-                {/* ================================================= */}
-                {/* UNAVAILABLE */}
-                {/* ================================================= */}
-
                 {!programme ? (
-                    <EmptyState
-                        title="Training programme unavailable."
-                        description="This programme is not assigned to you or is currently unavailable."
-                        action={
-                            <ActionButton
-                                variant="primary"
-                                onClick={() =>
-                                    navigate(
-                                        "/my-training"
-                                    )
-                                }
-                            >
-                                Return to My Training
-                            </ActionButton>
-                        }
-                    />
+                    <section
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            shadow-sm
+                        "
+                    >
+                        <EmptyState
+                            title="Training programme unavailable."
+                            description="This programme is not assigned to you or is currently unavailable."
+                            action={
+                                <ActionButton
+                                    variant="primary"
+                                    onClick={() =>
+                                        navigate(
+                                            "/my-training"
+                                        )
+                                    }
+                                >
+                                    Return to My Training
+                                </ActionButton>
+                            }
+                        />
+                    </section>
                 ) : (
                     <>
-                        {/* ================================================= */}
-                        {/* PROGRAMME HEADER */}
-                        {/* ================================================= */}
-
                         <LearningProgrammeHeader
                             programme={
                                 programme
@@ -556,10 +418,6 @@ function TraineeLearningPage() {
                             }
                         />
 
-
-                        {/* ================================================= */}
-                        {/* ASSIGNMENT STATUS */}
-                        {/* ================================================= */}
 
                         {assignment && (
                             <section
@@ -587,21 +445,7 @@ function TraineeLearningPage() {
                                         text-emerald-600
                                     "
                                 >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.8"
-                                        className="h-4 w-4"
-                                    >
-                                        <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="9"
-                                        />
-
-                                        <path d="m8 12 2.5 2.5L16 9" />
-                                    </svg>
+                                    ✓
                                 </div>
 
 
@@ -609,20 +453,19 @@ function TraineeLearningPage() {
                                     <p
                                         className="
                                             text-[9px]
-                                            font-medium
-                                            text-emerald-700
+                                            font-bold
+                                            text-emerald-800
                                         "
                                     >
                                         Training Access Active
                                     </p>
 
-
                                     <p
                                         className="
                                             mt-1
                                             text-[8px]
-                                            leading-4
-                                            text-emerald-600
+                                            font-medium
+                                            text-emerald-700
                                         "
                                     >
                                         This programme is assigned to your Trainee account.
@@ -632,30 +475,32 @@ function TraineeLearningPage() {
                         )}
 
 
-                        {/* ================================================= */}
-                        {/* CONTENT */}
-                        {/* ================================================= */}
-
                         {sections.length ===
                             0 ? (
-                            <EmptyState
-                                title="No learning content available."
-                                description="This programme does not currently contain active learning sections."
-                                icon="training"
-                            />
+                            <section
+                                className="
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    shadow-sm
+                                "
+                            >
+                                <EmptyState
+                                    title="No learning content available."
+                                    description="This programme currently has no active learning sections."
+                                    icon="training"
+                                />
+                            </section>
                         ) : (
                             <section
                                 className="
                                     grid
+                                    min-w-0
                                     gap-4
-                                    lg:grid-cols-[250px_minmax(0,1fr)]
-                                    xl:grid-cols-[280px_minmax(0,1fr)]
+                                    lg:grid-cols-[270px_minmax(0,1fr)]
                                 "
                             >
-                                {/* ========================================= */}
-                                {/* SECTION NAVIGATION */}
-                                {/* ========================================= */}
-
                                 <div
                                     className="
                                         min-w-0
@@ -681,10 +526,6 @@ function TraineeLearningPage() {
                                     </div>
                                 </div>
 
-
-                                {/* ========================================= */}
-                                {/* LEARNING CONTENT */}
-                                {/* ========================================= */}
 
                                 <div
                                     className="

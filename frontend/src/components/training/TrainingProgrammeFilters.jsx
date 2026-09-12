@@ -15,16 +15,27 @@ function TrainingProgrammeFilters({
     const filtersActive =
         Boolean(
             searchTerm.trim() ||
-            typeFilter !== "all" ||
-            statusFilter !== "all"
+            typeFilter !==
+            "all" ||
+            statusFilter !==
+            "all"
         );
 
 
-    const handleClearFilters = () => {
-        onSearchChange?.("");
-        onTypeChange?.("all");
-        onStatusChange?.("all");
-    };
+    const handleClearFilters =
+        () => {
+            onSearchChange?.(
+                ""
+            );
+
+            onTypeChange?.(
+                "all"
+            );
+
+            onStatusChange?.(
+                "all"
+            );
+        };
 
 
     return (
@@ -38,8 +49,6 @@ function TrainingProgrammeFilters({
                 shadow-sm
             "
         >
-            {/* HEADER */}
-
             <div
                 className="
                     flex
@@ -59,8 +68,8 @@ function TrainingProgrammeFilters({
                     <h2
                         className="
                             text-[11px]
-                            font-semibold
-                            text-slate-800
+                            font-bold
+                            text-[#172033]
                         "
                     >
                         Filter Programmes
@@ -70,29 +79,32 @@ function TrainingProgrammeFilters({
                         className="
                             mt-1
                             text-[8px]
-                            text-slate-400
+                            font-medium
+                            text-slate-500
                         "
                     >
-                        Search or filter the training programme list.
+                        Search or narrow the programme list.
                     </p>
                 </div>
+
 
                 {filtersActive && (
                     <button
                         type="button"
-                        onClick={handleClearFilters}
+                        onClick={
+                            handleClearFilters
+                        }
                         className="
+                            min-h-[38px]
                             w-full
                             rounded-lg
                             border
                             border-slate-300
                             bg-white
                             px-4
-                            py-2
                             text-[8px]
-                            font-medium
-                            text-slate-600
-                            transition
+                            font-semibold
+                            text-slate-700
                             hover:bg-slate-50
                             sm:w-auto
                         "
@@ -103,20 +115,17 @@ function TrainingProgrammeFilters({
             </div>
 
 
-            {/* FILTERS */}
-
             <div
                 className="
                     grid
                     gap-3
+                    bg-slate-50/40
                     p-4
-                    sm:p-5
                     md:grid-cols-2
-                    xl:grid-cols-[minmax(250px,2fr)_1fr_1fr]
+                    xl:grid-cols-[2fr_1fr_1fr]
+                    sm:p-5
                 "
             >
-                {/* SEARCH */}
-
                 <label
                     className="
                         block
@@ -129,14 +138,18 @@ function TrainingProgrammeFilters({
                             mb-2
                             block
                             text-[8px]
-                            font-medium
-                            text-slate-500
+                            font-semibold
+                            text-slate-700
                         "
                     >
                         Search
                     </span>
 
-                    <div className="relative">
+                    <div
+                        className="
+                            relative
+                        "
+                    >
                         <span
                             className="
                                 pointer-events-none
@@ -166,15 +179,20 @@ function TrainingProgrammeFilters({
                             </svg>
                         </span>
 
+
                         <input
                             type="search"
-                            value={searchTerm}
-                            onChange={(event) =>
+                            value={
+                                searchTerm
+                            }
+                            onChange={(
+                                event
+                            ) =>
                                 onSearchChange?.(
                                     event.target.value
                                 )
                             }
-                            placeholder="Search programme..."
+                            placeholder="Search programme title, type or Trainer..."
                             className="
                                 h-10
                                 w-full
@@ -185,7 +203,8 @@ function TrainingProgrammeFilters({
                                 pl-9
                                 pr-3
                                 text-[9px]
-                                text-slate-700
+                                font-medium
+                                text-slate-800
                                 outline-none
                                 placeholder:text-slate-400
                                 focus:border-blue-500
@@ -197,51 +216,53 @@ function TrainingProgrammeFilters({
                 </label>
 
 
-                {/* TYPE */}
-
-                <label className="block">
+                <label
+                    className="
+                        block
+                    "
+                >
                     <span
                         className="
                             mb-2
                             block
                             text-[8px]
-                            font-medium
-                            text-slate-500
+                            font-semibold
+                            text-slate-700
                         "
                     >
-                        Training Area
+                        Programme Type
                     </span>
 
                     <select
-                        value={typeFilter}
-                        onChange={(event) =>
+                        value={
+                            typeFilter
+                        }
+                        onChange={(
+                            event
+                        ) =>
                             onTypeChange?.(
                                 event.target.value
                             )
                         }
-                        className="
-                            h-10
-                            w-full
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            px-3
-                            text-[9px]
-                            text-slate-700
-                            outline-none
-                            focus:border-blue-500
-                        "
+                        className={
+                            selectClass
+                        }
                     >
                         <option value="all">
-                            All Training Areas
+                            All Types
                         </option>
 
                         {programmeTypes.map(
-                            (type) => (
+                            (
+                                type
+                            ) => (
                                 <option
-                                    key={type}
-                                    value={type}
+                                    key={
+                                        type
+                                    }
+                                    value={
+                                        type
+                                    }
                                 >
                                     {formatProgrammeType(
                                         type
@@ -253,44 +274,44 @@ function TrainingProgrammeFilters({
                 </label>
 
 
-                {/* STATUS */}
-
-                <label className="block">
+                <label
+                    className="
+                        block
+                    "
+                >
                     <span
                         className="
                             mb-2
                             block
                             text-[8px]
-                            font-medium
-                            text-slate-500
+                            font-semibold
+                            text-slate-700
                         "
                     >
                         Status
                     </span>
 
                     <select
-                        value={statusFilter}
-                        onChange={(event) =>
+                        value={
+                            statusFilter
+                        }
+                        onChange={(
+                            event
+                        ) =>
                             onStatusChange?.(
                                 event.target.value
                             )
                         }
-                        className="
-                            h-10
-                            w-full
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            px-3
-                            text-[9px]
-                            text-slate-700
-                            outline-none
-                            focus:border-blue-500
-                        "
+                        className={
+                            selectClass
+                        }
                     >
                         <option value="all">
                             All Statuses
+                        </option>
+
+                        <option value="draft">
+                            Draft
                         </option>
 
                         <option value="active">
@@ -306,6 +327,24 @@ function TrainingProgrammeFilters({
         </section>
     );
 }
+
+
+const selectClass = `
+    h-10
+    w-full
+    rounded-lg
+    border
+    border-slate-300
+    bg-white
+    px-3
+    text-[9px]
+    font-medium
+    text-slate-800
+    outline-none
+    focus:border-blue-500
+    focus:ring-1
+    focus:ring-blue-100
+`;
 
 
 export default TrainingProgrammeFilters;

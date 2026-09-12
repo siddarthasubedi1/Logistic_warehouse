@@ -16,10 +16,17 @@ function TrainingManagementShell({
             "
         >
             <TrainingPageIntro
-                title={title}
-                description={description}
-                action={action}
+                title={
+                    title
+                }
+                description={
+                    description
+                }
+                action={
+                    action
+                }
             />
+
 
             <div
                 className="

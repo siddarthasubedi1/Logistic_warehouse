@@ -9,33 +9,20 @@ import {
 
 
 function TrainingProgrammeSectionsPage() {
-    // ======================================================
-    // CURRENT USER
-    // ======================================================
-
     const user =
         getSessionUser();
-
 
     const role =
         user?.role ||
         "";
 
 
-    // ======================================================
-    // DESCRIPTION
-    // ======================================================
-
     const description =
         role ===
             "admin"
-            ? "Create, edit, reorder, activate and deactivate learning sections."
-            : "Manage learning content for programmes you are authorised to work with.";
+            ? "Create, edit, reorder, activate and deactivate programme learning content."
+            : "Manage learning content for training programmes available to your Trainer account.";
 
-
-    // ======================================================
-    // PAGE
-    // ======================================================
 
     return (
         <DashboardLayout

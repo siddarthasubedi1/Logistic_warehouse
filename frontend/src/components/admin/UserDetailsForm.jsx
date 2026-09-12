@@ -6,9 +6,8 @@ const TRAINING_SECTIONS = [
         id: "manual-handling",
         name: "Manual Handling",
         description:
-            "Safe lifting, carrying and manual handling training.",
+            "Safe lifting, carrying and handling practices.",
     },
-
     {
         id: "working-at-height",
         name: "Working at Height",
@@ -30,11 +29,9 @@ function UserDetailsForm({
         formData.role ===
         "trainer";
 
-
     const isTrainee =
         formData.role ===
         "trainee";
-
 
     const selectedSections =
         Array.isArray(
@@ -58,8 +55,6 @@ function UserDetailsForm({
                 shadow-sm
             "
         >
-            {/* HEADER */}
-
             <div
                 className="
                     border-b
@@ -72,22 +67,22 @@ function UserDetailsForm({
                 <h2
                     className="
                         text-[12px]
-                        font-semibold
-                        text-slate-800
+                        font-bold
+                        text-[#172033]
                     "
                 >
                     User Information
                 </h2>
 
-
                 <p
                     className="
                         mt-1
                         text-[8px]
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
-                    Enter personal information and training access.
+                    Enter personal information and assign training access.
                 </p>
             </div>
 
@@ -99,12 +94,10 @@ function UserDetailsForm({
                     sm:p-5
                 "
             >
-                {/* PERSONAL INFORMATION */}
-
                 <section>
-                    <SectionHeading
-                        title="Personal Information"
-                    />
+                    <SectionHeading>
+                        Personal Information
+                    </SectionHeading>
 
 
                     <div
@@ -131,7 +124,6 @@ function UserDetailsForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Enter first name"
                                 className={
                                     inputClass
                                 }
@@ -156,7 +148,6 @@ function UserDetailsForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Enter last name"
                                 className={
                                     inputClass
                                 }
@@ -182,7 +173,6 @@ function UserDetailsForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Enter age"
                                 className={
                                     inputClass
                                 }
@@ -246,7 +236,6 @@ function UserDetailsForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="example@email.com"
                                 className={
                                     inputClass
                                 }
@@ -271,7 +260,6 @@ function UserDetailsForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Enter phone number"
                                 className={
                                     inputClass
                                 }
@@ -301,7 +289,6 @@ function UserDetailsForm({
                                     disabled={
                                         saving
                                     }
-                                    placeholder="Enter address"
                                     className={
                                         inputClass
                                     }
@@ -313,8 +300,6 @@ function UserDetailsForm({
                 </section>
 
 
-                {/* ROLE */}
-
                 <section
                     className="
                         border-t
@@ -322,9 +307,9 @@ function UserDetailsForm({
                         pt-5
                     "
                 >
-                    <SectionHeading
-                        title="User Role"
-                    />
+                    <SectionHeading>
+                        User Role
+                    </SectionHeading>
 
 
                     <div
@@ -337,7 +322,7 @@ function UserDetailsForm({
                     >
                         <RoleOption
                             title="Trainer"
-                            description="Manages assigned workplace safety training."
+                            description="Manages one assigned safety training area."
                             value="trainer"
                             checked={
                                 isTrainer
@@ -353,7 +338,7 @@ function UserDetailsForm({
 
                         <RoleOption
                             title="Trainee"
-                            description="Receives workplace safety training."
+                            description="Receives both safety training areas automatically."
                             value="trainee"
                             checked={
                                 isTrainee
@@ -369,8 +354,6 @@ function UserDetailsForm({
                 </section>
 
 
-                {/* TRAINING */}
-
                 {(isTrainer ||
                     isTrainee) && (
                         <section
@@ -380,9 +363,9 @@ function UserDetailsForm({
                             pt-5
                         "
                         >
-                            <SectionHeading
-                                title="Training Access"
-                            />
+                            <SectionHeading>
+                                Training Access
+                            </SectionHeading>
 
 
                             {isTrainee && (
@@ -399,11 +382,11 @@ function UserDetailsForm({
                                     <p
                                         className="
                                         text-[8px]
-                                        leading-4
+                                        font-medium
                                         text-emerald-700
                                     "
                                     >
-                                        Trainees receive Manual Handling and Working at Height automatically.
+                                        Both training areas are automatically assigned to a Trainee.
                                     </p>
                                 </div>
                             )}
@@ -426,7 +409,6 @@ function UserDetailsForm({
                                                 section.id
                                             );
 
-
                                         return (
                                             <label
                                                 key={
@@ -445,14 +427,19 @@ function UserDetailsForm({
                                                         : "border-slate-200 bg-white"
                                                     }
 
-                                                ${isTrainee
-                                                        ? "cursor-default"
-                                                        : "cursor-pointer"
+                                                ${isTrainer
+                                                        ? "cursor-pointer"
+                                                        : "cursor-default"
                                                     }
                                             `}
                                             >
                                                 <input
-                                                    type="checkbox"
+                                                    type={
+                                                        isTrainer
+                                                            ? "radio"
+                                                            : "checkbox"
+                                                    }
+                                                    name="trainingSection"
                                                     checked={
                                                         checked
                                                     }
@@ -461,7 +448,7 @@ function UserDetailsForm({
                                                         saving
                                                     }
                                                     onChange={() =>
-                                                        onToggleTrainingSection(
+                                                        onToggleTrainingSection?.(
                                                             section.id
                                                         )
                                                     }
@@ -473,13 +460,12 @@ function UserDetailsForm({
                                                 "
                                                 />
 
-
                                                 <div>
                                                     <p
                                                         className="
                                                         text-[9px]
-                                                        font-medium
-                                                        text-slate-700
+                                                        font-bold
+                                                        text-slate-800
                                                     "
                                                     >
                                                         {
@@ -487,13 +473,13 @@ function UserDetailsForm({
                                                         }
                                                     </p>
 
-
                                                     <p
                                                         className="
                                                         mt-1
                                                         text-[7px]
+                                                        font-medium
                                                         leading-4
-                                                        text-slate-400
+                                                        text-slate-500
                                                     "
                                                     >
                                                         {
@@ -509,8 +495,6 @@ function UserDetailsForm({
                         </section>
                     )}
 
-
-                {/* ACTIONS */}
 
                 <div
                     className="
@@ -565,17 +549,17 @@ function UserDetailsForm({
 
 
 function SectionHeading({
-    title,
+    children,
 }) {
     return (
         <h3
             className="
                 text-[10px]
-                font-semibold
-                text-slate-700
+                font-bold
+                text-slate-800
             "
         >
-            {title}
+            {children}
         </h3>
     );
 }
@@ -597,8 +581,8 @@ function FormField({
                     mb-2
                     block
                     text-[8px]
-                    font-medium
-                    text-slate-500
+                    font-semibold
+                    text-slate-700
                 "
             >
                 {label}
@@ -613,7 +597,6 @@ function FormField({
                     </span>
                 )}
             </span>
-
 
             {children}
         </label>
@@ -651,26 +634,24 @@ function RoleOption({
                 <p
                     className="
                         text-[9px]
-                        font-medium
-                        text-slate-700
+                        font-bold
+                        text-slate-800
                     "
                 >
                     {title}
                 </p>
 
-
                 <p
                     className="
                         mt-1
                         text-[7px]
-                        leading-4
-                        text-slate-400
+                        font-medium
+                        text-slate-500
                     "
                 >
                     {description}
                 </p>
             </div>
-
 
             <input
                 type="radio"
@@ -678,9 +659,7 @@ function RoleOption({
                 value={value}
                 checked={checked}
                 disabled={disabled}
-                onChange={
-                    onChange
-                }
+                onChange={onChange}
                 className="
                     h-4
                     w-4
@@ -693,7 +672,7 @@ function RoleOption({
 
 
 const inputClass = `
-    h-10
+    min-h-[40px]
     w-full
     rounded-lg
     border
@@ -701,11 +680,12 @@ const inputClass = `
     bg-white
     px-3
     text-[9px]
-    text-slate-700
+    font-medium
+    text-slate-800
     outline-none
-    placeholder:text-slate-400
     focus:border-blue-500
-    disabled:cursor-not-allowed
+    focus:ring-1
+    focus:ring-blue-100
     disabled:bg-slate-50
 `;
 

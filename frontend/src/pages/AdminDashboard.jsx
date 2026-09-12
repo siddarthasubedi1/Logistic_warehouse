@@ -15,12 +15,22 @@ import AdminQuickActions from "../components/admin/AdminQuickActions";
 import AdminUsersOverview from "../components/admin/AdminUsersOverview";
 import PasswordResetRequests from "../components/admin/PasswordResetRequests";
 
+import FeedbackAlert from "../components/ui/FeedbackAlert";
+
 import api from "../services/api";
+
+import {
+    getSessionUser,
+} from "../utils/session";
 
 
 function AdminDashboard() {
     const navigate =
         useNavigate();
+
+
+    const user =
+        getSessionUser();
 
 
     const [
@@ -47,50 +57,17 @@ function AdminDashboard() {
     ] = useState("");
 
 
-    // ======================================================
-    // CURRENT ADMIN
-    // ======================================================
-
-    const storedUser =
-        sessionStorage.getItem(
-            "user"
-        );
-
-
-    let user =
-        null;
-
-
-    try {
-        user =
-            storedUser
-                ? JSON.parse(
-                    storedUser
-                )
-                : null;
-
-    } catch {
-        user =
-            null;
-    }
-
-
-    // ======================================================
-    // LOAD EXISTING DASHBOARD DATA
-    // ======================================================
-
     useEffect(() => {
         let mounted =
             true;
 
 
-        const loadDashboardData =
+        const loadDashboard =
             async () => {
                 try {
                     setLoading(
                         true
                     );
-
 
                     setError(
                         ""
@@ -122,8 +99,7 @@ function AdminDashboard() {
                             usersResponse.data
                         )
                             ? usersResponse.data
-                            : usersResponse.data
-                                ?.users ||
+                            : usersResponse.data?.users ||
                             [];
 
 
@@ -132,10 +108,8 @@ function AdminDashboard() {
                             pendingResponse.data
                         )
                             ? pendingResponse.data
-                            : pendingResponse.data
-                                ?.users ||
-                            pendingResponse.data
-                                ?.pendingUsers ||
+                            : pendingResponse.data?.users ||
+                            pendingResponse.data?.pendingUsers ||
                             [];
 
 
@@ -159,9 +133,7 @@ function AdminDashboard() {
                         mounted
                     ) {
                         setError(
-                            error.response
-                                ?.data
-                                ?.message ||
+                            error.response?.data?.message ||
                             "Unable to load dashboard information."
                         );
                     }
@@ -178,20 +150,15 @@ function AdminDashboard() {
             };
 
 
-        loadDashboardData();
+        loadDashboard();
 
 
         return () => {
             mounted =
                 false;
         };
-
     }, []);
 
-
-    // ======================================================
-    // COUNTS
-    // ======================================================
 
     const activeUsers =
         users.filter(
@@ -235,10 +202,6 @@ function AdminDashboard() {
         ).length;
 
 
-    // ======================================================
-    // PASSWORD RESET USER NAVIGATION
-    // ======================================================
-
     const handleManageResetUser = (
         userId,
         request
@@ -258,22 +221,11 @@ function AdminDashboard() {
     };
 
 
-    // ======================================================
-    // PAGE
-    // ======================================================
-
     return (
         <DashboardLayout
             role="admin"
-            showHeader={
-                false
-            }
+            showHeader={false}
         >
-
-            {/* ================================================= */}
-            {/* ADMIN PAGE HEADER */}
-            {/* ================================================= */}
-
             <AdminHeader
                 user={
                     user
@@ -281,95 +233,25 @@ function AdminDashboard() {
             />
 
 
-            {/* ================================================= */}
-            {/* DASHBOARD CONTENT */}
-            {/* ================================================= */}
-
             <div
                 className="
                     space-y-4
-                    pt-5
+                    pt-4
+                    sm:pt-5
                 "
             >
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        error
+                    }
+                    onClose={() =>
+                        setError(
+                            ""
+                        )
+                    }
+                />
 
-                {/* ERROR */}
-
-                {error && (
-                    <div
-                        className="
-                            flex
-                            items-start
-                            gap-3
-                            rounded-lg
-                            border
-                            border-red-200
-                            bg-red-50
-                            px-4
-                            py-3
-                        "
-                    >
-                        <div
-                            className="
-                                flex
-                                h-7
-                                w-7
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-white
-                                text-red-500
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-4 w-4"
-                            >
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="9"
-                                />
-
-                                <path d="M12 7v6" />
-
-                                <path d="M12 17h.01" />
-                            </svg>
-                        </div>
-
-
-                        <div>
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-semibold
-                                    text-red-700
-                                "
-                            >
-                                Unable to load dashboard
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    text-red-600
-                                "
-                            >
-                                {error}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* ================================================= */}
-                {/* STATS */}
-                {/* ================================================= */}
 
                 <AdminStats
                     loading={
@@ -390,15 +272,11 @@ function AdminDashboard() {
                 />
 
 
-                {/* ================================================= */}
-                {/* OVERVIEW + QUICK ACTIONS */}
-                {/* ================================================= */}
-
-                <div
+                <section
                     className="
                         grid
                         gap-4
-                        xl:grid-cols-[minmax(0,1.8fr)_minmax(260px,.7fr)]
+                        xl:grid-cols-[minmax(0,2fr)_minmax(280px,0.8fr)]
                     "
                 >
                     <AdminUsersOverview
@@ -422,21 +300,15 @@ function AdminDashboard() {
                             pendingUsers.length
                         }
                     />
-                </div>
+                </section>
 
-
-                {/* ================================================= */}
-                {/* PASSWORD RESET */}
-                {/* ================================================= */}
 
                 <PasswordResetRequests
                     onManageUser={
                         handleManageResetUser
                     }
                 />
-
             </div>
-
         </DashboardLayout>
     );
 }
