@@ -203,25 +203,6 @@ function StatCard({
                     />
                 </div>
 
-
-                <span
-                    className="
-                        rounded-full
-                        border
-                        border-slate-200
-                        bg-white/70
-                        px-2.5
-                        py-1
-                        text-[9px]
-                        font-semibold
-                        uppercase
-                        tracking-wide
-                        text-slate-400
-                    "
-                >
-                    Sprint 1
-                </span>
-
             </div>
 
 

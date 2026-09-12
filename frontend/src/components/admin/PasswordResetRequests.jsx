@@ -696,7 +696,7 @@ function PasswordResetRequests({
                                             </div>
 
 
-                                            {onManageUser && (
+                                            {/* {onManageUser && (
                                                 <ActionButton
                                                     variant="primary"
                                                     disabled={
@@ -715,7 +715,7 @@ function PasswordResetRequests({
                                                 >
                                                     Manage User
                                                 </ActionButton>
-                                            )}
+                                            )} */}
 
                                         </article>
                                     );

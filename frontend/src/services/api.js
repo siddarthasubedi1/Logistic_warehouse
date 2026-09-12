@@ -1,5 +1,11 @@
 import axios from "axios";
 
+import {
+    clearAuthSession,
+    getAccessToken,
+    saveAccessToken,
+} from "../utils/session";
+
 
 // ======================================================
 // API CONFIGURATION
@@ -27,11 +33,20 @@ const api =
 // REFRESH CLIENT
 // ======================================================
 //
-// This separate Axios instance is used only for
-// refreshing the access token.
+// IMPORTANT:
 //
-// It does NOT use the main response interceptor,
-// preventing an infinite refresh loop.
+// The refresh client must NOT use the main API response
+// interceptor.
+//
+// Otherwise:
+//
+// access token expires
+//      ↓
+// interceptor calls refresh
+//      ↓
+// refresh also hits interceptor
+//      ↓
+// possible infinite refresh loop
 //
 // ======================================================
 
@@ -46,54 +61,19 @@ const refreshClient =
 
 
 // ======================================================
-// SESSION HELPERS
-// ======================================================
-
-const getAccessToken =
-    () => {
-        return sessionStorage.getItem(
-            "accessToken"
-        );
-    };
-
-
-const saveAccessToken =
-    (
-        accessToken
-    ) => {
-        if (
-            !accessToken
-        ) {
-            return;
-        }
-
-
-        sessionStorage.setItem(
-            "accessToken",
-            accessToken
-        );
-    };
-
-
-const clearSession =
-    () => {
-        sessionStorage.removeItem(
-            "accessToken"
-        );
-
-
-        sessionStorage.removeItem(
-            "user"
-        );
-    };
-
-
-// ======================================================
 // REDIRECT TO LOGIN
 // ======================================================
 
 const redirectToLogin =
     () => {
+        if (
+            typeof window ===
+            "undefined"
+        ) {
+            return;
+        }
+
+
         if (
             window.location.pathname !==
             "/login"
@@ -106,14 +86,15 @@ const redirectToLogin =
 
 
 // ======================================================
-// REFRESH STATE
+// REFRESH PROMISE
 // ======================================================
 //
-// If multiple API requests fail at the same time because
-// the access token expired, we should send ONLY ONE
-// refresh request.
+// Multiple API requests can fail at the same time when
+// an access token expires.
 //
-// Other failed requests wait for that refresh.
+// Only ONE refresh request should be sent.
+//
+// Every other failed request waits for this promise.
 //
 // ======================================================
 
@@ -127,12 +108,6 @@ let refreshPromise =
 
 const refreshAccessToken =
     async () => {
-
-        // --------------------------------------------------
-        // Reuse current refresh request if one is already
-        // running.
-        // --------------------------------------------------
-
         if (
             refreshPromise
         ) {
@@ -149,13 +124,13 @@ const refreshAccessToken =
                     (
                         response
                     ) => {
-                        const newAccessToken =
+                        const accessToken =
                             response.data
                                 ?.accessToken;
 
 
                         if (
-                            !newAccessToken
+                            !accessToken
                         ) {
                             throw new Error(
                                 "Refresh response did not contain an access token."
@@ -163,12 +138,16 @@ const refreshAccessToken =
                         }
 
 
+                        // ==========================================
+                        // STORE NEW ACCESS TOKEN
+                        // ==========================================
+
                         saveAccessToken(
-                            newAccessToken
+                            accessToken
                         );
 
 
-                        return newAccessToken;
+                        return accessToken;
                     }
                 )
                 .finally(
@@ -196,7 +175,7 @@ api.interceptors.request.use(
 
 
         // ==================================================
-        // ATTACH ACCESS TOKEN
+        // AUTHORIZATION
         // ==================================================
 
         if (
@@ -213,14 +192,15 @@ api.interceptors.request.use(
 
 
         // ==================================================
-        // FORMDATA
+        // FILE UPLOAD / FORM DATA
         // ==================================================
         //
-        // Do not manually force application/json when
-        // uploading files.
+        // When FormData is used, do NOT manually set:
         //
-        // Axios/browser will automatically create the
-        // multipart boundary.
+        // Content-Type: multipart/form-data
+        //
+        // The browser automatically includes the required
+        // boundary.
         //
         // ==================================================
 
@@ -284,15 +264,24 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // DEACTIVATED ACCOUNT
+        // ACCOUNT DEACTIVATED
+        // ==================================================
+        //
+        // Admin may deactivate Trainer/Trainee.
+        //
+        // Their current frontend session must immediately
+        // become unusable.
+        //
         // ==================================================
 
         if (
-            status === 403 &&
+            status ===
+            403 &&
             code ===
             "ACCOUNT_DEACTIVATED"
         ) {
-            clearSession();
+            clearAuthSession();
+
 
             redirectToLogin();
 
@@ -304,25 +293,33 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // FIRST LOGIN PASSWORD CHANGE REQUIRED
+        // PASSWORD CHANGE REQUIRED
         // ==================================================
         //
-        // Keep authentication state.
+        // IMPORTANT:
         //
-        // Trainer/Trainee still needs the authenticated
-        // temporary session to call:
+        // Do NOT clear the authentication session here.
         //
-        // POST /auth/change-password
+        // A Trainer/Trainee using a temporary password
+        // needs the authenticated temporary session to call:
+        //
+        // POST /api/auth/change-password
+        //
+        // Admin is not part of this forced-first-login rule.
         //
         // ==================================================
 
         if (
-            status === 403 &&
+            status ===
+            403 &&
             code ===
             "PASSWORD_CHANGE_REQUIRED"
         ) {
             if (
-                window.location.pathname !==
+                typeof window !==
+                "undefined" &&
+                window.location
+                    .pathname !==
                 "/login"
             ) {
                 window.location.replace(
@@ -341,20 +338,22 @@ api.interceptors.response.use(
         // SESSION REVOKED
         // ==================================================
         //
-        // Happens after:
+        // Can happen after:
         //
-        // - Password change
-        // - Admin password reset
-        // - Session invalidation
+        // - user changes password
+        // - Admin resets password
+        // - session invalidation
         //
         // ==================================================
 
         if (
-            status === 401 &&
+            status ===
+            401 &&
             code ===
             "SESSION_REVOKED"
         ) {
-            clearSession();
+            clearAuthSession();
+
 
             redirectToLogin();
 
@@ -369,16 +368,18 @@ api.interceptors.response.use(
         // INVALID ACCESS TOKEN
         // ==================================================
         //
-        // Invalid tokens should NOT be refreshed.
+        // An invalid token must NOT be refreshed.
         //
         // ==================================================
 
         if (
-            status === 401 &&
+            status ===
+            401 &&
             code ===
             "INVALID_ACCESS_TOKEN"
         ) {
-            clearSession();
+            clearAuthSession();
+
 
             redirectToLogin();
 
@@ -393,19 +394,22 @@ api.interceptors.response.use(
         // ACCESS TOKEN EXPIRED
         // ==================================================
         //
-        // Backend access tokens are short-lived.
+        // Backend access tokens are short lived.
         //
-        // If the refresh-token cookie is still valid:
+        // Flow:
         //
-        // 1. Call /auth/refresh
-        // 2. Receive new access token
-        // 3. Store new token
-        // 4. Retry original request
+        // 1. API returns ACCESS_TOKEN_EXPIRED
+        // 2. Call /auth/refresh
+        // 3. Browser sends refresh cookie
+        // 4. Receive new access token
+        // 5. Save token
+        // 6. Retry original request
         //
         // ==================================================
 
         if (
-            status === 401 &&
+            status ===
+            401 &&
             code ===
             "ACCESS_TOKEN_EXPIRED" &&
             originalRequest &&
@@ -416,17 +420,12 @@ api.interceptors.response.use(
 
 
             try {
-
-                // ==========================================
-                // GET NEW ACCESS TOKEN
-                // ==========================================
-
                 const newAccessToken =
                     await refreshAccessToken();
 
 
                 // ==========================================
-                // UPDATE ORIGINAL REQUEST
+                // UPDATE FAILED REQUEST
                 // ==========================================
 
                 originalRequest.headers =
@@ -434,12 +433,14 @@ api.interceptors.response.use(
                     {};
 
 
-                originalRequest.headers.Authorization =
+                originalRequest
+                    .headers
+                    .Authorization =
                     `Bearer ${newAccessToken}`;
 
 
                 // ==========================================
-                // RETRY ORIGINAL REQUEST
+                // RETRY
                 // ==========================================
 
                 return api(
@@ -449,22 +450,22 @@ api.interceptors.response.use(
             } catch (
             refreshError
             ) {
-
                 // ==========================================
                 // REFRESH FAILED
                 // ==========================================
                 //
                 // Refresh token may be:
                 //
-                // - Missing
-                // - Expired
-                // - Invalid
-                // - Revoked
-                // - Associated account deactivated
+                // - expired
+                // - missing
+                // - revoked
+                // - invalid
+                // - attached to a deactivated account
                 //
                 // ==========================================
 
-                clearSession();
+                clearAuthSession();
+
 
                 redirectToLogin();
 
@@ -477,21 +478,22 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // OTHER 401 RESPONSES
+        // OTHER 401 ERRORS
         // ==================================================
         //
-        // If there is no usable authentication session,
-        // clear local authentication state.
-        //
-        // Do not interfere with public login requests.
+        // Do not redirect failed public login or password
+        // reset requests.
         //
         // ==================================================
 
         if (
-            status === 401 &&
-            originalRequest?.url !==
+            status ===
+            401 &&
+            originalRequest
+                ?.url !==
             "/auth/login" &&
-            originalRequest?.url !==
+            originalRequest
+                ?.url !==
             "/auth/forgot-password"
         ) {
             const accessToken =
@@ -501,7 +503,8 @@ api.interceptors.response.use(
             if (
                 accessToken
             ) {
-                clearSession();
+                clearAuthSession();
+
 
                 redirectToLogin();
             }
@@ -517,6 +520,19 @@ api.interceptors.response.use(
         );
     }
 );
+
+
+// ======================================================
+// EXPORT API BASE URL
+// ======================================================
+//
+// Useful for profile-image paths if needed.
+//
+// ======================================================
+
+export {
+    API_BASE_URL,
+};
 
 
 // ======================================================
