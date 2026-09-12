@@ -1,7 +1,3 @@
-// ======================================================
-// EMPTY STATE
-// ======================================================
-
 function EmptyState({
     title = "No data found.",
     description = "",
@@ -12,19 +8,18 @@ function EmptyState({
         <div
             className="
                 flex
-                min-h-[220px]
+                min-h-[180px]
                 items-center
                 justify-center
                 px-4
                 py-8
                 text-center
-                sm:px-6
             "
         >
             <div
                 className="
                     w-full
-                    max-w-md
+                    max-w-sm
                 "
             >
 
@@ -34,149 +29,54 @@ function EmptyState({
 
                 <div
                     className="
-                        relative
                         mx-auto
                         flex
-                        h-16
-                        w-16
+                        h-10
+                        w-10
                         items-center
                         justify-center
+                        rounded-full
+                        bg-blue-50
+                        text-blue-500
                     "
                 >
-
-                    <div
-                        className="
-                            absolute
-                            inset-0
-                            rounded-2xl
-                            bg-blue-50
-                            rotate-6
-                        "
+                    <EmptyIcon
+                        icon={
+                            icon
+                        }
                     />
-
-
-                    <div
-                        className="
-                            relative
-                            flex
-                            h-14
-                            w-14
-                            items-center
-                            justify-center
-                            rounded-2xl
-                            border
-                            border-blue-100
-                            bg-white
-                            text-blue-500
-                            shadow-sm
-                        "
-                    >
-
-                        {icon ===
-                            "users" ? (
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.7"
-                                className="h-6 w-6"
-                            >
-                                <circle
-                                    cx="9"
-                                    cy="8"
-                                    r="3"
-                                />
-
-                                <circle
-                                    cx="17"
-                                    cy="9"
-                                    r="2"
-                                />
-
-                                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                                <path d="M15 15c3 0 5 1.6 5.5 5" />
-                            </svg>
-                        ) : icon ===
-                            "training" ? (
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.7"
-                                className="h-6 w-6"
-                            >
-                                <path d="M4 5h16v14H4z" />
-
-                                <path d="M8 9h8" />
-
-                                <path d="M8 13h5" />
-                            </svg>
-                        ) : (
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.7"
-                                className="h-6 w-6"
-                            >
-                                <path d="M4 6h16v13H4z" />
-
-                                <path d="M8 3v3" />
-
-                                <path d="M16 3v3" />
-
-                                <path d="M8 11h8" />
-
-                                <path d="M8 15h5" />
-                            </svg>
-                        )}
-
-                    </div>
-
                 </div>
 
 
                 {/* ================================================= */}
-                {/* TEXT */}
+                {/* TITLE */}
                 {/* ================================================= */}
-
-                <p
-                    className="
-                        mt-5
-                        text-[8px]
-                        font-bold
-                        uppercase
-                        tracking-[0.16em]
-                        text-blue-500
-                    "
-                >
-                    UK LogiWare
-                </p>
-
 
                 <h3
                     className="
-                        mt-1
-                        break-words
-                        text-sm
-                        font-bold
-                        text-slate-800
+                        mt-3
+                        text-[11px]
+                        font-medium
+                        text-slate-700
                     "
                 >
                     {title}
                 </h3>
 
 
+                {/* ================================================= */}
+                {/* DESCRIPTION */}
+                {/* ================================================= */}
+
                 {description && (
                     <p
                         className="
                             mx-auto
-                            mt-2
-                            max-w-sm
-                            text-[10px]
-                            leading-5
-                            text-slate-500
+                            mt-1
+                            max-w-xs
+                            text-[8px]
+                            leading-4
+                            text-slate-400
                         "
                     >
                         {description}
@@ -191,7 +91,7 @@ function EmptyState({
                 {action && (
                     <div
                         className="
-                            mt-5
+                            mt-4
                             flex
                             justify-center
                         "
@@ -202,6 +102,83 @@ function EmptyState({
 
             </div>
         </div>
+    );
+}
+
+
+// ======================================================
+// ICON
+// ======================================================
+
+function EmptyIcon({
+    icon,
+}) {
+    if (
+        icon ===
+        "users"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                />
+
+                <circle
+                    cx="17"
+                    cy="9"
+                    r="2"
+                />
+
+                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+            </svg>
+        );
+    }
+
+
+    if (
+        icon ===
+        "training"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+            >
+                <path d="M4 5h16v14H4z" />
+
+                <path d="M8 9h8" />
+
+                <path d="M8 13h5" />
+            </svg>
+        );
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-5 w-5"
+        >
+            <path d="M5 6h14v13H5z" />
+
+            <path d="M8 10h8" />
+
+            <path d="M8 14h5" />
+        </svg>
     );
 }
 

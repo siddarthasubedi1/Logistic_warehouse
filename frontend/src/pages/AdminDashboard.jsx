@@ -23,10 +23,6 @@ function AdminDashboard() {
         useNavigate();
 
 
-    // ======================================================
-    // DATA
-    // ======================================================
-
     const [
         users,
         setUsers,
@@ -38,10 +34,6 @@ function AdminDashboard() {
         setPendingUsers,
     ] = useState([]);
 
-
-    // ======================================================
-    // PAGE STATE
-    // ======================================================
 
     const [
         loading,
@@ -84,10 +76,14 @@ function AdminDashboard() {
 
 
     // ======================================================
-    // LOAD DASHBOARD
+    // LOAD EXISTING DASHBOARD DATA
     // ======================================================
 
     useEffect(() => {
+        let mounted =
+            true;
+
+
         const loadDashboardData =
             async () => {
                 try {
@@ -105,17 +101,20 @@ function AdminDashboard() {
                         usersResponse,
                         pendingResponse,
                     ] =
-                        await Promise.all(
-                            [
-                                api.get(
-                                    "/admin/users"
-                                ),
+                        await Promise.all([
+                            api.get(
+                                "/admin/users"
+                            ),
 
-                                api.get(
-                                    "/admin/pending-users"
-                                ),
-                            ]
-                        );
+                            api.get(
+                                "/admin/pending-users"
+                            ),
+                        ]);
+
+
+                    if (!mounted) {
+                        return;
+                    }
 
 
                     const usersData =
@@ -156,22 +155,36 @@ function AdminDashboard() {
                     );
 
 
-                    setError(
-                        error.response
-                            ?.data
-                            ?.message ||
-                        "Unable to load dashboard information."
-                    );
+                    if (
+                        mounted
+                    ) {
+                        setError(
+                            error.response
+                                ?.data
+                                ?.message ||
+                            "Unable to load dashboard information."
+                        );
+                    }
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    if (
+                        mounted
+                    ) {
+                        setLoading(
+                            false
+                        );
+                    }
                 }
             };
 
 
         loadDashboardData();
+
+
+        return () => {
+            mounted =
+                false;
+        };
 
     }, []);
 
@@ -196,7 +209,9 @@ function AdminDashboard() {
                 currentUser
             ) =>
                 currentUser.status ===
-                "deactivated"
+                "deactivated" ||
+                currentUser.status ===
+                "inactive"
         ).length;
 
 
@@ -221,7 +236,7 @@ function AdminDashboard() {
 
 
     // ======================================================
-    // PASSWORD RESET NAVIGATION
+    // PASSWORD RESET USER NAVIGATION
     // ======================================================
 
     const handleManageResetUser = (
@@ -244,7 +259,7 @@ function AdminDashboard() {
 
 
     // ======================================================
-    // UI
+    // PAGE
     // ======================================================
 
     return (
@@ -255,22 +270,29 @@ function AdminDashboard() {
             }
         >
 
-            <div className="space-y-5">
+            {/* ================================================= */}
+            {/* ADMIN PAGE HEADER */}
+            {/* ================================================= */}
 
-                {/* ================================================= */}
-                {/* ADMIN HEADER */}
-                {/* ================================================= */}
-
-                <AdminHeader
-                    user={
-                        user
-                    }
-                />
+            <AdminHeader
+                user={
+                    user
+                }
+            />
 
 
-                {/* ================================================= */}
+            {/* ================================================= */}
+            {/* DASHBOARD CONTENT */}
+            {/* ================================================= */}
+
+            <div
+                className="
+                    space-y-4
+                    pt-5
+                "
+            >
+
                 {/* ERROR */}
-                {/* ================================================= */}
 
                 {error && (
                     <div
@@ -278,18 +300,14 @@ function AdminDashboard() {
                             flex
                             items-start
                             gap-3
-                            rounded-xl
+                            rounded-lg
                             border
                             border-red-200
                             bg-red-50
                             px-4
                             py-3
-                            text-xs
-                            text-red-700
-                            shadow-sm
                         "
                     >
-
                         <div
                             className="
                                 flex
@@ -300,7 +318,7 @@ function AdminDashboard() {
                                 justify-center
                                 rounded-full
                                 bg-white
-                                text-red-600
+                                text-red-500
                             "
                         >
                             <svg
@@ -324,30 +342,33 @@ function AdminDashboard() {
 
 
                         <div>
-
-                            <p className="font-semibold">
-                                Dashboard Error
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-semibold
+                                    text-red-700
+                                "
+                            >
+                                Unable to load dashboard
                             </p>
 
 
                             <p
                                 className="
                                     mt-1
-                                    text-[10px]
-                                    leading-5
+                                    text-[8px]
+                                    text-red-600
                                 "
                             >
                                 {error}
                             </p>
-
                         </div>
-
                     </div>
                 )}
 
 
                 {/* ================================================= */}
-                {/* STATISTICS */}
+                {/* STATS */}
                 {/* ================================================= */}
 
                 <AdminStats
@@ -370,17 +391,16 @@ function AdminDashboard() {
 
 
                 {/* ================================================= */}
-                {/* MAIN DASHBOARD */}
+                {/* OVERVIEW + QUICK ACTIONS */}
                 {/* ================================================= */}
 
                 <div
                     className="
                         grid
-                        gap-5
-                        xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]
+                        gap-4
+                        xl:grid-cols-[minmax(0,1.8fr)_minmax(260px,.7fr)]
                     "
                 >
-
                     <AdminUsersOverview
                         loading={
                             loading
@@ -402,12 +422,11 @@ function AdminDashboard() {
                             pendingUsers.length
                         }
                     />
-
                 </div>
 
 
                 {/* ================================================= */}
-                {/* PASSWORD RESET REQUESTS */}
+                {/* PASSWORD RESET */}
                 {/* ================================================= */}
 
                 <PasswordResetRequests
@@ -415,114 +434,6 @@ function AdminDashboard() {
                         handleManageResetUser
                     }
                 />
-
-
-                {/* ================================================= */}
-                {/* SAFETY INFORMATION */}
-                {/* ================================================= */}
-
-                <section
-                    className="
-                        relative
-                        overflow-hidden
-                        rounded-2xl
-                        border
-                        border-blue-100
-                        bg-gradient-to-r
-                        from-blue-50
-                        via-white
-                        to-emerald-50
-                        p-5
-                        shadow-sm
-                    "
-                >
-
-                    <div
-                        className="
-                            pointer-events-none
-                            absolute
-                            -right-10
-                            -top-10
-                            h-28
-                            w-28
-                            rounded-full
-                            bg-blue-100/60
-                        "
-                    />
-
-
-                    <div
-                        className="
-                            relative
-                            flex
-                            flex-col
-                            gap-4
-                            sm:flex-row
-                            sm:items-center
-                        "
-                    >
-
-                        <div
-                            className="
-                                flex
-                                h-11
-                                w-11
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-white
-                                text-blue-600
-                                shadow-sm
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-6 w-6"
-                            >
-                                <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                <path d="m9 12 2 2 4-4" />
-                            </svg>
-                        </div>
-
-
-                        <div>
-
-                            <p
-                                className="
-                                    text-xs
-                                    font-bold
-                                    text-slate-800
-                                "
-                            >
-                                UK LogiWare Safety Administration
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    max-w-4xl
-                                    text-[10px]
-                                    leading-5
-                                    text-slate-500
-                                "
-                            >
-                                Manage Trainer and Trainee access,
-                                workplace safety training and account
-                                security from the Administrator
-                                workspace.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </section>
 
             </div>
 

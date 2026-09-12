@@ -13,7 +13,7 @@ import {
 
 
 // ======================================================
-// CHECK EXISTING FORCED-PASSWORD SESSION
+// FORCED PASSWORD USER
 // ======================================================
 
 function getStoredForcedPasswordUser() {
@@ -26,12 +26,19 @@ function getStoredForcedPasswordUser() {
     }
 
 
+    const role =
+        String(
+            user.role ||
+            ""
+        ).toLowerCase();
+
+
     const requiresChange =
         [
             "trainer",
             "trainee",
         ].includes(
-            user.role
+            role
         ) &&
         user.mustChangePassword ===
         true;
@@ -44,7 +51,7 @@ function getStoredForcedPasswordUser() {
 
 
 // ======================================================
-// LOGIN PAGE
+// LOGIN
 // ======================================================
 
 function Login() {
@@ -83,7 +90,7 @@ function Login() {
 
 
     // ======================================================
-    // FIRST LOGIN PASSWORD CHANGE
+    // REQUIRED PASSWORD CHANGE
     // ======================================================
 
     const handlePasswordChangeRequired =
@@ -102,19 +109,11 @@ function Login() {
 
 
     // ======================================================
-    // PASSWORD CHANGE COMPLETED
+    // PASSWORD CHANGED
     // ======================================================
 
     const handlePasswordChangeCompleted =
         () => {
-            /*
-                ForcePasswordChangeModal already clears
-                the temporary authenticated session.
-
-                After that we simply return the user to
-                the normal login form.
-            */
-
             setForcedPasswordUser(
                 null
             );
@@ -127,113 +126,78 @@ function Login() {
 
 
     // ======================================================
-    // PAGE
+    // UI
     // ======================================================
 
     return (
         <main
             className="
-                relative
                 min-h-screen
-                overflow-hidden
-                bg-slate-100
+                bg-[#f3f6fa]
                 p-0
                 sm:p-4
                 lg:p-5
             "
         >
-
-            {/* ================================================= */}
-            {/* BACKGROUND */}
-            {/* ================================================= */}
-
             <div
                 className="
-                    pointer-events-none
-                    absolute
-                    -left-32
-                    -top-32
-                    h-80
-                    w-80
-                    rounded-full
-                    bg-blue-100/70
-                    blur-3xl
-                "
-            />
-
-
-            <div
-                className="
-                    pointer-events-none
-                    absolute
-                    -bottom-32
-                    -right-32
-                    h-80
-                    w-80
-                    rounded-full
-                    bg-emerald-100/60
-                    blur-3xl
-                "
-            />
-
-
-            {/* ================================================= */}
-            {/* LOGIN CONTAINER */}
-            {/* ================================================= */}
-
-            <div
-                className="
-                    relative
-                    z-10
                     mx-auto
                     grid
                     min-h-screen
                     w-full
-                    max-w-[1450px]
+                    max-w-[1400px]
                     overflow-hidden
                     bg-white
-                    shadow-2xl
-                    shadow-slate-300/40
                     sm:min-h-[calc(100vh-32px)]
-                    sm:rounded-3xl
-                    lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]
+                    sm:rounded-2xl
+                    sm:border
+                    sm:border-slate-200
+                    sm:shadow-xl
+                    lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]
                 "
             >
-
-                {/* ================================================= */}
-                {/* LEFT BRANDING */}
-                {/* ================================================= */}
+                {/* BRANDING */}
 
                 <LoginBranding />
 
 
-                {/* ================================================= */}
-                {/* RIGHT FORM AREA */}
-                {/* ================================================= */}
+                {/* FORM SIDE */}
 
-                {showForgotPassword ? (
-                    <ForgotPasswordForm
-                        onBackToLogin={
-                            handleBackToLogin
-                        }
-                    />
-                ) : (
-                    <LoginForm
-                        onForgotPassword={
-                            handleForgotPassword
-                        }
-                        onPasswordChangeRequired={
-                            handlePasswordChangeRequired
-                        }
-                    />
-                )}
-
+                <section
+                    className="
+                        flex
+                        min-h-screen
+                        items-center
+                        justify-center
+                        px-5
+                        py-8
+                        sm:min-h-0
+                        sm:px-8
+                        lg:px-12
+                        xl:px-16
+                    "
+                >
+                    {showForgotPassword ? (
+                        <ForgotPasswordForm
+                            onBackToLogin={
+                                handleBackToLogin
+                            }
+                        />
+                    ) : (
+                        <LoginForm
+                            onForgotPassword={
+                                handleForgotPassword
+                            }
+                            onPasswordChangeRequired={
+                                handlePasswordChangeRequired
+                            }
+                        />
+                    )}
+                </section>
             </div>
 
 
-            {/* ================================================= */}
-            {/* REQUIRED FIRST-LOGIN PASSWORD CHANGE */}
-            {/* ================================================= */}
+            {/* FIRST LOGIN PASSWORD CHANGE */}
 
             {forcedPasswordUser && (
                 <ForcePasswordChangeModal
@@ -245,7 +209,6 @@ function Login() {
                     }
                 />
             )}
-
         </main>
     );
 }

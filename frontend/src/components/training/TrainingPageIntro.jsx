@@ -4,38 +4,62 @@ function TrainingPageIntro({
     action = null,
 }) {
     return (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
-            {/* ================================================= */}
-            {/* PAGE TITLE */}
-            {/* ================================================= */}
-
-            <div className="max-w-3xl">
-
-                <h1 className="text-2xl font-bold text-slate-900">
+        <div
+            className="
+                flex
+                w-full
+                min-w-0
+                flex-col
+                gap-3
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+            "
+        >
+            <div
+                className="
+                    min-w-0
+                    max-w-3xl
+                "
+            >
+                <h1
+                    className="
+                        break-words
+                        text-[16px]
+                        font-semibold
+                        text-slate-800
+                        sm:text-[18px]
+                    "
+                >
                     {title}
                 </h1>
 
-
                 {description && (
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                    <p
+                        className="
+                            mt-1
+                            max-w-2xl
+                            text-[9px]
+                            leading-5
+                            text-slate-400
+                        "
+                    >
                         {description}
                     </p>
                 )}
-
             </div>
 
-
-            {/* ================================================= */}
-            {/* OPTIONAL ACTION */}
-            {/* ================================================= */}
-
             {action && (
-                <div className="shrink-0">
+                <div
+                    className="
+                        w-full
+                        shrink-0
+                        sm:w-auto
+                    "
+                >
                     {action}
                 </div>
             )}
-
         </div>
     );
 }

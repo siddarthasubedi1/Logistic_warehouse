@@ -1,12 +1,23 @@
+import {
+    useState,
+} from "react";
+
+
+// ======================================================
+// GENERATED CREDENTIALS
+// ======================================================
+
 function GeneratedCredentialsModal({
     open = false,
     credentials = null,
     user = null,
     onClose,
 }) {
-    // ======================================================
-    // HIDDEN
-    // ======================================================
+    const [
+        copied,
+        setCopied,
+    ] = useState("");
+
 
     if (
         !open ||
@@ -16,56 +27,99 @@ function GeneratedCredentialsModal({
     }
 
 
-    // ======================================================
-    // CREDENTIAL DATA
-    // ======================================================
-
     const username =
         credentials.username ||
         "";
+
 
     const password =
         credentials.password ||
         "";
 
-    const email =
-        user?.email ||
-        "";
 
     const fullName =
         [
             user?.firstName,
             user?.lastName,
         ]
-            .filter(
-                Boolean
-            )
+            .filter(Boolean)
             .join(" ")
             .trim();
 
 
+    const email =
+        user?.email ||
+        "";
+
+
     // ======================================================
-    // OPEN GMAIL
+    // COPY
     // ======================================================
 
-    const handleSendEmail = () => {
-        if (
-            !email ||
-            !username ||
-            !password
-        ) {
-            return;
-        }
+    const copyValue =
+        async (
+            type,
+            value
+        ) => {
+            if (!value) {
+                return;
+            }
 
 
-        const subject =
-            "UK LogiWare - Password Reset Credentials";
+            try {
+                await navigator
+                    .clipboard
+                    .writeText(
+                        value
+                    );
 
 
-        const body =
-            `Hello ${fullName || username},
+                setCopied(
+                    type
+                );
 
-Your UK LogiWare password has been reset successfully.
+
+                window.setTimeout(
+                    () => {
+                        setCopied(
+                            ""
+                        );
+                    },
+                    1500
+                );
+
+            } catch (error) {
+                console.error(
+                    "Copy credentials error:",
+                    error
+                );
+            }
+        };
+
+
+    // ======================================================
+    // GMAIL
+    // ======================================================
+
+    const handleSendEmail =
+        () => {
+            if (
+                !email ||
+                !username ||
+                !password
+            ) {
+                return;
+            }
+
+
+            const subject =
+                "UK LogiWare - Password Reset Credentials";
+
+
+            const body =
+                `Hello ${fullName || username},
+
+Your UK LogiWare password has been reset.
 
 Username: ${username}
 Temporary Password: ${password}
@@ -73,61 +127,31 @@ Temporary Password: ${password}
 Login here:
 http://localhost:5173/login
 
-For security, this temporary password must be changed after logging in.
-
-You must create a new password before accessing your account.
+Please change your temporary password after logging in.
 
 Regards,
 UK LogiWare Administrator`;
 
 
-        const gmailUrl =
-            "https://mail.google.com/mail/?view=cm&fs=1" +
-            `&to=${encodeURIComponent(
-                email
-            )}` +
-            `&su=${encodeURIComponent(
-                subject
-            )}` +
-            `&body=${encodeURIComponent(
-                body
-            )}`;
+            const gmailUrl =
+                "https://mail.google.com/mail/?view=cm&fs=1" +
+                `&to=${encodeURIComponent(
+                    email
+                )}` +
+                `&su=${encodeURIComponent(
+                    subject
+                )}` +
+                `&body=${encodeURIComponent(
+                    body
+                )}`;
 
 
-        window.open(
-            gmailUrl,
-            "_blank",
-            "noopener,noreferrer"
-        );
-    };
-
-
-    // ======================================================
-    // COPY
-    // ======================================================
-
-    const copyText = async (
-        value
-    ) => {
-        if (!value) {
-            return;
-        }
-
-
-        try {
-            await navigator
-                .clipboard
-                .writeText(
-                    value
-                );
-
-        } catch (error) {
-            console.error(
-                "Copy credential error:",
-                error
+            window.open(
+                gmailUrl,
+                "_blank",
+                "noopener,noreferrer"
             );
-        }
-    };
+        };
 
 
     // ======================================================
@@ -137,151 +161,146 @@ UK LogiWare Administrator`;
     return (
         <div
             className="
-                m-4
-                overflow-hidden
-                rounded-2xl
-                border
-                border-emerald-300
-                bg-emerald-50
-                shadow-sm
-                sm:m-5
+                fixed
+                inset-0
+                z-[120]
+                flex
+                items-center
+                justify-center
+                overflow-y-auto
+                bg-slate-950/45
+                p-4
             "
         >
-
-            {/* ================================================= */}
-            {/* HEADER */}
-            {/* ================================================= */}
-
             <div
+                role="dialog"
+                aria-modal="true"
                 className="
-                    border-b
-                    border-emerald-200
-                    bg-gradient-to-r
-                    from-emerald-50
-                    via-white
-                    to-emerald-50
-                    p-5
+                    my-auto
+                    w-full
+                    max-w-lg
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-xl
                 "
             >
+
+                {/* ================================================= */}
+                {/* HEADER */}
+                {/* ================================================= */}
 
                 <div
                     className="
                         flex
                         items-start
-                        gap-3
+                        justify-between
+                        gap-4
+                        border-b
+                        border-slate-200
+                        px-5
+                        py-4
+                    "
+                >
+                    <div>
+                        <div
+                            className="
+                                flex
+                                items-center
+                                gap-2
+                            "
+                        >
+                            <span
+                                className="
+                                    flex
+                                    h-7
+                                    w-7
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-emerald-50
+                                    text-[10px]
+                                    font-bold
+                                    text-emerald-600
+                                "
+                            >
+                                ✓
+                            </span>
+
+
+                            <h2
+                                className="
+                                    text-[13px]
+                                    font-semibold
+                                    text-slate-800
+                                "
+                            >
+                                Password Reset Complete
+                            </h2>
+                        </div>
+
+
+                        <p
+                            className="
+                                mt-2
+                                text-[8px]
+                                text-slate-400
+                            "
+                        >
+                            Save or send these temporary credentials.
+                        </p>
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onClick={
+                            onClose
+                        }
+                        aria-label="Close"
+                        className="
+                            flex
+                            h-8
+                            w-8
+                            items-center
+                            justify-center
+                            rounded-md
+                            text-lg
+                            text-slate-400
+                            hover:bg-slate-100
+                            hover:text-slate-700
+                        "
+                    >
+                        ×
+                    </button>
+                </div>
+
+
+                {/* ================================================= */}
+                {/* BODY */}
+                {/* ================================================= */}
+
+                <div
+                    className="
+                        p-5
                     "
                 >
 
-                    <div
-                        className="
-                            flex
-                            h-11
-                            w-11
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-emerald-100
-                            text-emerald-700
-                        "
-                    >
+                    {/* USER */}
 
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="h-5 w-5"
-                        >
-                            <circle
-                                cx="12"
-                                cy="12"
-                                r="9"
-                            />
-
-                            <path d="m8 12 2.5 2.5L16 9" />
-                        </svg>
-
-                    </div>
-
-
-                    <div>
-
-                        <p
+                    {user && (
+                        <div
                             className="
-                                text-[8px]
-                                font-bold
-                                uppercase
-                                tracking-[0.16em]
-                                text-emerald-600
+                                rounded-lg
+                                bg-slate-50
+                                p-4
                             "
                         >
-                            Password Reset Complete
-                        </p>
-
-
-                        <h3
-                            className="
-                                mt-1
-                                text-base
-                                font-bold
-                                text-slate-900
-                                sm:text-lg
-                            "
-                        >
-                            Credentials Generated Successfully
-                        </h3>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[10px]
-                                leading-5
-                                text-slate-500
-                            "
-                        >
-                            Save or send these credentials now. The
-                            temporary password is intended to be shown
-                            only during this reset flow.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div className="p-4 sm:p-5">
-
-                {/* ================================================= */}
-                {/* USER */}
-                {/* ================================================= */}
-
-                {user && (
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-3
-                            rounded-xl
-                            border
-                            border-emerald-200
-                            bg-white
-                            p-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
-                    >
-
-                        <div className="min-w-0">
-
                             <p
                                 className="
-                                    text-[8px]
-                                    font-semibold
+                                    text-[7px]
                                     uppercase
                                     tracking-wide
                                     text-slate-400
@@ -294,10 +313,9 @@ UK LogiWare Administrator`;
                             <p
                                 className="
                                     mt-1
-                                    truncate
-                                    text-[11px]
-                                    font-bold
-                                    text-slate-900
+                                    text-[10px]
+                                    font-semibold
+                                    text-slate-700
                                 "
                             >
                                 {fullName ||
@@ -310,282 +328,184 @@ UK LogiWare Administrator`;
                                     className="
                                         mt-1
                                         break-all
-                                        text-[9px]
-                                        text-slate-500
+                                        text-[8px]
+                                        text-slate-400
                                     "
                                 >
                                     {email}
                                 </p>
                             )}
-
                         </div>
+                    )}
 
 
-                        {user?.role && (
-                            <span
-                                className="
-                                    w-fit
-                                    rounded-full
-                                    bg-blue-50
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    capitalize
-                                    text-blue-700
-                                "
-                            >
-                                {user.role}
-                            </span>
-                        )}
+                    {/* CREDENTIALS */}
 
-                    </div>
-                )}
-
-
-                {/* ================================================= */}
-                {/* CREDENTIALS */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        mt-4
-                        grid
-                        gap-3
-                        md:grid-cols-2
-                    "
-                >
-
-                    <CredentialBox
-                        label="Username"
-                        value={
-                            username
-                        }
-                        onCopy={() =>
-                            copyText(
-                                username
-                            )
-                        }
-                    />
-
-
-                    <CredentialBox
-                        label="Temporary Password"
-                        value={
-                            password
-                        }
-                        onCopy={() =>
-                            copyText(
-                                password
-                            )
-                        }
-                        warning
-                    />
-
-                </div>
-
-
-                {/* ================================================= */}
-                {/* IMPORTANT */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        mt-4
-                        flex
-                        items-start
-                        gap-3
-                        rounded-xl
-                        border
-                        border-amber-200
-                        bg-amber-50
-                        p-4
-                    "
-                >
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
+                    <div
                         className="
-                            mt-0.5
-                            h-4
-                            w-4
-                            shrink-0
-                            text-amber-600
+                            mt-4
+                            grid
+                            gap-3
+                            sm:grid-cols-2
                         "
                     >
-                        <path d="M12 3 2.5 20h19L12 3Z" />
+                        <CredentialItem
+                            label="Username"
+                            value={
+                                username
+                            }
+                            copied={
+                                copied ===
+                                "username"
+                            }
+                            onCopy={() =>
+                                copyValue(
+                                    "username",
+                                    username
+                                )
+                            }
+                        />
 
-                        <path d="M12 9v5" />
 
-                        <path d="M12 17h.01" />
-                    </svg>
+                        <CredentialItem
+                            label="Temporary Password"
+                            value={
+                                password
+                            }
+                            copied={
+                                copied ===
+                                "password"
+                            }
+                            onCopy={() =>
+                                copyValue(
+                                    "password",
+                                    password
+                                )
+                            }
+                        />
+                    </div>
 
 
-                    <div>
+                    {/* INFO */}
 
+                    <div
+                        className="
+                            mt-4
+                            rounded-lg
+                            border
+                            border-amber-200
+                            bg-amber-50
+                            px-4
+                            py-3
+                        "
+                    >
                         <p
                             className="
-                                text-[9px]
-                                font-bold
-                                text-amber-800
-                            "
-                        >
-                            Temporary password
-                        </p>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[9px]
+                                text-[8px]
                                 leading-5
                                 text-amber-700
                             "
                         >
-                            The Trainer or Trainee must log in with this
-                            temporary password and create a new password
-                            before entering the dashboard.
+                            The Trainer or Trainee should use this
+                            temporary password to log in and then
+                            create a new password.
                         </p>
-
                     </div>
 
-                </div>
 
+                    {/* ACTIONS */}
 
-                {/* ================================================= */}
-                {/* ACTIONS */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        mt-5
-                        flex
-                        flex-col
-                        gap-2
-                        sm:flex-row
-                        sm:justify-end
-                    "
-                >
-
-                    <button
-                        type="button"
-                        onClick={
-                            handleSendEmail
-                        }
-                        disabled={
-                            !email ||
-                            !username ||
-                            !password
-                        }
+                    <div
                         className="
-                            inline-flex
-                            min-h-[42px]
-                            w-full
-                            items-center
-                            justify-center
+                            mt-5
+                            flex
+                            flex-col
                             gap-2
-                            rounded-xl
-                            border
-                            border-emerald-300
-                            bg-white
-                            px-4
-                            py-2.5
-                            text-[10px]
-                            font-semibold
-                            text-emerald-700
-                            transition
-                            hover:bg-emerald-100
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                            sm:w-auto
+                            sm:flex-row
+                            sm:justify-end
                         "
                     >
+                        {email && (
+                            <button
+                                type="button"
+                                onClick={
+                                    handleSendEmail
+                                }
+                                className="
+                                    rounded-lg
+                                    border
+                                    border-slate-300
+                                    bg-white
+                                    px-4
+                                    py-2.5
+                                    text-[9px]
+                                    font-medium
+                                    text-slate-600
+                                    hover:bg-slate-50
+                                "
+                            >
+                                Send by Gmail
+                            </button>
+                        )}
 
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-4 w-4"
+
+                        <button
+                            type="button"
+                            onClick={
+                                onClose
+                            }
+                            className="
+                                rounded-lg
+                                bg-blue-600
+                                px-5
+                                py-2.5
+                                text-[9px]
+                                font-medium
+                                text-white
+                                hover:bg-blue-700
+                            "
                         >
-                            <path d="M3 6h18v12H3z" />
-
-                            <path d="m3 7 9 6 9-6" />
-                        </svg>
-
-                        Send Credentials by Gmail
-                    </button>
-
-
-                    <button
-                        type="button"
-                        onClick={
-                            onClose
-                        }
-                        className="
-                            min-h-[42px]
-                            w-full
-                            rounded-xl
-                            bg-emerald-600
-                            px-5
-                            py-2.5
-                            text-[10px]
-                            font-semibold
-                            text-white
-                            transition
-                            hover:bg-emerald-700
-                            sm:w-auto
-                        "
-                    >
-                        Done
-                    </button>
-
+                            Done
+                        </button>
+                    </div>
                 </div>
-
             </div>
-
         </div>
     );
 }
 
 
 // ======================================================
-// CREDENTIAL BOX
+// CREDENTIAL
 // ======================================================
 
-function CredentialBox({
+function CredentialItem({
     label,
     value,
+    copied,
     onCopy,
-    warning = false,
 }) {
     return (
         <div
             className="
-                rounded-xl
+                rounded-lg
                 border
-                border-emerald-200
+                border-slate-200
                 bg-white
                 p-4
             "
         >
-
             <div
                 className="
                     flex
                     items-center
                     justify-between
-                    gap-3
+                    gap-2
                 "
             >
-
                 <p
                     className="
-                        text-[8px]
-                        font-semibold
+                        text-[7px]
                         uppercase
                         tracking-wide
                         text-slate-400
@@ -601,44 +521,36 @@ function CredentialBox({
                         onCopy
                     }
                     className="
-                        rounded-md
-                        bg-slate-100
-                        px-2
-                        py-1
                         text-[8px]
-                        font-semibold
-                        text-slate-600
-                        transition
-                        hover:bg-slate-200
+                        font-medium
+                        text-blue-600
+                        hover:text-blue-700
                     "
                 >
-                    Copy
+                    {copied
+                        ? "Copied"
+                        : "Copy"}
                 </button>
-
             </div>
 
 
             <p
-                className={`
+                className="
                     mt-3
                     break-all
-                    rounded-lg
+                    rounded-md
+                    bg-slate-50
                     px-3
                     py-2.5
                     font-mono
-                    text-[11px]
-                    font-bold
-
-                    ${warning
-                        ? "bg-amber-50 text-amber-800"
-                        : "bg-slate-50 text-slate-900"
-                    }
-                `}
+                    text-[10px]
+                    font-semibold
+                    text-slate-800
+                "
             >
                 {value ||
                     "—"}
             </p>
-
         </div>
     );
 }

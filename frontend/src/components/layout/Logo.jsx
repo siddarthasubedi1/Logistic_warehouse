@@ -13,7 +13,7 @@ function Logo({
         >
 
             {/* ================================================= */}
-            {/* ICON */}
+            {/* LOGO ICON */}
             {/* ================================================= */}
 
             <div
@@ -22,142 +22,93 @@ function Logo({
                     shrink-0
                     items-center
                     justify-center
-                    rounded-xl
-                    shadow-md
+                    rounded-md
 
                     ${compact
-                        ? "h-9 w-9"
-                        : "h-11 w-11"
+                        ? "h-8 w-8"
+                        : "h-9 w-9"
                     }
 
                     ${light
-                        ? "border border-white/15 bg-white/10 text-white"
-                        : "bg-blue-600 text-white"
+                        ? "text-white"
+                        : "text-[#0a4371]"
                     }
                 `}
             >
 
                 <svg
                     viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
+                    fill="currentColor"
                     className={
                         compact
-                            ? "h-5 w-5"
-                            : "h-6 w-6"
+                            ? "h-6 w-6"
+                            : "h-7 w-7"
                     }
                 >
-
-                    {/* WAREHOUSE */}
-
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 10.5 12 4l9 6.5v8.25A1.25 1.25 0 0 1 19.75 20H4.25A1.25 1.25 0 0 1 3 18.75V10.5Z"
-                    />
-
-
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8 20v-6h8v6"
-                    />
-
-
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M7 10h10"
-                    />
-
+                    <path d="M12 2.5 3.5 7.2v9.6L12 21.5l8.5-4.7V7.2L12 2.5Zm0 2.1 6.4 3.5L12 11.6 5.6 8.1 12 4.6Zm-6.7 5.1 5.7 3.1v6L5.3 15.7v-6Zm7.7 9.1v-6l5.7-3.1v6L13 18.8Z" />
                 </svg>
 
             </div>
 
 
             {/* ================================================= */}
-            {/* TEXT */}
+            {/* LOGO TEXT */}
             {/* ================================================= */}
 
-            <div className="min-w-0">
+            <div
+                className="
+                    min-w-0
+                "
+            >
 
-                <h1
+                <p
                     className={`
                         truncate
                         font-bold
                         leading-none
 
                         ${compact
-                            ? "text-[15px]"
-                            : "text-[18px]"
+                            ? "text-[14px]"
+                            : "text-[17px]"
                         }
 
                         ${light
                             ? "text-white"
-                            : "text-slate-900"
+                            : "text-[#172033]"
                         }
                     `}
                 >
-                    UK Logi
+                    UK{" "}
+
                     <span
                         className={
                             light
-                                ? "text-blue-300"
-                                : "text-blue-600"
+                                ? "text-[#4f94e8]"
+                                : "text-[#176dc1]"
                         }
                     >
-                        Ware
+                        LogiWare
                     </span>
-                </h1>
+                </p>
 
 
-                <div
-                    className="
-                        mt-1.5
-                        flex
-                        items-center
-                        gap-1.5
-                    "
+                <p
+                    className={`
+                        mt-1
+                        truncate
+                        text-[6px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.12em]
+
+                        ${light
+                            ? "text-blue-100"
+                            : "text-slate-500"
+                        }
+                    `}
                 >
-
-                    <span
-                        className={`
-                            h-1.5
-                            w-1.5
-                            shrink-0
-                            rounded-full
-
-                            ${light
-                                ? "bg-emerald-400"
-                                : "bg-emerald-500"
-                            }
-                        `}
-                    />
-
-
-                    <p
-                        className={`
-                            truncate
-                            font-semibold
-                            uppercase
-                            tracking-[0.13em]
-
-                            ${compact
-                                ? "text-[6px]"
-                                : "text-[7px]"
-                            }
-
-                            ${light
-                                ? "text-blue-200"
-                                : "text-slate-500"
-                            }
-                        `}
-                    >
-                        Safety Training
-                    </p>
-
-                </div>
+                    Safety Training
+                </p>
 
             </div>
 

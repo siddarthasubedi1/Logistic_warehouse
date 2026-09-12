@@ -30,6 +30,10 @@ import {
 } from "../../utils/training";
 
 
+// ======================================================
+// TRAINEE LEARNING PAGE
+// ======================================================
+
 function TraineeLearningPage() {
     const navigate =
         useNavigate();
@@ -61,7 +65,7 @@ function TraineeLearningPage() {
 
 
     // ======================================================
-    // LEARNING SECTIONS
+    // SECTIONS
     // ======================================================
 
     const [
@@ -101,125 +105,148 @@ function TraineeLearningPage() {
     // ======================================================
 
     const loadLearning =
-        useCallback(async () => {
-            if (!programmeId) {
-                setProgramme(null);
+        useCallback(
+            async () => {
+                if (
+                    !programmeId
+                ) {
+                    setProgramme(
+                        null
+                    );
 
-                setAssignment(null);
+                    setAssignment(
+                        null
+                    );
 
-                setSections([]);
+                    setSections(
+                        []
+                    );
 
-                setErrorMessage(
-                    "Training programme information is missing."
-                );
+                    setErrorMessage(
+                        "Training programme information is missing."
+                    );
 
-                setLoading(false);
+                    setLoading(
+                        false
+                    );
 
-                return;
-            }
-
-
-            try {
-                setLoading(true);
-
-                setErrorMessage("");
-
-
-                const [
-                    programmeResponse,
-                    sectionsResponse,
-                ] = await Promise.all([
-                    api.get(
-                        `/my-training/${programmeId}`
-                    ),
-
-                    api.get(
-                        `/my-training/${programmeId}/sections`
-                    ),
-                ]);
+                    return;
+                }
 
 
-                const loadedProgramme =
-                    programmeResponse.data
-                        ?.programme ||
-                    sectionsResponse.data
-                        ?.programme ||
-                    null;
-
-
-                setProgramme(
-                    loadedProgramme
-                );
-
-
-                setAssignment(
-                    programmeResponse.data
-                        ?.assignment ||
-                    null
-                );
-
-
-                const sectionList =
-                    parseArrayResponse(
-                        sectionsResponse.data,
-                        "sections"
+                try {
+                    setLoading(
+                        true
                     );
 
 
-                const activeSections =
-                    sectionList.filter(
-                        (
-                            section
-                        ) =>
-                            section?.status ===
-                            "active" ||
-                            !section?.status
+                    setErrorMessage(
+                        ""
                     );
 
 
-                setSections(
-                    sortLearningSections(
-                        activeSections
-                    )
-                );
+                    const [
+                        programmeResponse,
+                        sectionsResponse,
+                    ] =
+                        await Promise.all([
+                            api.get(
+                                `/my-training/${programmeId}`
+                            ),
+
+                            api.get(
+                                `/my-training/${programmeId}/sections`
+                            ),
+                        ]);
 
 
-                setCurrentSectionIndex(
-                    0
-                );
-
-            } catch (error) {
-                console.error(
-                    "Load trainee learning error:",
-                    error
-                );
+                    const loadedProgramme =
+                        programmeResponse.data
+                            ?.programme ||
+                        sectionsResponse.data
+                            ?.programme ||
+                        null;
 
 
-                setProgramme(null);
-
-                setAssignment(null);
-
-                setSections([]);
+                    setProgramme(
+                        loadedProgramme
+                    );
 
 
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to load this training programme."
-                    )
-                );
-
-            } finally {
-                setLoading(false);
-            }
-        }, [
-            programmeId,
-        ]);
+                    setAssignment(
+                        programmeResponse.data
+                            ?.assignment ||
+                        null
+                    );
 
 
-    // ======================================================
-    // INITIAL LOAD
-    // ======================================================
+                    const sectionList =
+                        parseArrayResponse(
+                            sectionsResponse.data,
+                            "sections"
+                        );
+
+
+                    const activeSections =
+                        sectionList.filter(
+                            (
+                                section
+                            ) =>
+                                section.status ===
+                                "active" ||
+                                !section.status
+                        );
+
+
+                    setSections(
+                        sortLearningSections(
+                            activeSections
+                        )
+                    );
+
+
+                    setCurrentSectionIndex(
+                        0
+                    );
+
+                } catch (error) {
+                    console.error(
+                        "Load trainee learning error:",
+                        error
+                    );
+
+
+                    setProgramme(
+                        null
+                    );
+
+                    setAssignment(
+                        null
+                    );
+
+                    setSections(
+                        []
+                    );
+
+
+                    setErrorMessage(
+                        getApiErrorMessage(
+                            error,
+                            "Unable to load this training programme."
+                        )
+                    );
+
+                } finally {
+                    setLoading(
+                        false
+                    );
+                }
+            },
+            [
+                programmeId,
+            ]
+        );
+
 
     useEffect(() => {
         loadLearning();
@@ -233,38 +260,45 @@ function TraineeLearningPage() {
     // ======================================================
 
     const currentSection =
-        useMemo(() => {
-            if (
-                sections.length ===
-                0
-            ) {
-                return null;
-            }
+        useMemo(
+            () => {
+                if (
+                    sections.length ===
+                    0
+                ) {
+                    return null;
+                }
 
 
-            return (
-                sections[
-                currentSectionIndex
-                ] ||
-                null
-            );
-        }, [
-            sections,
-            currentSectionIndex,
-        ]);
+                return (
+                    sections[
+                    currentSectionIndex
+                    ] ||
+                    null
+                );
+            },
+            [
+                sections,
+                currentSectionIndex,
+            ]
+        );
 
 
     // ======================================================
-    // PROGRESS DISPLAY
+    // PROGRESS
     // ======================================================
 
     const learningProgress =
         sections.length >
             0
             ? Math.round(
-                ((currentSectionIndex +
-                    1) /
-                    sections.length) *
+                (
+                    (
+                        currentSectionIndex +
+                        1
+                    ) /
+                    sections.length
+                ) *
                 100
             )
             : 0;
@@ -278,7 +312,8 @@ function TraineeLearningPage() {
         index
     ) => {
         if (
-            index < 0 ||
+            index <
+            0 ||
             index >=
             sections.length
         ) {
@@ -293,7 +328,8 @@ function TraineeLearningPage() {
 
         window.scrollTo({
             top: 0,
-            behavior: "smooth",
+            behavior:
+                "smooth",
         });
     };
 
@@ -302,110 +338,73 @@ function TraineeLearningPage() {
     // PREVIOUS
     // ======================================================
 
-    const handlePrevious = () => {
-        if (
-            currentSectionIndex <=
-            0
-        ) {
-            return;
-        }
+    const handlePrevious =
+        () => {
+            if (
+                currentSectionIndex <=
+                0
+            ) {
+                return;
+            }
 
 
-        handleSelectSection(
-            currentSectionIndex -
-            1
-        );
-    };
+            handleSelectSection(
+                currentSectionIndex -
+                1
+            );
+        };
 
 
     // ======================================================
     // NEXT
     // ======================================================
 
-    const handleNext = () => {
-        if (
-            currentSectionIndex >=
-            sections.length -
-            1
-        ) {
-            return;
-        }
+    const handleNext =
+        () => {
+            if (
+                currentSectionIndex >=
+                sections.length -
+                1
+            ) {
+                return;
+            }
 
 
-        handleSelectSection(
-            currentSectionIndex +
-            1
-        );
-    };
+            handleSelectSection(
+                currentSectionIndex +
+                1
+            );
+        };
 
 
     // ======================================================
     // FINISH
     // ======================================================
 
-    const handleFinish = () => {
-        navigate(
-            "/my-training"
-        );
-    };
+    const handleFinish =
+        () => {
+            navigate(
+                "/my-training"
+            );
+        };
 
 
     // ======================================================
     // LOADING
     // ======================================================
 
-    if (loading) {
+    if (
+        loading
+    ) {
         return (
             <DashboardLayout
                 role="trainee"
-                showHeader={false}
+                title="Training"
+                subtitle="Loading workplace safety learning content."
             >
-
-                <div className="space-y-5">
-
-                    <div
-                        className="
-                            rounded-2xl
-                            border
-                            border-blue-100
-                            bg-gradient-to-r
-                            from-[#073763]
-                            to-[#1769aa]
-                            p-6
-                            text-white
-                        "
-                    >
-                        <p
-                            className="
-                                text-[9px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.18em]
-                                text-blue-100
-                            "
-                        >
-                            Workplace Safety Learning
-                        </p>
-
-
-                        <h1
-                            className="
-                                mt-2
-                                text-xl
-                                font-bold
-                            "
-                        >
-                            Loading Training Programme
-                        </h1>
-                    </div>
-
-
-                    <LoadingCard
-                        message="Loading training content..."
-                    />
-
-                </div>
-
+                <LoadingCard
+                    message="Loading training content..."
+                />
             </DashboardLayout>
         );
     }
@@ -420,11 +419,13 @@ function TraineeLearningPage() {
             role="trainee"
             showHeader={false}
         >
-
-            <div className="space-y-5">
-
+            <div
+                className="
+                    space-y-4
+                "
+            >
                 {/* ================================================= */}
-                {/* BACK BAR */}
+                {/* TOP BAR */}
                 {/* ================================================= */}
 
                 <section
@@ -436,14 +437,13 @@ function TraineeLearningPage() {
                         border
                         border-slate-200
                         bg-white
-                        p-3
+                        p-4
                         shadow-sm
                         sm:flex-row
                         sm:items-center
                         sm:justify-between
                     "
                 >
-
                     <ActionButton
                         variant="secondary"
                         onClick={() =>
@@ -453,7 +453,6 @@ function TraineeLearningPage() {
                         }
                         className="
                             w-full
-                            justify-center
                             sm:w-auto
                         "
                     >
@@ -466,20 +465,18 @@ function TraineeLearningPage() {
                         0 && (
                             <div
                                 className="
-                                    flex
-                                    items-center
-                                    justify-between
-                                    gap-3
-                                    sm:justify-end
-                                "
+                                flex
+                                items-center
+                                justify-between
+                                gap-3
+                                sm:justify-end
+                            "
                             >
-
                                 <span
                                     className="
-                                        text-[9px]
-                                        font-semibold
-                                        text-slate-500
-                                    "
+                                    text-[8px]
+                                    text-slate-400
+                                "
                                 >
                                     Learning Progress
                                 </span>
@@ -487,21 +484,19 @@ function TraineeLearningPage() {
 
                                 <span
                                     className="
-                                        rounded-full
-                                        bg-blue-50
-                                        px-3
-                                        py-1.5
-                                        text-[9px]
-                                        font-bold
-                                        text-blue-700
-                                    "
+                                    rounded-full
+                                    bg-blue-50
+                                    px-3
+                                    py-1
+                                    text-[8px]
+                                    font-medium
+                                    text-blue-600
+                                "
                                 >
                                     {learningProgress}%
                                 </span>
-
                             </div>
                         )}
-
                 </section>
 
 
@@ -545,7 +540,6 @@ function TraineeLearningPage() {
                     />
                 ) : (
                     <>
-
                         {/* ================================================= */}
                         {/* PROGRAMME HEADER */}
                         {/* ================================================= */}
@@ -564,146 +558,139 @@ function TraineeLearningPage() {
 
 
                         {/* ================================================= */}
-                        {/* ASSIGNMENT */}
+                        {/* ASSIGNMENT STATUS */}
                         {/* ================================================= */}
 
                         {assignment && (
                             <section
                                 className="
+                                    flex
+                                    items-start
+                                    gap-3
                                     rounded-xl
                                     border
                                     border-emerald-200
-                                    bg-gradient-to-r
-                                    from-emerald-50
-                                    to-white
+                                    bg-emerald-50
                                     p-4
                                 "
                             >
-
                                 <div
                                     className="
                                         flex
-                                        items-start
-                                        gap-3
+                                        h-8
+                                        w-8
+                                        shrink-0
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        bg-white
+                                        text-emerald-600
                                     "
                                 >
-
-                                    <div
-                                        className="
-                                            flex
-                                            h-9
-                                            w-9
-                                            shrink-0
-                                            items-center
-                                            justify-center
-                                            rounded-xl
-                                            bg-white
-                                            text-emerald-600
-                                            shadow-sm
-                                        "
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        className="h-4 w-4"
                                     >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="1.8"
-                                            className="h-5 w-5"
-                                        >
-                                            <circle
-                                                cx="12"
-                                                cy="12"
-                                                r="9"
-                                            />
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="9"
+                                        />
 
-                                            <path d="m8 12 2.5 2.5L16 9" />
-                                        </svg>
-                                    </div>
-
-
-                                    <div>
-
-                                        <p
-                                            className="
-                                                text-[11px]
-                                                font-bold
-                                                text-emerald-800
-                                            "
-                                        >
-                                            Training Access Active
-                                        </p>
-
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-[9px]
-                                                leading-5
-                                                text-emerald-700
-                                            "
-                                        >
-                                            This programme is actively
-                                            assigned to your Trainee
-                                            account.
-                                        </p>
-
-                                    </div>
-
+                                        <path d="m8 12 2.5 2.5L16 9" />
+                                    </svg>
                                 </div>
 
+
+                                <div>
+                                    <p
+                                        className="
+                                            text-[9px]
+                                            font-medium
+                                            text-emerald-700
+                                        "
+                                    >
+                                        Training Access Active
+                                    </p>
+
+
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-[8px]
+                                            leading-4
+                                            text-emerald-600
+                                        "
+                                    >
+                                        This programme is assigned to your Trainee account.
+                                    </p>
+                                </div>
                             </section>
                         )}
 
 
                         {/* ================================================= */}
-                        {/* NO SECTIONS */}
+                        {/* CONTENT */}
                         {/* ================================================= */}
 
                         {sections.length ===
                             0 ? (
                             <EmptyState
                                 title="No learning content available."
-                                description="This programme does not currently contain any active learning sections."
+                                description="This programme does not currently contain active learning sections."
+                                icon="training"
                             />
                         ) : (
                             <section
                                 className="
                                     grid
-                                    items-start
-                                    gap-5
-                                    xl:grid-cols-[300px_minmax(0,1fr)]
+                                    gap-4
+                                    lg:grid-cols-[250px_minmax(0,1fr)]
+                                    xl:grid-cols-[280px_minmax(0,1fr)]
                                 "
                             >
-
-                                {/* ========================================== */}
+                                {/* ========================================= */}
                                 {/* SECTION NAVIGATION */}
-                                {/* ========================================== */}
+                                {/* ========================================= */}
 
                                 <div
                                     className="
-                                        xl:sticky
-                                        xl:top-5
+                                        min-w-0
                                     "
                                 >
-                                    <LearningSectionList
-                                        sections={
-                                            sections
-                                        }
-                                        currentSectionIndex={
-                                            currentSectionIndex
-                                        }
-                                        onSelectSection={
-                                            handleSelectSection
-                                        }
-                                    />
+                                    <div
+                                        className="
+                                            lg:sticky
+                                            lg:top-4
+                                        "
+                                    >
+                                        <LearningSectionList
+                                            sections={
+                                                sections
+                                            }
+                                            currentSectionIndex={
+                                                currentSectionIndex
+                                            }
+                                            onSelectSection={
+                                                handleSelectSection
+                                            }
+                                        />
+                                    </div>
                                 </div>
 
 
-                                {/* ========================================== */}
-                                {/* CONTENT */}
-                                {/* ========================================== */}
+                                {/* ========================================= */}
+                                {/* LEARNING CONTENT */}
+                                {/* ========================================= */}
 
-                                <div className="min-w-0">
-
+                                <div
+                                    className="
+                                        min-w-0
+                                    "
+                                >
                                     <LearningContentCard
                                         section={
                                             currentSection
@@ -724,17 +711,12 @@ function TraineeLearningPage() {
                                             handleFinish
                                         }
                                     />
-
                                 </div>
-
                             </section>
                         )}
-
                     </>
                 )}
-
             </div>
-
         </DashboardLayout>
     );
 }

@@ -9,7 +9,6 @@ import {
 
 
 function TrainingProgrammeSectionsPage() {
-
     // ======================================================
     // CURRENT USER
     // ======================================================
@@ -24,9 +23,10 @@ function TrainingProgrammeSectionsPage() {
 
 
     // ======================================================
-    // ROLE CHECK
+    // DESCRIPTION
     // ======================================================
 
+<<<<<<< HEAD
     const isAdmin =
         role ===
         "admin";
@@ -55,6 +55,13 @@ function TrainingProgrammeSectionsPage() {
         description =
             "Manage learning content for training programmes that you own or are authorized to manage.";
     }
+=======
+    const description =
+        role ===
+            "admin"
+            ? "Create, edit, reorder, activate and deactivate learning sections."
+            : "Manage learning content for programmes you are authorised to work with.";
+>>>>>>> sprint2
 
 
     // ======================================================
@@ -66,6 +73,7 @@ function TrainingProgrammeSectionsPage() {
             role={
                 role
             }
+<<<<<<< HEAD
             showHeader={
                 false
             }
@@ -389,6 +397,22 @@ function TrainingProgrammeSectionsPage() {
 
             </div>
 
+=======
+            showHeader={false}
+        >
+            <TrainingManagementShell
+                title="Learning Sections"
+                description={
+                    description
+                }
+            >
+                <LearningSectionManager
+                    role={
+                        role
+                    }
+                />
+            </TrainingManagementShell>
+>>>>>>> sprint2
         </DashboardLayout>
     );
 }

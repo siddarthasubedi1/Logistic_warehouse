@@ -2,13 +2,7 @@ import {
     useNavigate,
 } from "react-router-dom";
 
-import ActionButton from "../ui/ActionButton";
-import EmptyState from "../ui/EmptyState";
 import StatusBadge from "../ui/StatusBadge";
-
-import {
-    getUserDisplayName,
-} from "../../utils/training";
 
 
 function AdminUsersOverview({
@@ -21,37 +15,22 @@ function AdminUsersOverview({
         useNavigate();
 
 
-    // ======================================================
-    // MOST RECENT USERS
-    // ======================================================
-
     const recentUsers =
-        [...users]
-            .sort(
-                (
-                    first,
-                    second
-                ) =>
-                    new Date(
-                        second.createdAt ||
-                        0
-                    ) -
-                    new Date(
-                        first.createdAt ||
-                        0
-                    )
-            )
-            .slice(
+        Array.isArray(
+            users
+        )
+            ? users.slice(
                 0,
                 5
-            );
+            )
+            : [];
 
 
     return (
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -59,100 +38,71 @@ function AdminUsersOverview({
             "
         >
 
-            {/* ================================================= */}
             {/* HEADER */}
-            {/* ================================================= */}
 
             <div
                 className="
                     flex
-                    flex-col
+                    items-center
+                    justify-between
                     gap-4
                     border-b
-                    border-slate-200
-                    bg-gradient-to-r
-                    from-white
-                    to-slate-50
+                    border-slate-100
                     px-5
                     py-4
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
                 "
             >
-
                 <div>
-
-                    <div
+                    <h2
                         className="
-                            flex
-                            items-center
-                            gap-2
+                            text-[12px]
+                            font-semibold
+                            text-slate-800
                         "
                     >
-
-                        <div
-                            className="
-                                h-2
-                                w-2
-                                rounded-full
-                                bg-blue-500
-                            "
-                        />
-
-
-                        <h2
-                            className="
-                                text-sm
-                                font-bold
-                                text-slate-900
-                            "
-                        >
-                            User Overview
-                        </h2>
-
-                    </div>
+                        User Overview
+                    </h2>
 
 
                     <p
                         className="
                             mt-1
-                            text-[10px]
-                            text-slate-500
+                            text-[8px]
+                            text-slate-400
                         "
                     >
                         Recently generated Trainer and Trainee accounts.
                     </p>
-
                 </div>
 
 
-                <ActionButton
-                    variant="secondary"
-                    className="
-                        w-full
-                        justify-center
-                        px-3
-                        py-2
-                        sm:w-auto
-                    "
+                <button
+                    type="button"
                     onClick={() =>
                         navigate(
                             "/admin/users"
                         )
                     }
+                    className="
+                        text-[9px]
+                        font-medium
+                        text-blue-600
+                        transition
+                        hover:text-blue-700
+                    "
                 >
-                    View All Users
-                </ActionButton>
-
+                    View All
+                </button>
             </div>
 
 
-            <div className="p-5">
+            <div
+                className="
+                    p-5
+                "
+            >
 
-                {/* ================================================= */}
                 {/* COUNTS */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -161,512 +111,406 @@ function AdminUsersOverview({
                         sm:grid-cols-2
                     "
                 >
-
-                    <RoleSummary
-                        title="Trainees"
+                    <OverviewCount
                         value={
                             trainees
                         }
-                        type="trainee"
+                        label="Trainees"
+                        tone="blue"
                     />
 
 
-                    <RoleSummary
-                        title="Trainers"
+                    <OverviewCount
                         value={
                             trainers
                         }
-                        type="trainer"
+                        label="Trainers"
+                        tone="purple"
                     />
-
                 </div>
 
 
-                {/* ================================================= */}
-                {/* USERS */}
-                {/* ================================================= */}
+                {/* TABLE */}
 
-                <div className="mt-5">
-
-                    {loading ? (
-                        <div
-                            className="
-                                rounded-xl
-                                bg-slate-50
-                                py-10
-                                text-center
-                                text-xs
-                                text-slate-400
-                            "
-                        >
-                            Loading users...
-                        </div>
-                    ) : recentUsers.length ===
-                        0 ? (
-                        <EmptyState
-                            title="No users found."
-                            description="Generated Trainer and Trainee accounts will appear here."
-                        />
-                    ) : (
-                        <>
-                            {/* ================================================= */}
-                            {/* MOBILE CARDS */}
-                            {/* ================================================= */}
-
-                            <div
+                <div
+                    className="
+                        mt-5
+                        overflow-x-auto
+                    "
+                >
+                    <table
+                        className="
+                            min-w-[650px]
+                            w-full
+                            border-collapse
+                        "
+                    >
+                        <thead>
+                            <tr
                                 className="
-                                    space-y-3
-                                    md:hidden
+                                    border-b
+                                    border-slate-200
                                 "
                             >
+                                <TableHeading>
+                                    User
+                                </TableHeading>
 
-                                {recentUsers.map(
-                                    (
-                                        user
-                                    ) => (
-                                        <div
-                                            key={
-                                                user._id ||
-                                                user.email
-                                            }
+                                <TableHeading>
+                                    Role
+                                </TableHeading>
+
+                                <TableHeading>
+                                    Username
+                                </TableHeading>
+
+                                <TableHeading>
+                                    Status
+                                </TableHeading>
+                            </tr>
+                        </thead>
+
+
+                        <tbody>
+                            {loading && (
+                                <tr>
+                                    <td
+                                        colSpan="4"
+                                        className="
+                                            py-8
+                                            text-center
+                                            text-[9px]
+                                            text-slate-400
+                                        "
+                                    >
+                                        Loading users...
+                                    </td>
+                                </tr>
+                            )}
+
+
+                            {!loading &&
+                                recentUsers.length ===
+                                0 && (
+                                    <tr>
+                                        <td
+                                            colSpan="4"
                                             className="
-                                                rounded-xl
-                                                border
-                                                border-slate-200
-                                                bg-slate-50/60
-                                                p-4
-                                            "
+                                            py-8
+                                            text-center
+                                            text-[9px]
+                                            text-slate-400
+                                        "
                                         >
+                                            No users available.
+                                        </td>
+                                    </tr>
+                                )}
 
-                                            <div
+
+                            {!loading &&
+                                recentUsers.map(
+                                    (
+                                        currentUser
+                                    ) => {
+                                        const name =
+                                            getDisplayName(
+                                                currentUser
+                                            );
+
+
+                                        const initial =
+                                            name
+                                                .charAt(
+                                                    0
+                                                )
+                                                .toUpperCase();
+
+
+                                        return (
+                                            <tr
+                                                key={
+                                                    currentUser._id ||
+                                                    currentUser.username
+                                                }
                                                 className="
-                                                    flex
-                                                    items-start
-                                                    justify-between
-                                                    gap-3
+                                                    border-b
+                                                    border-slate-100
+                                                    last:border-b-0
                                                 "
                                             >
-
-                                                <div
+                                                <td
                                                     className="
-                                                        flex
-                                                        min-w-0
-                                                        items-center
-                                                        gap-3
+                                                        py-3
+                                                        pr-4
                                                     "
                                                 >
-
                                                     <div
                                                         className="
                                                             flex
-                                                            h-10
-                                                            w-10
-                                                            shrink-0
                                                             items-center
-                                                            justify-center
-                                                            rounded-full
-                                                            bg-blue-100
-                                                            text-xs
-                                                            font-bold
-                                                            text-blue-700
+                                                            gap-3
                                                         "
                                                     >
-                                                        {getUserDisplayName(
-                                                            user,
-                                                            "U"
-                                                        )
-                                                            .charAt(
-                                                                0
-                                                            )
-                                                            .toUpperCase()}
-                                                    </div>
-
-
-                                                    <div className="min-w-0">
-
-                                                        <p
-                                                            className="
-                                                                truncate
-                                                                text-xs
-                                                                font-semibold
-                                                                text-slate-800
-                                                            "
-                                                        >
-                                                            {getUserDisplayName(
-                                                                user,
-                                                                "User"
-                                                            )}
-                                                        </p>
-
-
-                                                        <p
-                                                            className="
-                                                                mt-1
-                                                                truncate
-                                                                text-[9px]
-                                                                text-slate-500
-                                                            "
-                                                        >
-                                                            {user.email ||
-                                                                "—"}
-                                                        </p>
-
-                                                    </div>
-
-                                                </div>
-
-
-                                                <StatusBadge
-                                                    status={
-                                                        user.status
-                                                    }
-                                                />
-
-                                            </div>
-
-
-                                            <div
-                                                className="
-                                                    mt-4
-                                                    grid
-                                                    grid-cols-2
-                                                    gap-3
-                                                    border-t
-                                                    border-slate-200
-                                                    pt-3
-                                                "
-                                            >
-
-                                                <div>
-
-                                                    <p
-                                                        className="
-                                                            text-[8px]
-                                                            uppercase
-                                                            tracking-wide
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        Role
-                                                    </p>
-
-
-                                                    <div className="mt-1">
-                                                        <StatusBadge
-                                                            status={
-                                                                user.role
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                </div>
-
-
-                                                <div>
-
-                                                    <p
-                                                        className="
-                                                            text-[8px]
-                                                            uppercase
-                                                            tracking-wide
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        Username
-                                                    </p>
-
-
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            truncate
-                                                            text-[10px]
-                                                            font-medium
-                                                            text-slate-600
-                                                        "
-                                                    >
-                                                        {user.username ||
-                                                            "—"}
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-                                    )
-                                )}
-
-                            </div>
-
-
-                            {/* ================================================= */}
-                            {/* DESKTOP TABLE */}
-                            {/* ================================================= */}
-
-                            <div
-                                className="
-                                    hidden
-                                    overflow-x-auto
-                                    md:block
-                                "
-                            >
-
-                                <table
-                                    className="
-                                        min-w-[650px]
-                                        w-full
-                                    "
-                                >
-
-                                    <thead>
-
-                                        <tr
-                                            className="
-                                                border-b
-                                                border-slate-200
-                                                text-left
-                                                text-[9px]
-                                                font-semibold
-                                                uppercase
-                                                tracking-wide
-                                                text-slate-400
-                                            "
-                                        >
-
-                                            <th className="px-2 py-3">
-                                                User
-                                            </th>
-
-                                            <th className="px-2 py-3">
-                                                Role
-                                            </th>
-
-                                            <th className="px-2 py-3">
-                                                Username
-                                            </th>
-
-                                            <th className="px-2 py-3">
-                                                Status
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
-
-
-                                    <tbody
-                                        className="
-                                            divide-y
-                                            divide-slate-100
-                                        "
-                                    >
-
-                                        {recentUsers.map(
-                                            (
-                                                user
-                                            ) => (
-                                                <tr
-                                                    key={
-                                                        user._id ||
-                                                        user.email
-                                                    }
-                                                    className="
-                                                        transition
-                                                        hover:bg-slate-50
-                                                    "
-                                                >
-
-                                                    <td className="px-2 py-4">
-
                                                         <div
                                                             className="
                                                                 flex
+                                                                h-8
+                                                                w-8
+                                                                shrink-0
                                                                 items-center
-                                                                gap-3
+                                                                justify-center
+                                                                rounded-full
+                                                                bg-blue-50
+                                                                text-[9px]
+                                                                font-semibold
+                                                                text-blue-600
                                                             "
                                                         >
-
-                                                            <div
-                                                                className="
-                                                                    flex
-                                                                    h-9
-                                                                    w-9
-                                                                    shrink-0
-                                                                    items-center
-                                                                    justify-center
-                                                                    rounded-full
-                                                                    bg-blue-50
-                                                                    text-[10px]
-                                                                    font-bold
-                                                                    text-blue-700
-                                                                "
-                                                            >
-                                                                {getUserDisplayName(
-                                                                    user,
-                                                                    "U"
-                                                                )
-                                                                    .charAt(
-                                                                        0
-                                                                    )
-                                                                    .toUpperCase()}
-                                                            </div>
-
-
-                                                            <div className="min-w-0">
-
-                                                                <p
-                                                                    className="
-                                                                        text-[10px]
-                                                                        font-semibold
-                                                                        text-slate-700
-                                                                    "
-                                                                >
-                                                                    {getUserDisplayName(
-                                                                        user,
-                                                                        "User"
-                                                                    )}
-                                                                </p>
-
-
-                                                                <p
-                                                                    className="
-                                                                        mt-[2px]
-                                                                        max-w-[220px]
-                                                                        truncate
-                                                                        text-[8px]
-                                                                        text-slate-400
-                                                                    "
-                                                                >
-                                                                    {user.email ||
-                                                                        "—"}
-                                                                </p>
-
-                                                            </div>
-
+                                                            {initial ||
+                                                                "U"}
                                                         </div>
 
-                                                    </td>
+
+                                                        <div
+                                                            className="
+                                                                min-w-0
+                                                            "
+                                                        >
+                                                            <p
+                                                                className="
+                                                                    max-w-[170px]
+                                                                    truncate
+                                                                    text-[9px]
+                                                                    font-medium
+                                                                    text-slate-700
+                                                                "
+                                                            >
+                                                                {name}
+                                                            </p>
 
 
-                                                    <td className="px-2 py-4">
-                                                        <StatusBadge
-                                                            status={
-                                                                user.role
-                                                            }
-                                                        />
-                                                    </td>
+                                                            <p
+                                                                className="
+                                                                    mt-0.5
+                                                                    max-w-[180px]
+                                                                    truncate
+                                                                    text-[7px]
+                                                                    text-slate-400
+                                                                "
+                                                            >
+                                                                {currentUser.email ||
+                                                                    "—"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </td>
 
 
-                                                    <td
-                                                        className="
-                                                            px-2
-                                                            py-4
-                                                            text-[9px]
-                                                            text-slate-500
-                                                        "
-                                                    >
-                                                        {user.username ||
-                                                            "—"}
-                                                    </td>
+                                                <td
+                                                    className="
+                                                        py-3
+                                                        pr-4
+                                                    "
+                                                >
+                                                    <RoleBadge
+                                                        role={
+                                                            currentUser.role
+                                                        }
+                                                    />
+                                                </td>
 
 
-                                                    <td className="px-2 py-4">
-                                                        <StatusBadge
-                                                            status={
-                                                                user.status
-                                                            }
-                                                        />
-                                                    </td>
+                                                <td
+                                                    className="
+                                                        py-3
+                                                        pr-4
+                                                        text-[8px]
+                                                        text-slate-500
+                                                    "
+                                                >
+                                                    {currentUser.username ||
+                                                        "—"}
+                                                </td>
 
-                                                </tr>
-                                            )
-                                        )}
 
-                                    </tbody>
-
-                                </table>
-
-                            </div>
-                        </>
-                    )}
-
+                                                <td
+                                                    className="
+                                                        py-3
+                                                    "
+                                                >
+                                                    <StatusBadge
+                                                        status={
+                                                            currentUser.status
+                                                        }
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
+                                )}
+                        </tbody>
+                    </table>
                 </div>
-
             </div>
-
         </section>
     );
 }
 
 
-function RoleSummary({
-    title,
+function OverviewCount({
     value,
-    type,
+    label,
+    tone,
 }) {
-    const isTrainer =
-        type ===
-        "trainer";
+    const iconClass =
+        tone ===
+            "purple"
+            ? "bg-purple-50 text-purple-600"
+            : "bg-blue-50 text-blue-600";
 
 
     return (
         <div
             className="
-                relative
-                overflow-hidden
-                rounded-xl
-                border
-                border-slate-200
+                flex
+                items-center
+                gap-3
+                rounded-lg
                 bg-slate-50
-                p-4
+                px-4
+                py-3
             "
         >
-
             <div
                 className={`
-                    absolute
-                    right-0
-                    top-0
-                    h-16
-                    w-16
-                    translate-x-5
-                    -translate-y-5
+                    flex
+                    h-8
+                    w-8
+                    items-center
+                    justify-center
                     rounded-full
-
-                    ${isTrainer
-                        ? "bg-indigo-100"
-                        : "bg-blue-100"
-                    }
+                    ${iconClass}
                 `}
-            />
-
-
-            <p
-                className="
-                    relative
-                    text-2xl
-                    font-bold
-                    text-slate-800
-                "
             >
-                {value}
-            </p>
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-4 w-4"
+                >
+                    <circle
+                        cx="12"
+                        cy="8"
+                        r="3"
+                    />
+
+                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
+                </svg>
+            </div>
 
 
-            <p
-                className="
-                    relative
-                    mt-1
-                    text-[10px]
-                    font-medium
-                    text-slate-500
-                "
-            >
-                {title}
-            </p>
+            <div>
+                <p
+                    className="
+                        text-[17px]
+                        font-bold
+                        leading-none
+                        text-slate-800
+                    "
+                >
+                    {value}
+                </p>
 
+
+                <p
+                    className="
+                        mt-1
+                        text-[8px]
+                        text-slate-500
+                    "
+                >
+                    {label}
+                </p>
+            </div>
         </div>
+    );
+}
+
+
+function TableHeading({
+    children,
+}) {
+    return (
+        <th
+            className="
+                py-2.5
+                pr-4
+                text-left
+                text-[7px]
+                font-semibold
+                uppercase
+                tracking-wide
+                text-slate-400
+            "
+        >
+            {children}
+        </th>
+    );
+}
+
+
+function RoleBadge({
+    role,
+}) {
+    const isTrainer =
+        role ===
+        "trainer";
+
+
+    return (
+        <span
+            className={`
+                inline-flex
+                items-center
+                rounded-full
+                px-2.5
+                py-1
+                text-[7px]
+                font-medium
+                capitalize
+
+                ${isTrainer
+                    ? "bg-purple-50 text-purple-600"
+                    : "bg-blue-50 text-blue-600"
+                }
+            `}
+        >
+            {role ||
+                "User"}
+        </span>
+    );
+}
+
+
+function getDisplayName(
+    user
+) {
+    const name =
+        [
+            user?.firstName,
+            user?.lastName,
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+
+
+    return (
+        name ||
+        user?.username ||
+        "User"
     );
 }
 

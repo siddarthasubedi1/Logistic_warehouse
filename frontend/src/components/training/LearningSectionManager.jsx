@@ -28,45 +28,31 @@ import {
 } from "../../utils/training";
 
 
-// ======================================================
-// ALLOWED SECTION STATUSES
-// ======================================================
-
 const SECTION_STATUSES = [
     "active",
     "inactive",
 ];
 
 
-// ======================================================
-// INITIAL FORM
-// ======================================================
+const getInitialFormData =
+    () => ({
+        title: "",
+        content: "",
+        imageUrl: "",
+        imageAltText: "",
+        status: "active",
+    });
 
-const getInitialFormData = () => ({
-    title: "",
-    content: "",
-    imageUrl: "",
-    imageAltText: "",
-    status: "active",
-});
-
-
-// ======================================================
-// LEARNING SECTION MANAGER
-// ======================================================
 
 function LearningSectionManager() {
     const navigate =
         useNavigate();
 
+
     const {
         programmeId,
     } = useParams();
 
-
-    // ======================================================
-    // PROGRAMME
-    // ======================================================
 
     const [
         programme,
@@ -74,29 +60,29 @@ function LearningSectionManager() {
     ] = useState(null);
 
 
-    // ======================================================
-    // SECTIONS
-    // ======================================================
-
     const [
         sections,
         setSections,
     ] = useState([]);
 
 
-    // ======================================================
-    // FORM STATE
-    // ======================================================
+    const [
+        loading,
+        setLoading,
+    ] = useState(true);
+
 
     const [
         showForm,
         setShowForm,
     ] = useState(false);
 
+
     const [
         editingSection,
         setEditingSection,
     ] = useState(null);
+
 
     const [
         formData,
@@ -106,19 +92,11 @@ function LearningSectionManager() {
     );
 
 
-    // ======================================================
-    // PROCESS STATE
-    // ======================================================
-
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
     const [
         saving,
         setSaving,
     ] = useState(false);
+
 
     const [
         processingId,
@@ -126,14 +104,11 @@ function LearningSectionManager() {
     ] = useState("");
 
 
-    // ======================================================
-    // FEEDBACK
-    // ======================================================
-
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
+
 
     const [
         successMessage,
@@ -142,13 +117,14 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // CLEAR FEEDBACK
+    // FEEDBACK
     // ======================================================
 
-    const clearFeedback = () => {
-        setErrorMessage("");
-        setSuccessMessage("");
-    };
+    const clearFeedback =
+        () => {
+            setErrorMessage("");
+            setSuccessMessage("");
+        };
 
 
     // ======================================================
@@ -156,66 +132,81 @@ function LearningSectionManager() {
     // ======================================================
 
     const loadProgramme =
-        useCallback(async () => {
-            const response =
-                await api.get(
-                    `/training-programmes/${programmeId}`
+        useCallback(
+            async () => {
+                const response =
+                    await api.get(
+                        `/training-programmes/${programmeId}`
+                    );
+
+
+                const loadedProgramme =
+                    response.data
+                        ?.programme ||
+                    response.data ||
+                    null;
+
+
+                setProgramme(
+                    loadedProgramme
                 );
 
-            const loadedProgramme =
-                response.data?.programme ||
-                response.data ||
-                null;
 
-            setProgramme(
-                loadedProgramme
-            );
-
-            return loadedProgramme;
-        }, [
-            programmeId,
-        ]);
+                return loadedProgramme;
+            },
+            [
+                programmeId,
+            ]
+        );
 
 
     // ======================================================
-    // LOAD LEARNING SECTIONS
+    // LOAD SECTIONS
     // ======================================================
 
     const loadSections =
-        useCallback(async () => {
-            const response =
-                await api.get(
-                    `/training-programmes/${programmeId}/sections`
+        useCallback(
+            async () => {
+                const response =
+                    await api.get(
+                        `/training-programmes/${programmeId}/sections`
+                    );
+
+
+                const responseSections =
+                    parseArrayResponse(
+                        response.data,
+                        "sections"
+                    );
+
+
+                const sortedSections =
+                    sortLearningSections(
+                        responseSections
+                    );
+
+
+                setSections(
+                    sortedSections
                 );
 
-            const responseSections =
-                parseArrayResponse(
-                    response.data,
-                    "sections"
-                );
 
-            const sortedSections =
-                sortLearningSections(
-                    responseSections
-                );
-
-            setSections(
-                sortedSections
-            );
-
-            return sortedSections;
-        }, [
-            programmeId,
-        ]);
+                return sortedSections;
+            },
+            [
+                programmeId,
+            ]
+        );
 
 
     // ======================================================
-    // INITIAL PAGE LOAD
+    // INITIAL LOAD
     // ======================================================
 
     useEffect(() => {
         let active =
             true;
+
 
         const loadPage =
             async () => {
@@ -224,7 +215,9 @@ function LearningSectionManager() {
                         true
                     );
 
+
                     clearFeedback();
+
 
                     await Promise.all([
                         loadProgramme(),
@@ -237,7 +230,10 @@ function LearningSectionManager() {
                         error
                     );
 
-                    if (active) {
+
+                    if (
+                        active
+                    ) {
                         setErrorMessage(
                             getApiErrorMessage(
                                 error,
@@ -247,7 +243,9 @@ function LearningSectionManager() {
                     }
 
                 } finally {
-                    if (active) {
+                    if (
+                        active
+                    ) {
                         setLoading(
                             false
                         );
@@ -255,7 +253,9 @@ function LearningSectionManager() {
                 }
             };
 
+
         loadPage();
+
 
         return () => {
             active =
@@ -277,12 +277,17 @@ function LearningSectionManager() {
         const {
             name,
             value,
-        } = event.target;
+        } =
+            event.target;
+
 
         clearFeedback();
 
+
         setFormData(
-            (current) => ({
+            (
+                current
+            ) => ({
                 ...current,
 
                 [name]:
@@ -296,56 +301,65 @@ function LearningSectionManager() {
     // RESET FORM
     // ======================================================
 
-    const resetForm = () => {
-        setEditingSection(
-            null
-        );
+    const resetForm =
+        () => {
+            setEditingSection(
+                null
+            );
 
-        setFormData(
-            getInitialFormData()
-        );
 
-        setShowForm(
-            false
-        );
-    };
+            setFormData(
+                getInitialFormData()
+            );
+
+
+            setShowForm(
+                false
+            );
+        };
 
 
     // ======================================================
     // ADD SECTION
     // ======================================================
 
-    const handleAddSection = () => {
-        clearFeedback();
+    const handleAddSection =
+        () => {
+            clearFeedback();
 
-        if (
-            programme?.status ===
-            "inactive"
-        ) {
-            setErrorMessage(
-                "Learning sections cannot be added while the training programme is inactive."
+
+            if (
+                programme?.status ===
+                "inactive"
+            ) {
+                setErrorMessage(
+                    "Learning sections cannot be added while the training programme is inactive."
+                );
+
+                return;
+            }
+
+
+            setEditingSection(
+                null
             );
 
-            return;
-        }
 
-        setEditingSection(
-            null
-        );
+            setFormData(
+                getInitialFormData()
+            );
 
-        setFormData(
-            getInitialFormData()
-        );
 
-        setShowForm(
-            true
-        );
+            setShowForm(
+                true
+            );
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    };
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+        };
 
 
     // ======================================================
@@ -361,7 +375,9 @@ function LearningSectionManager() {
             return;
         }
 
+
         clearFeedback();
+
 
         if (
             programme?.status ===
@@ -374,9 +390,11 @@ function LearningSectionManager() {
             return;
         }
 
+
         setEditingSection(
             section
         );
+
 
         setFormData({
             title:
@@ -400,9 +418,11 @@ function LearningSectionManager() {
                 "active",
         });
 
+
         setShowForm(
             true
         );
+
 
         window.scrollTo({
             top: 0,
@@ -415,84 +435,80 @@ function LearningSectionManager() {
     // VALIDATION
     // ======================================================
 
-    const validateForm = () => {
-        const title =
-            formData
-                .title
-                .trim();
-
-        const content =
-            formData
-                .content
-                .trim();
-
-        const imageUrl =
-            formData
-                .imageUrl
-                .trim();
-
-        const imageAltText =
-            formData
-                .imageAltText
-                .trim();
+    const validateForm =
+        () => {
+            const title =
+                formData
+                    .title
+                    .trim();
 
 
-        if (
-            title.length <
-            2 ||
-            title.length >
-            150
-        ) {
-            return (
-                "Learning section title must be between 2 and 150 characters."
-            );
-        }
+            const content =
+                formData
+                    .content
+                    .trim();
 
 
-        if (!content) {
-            return (
-                "Learning section content is required."
-            );
-        }
+            const imageUrl =
+                formData
+                    .imageUrl
+                    .trim();
 
 
-        if (
-            imageAltText.length >
-            250
-        ) {
-            return (
-                "Image alternative text cannot exceed 250 characters."
-            );
-        }
+            const imageAltText =
+                formData
+                    .imageAltText
+                    .trim();
 
 
-        if (
-            imageUrl &&
-            !imageAltText
-        ) {
-            return (
-                "Alternative text is required when the learning section contains an image."
-            );
-        }
+            if (
+                title.length <
+                2 ||
+                title.length >
+                150
+            ) {
+                return "Learning section title must be between 2 and 150 characters.";
+            }
 
 
-        if (
-            !SECTION_STATUSES.includes(
-                formData.status
-            )
-        ) {
-            return (
-                "Learning section status must be active or inactive."
-            );
-        }
+            if (
+                !content
+            ) {
+                return "Learning section content is required.";
+            }
 
 
-        return "";
-    };
+            if (
+                imageAltText.length >
+                250
+            ) {
+                return "Image alternative text cannot exceed 250 characters.";
+            }
+
+
+            if (
+                imageUrl &&
+                !imageAltText
+            ) {
+                return "Alternative text is required when the learning section contains an image.";
+            }
+
+
+            if (
+                !SECTION_STATUSES.includes(
+                    formData.status
+                )
+            ) {
+                return "Learning section status must be active or inactive.";
+            }
+
+
+            return "";
+        };
 
 
     // ======================================================
-    // CREATE / UPDATE SECTION
+    // SAVE SECTION
     // ======================================================
 
     const handleSubmit =
@@ -500,6 +516,7 @@ function LearningSectionManager() {
             event
         ) => {
             event.preventDefault();
+
 
             clearFeedback();
 
@@ -597,6 +614,7 @@ function LearningSectionManager() {
 
                 resetForm();
 
+
                 await loadSections();
 
             } catch (error) {
@@ -622,7 +640,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // DEACTIVATE SECTION
+    // DEACTIVATE
     // ======================================================
 
     const handleDeactivate =
@@ -705,7 +723,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // REACTIVATE SECTION
+    // REACTIVATE
     // ======================================================
 
     const handleReactivate =
@@ -767,7 +785,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // REORDER SECTIONS
+    // REORDER
     // ======================================================
 
     const reorderSections =
@@ -775,25 +793,9 @@ function LearningSectionManager() {
             reorderedSections
         ) => {
             if (
-                processingId
-            ) {
-                return;
-            }
-
-
-            if (
+                processingId ||
                 programme?.status ===
-                "inactive"
-            ) {
-                setErrorMessage(
-                    "Learning sections cannot be reordered while the training programme is inactive."
-                );
-
-                return;
-            }
-
-
-            if (
+                "inactive" ||
                 !Array.isArray(
                     reorderedSections
                 ) ||
@@ -888,7 +890,7 @@ function LearningSectionManager() {
                 reloadError
                 ) {
                     console.error(
-                        "Reload sections after reorder error:",
+                        "Reload sections error:",
                         reloadError
                     );
                 }
@@ -919,10 +921,9 @@ function LearningSectionManager() {
         }
 
 
-        const reordered =
-            [
-                ...sections,
-            ];
+        const reordered = [
+            ...sections,
+        ];
 
 
         [
@@ -969,10 +970,9 @@ function LearningSectionManager() {
         }
 
 
-        const reordered =
-            [
-                ...sections,
-            ];
+        const reordered = [
+            ...sections,
+        ];
 
 
         [
@@ -1016,7 +1016,7 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // PROGRAMME NOT FOUND
+    // NOT FOUND
     // ======================================================
 
     if (
@@ -1042,10 +1042,6 @@ function LearningSectionManager() {
         );
     }
 
-
-    // ======================================================
-    // DERIVED VALUES
-    // ======================================================
 
     const programmeInactive =
         programme.status ===
@@ -1073,61 +1069,45 @@ function LearningSectionManager() {
 
 
     // ======================================================
-    // PAGE
+    // UI
     // ======================================================
 
     return (
-        <div className="space-y-5">
-
+        <div
+            className="
+                space-y-4
+            "
+        >
             {/* ================================================= */}
-            {/* PROGRAMME HERO */}
+            {/* PROGRAMME HEADER */}
             {/* ================================================= */}
 
             <section
                 className="
-                    relative
-                    overflow-hidden
-                    rounded-2xl
+                    rounded-xl
                     border
-                    border-blue-100
-                    bg-gradient-to-r
-                    from-[#073763]
-                    via-[#0b4f87]
-                    to-[#1769aa]
-                    p-5
-                    text-white
+                    border-slate-200
+                    bg-white
+                    p-4
                     shadow-sm
-                    sm:p-6
+                    sm:p-5
                 "
             >
                 <div
                     className="
-                        pointer-events-none
-                        absolute
-                        -right-14
-                        -top-14
-                        h-44
-                        w-44
-                        rounded-full
-                        bg-white/10
-                    "
-                />
-
-
-                <div
-                    className="
-                        relative
-                        z-10
                         flex
                         flex-col
-                        gap-5
+                        gap-4
                         lg:flex-row
-                        lg:items-start
+                        lg:items-center
                         lg:justify-between
                     "
                 >
-                    <div className="min-w-0">
-
+                    <div
+                        className="
+                            min-w-0
+                        "
+                    >
                         <div
                             className="
                                 flex
@@ -1139,15 +1119,12 @@ function LearningSectionManager() {
                             <span
                                 className="
                                     rounded-full
-                                    border
-                                    border-white/15
-                                    bg-white/10
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
+                                    bg-blue-50
+                                    px-2.5
+                                    py-1
+                                    text-[7px]
+                                    font-medium
+                                    text-blue-600
                                 "
                             >
                                 {formatProgrammeType(
@@ -1156,30 +1133,22 @@ function LearningSectionManager() {
                             </span>
 
 
-                            <div
-                                className="
-                                    rounded-full
-                                    bg-white
-                                    px-1
-                                    py-0.5
-                                "
-                            >
-                                <StatusBadge
-                                    status={
-                                        programme.status
-                                    }
-                                />
-                            </div>
+                            <StatusBadge
+                                status={
+                                    programme.status
+                                }
+                            />
                         </div>
 
 
                         <h2
                             className="
-                                mt-4
+                                mt-3
                                 break-words
-                                text-xl
-                                font-bold
-                                sm:text-2xl
+                                text-[17px]
+                                font-semibold
+                                text-slate-800
+                                sm:text-[19px]
                             "
                         >
                             {programme.title}
@@ -1191,13 +1160,14 @@ function LearningSectionManager() {
                                 className="
                                     mt-2
                                     max-w-3xl
-                                    text-[10px]
+                                    text-[9px]
                                     leading-5
-                                    text-blue-100
-                                    sm:text-[11px]
+                                    text-slate-500
                                 "
                             >
-                                {programme.description}
+                                {
+                                    programme.description
+                                }
                             </p>
                         )}
                     </div>
@@ -1209,34 +1179,27 @@ function LearningSectionManager() {
                             flex-col
                             gap-2
                             sm:flex-row
-                            lg:shrink-0
                         "
                     >
                         <ActionButton
-                            variant="light"
-                            className="
-                                w-full
-                                justify-center
-                                sm:w-auto
-                            "
+                            variant="secondary"
                             onClick={() =>
                                 navigate(
                                     "/training-programmes"
                                 )
                             }
+                            className="
+                                w-full
+                                sm:w-auto
+                            "
                         >
-                            ← Back to Programmes
+                            ← Back
                         </ActionButton>
 
 
                         {!programmeInactive && (
                             <ActionButton
-                                variant="warning"
-                                className="
-                                    w-full
-                                    justify-center
-                                    sm:w-auto
-                                "
+                                variant="primary"
                                 onClick={
                                     handleAddSection
                                 }
@@ -1246,6 +1209,10 @@ function LearningSectionManager() {
                                         processingId
                                     )
                                 }
+                                className="
+                                    w-full
+                                    sm:w-auto
+                                "
                             >
                                 + Add Section
                             </ActionButton>
@@ -1271,42 +1238,37 @@ function LearningSectionManager() {
                     value={
                         sections.length
                     }
-                    type="total"
                 />
+
 
                 <SectionStat
                     label="Active Sections"
                     value={
                         activeSections
                     }
-                    type="active"
                 />
+
 
                 <SectionStat
                     label="Inactive Sections"
                     value={
                         inactiveSections
                     }
-                    type="inactive"
                 />
             </section>
 
 
             {/* ================================================= */}
-            {/* INACTIVE NOTICE */}
+            {/* FEEDBACK */}
             {/* ================================================= */}
 
             {programmeInactive && (
                 <FeedbackAlert
                     type="warning"
-                    message="This training programme is inactive. New sections cannot be added and existing sections cannot be edited or reordered until the programme is reactivated."
+                    message="This training programme is inactive. Learning sections cannot be changed until the programme is reactivated."
                 />
             )}
 
-
-            {/* ================================================= */}
-            {/* FEEDBACK */}
-            {/* ================================================= */}
 
             <FeedbackAlert
                 type="success"
@@ -1364,13 +1326,13 @@ function LearningSectionManager() {
 
 
             {/* ================================================= */}
-            {/* SECTION TABLE */}
+            {/* TABLE */}
             {/* ================================================= */}
 
             <section
                 className="
                     overflow-hidden
-                    rounded-2xl
+                    rounded-xl
                     border
                     border-slate-200
                     bg-white
@@ -1381,24 +1343,23 @@ function LearningSectionManager() {
                     className="
                         flex
                         flex-col
-                        gap-3
+                        gap-2
                         border-b
                         border-slate-100
-                        bg-gradient-to-r
-                        from-white
-                        to-blue-50/40
-                        p-5
+                        px-4
+                        py-4
                         sm:flex-row
                         sm:items-center
                         sm:justify-between
+                        sm:px-5
                     "
                 >
                     <div>
                         <h3
                             className="
-                                text-sm
-                                font-bold
-                                text-slate-900
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
                             "
                         >
                             Learning Sections
@@ -1408,34 +1369,32 @@ function LearningSectionManager() {
                         <p
                             className="
                                 mt-1
-                                text-[10px]
-                                leading-5
-                                text-slate-500
+                                text-[8px]
+                                text-slate-400
                             "
                         >
-                            Add learning content and control the order in
-                            which Trainees move through the programme.
+                            Manage section content and learning order.
                         </p>
                     </div>
 
 
-                    {processingId ===
-                        "reorder" && (
-                            <span
-                                className="
-                                w-fit
-                                rounded-full
-                                bg-blue-50
-                                px-3
-                                py-1.5
-                                text-[9px]
-                                font-semibold
-                                text-blue-700
-                            "
-                            >
-                                Updating order...
-                            </span>
-                        )}
+                    <span
+                        className="
+                            w-fit
+                            rounded-full
+                            bg-slate-100
+                            px-3
+                            py-1
+                            text-[8px]
+                            text-slate-500
+                        "
+                    >
+                        {sections.length} Section
+                        {sections.length ===
+                            1
+                            ? ""
+                            : "s"}
+                    </span>
                 </div>
 
 
@@ -1472,26 +1431,13 @@ function LearningSectionManager() {
 
 
 // ======================================================
-// SECTION STAT
+// STAT
 // ======================================================
 
 function SectionStat({
     label,
     value,
-    type,
 }) {
-    const styles = {
-        total:
-            "bg-blue-50 text-blue-700",
-
-        active:
-            "bg-emerald-50 text-emerald-700",
-
-        inactive:
-            "bg-slate-100 text-slate-600",
-    };
-
-
     return (
         <article
             className="
@@ -1503,65 +1449,26 @@ function SectionStat({
                 shadow-sm
             "
         >
-            <div
+            <p
                 className="
-                    flex
-                    items-center
-                    justify-between
-                    gap-3
+                    text-[8px]
+                    text-slate-400
                 "
             >
-                <div>
-                    <p
-                        className="
-                            text-[8px]
-                            font-semibold
-                            uppercase
-                            tracking-wide
-                            text-slate-400
-                        "
-                    >
-                        {label}
-                    </p>
+                {label}
+            </p>
 
 
-                    <p
-                        className="
-                            mt-1
-                            text-2xl
-                            font-bold
-                            text-slate-900
-                        "
-                    >
-                        {value}
-                    </p>
-                </div>
-
-
-                <div
-                    className={`
-                        flex
-                        h-9
-                        w-9
-                        items-center
-                        justify-center
-                        rounded-xl
-
-                        ${styles[type]}
-                    `}
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-4 w-4"
-                    >
-                        <path d="M4 5h7v14H4z" />
-                        <path d="M13 5h7v14h-7z" />
-                    </svg>
-                </div>
-            </div>
+            <p
+                className="
+                    mt-1
+                    text-xl
+                    font-bold
+                    text-slate-800
+                "
+            >
+                {value}
+            </p>
         </article>
     );
 }

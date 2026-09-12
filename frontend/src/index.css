@@ -19,7 +19,7 @@
     text-rendering: optimizeLegibility;
 
     color: #172033;
-    background: #f5f7fb;
+    background: #f4f7fb;
 }
 
 
@@ -31,7 +31,7 @@ html {
     min-width: 320px;
     min-height: 100%;
 
-    background: #f5f7fb;
+    background: #f4f7fb;
 
     scroll-behavior: smooth;
 }
@@ -45,19 +45,15 @@ body {
 
     overflow-x: hidden;
 
-    background:
-        linear-gradient(180deg,
-            #f8fafc 0%,
-            #f5f7fb 100%);
+    background: #f4f7fb;
 
     color: #172033;
-
-    caret-color: transparent;
 }
 
 
 #root {
     min-height: 100vh;
+    min-width: 0;
 }
 
 
@@ -87,6 +83,21 @@ p {
 }
 
 
+p,
+span,
+td,
+th,
+button,
+a,
+label {
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
 img,
 svg {
     display: block;
@@ -95,11 +106,12 @@ svg {
 
 img {
     max-width: 100%;
+    height: auto;
 }
 
 
 /* =========================================================
-   FORM CONTROLS
+   FORMS
 ========================================================= */
 
 input,
@@ -113,14 +125,9 @@ button {
 input,
 textarea,
 select {
+    max-width: 100%;
+
     color: #172033;
-}
-
-
-input,
-textarea,
-[contenteditable="true"] {
-    caret-color: auto;
 }
 
 
@@ -147,46 +154,28 @@ button:disabled {
 
 
 /* =========================================================
-   PREVENT TEXT CARET ON NORMAL UI
-========================================================= */
-
-button,
-a,
-label,
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-span,
-div,
-section,
-article,
-header,
-footer,
-main,
-aside,
-nav,
-table,
-th,
-td {
-    caret-color: transparent;
-}
-
-
-/* =========================================================
    SELECTION
 ========================================================= */
 
 ::selection {
-    background: rgba(37,
-            99,
-            235,
-            0.16);
+    background: rgba(37, 99, 235, 0.16);
 
     color: #172033;
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid #3b82f6;
+
+    outline-offset: 2px;
 }
 
 
@@ -226,22 +215,7 @@ td {
 
 
 /* =========================================================
-   FOCUS
-========================================================= */
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-    outline: 2px solid #3b82f6;
-
-    outline-offset: 2px;
-}
-
-
-/* =========================================================
-   MOBILE TOUCH
+   TOUCH
 ========================================================= */
 
 button,
@@ -251,7 +225,23 @@ a {
 
 
 /* =========================================================
-   RESPONSIVE TABLE SUPPORT
+   RESPONSIVE CONTENT
+========================================================= */
+
+main,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+div {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   TABLES
 ========================================================= */
 
 table {
@@ -261,41 +251,79 @@ table {
 }
 
 
-/* =========================================================
-   LONG CONTENT SAFETY
-========================================================= */
+.table-scroll {
+    width: 100%;
 
-p,
-span,
-td,
-th {
-    overflow-wrap: anywhere;
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 
 /* =========================================================
-   ACCESSIBILITY
+   LONG CONTENT
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
+pre,
+code {
+    max-width: 100%;
+
+    overflow-x: auto;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+.modal-scroll {
+    max-height: calc(100vh - 32px);
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 639px) {
+    body {
+        font-size: 14px;
     }
 
 
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
+    input,
+    textarea,
+    select {
+        font-size: 16px;
+    }
 
-        animation-duration:
-            0.01ms !important;
 
-        animation-iteration-count:
-            1 !important;
+    /*
+       Prevents iPhone/iOS Safari from automatically
+       zooming when focusing a form field.
+    */
 
-        transition-duration:
-            0.01ms !important;
+    button {
+        min-height: 36px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL DEVICES
+========================================================= */
+
+@media (max-width: 359px) {
+
+    html,
+    body {
+        min-width: 320px;
     }
 }
 
@@ -310,7 +338,69 @@ th {
     }
 
 
-    button {
-        display: none;
+    button,
+    nav,
+    aside {
+        display: none !important;
+    }
+
+
+    * {
+        box-shadow: none !important;
+    }
+}
+
+/* =========================================================
+   GLOBAL READABILITY + RESPONSIVE POLISH
+   Keeps the same UI theme but makes secondary writing darker.
+========================================================= */
+
+.text-slate-400 {
+    color: #64748b !important;
+}
+
+.text-slate-500 {
+    color: #475569 !important;
+}
+
+.text-slate-600 {
+    color: #334155 !important;
+}
+
+/* Prevent grid/flex children from forcing horizontal overflow. */
+.grid>*,
+.flex>* {
+    min-width: 0;
+}
+
+/* Long values such as email addresses and usernames stay inside cards. */
+.break-responsive,
+td,
+th,
+p {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* Improve usable touch sizes without changing desktop appearance. */
+@media (max-width: 1023px) {
+
+    button,
+    a,
+    select,
+    input {
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 767px) {
+    .responsive-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    table.responsive-table {
+        min-width: 720px;
     }
 }

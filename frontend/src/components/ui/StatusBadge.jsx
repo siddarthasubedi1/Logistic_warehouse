@@ -1,9 +1,8 @@
 function StatusBadge({
     status = "",
 }) {
-
     // ======================================================
-    // NORMALIZE STATUS
+    // NORMALIZE
     // ======================================================
 
     const normalizedStatus =
@@ -15,65 +14,65 @@ function StatusBadge({
 
 
     // ======================================================
-    // STYLES
+    // BADGE STYLES
     // ======================================================
 
     const styles = {
         active:
-            "bg-emerald-50 text-emerald-700 ring-emerald-200",
+            "bg-emerald-50 text-emerald-600",
 
         inactive:
-            "bg-red-50 text-red-700 ring-red-200",
+            "bg-red-50 text-red-600",
 
         deactivated:
-            "bg-red-50 text-red-700 ring-red-200",
+            "bg-red-50 text-red-600",
 
         draft:
-            "bg-amber-50 text-amber-700 ring-amber-200",
+            "bg-amber-50 text-amber-600",
 
         pending:
-            "bg-amber-50 text-amber-700 ring-amber-200",
+            "bg-amber-50 text-amber-600",
 
         created:
-            "bg-blue-50 text-blue-700 ring-blue-200",
+            "bg-blue-50 text-blue-600",
 
         completed:
-            "bg-emerald-50 text-emerald-700 ring-emerald-200",
+            "bg-emerald-50 text-emerald-600",
 
         passed:
-            "bg-emerald-50 text-emerald-700 ring-emerald-200",
+            "bg-emerald-50 text-emerald-600",
 
         failed:
-            "bg-red-50 text-red-700 ring-red-200",
+            "bg-red-50 text-red-600",
 
         assigned:
-            "bg-blue-50 text-blue-700 ring-blue-200",
+            "bg-blue-50 text-blue-600",
 
         trainer:
-            "bg-indigo-50 text-indigo-700 ring-indigo-200",
+            "bg-purple-50 text-purple-600",
 
         trainee:
-            "bg-blue-50 text-blue-700 ring-blue-200",
+            "bg-blue-50 text-blue-600",
 
         admin:
-            "bg-violet-50 text-violet-700 ring-violet-200",
+            "bg-violet-50 text-violet-600",
 
         administrator:
-            "bg-violet-50 text-violet-700 ring-violet-200",
+            "bg-violet-50 text-violet-600",
 
         success:
-            "bg-emerald-50 text-emerald-700 ring-emerald-200",
+            "bg-emerald-50 text-emerald-600",
 
         failure:
-            "bg-red-50 text-red-700 ring-red-200",
+            "bg-red-50 text-red-600",
 
         warning:
-            "bg-amber-50 text-amber-700 ring-amber-200",
+            "bg-amber-50 text-amber-600",
     };
 
 
     // ======================================================
-    // DOT STYLE
+    // DOT
     // ======================================================
 
     const dotStyles = {
@@ -108,7 +107,7 @@ function StatusBadge({
             "bg-blue-500",
 
         trainer:
-            "bg-indigo-500",
+            "bg-purple-500",
 
         trainee:
             "bg-blue-500",
@@ -134,7 +133,7 @@ function StatusBadge({
         styles[
         normalizedStatus
         ] ||
-        "bg-slate-100 text-slate-600 ring-slate-200";
+        "bg-slate-100 text-slate-500";
 
 
     const dotStyle =
@@ -179,15 +178,12 @@ function StatusBadge({
                 rounded-full
                 px-2.5
                 py-1
-                text-[9px]
-                font-semibold
-                ring-1
-                ring-inset
+                text-[7px]
+                font-medium
 
                 ${badgeStyle}
             `}
         >
-
             <span
                 className={`
                     h-1.5
@@ -203,7 +199,6 @@ function StatusBadge({
             <span>
                 {label}
             </span>
-
         </span>
     );
 }

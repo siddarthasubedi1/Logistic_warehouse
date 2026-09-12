@@ -6,15 +6,6 @@ import {
 
 import api from "../../services/api";
 
-import ActionButton from "../ui/ActionButton";
-import EmptyState from "../ui/EmptyState";
-import FeedbackAlert from "../ui/FeedbackAlert";
-import LoadingCard from "../ui/LoadingCard";
-
-
-// ======================================================
-// PASSWORD RESET REQUESTS
-// ======================================================
 
 function PasswordResetRequests({
     onManageUser,
@@ -24,15 +15,18 @@ function PasswordResetRequests({
         setRequests,
     ] = useState([]);
 
+
     const [
         loading,
         setLoading,
     ] = useState(true);
 
+
     const [
         refreshing,
         setRefreshing,
     ] = useState(false);
+
 
     const [
         error,
@@ -41,17 +35,17 @@ function PasswordResetRequests({
 
 
     // ======================================================
-    // LOAD REQUESTS
+    // LOAD
     // ======================================================
 
     const loadRequests =
         useCallback(
             async (
-                isRefresh = false
+                refresh = false
             ) => {
                 try {
                     if (
-                        isRefresh
+                        refresh
                     ) {
                         setRefreshing(
                             true
@@ -61,6 +55,7 @@ function PasswordResetRequests({
                             true
                         );
                     }
+
 
                     setError(
                         ""
@@ -115,10 +110,6 @@ function PasswordResetRequests({
         );
 
 
-    // ======================================================
-    // INITIAL LOAD
-    // ======================================================
-
     useEffect(() => {
         loadRequests();
     }, [
@@ -126,9 +117,60 @@ function PasswordResetRequests({
     ]);
 
 
-    // ======================================================
-    // DATE
-    // ======================================================
+    const pendingRequests =
+        requests.filter(
+            (
+                request
+            ) =>
+                request?.status ===
+                "pending"
+        );
+
+
+    const getUserId = (
+        request
+    ) => {
+        if (
+            typeof request?.user ===
+            "string"
+        ) {
+            return request.user;
+        }
+
+
+        return (
+            request?.user?._id ||
+            request?.user?.id ||
+            null
+        );
+    };
+
+
+    const getUserName = (
+        request
+    ) => {
+        const user =
+            request?.user;
+
+
+        const fullName =
+            [
+                user?.firstName,
+                user?.lastName,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+
+
+        return (
+            fullName ||
+            request?.username ||
+            user?.username ||
+            "Unknown User"
+        );
+    };
+
 
     const formatDate = (
         date
@@ -157,132 +199,11 @@ function PasswordResetRequests({
     };
 
 
-    // ======================================================
-    // USER NAME
-    // ======================================================
-
-    const getUserName = (
-        request
-    ) => {
-        const user =
-            request?.user;
-
-
-        if (
-            user?.firstName ||
-            user?.lastName
-        ) {
-            return [
-                user?.firstName,
-                user?.lastName,
-            ]
-                .filter(
-                    Boolean
-                )
-                .join(" ");
-        }
-
-
-        return (
-            request?.username ||
-            user?.username ||
-            "Unknown User"
-        );
-    };
-
-
-    // ======================================================
-    // USER ID
-    // ======================================================
-
-    const getUserId = (
-        request
-    ) => {
-        if (
-            typeof request
-                ?.user ===
-            "string"
-        ) {
-            return request.user;
-        }
-
-
-        return (
-            request
-                ?.user
-                ?._id ||
-            request
-                ?.user
-                ?.id ||
-            null
-        );
-    };
-
-
-    // ======================================================
-    // MANAGE USER
-    // ======================================================
-
-    const handleManageUser = (
-        request
-    ) => {
-        const userId =
-            getUserId(
-                request
-            );
-
-
-        if (
-            !userId ||
-            !onManageUser
-        ) {
-            return;
-        }
-
-
-        onManageUser(
-            userId,
-            request
-        );
-    };
-
-
-    // ======================================================
-    // PENDING ONLY
-    // ======================================================
-
-    const pendingRequests =
-        requests.filter(
-            (
-                request
-            ) =>
-                request?.status ===
-                "pending"
-        );
-
-
-    // ======================================================
-    // LOADING
-    // ======================================================
-
-    if (loading) {
-        return (
-            <LoadingCard
-                message="Loading password reset requests..."
-            />
-        );
-    }
-
-
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -290,244 +211,213 @@ function PasswordResetRequests({
             "
         >
 
-            {/* ================================================= */}
             {/* HEADER */}
-            {/* ================================================= */}
 
             <div
                 className="
-                    relative
-                    overflow-hidden
+                    flex
+                    flex-col
+                    gap-3
                     border-b
                     border-slate-100
-                    bg-gradient-to-r
-                    from-white
-                    via-white
-                    to-amber-50/60
-                    p-5
-                    sm:p-6
+                    px-5
+                    py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                 "
             >
-
-                <div
-                    className="
-                        pointer-events-none
-                        absolute
-                        -right-16
-                        -top-16
-                        h-40
-                        w-40
-                        rounded-full
-                        bg-amber-50
-                    "
-                />
-
-
-                <div
-                    className="
-                        relative
-                        z-10
-                        flex
-                        flex-col
-                        gap-4
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                    "
-                >
-
-                    <div
+                <div>
+                    <h2
                         className="
-                            flex
-                            items-start
-                            gap-3
+                            text-[12px]
+                            font-semibold
+                            text-slate-800
                         "
                     >
-
-                        <div
-                            className="
-                                flex
-                                h-11
-                                w-11
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-amber-50
-                                text-amber-600
-                            "
-                        >
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <path d="M15 7a4 4 0 1 0-7.9 1H3v4h4v3h3v-3h2.1A4 4 0 0 0 15 7Z" />
-
-                                <path d="M16 16h5" />
-
-                                <path d="M18.5 13.5v5" />
-                            </svg>
-
-                        </div>
+                        Password Reset Requests
+                    </h2>
 
 
-                        <div>
-
-                            <p
-                                className="
-                                    text-[8px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-[0.16em]
-                                    text-amber-600
-                                "
-                            >
-                                Account Security
-                            </p>
-
-
-                            <h2
-                                className="
-                                    mt-1
-                                    text-sm
-                                    font-bold
-                                    text-slate-900
-                                    sm:text-base
-                                "
-                            >
-                                Password Reset Requests
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[10px]
-                                    leading-5
-                                    text-slate-500
-                                "
-                            >
-                                Requests submitted by Trainers and
-                                Trainees who need a new temporary
-                                password.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
+                    <p
                         className="
-                            flex
-                            flex-col
-                            gap-2
-                            sm:flex-row
-                            sm:items-center
+                            mt-1
+                            text-[8px]
+                            text-slate-400
                         "
                     >
-
-                        <span
-                            className="
-                                inline-flex
-                                items-center
-                                justify-center
-                                rounded-full
-                                border
-                                border-amber-200
-                                bg-amber-50
-                                px-3
-                                py-2
-                                text-[9px]
-                                font-bold
-                                text-amber-700
-                            "
-                        >
-                            {pendingRequests.length} Pending
-                        </span>
-
-
-                        <ActionButton
-                            variant="secondary"
-                            disabled={
-                                refreshing
-                            }
-                            onClick={() =>
-                                loadRequests(
-                                    true
-                                )
-                            }
-                            className="
-                                w-full
-                                justify-center
-                                sm:w-auto
-                            "
-                        >
-                            {refreshing
-                                ? "Refreshing..."
-                                : "Refresh"}
-                        </ActionButton>
-
-                    </div>
-
+                        Requests submitted by Trainers and Trainees.
+                    </p>
                 </div>
 
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-2
+                    "
+                >
+                    <span
+                        className="
+                            rounded-full
+                            bg-amber-50
+                            px-3
+                            py-1.5
+                            text-[8px]
+                            font-medium
+                            text-amber-600
+                        "
+                    >
+                        {pendingRequests.length} Pending
+                    </span>
+
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            loadRequests(
+                                true
+                            )
+                        }
+                        disabled={
+                            refreshing
+                        }
+                        className="
+                            rounded-lg
+                            border
+                            border-slate-300
+                            bg-white
+                            px-4
+                            py-2
+                            text-[9px]
+                            text-slate-600
+                            hover:bg-slate-50
+                            disabled:opacity-50
+                        "
+                    >
+                        {refreshing
+                            ? "Refreshing..."
+                            : "Refresh"}
+                    </button>
+                </div>
             </div>
 
 
-            {/* ================================================= */}
             {/* CONTENT */}
-            {/* ================================================= */}
 
-            <div className="p-4 sm:p-5">
+            <div
+                className="
+                    p-5
+                "
+            >
+                {loading && (
+                    <div
+                        className="
+                            py-10
+                            text-center
+                            text-[9px]
+                            text-slate-400
+                        "
+                    >
+                        Loading password reset requests...
+                    </div>
+                )}
 
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        error
-                    }
-                    onClose={() =>
-                        setError(
-                            ""
-                        )
-                    }
-                />
 
-
-                {!error &&
-                    pendingRequests.length ===
-                    0 && (
-                        <EmptyState
-                            title="No pending password reset requests"
-                            description="New Trainer or Trainee password-reset requests will appear here."
-                        />
+                {!loading &&
+                    error && (
+                        <div
+                            className="
+                            rounded-lg
+                            border
+                            border-red-200
+                            bg-red-50
+                            px-4
+                            py-3
+                            text-[9px]
+                            text-red-600
+                        "
+                        >
+                            {error}
+                        </div>
                     )}
 
 
-                {!error &&
+                {!loading &&
+                    !error &&
+                    pendingRequests.length ===
+                    0 && (
+                        <div
+                            className="
+                            py-12
+                            text-center
+                        "
+                        >
+                            <div
+                                className="
+                                mx-auto
+                                flex
+                                h-10
+                                w-10
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-blue-50
+                                text-blue-500
+                            "
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    className="h-5 w-5"
+                                >
+                                    <path d="M15 7a4 4 0 1 0-7.9 1H3v4h4v3h3v-3h2.1A4 4 0 0 0 15 7Z" />
+                                </svg>
+                            </div>
+
+
+                            <p
+                                className="
+                                mt-3
+                                text-[11px]
+                                font-medium
+                                text-slate-700
+                            "
+                            >
+                                No pending password reset requests
+                            </p>
+
+
+                            <p
+                                className="
+                                mt-1
+                                text-[8px]
+                                text-slate-400
+                            "
+                            >
+                                New reset requests will appear here.
+                            </p>
+                        </div>
+                    )}
+
+
+                {!loading &&
+                    !error &&
                     pendingRequests.length >
                     0 && (
                         <div
                             className="
-                                grid
-                                gap-3
-                                lg:grid-cols-2
-                            "
+                            divide-y
+                            divide-slate-100
+                        "
                         >
-
                             {pendingRequests.map(
                                 (
                                     request
                                 ) => {
-                                    const user =
-                                        request.user ||
-                                        {};
-
-
                                     const userId =
                                         getUserId(
                                             request
@@ -540,243 +430,130 @@ function PasswordResetRequests({
                                         );
 
 
-                                    const initial =
-                                        userName
-                                            .charAt(
-                                                0
-                                            )
-                                            .toUpperCase();
+                                    const role =
+                                        request.role ||
+                                        request.user
+                                            ?.role ||
+                                        "User";
 
 
                                     return (
-                                        <article
+                                        <div
                                             key={
                                                 request._id
                                             }
                                             className="
-                                                rounded-xl
-                                                border
-                                                border-slate-200
-                                                bg-white
-                                                p-4
-                                                transition
-                                                hover:border-blue-200
-                                                hover:shadow-sm
-                                            "
+                                            flex
+                                            flex-col
+                                            gap-3
+                                            py-4
+                                            sm:flex-row
+                                            sm:items-center
+                                            sm:justify-between
+                                        "
                                         >
-
                                             <div
                                                 className="
-                                                    flex
-                                                    items-start
-                                                    gap-3
-                                                "
+                                                flex
+                                                min-w-0
+                                                items-center
+                                                gap-3
+                                            "
                                             >
-
                                                 <div
                                                     className="
-                                                        flex
-                                                        h-10
-                                                        w-10
-                                                        shrink-0
-                                                        items-center
-                                                        justify-center
-                                                        rounded-full
-                                                        bg-[#073763]
-                                                        text-xs
-                                                        font-bold
-                                                        text-white
-                                                    "
+                                                    flex
+                                                    h-9
+                                                    w-9
+                                                    shrink-0
+                                                    items-center
+                                                    justify-center
+                                                    rounded-full
+                                                    bg-blue-50
+                                                    text-[10px]
+                                                    font-semibold
+                                                    text-blue-600
+                                                "
                                                 >
-                                                    {initial ||
-                                                        "U"}
+                                                    {userName
+                                                        .charAt(
+                                                            0
+                                                        )
+                                                        .toUpperCase()}
                                                 </div>
 
 
                                                 <div
                                                     className="
-                                                        min-w-0
-                                                        flex-1
-                                                    "
+                                                    min-w-0
+                                                "
                                                 >
-
-                                                    <div
+                                                    <p
                                                         className="
-                                                            flex
-                                                            flex-wrap
-                                                            items-start
-                                                            justify-between
-                                                            gap-2
-                                                        "
+                                                        truncate
+                                                        text-[10px]
+                                                        font-medium
+                                                        text-slate-700
+                                                    "
                                                     >
-
-                                                        <div className="min-w-0">
-
-                                                            <h3
-                                                                className="
-                                                                    truncate
-                                                                    text-[11px]
-                                                                    font-bold
-                                                                    text-slate-900
-                                                                "
-                                                            >
-                                                                {userName}
-                                                            </h3>
+                                                        {userName}
+                                                    </p>
 
 
-                                                            <p
-                                                                className="
-                                                                    mt-1
-                                                                    truncate
-                                                                    text-[9px]
-                                                                    text-slate-500
-                                                                "
-                                                            >
-                                                                {request.username ||
-                                                                    user.username ||
-                                                                    "No username"}
-                                                            </p>
-
-                                                        </div>
-
-
-                                                        <span
-                                                            className="
-                                                                rounded-full
-                                                                border
-                                                                border-amber-200
-                                                                bg-amber-50
-                                                                px-2.5
-                                                                py-1
-                                                                text-[8px]
-                                                                font-bold
-                                                                uppercase
-                                                                tracking-wide
-                                                                text-amber-700
-                                                            "
-                                                        >
-                                                            Pending
-                                                        </span>
-
-                                                    </div>
-
-
-                                                    <div
+                                                    <p
                                                         className="
-                                                            mt-3
-                                                            grid
-                                                            gap-2
-                                                            sm:grid-cols-2
-                                                        "
+                                                        mt-1
+                                                        text-[8px]
+                                                        capitalize
+                                                        text-slate-400
+                                                    "
                                                     >
-
-                                                        <RequestInfo
-                                                            label="Role"
-                                                            value={
-                                                                request.role ||
-                                                                user.role ||
-                                                                "—"
-                                                            }
-                                                        />
-
-
-                                                        <RequestInfo
-                                                            label="Requested"
-                                                            value={
-                                                                formatDate(
-                                                                    request.requestedAt
-                                                                )
-                                                            }
-                                                        />
-
-                                                    </div>
-
+                                                        {role}
+                                                        {" · "}
+                                                        {formatDate(
+                                                            request.requestedAt
+                                                        )}
+                                                    </p>
                                                 </div>
-
                                             </div>
 
 
-                                            {/* {onManageUser && (
-                                                <ActionButton
-                                                    variant="primary"
+                                            {onManageUser && (
+                                                <button
+                                                    type="button"
                                                     disabled={
                                                         !userId
                                                     }
                                                     onClick={() =>
-                                                        handleManageUser(
+                                                        onManageUser(
+                                                            userId,
                                                             request
                                                         )
                                                     }
                                                     className="
-                                                        mt-4
-                                                        w-full
-                                                        justify-center
-                                                    "
+                                                    rounded-lg
+                                                    bg-blue-600
+                                                    px-4
+                                                    py-2
+                                                    text-[9px]
+                                                    font-medium
+                                                    text-white
+                                                    hover:bg-blue-700
+                                                    disabled:opacity-50
+                                                "
                                                 >
                                                     Manage User
-                                                </ActionButton>
-                                            )} */}
-
-                                        </article>
+                                                </button>
+                                            )}
+                                        </div>
                                     );
                                 }
                             )}
-
                         </div>
                     )}
-
             </div>
 
         </section>
-    );
-}
-
-
-// ======================================================
-// REQUEST INFO
-// ======================================================
-
-function RequestInfo({
-    label,
-    value,
-}) {
-    return (
-        <div
-            className="
-                rounded-lg
-                bg-slate-50
-                px-3
-                py-2.5
-            "
-        >
-
-            <p
-                className="
-                    text-[7px]
-                    font-semibold
-                    uppercase
-                    tracking-wide
-                    text-slate-400
-                "
-            >
-                {label}
-            </p>
-
-
-            <p
-                className="
-                    mt-1
-                    break-words
-                    text-[9px]
-                    font-semibold
-                    capitalize
-                    text-slate-700
-                "
-            >
-                {value}
-            </p>
-
-        </div>
     );
 }
 

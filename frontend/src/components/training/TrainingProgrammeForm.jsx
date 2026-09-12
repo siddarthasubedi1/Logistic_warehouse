@@ -42,20 +42,24 @@ function TrainingProgrammeForm({
             }
             className="
                 overflow-hidden
+<<<<<<< HEAD
                 rounded-2xl
+=======
+                rounded-xl
+>>>>>>> sprint2
                 border
                 border-slate-200
                 bg-white
                 shadow-sm
             "
         >
-
             {/* ================================================= */}
             {/* HEADER */}
             {/* ================================================= */}
 
             <div
                 className="
+<<<<<<< HEAD
                     relative
                     overflow-hidden
                     border-b
@@ -108,6 +112,62 @@ function TrainingProgrammeForm({
                             bg-white/10
                         "
                     >
+=======
+                    border-b
+                    border-slate-100
+                    px-4
+                    py-4
+                    sm:px-5
+                "
+            >
+                <h2
+                    className="
+                        text-[12px]
+                        font-semibold
+                        text-slate-800
+                    "
+                >
+                    {editingProgramme
+                        ? "Edit Training Programme"
+                        : "Create Training Programme"}
+                </h2>
+
+
+                <p
+                    className="
+                        mt-1
+                        text-[8px]
+                        leading-4
+                        text-slate-400
+                    "
+                >
+                    Enter programme information and Trainer access.
+                </p>
+            </div>
+
+
+            <div
+                className="
+                    space-y-6
+                    p-4
+                    sm:p-5
+                "
+            >
+                {/* ================================================= */}
+                {/* BASIC INFORMATION */}
+                {/* ================================================= */}
+
+                <div>
+                    <h3
+                        className="
+                            text-[10px]
+                            font-semibold
+                            text-slate-700
+                        "
+                    >
+                        Programme Information
+                    </h3>
+>>>>>>> sprint2
 
                         <svg
                             viewBox="0 0 24 24"
@@ -124,10 +184,50 @@ function TrainingProgrammeForm({
                                 rx="3"
                             />
 
+<<<<<<< HEAD
                             <path d="M8 9h8" />
+=======
+                    <div
+                        className="
+                            mt-4
+                            grid
+                            gap-4
+                            md:grid-cols-2
+                        "
+                    >
+                        {/* PROGRAMME TYPE */}
+
+                        <FormField
+                            label="Programme Type"
+                            required
+                        >
+                            <select
+                                name="programmeType"
+                                value={
+                                    formData.programmeType
+                                }
+                                onChange={
+                                    onInputChange
+                                }
+                                disabled={
+                                    saving ||
+                                    Boolean(
+                                        editingProgramme
+                                    )
+                                }
+                                className={
+                                    inputClass
+                                }
+                                required
+                            >
+                                <option value="">
+                                    Select programme type
+                                </option>
+>>>>>>> sprint2
 
                             <path d="M8 13h8" />
 
+<<<<<<< HEAD
                             <path d="M8 17h5" />
                         </svg>
 
@@ -220,19 +320,265 @@ function TrainingProgrammeForm({
                             label="Programme Type"
                             required
                         >
+=======
+                                {availableProgrammeTypes.map(
+                                    (
+                                        programme
+                                    ) => (
+                                        <option
+                                            key={
+                                                programme.value
+                                            }
+                                            value={
+                                                programme.value
+                                            }
+                                        >
+                                            {
+                                                programme.label
+                                            }
+                                        </option>
+                                    )
+                                )}
+                            </select>
+
+
+                            {editingProgramme && (
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[7px]
+                                        text-slate-400
+                                    "
+                                >
+                                    Programme type cannot be changed after creation.
+                                </p>
+                            )}
+                        </FormField>
+
+
+                        {/* PASS MARK */}
+
+                        <FormField
+                            label="Pass Mark (%)"
+                            required
+                        >
+                            <input
+                                type="number"
+                                name="passMark"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value={
+                                    formData.passMark
+                                }
+                                onChange={
+                                    onInputChange
+                                }
+                                disabled={
+                                    saving
+                                }
+                                placeholder="Example: 70"
+                                className={
+                                    inputClass
+                                }
+                                required
+                            />
+                        </FormField>
+
+
+                        {/* TITLE */}
+
+                        <div
+                            className="
+                                md:col-span-2
+                            "
+                        >
+                            <FormField
+                                label="Programme Title"
+                                required
+                            >
+                                <input
+                                    type="text"
+                                    name="title"
+                                    minLength="3"
+                                    maxLength="150"
+                                    value={
+                                        formData.title
+                                    }
+                                    onChange={
+                                        onInputChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    placeholder="Enter programme title"
+                                    className={
+                                        inputClass
+                                    }
+                                    required
+                                />
+
+
+                                <div
+                                    className="
+                                        mt-1
+                                        flex
+                                        justify-between
+                                        gap-3
+                                        text-[7px]
+                                        text-slate-400
+                                    "
+                                >
+                                    <span>
+                                        Minimum 3 characters
+                                    </span>
+
+
+                                    <span>
+                                        {
+                                            formData
+                                                .title
+                                                .length
+                                        }
+                                        /150
+                                    </span>
+                                </div>
+                            </FormField>
+                        </div>
+
+
+                        {/* DESCRIPTION */}
+
+                        <div
+                            className="
+                                md:col-span-2
+                            "
+                        >
+                            <FormField
+                                label="Description"
+                                required
+                            >
+                                <textarea
+                                    name="description"
+                                    rows="5"
+                                    minLength="10"
+                                    maxLength="3000"
+                                    value={
+                                        formData.description
+                                    }
+                                    onChange={
+                                        onInputChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    placeholder="Describe the training programme"
+                                    className={`
+                                        ${inputClass}
+                                        min-h-[110px]
+                                        resize-y
+                                        py-3
+                                    `}
+                                    required
+                                />
+
+
+                                <div
+                                    className="
+                                        mt-1
+                                        flex
+                                        justify-between
+                                        gap-3
+                                        text-[7px]
+                                        text-slate-400
+                                    "
+                                >
+                                    <span>
+                                        Minimum 10 characters
+                                    </span>
+
+
+                                    <span>
+                                        {
+                                            formData
+                                                .description
+                                                .length
+                                        }
+                                        /3000
+                                    </span>
+                                </div>
+                            </FormField>
+                        </div>
+                    </div>
+                </div>
+
+
+                {/* ================================================= */}
+                {/* ADMIN TRAINER MANAGEMENT */}
+                {/* ================================================= */}
+
+                {isAdmin && (
+                    <div
+                        className="
+                            border-t
+                            border-slate-100
+                            pt-5
+                        "
+                    >
+                        <h3
+                            className="
+                                text-[10px]
+                                font-semibold
+                                text-slate-700
+                            "
+                        >
+                            Trainer Management
+                        </h3>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                leading-4
+                                text-slate-400
+                            "
+                        >
+                            Select the Trainer responsible for this programme.
+                        </p>
+>>>>>>> sprint2
 
                             <div className="relative">
 
+<<<<<<< HEAD
                                 <select
                                     name="programmeType"
                                     value={
                                         formData.programmeType
+=======
+                        {/* OWNER */}
+
+                        <div
+                            className="
+                                mt-4
+                            "
+                        >
+                            <FormField
+                                label="Owner Trainer"
+                                required
+                            >
+                                <select
+                                    name="ownerId"
+                                    value={
+                                        formData.ownerId
+>>>>>>> sprint2
                                     }
                                     onChange={
                                         onInputChange
                                     }
                                     disabled={
                                         saving ||
+<<<<<<< HEAD
                                         Boolean(
                                             editingProgramme
                                         )
@@ -340,10 +686,14 @@ function TrainingProgrammeForm({
                                     }
                                     disabled={
                                         saving
+=======
+                                        !formData.programmeType
+>>>>>>> sprint2
                                     }
                                     className={
                                         inputClass
                                     }
+<<<<<<< HEAD
                                     placeholder="Example: Manual Handling Safety"
                                     required
                                 />
@@ -869,6 +1219,195 @@ function TrainingProgrammeForm({
                         </div>
 
                     </FormSection>
+=======
+                                    required
+                                >
+                                    <option value="">
+                                        {formData.programmeType
+                                            ? "Select owner Trainer"
+                                            : "Select programme type first"}
+                                    </option>
+
+
+                                    {eligibleOwnerTrainers.map(
+                                        (
+                                            trainer
+                                        ) => (
+                                            <option
+                                                key={
+                                                    trainer._id
+                                                }
+                                                value={
+                                                    trainer._id
+                                                }
+                                            >
+                                                {getUserDisplayName(
+                                                    trainer,
+                                                    trainer.username ||
+                                                    "Trainer"
+                                                )}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </FormField>
+                        </div>
+
+
+                        {/* AUTHORIZED TRAINERS */}
+
+                        <div
+                            className="
+                                mt-5
+                            "
+                        >
+                            <p
+                                className="
+                                    text-[8px]
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                Authorised Trainers
+                            </p>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[7px]
+                                    leading-4
+                                    text-slate-400
+                                "
+                            >
+                                Additional Trainers who can manage this programme.
+                            </p>
+
+
+                            {!formData.programmeType ? (
+                                <InformationBox>
+                                    Select a programme type first.
+                                </InformationBox>
+                            ) : !formData.ownerId ? (
+                                <InformationBox>
+                                    Select an owner Trainer first.
+                                </InformationBox>
+                            ) : eligibleAuthorizedTrainers.length ===
+                                0 ? (
+                                <InformationBox>
+                                    No additional eligible Trainers are available.
+                                </InformationBox>
+                            ) : (
+                                <div
+                                    className="
+                                        mt-3
+                                        grid
+                                        gap-3
+                                        md:grid-cols-2
+                                    "
+                                >
+                                    {eligibleAuthorizedTrainers.map(
+                                        (
+                                            trainer
+                                        ) => {
+                                            const checked =
+                                                formData.authorizedTrainers.includes(
+                                                    trainer._id
+                                                );
+
+
+                                            return (
+                                                <label
+                                                    key={
+                                                        trainer._id
+                                                    }
+                                                    className={`
+                                                        flex
+                                                        cursor-pointer
+                                                        items-center
+                                                        gap-3
+                                                        rounded-lg
+                                                        border
+                                                        p-3
+                                                        transition
+
+                                                        ${checked
+                                                            ? "border-blue-300 bg-blue-50"
+                                                            : "border-slate-200 bg-white hover:border-blue-200"
+                                                        }
+
+                                                        ${saving
+                                                            ? "cursor-not-allowed opacity-60"
+                                                            : ""
+                                                        }
+                                                    `}
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            checked
+                                                        }
+                                                        disabled={
+                                                            saving
+                                                        }
+                                                        onChange={() =>
+                                                            onToggleAuthorizedTrainer(
+                                                                trainer._id
+                                                            )
+                                                        }
+                                                        className="
+                                                            h-3.5
+                                                            w-3.5
+                                                            accent-blue-600
+                                                        "
+                                                    />
+
+
+                                                    <div
+                                                        className="
+                                                            min-w-0
+                                                        "
+                                                    >
+                                                        <p
+                                                            className="
+                                                                truncate
+                                                                text-[9px]
+                                                                font-medium
+                                                                text-slate-700
+                                                            "
+                                                        >
+                                                            {getUserDisplayName(
+                                                                trainer,
+                                                                trainer.username ||
+                                                                "Trainer"
+                                                            )}
+                                                        </p>
+
+
+                                                        {trainer.username && (
+                                                            <p
+                                                                className="
+                                                                    mt-0.5
+                                                                    truncate
+                                                                    text-[7px]
+                                                                    text-slate-400
+                                                                "
+                                                            >
+                                                                {
+                                                                    trainer.username
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </label>
+                                            );
+                                        }
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+>>>>>>> sprint2
                 )}
 
 
@@ -876,6 +1415,7 @@ function TrainingProgrammeForm({
                 {/* STATUS */}
                 {/* ================================================= */}
 
+<<<<<<< HEAD
                 <FormSection
                     title="Programme Availability"
                     description="Control whether this programme is currently available."
@@ -889,6 +1429,24 @@ function TrainingProgrammeForm({
 
                         <div className="relative">
 
+=======
+                <div
+                    className="
+                        border-t
+                        border-slate-100
+                        pt-5
+                    "
+                >
+                    <div
+                        className="
+                            max-w-md
+                        "
+                    >
+                        <FormField
+                            label="Programme Status"
+                            required
+                        >
+>>>>>>> sprint2
                             <select
                                 name="status"
                                 value={
@@ -901,7 +1459,11 @@ function TrainingProgrammeForm({
                                     saving
                                 }
                                 className={
+<<<<<<< HEAD
                                     selectClass
+=======
+                                    inputClass
+>>>>>>> sprint2
                                 }
                                 required
                             >
@@ -917,6 +1479,7 @@ function TrainingProgrammeForm({
                                     Inactive
                                 </option>
                             </select>
+<<<<<<< HEAD
 
 
                             <SelectArrow />
@@ -967,6 +1530,11 @@ function TrainingProgrammeForm({
                     </FormField>
 
                 </FormSection>
+=======
+                        </FormField>
+                    </div>
+                </div>
+>>>>>>> sprint2
 
 
                 {/* ================================================= */}
@@ -977,7 +1545,11 @@ function TrainingProgrammeForm({
                     className="
                         flex
                         flex-col-reverse
+<<<<<<< HEAD
                         gap-3
+=======
+                        gap-2
+>>>>>>> sprint2
                         border-t
                         border-slate-100
                         pt-5
@@ -985,8 +1557,13 @@ function TrainingProgrammeForm({
                         sm:justify-end
                     "
                 >
+<<<<<<< HEAD
 
                     <ActionButton
+=======
+                    <ActionButton
+                        type="button"
+>>>>>>> sprint2
                         variant="secondary"
                         onClick={
                             onCancel
@@ -996,7 +1573,10 @@ function TrainingProgrammeForm({
                         }
                         className="
                             w-full
+<<<<<<< HEAD
                             justify-center
+=======
+>>>>>>> sprint2
                             sm:w-auto
                         "
                     >
@@ -1012,7 +1592,10 @@ function TrainingProgrammeForm({
                         }
                         className="
                             w-full
+<<<<<<< HEAD
                             justify-center
+=======
+>>>>>>> sprint2
                             sm:w-auto
                         "
                     >
@@ -1022,17 +1605,23 @@ function TrainingProgrammeForm({
                                 ? "Save Changes"
                                 : "Create Programme"}
                     </ActionButton>
+<<<<<<< HEAD
 
                 </div>
 
             </div>
 
+=======
+                </div>
+            </div>
+>>>>>>> sprint2
         </form>
     );
 }
 
 
 // ======================================================
+<<<<<<< HEAD
 // FORM SECTION
 // ======================================================
 
@@ -1112,6 +1701,8 @@ function FormSection({
 
 
 // ======================================================
+=======
+>>>>>>> sprint2
 // FIELD
 // ======================================================
 
@@ -1121,27 +1712,49 @@ function FormField({
     children,
 }) {
     return (
+<<<<<<< HEAD
         <label className="block">
 
+=======
+        <label
+            className="
+                block
+            "
+        >
+>>>>>>> sprint2
             <span
                 className="
                     mb-2
                     block
+<<<<<<< HEAD
                     text-[11px]
                     font-semibold
                     text-slate-700
+=======
+                    text-[8px]
+                    font-medium
+                    text-slate-500
+>>>>>>> sprint2
                 "
             >
                 {label}
 
+
                 {required && (
                     <span
                         className="
+<<<<<<< HEAD
                             ml-1
                             text-red-500
                         "
                     >
                         *
+=======
+                            text-red-500
+                        "
+                    >
+                        {" "}*
+>>>>>>> sprint2
                     </span>
                 )}
 
@@ -1149,13 +1762,13 @@ function FormField({
 
 
             {children}
-
         </label>
     );
 }
 
 
 // ======================================================
+<<<<<<< HEAD
 // HELPER
 // ======================================================
 
@@ -1262,12 +1875,40 @@ function StatusHelp({
                 {description}
             </p>
 
+=======
+// INFORMATION BOX
+// ======================================================
+
+function InformationBox({
+    children,
+}) {
+    return (
+        <div
+            className="
+                mt-3
+                rounded-lg
+                border
+                border-slate-200
+                bg-slate-50
+                p-3
+            "
+        >
+            <p
+                className="
+                    text-[8px]
+                    text-slate-500
+                "
+            >
+                {children}
+            </p>
+>>>>>>> sprint2
         </div>
     );
 }
 
 
 // ======================================================
+<<<<<<< HEAD
 // SELECT ARROW
 // ======================================================
 
@@ -1437,14 +2078,19 @@ function SectionIcon({
 
 // ======================================================
 // SHARED STYLES
+=======
+// INPUT STYLE
+>>>>>>> sprint2
 // ======================================================
 
 const inputClass = `
+    min-h-[40px]
     w-full
     rounded-xl
     border
     border-slate-300
     bg-white
+<<<<<<< HEAD
     px-3.5
     py-3
     text-xs
@@ -1473,14 +2119,20 @@ const selectClass = `
     pr-10
     text-xs
     text-slate-800
+=======
+    px-3
+    text-[9px]
+    text-slate-700
+>>>>>>> sprint2
     outline-none
     transition
+    placeholder:text-slate-400
     focus:border-blue-500
-    focus:ring-2
+    focus:ring-1
     focus:ring-blue-100
     disabled:cursor-not-allowed
-    disabled:bg-slate-100
-    disabled:text-slate-500
+    disabled:bg-slate-50
+    disabled:text-slate-400
 `;
 
 
