@@ -10,10 +10,6 @@ import {
 } from "../utils/session";
 
 
-// ======================================================
-// PROTECTED ROUTE
-// ======================================================
-
 function ProtectedRoute({
     children,
     allowedRoles = [],
@@ -21,10 +17,6 @@ function ProtectedRoute({
     const location =
         useLocation();
 
-
-    // ======================================================
-    // SESSION
-    // ======================================================
 
     const accessToken =
         getAccessToken();
@@ -35,20 +27,22 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // NOT AUTHENTICATED
+    // NOT LOGGED IN
     // ======================================================
 
     if (
         !accessToken ||
         !user
     ) {
+        clearAuthSession();
+
         return (
             <Navigate
                 to="/login"
                 replace
                 state={{
                     from:
-                        location,
+                        location.pathname,
                 }}
             />
         );
@@ -56,7 +50,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // ROLE
+    // NORMALISE ROLE
     // ======================================================
 
     const role =
@@ -68,9 +62,16 @@ function ProtectedRoute({
             .toLowerCase();
 
 
-    if (!role) {
+    if (
+        ![
+            "admin",
+            "trainer",
+            "trainee",
+        ].includes(
+            role
+        )
+    ) {
         clearAuthSession();
-
 
         return (
             <Navigate
@@ -98,12 +99,12 @@ function ProtectedRoute({
         [
             "deactivated",
             "inactive",
+            "disabled",
         ].includes(
             status
         )
     ) {
         clearAuthSession();
-
 
         return (
             <Navigate
@@ -115,12 +116,8 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // FIRST LOGIN PASSWORD CHANGE
-    // ======================================================
-    //
-    // TRAINER AND TRAINEE ONLY.
-    // ADMIN MUST NOT BE FORCED THROUGH THIS FLOW.
-    //
+    // FORCED PASSWORD CHANGE
+    // TRAINER + TRAINEE ONLY
     // ======================================================
 
     const requiresPasswordChange =
@@ -135,7 +132,9 @@ function ProtectedRoute({
 
 
     if (
-        requiresPasswordChange
+        requiresPasswordChange &&
+        location.pathname !==
+        "/login"
     ) {
         return (
             <Navigate
@@ -144,9 +143,6 @@ function ProtectedRoute({
                 state={{
                     passwordChangeRequired:
                         true,
-
-                    from:
-                        location,
                 }}
             />
         );
@@ -154,7 +150,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // ALLOWED ROLES
+    // ROLE VALIDATION
     // ======================================================
 
     const normalizedAllowedRoles =
@@ -167,17 +163,24 @@ function ProtectedRoute({
                         allowedRole
                     ) =>
                         String(
-                            allowedRole
+                            allowedRole ||
+                            ""
                         )
                             .trim()
                             .toLowerCase()
                 )
-                .filter(Boolean)
+                .filter(
+                    Boolean
+                )
             : [];
 
 
     // ======================================================
-    // ROLE ACCESS
+    // WRONG ROLE
+    //
+    // IMPORTANT:
+    // Do NOT send to /unauthorized.
+    // User requested redirect directly to login.
     // ======================================================
 
     if (
@@ -187,22 +190,16 @@ function ProtectedRoute({
             role
         )
     ) {
+        clearAuthSession();
+
         return (
             <Navigate
-                to="/unauthorized"
+                to="/login"
                 replace
-                state={{
-                    from:
-                        location,
-                }}
             />
         );
     }
 
-
-    // ======================================================
-    // ACCESS GRANTED
-    // ======================================================
 
     return children;
 }

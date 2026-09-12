@@ -1,56 +1,36 @@
-import {
-    useLocation,
-} from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-
 import ManageUsersTable from "../../components/admin/ManageUsersTable";
 import TrainerAssignmentsPanel from "../../components/admin/TrainerAssignmentsPanel";
 
-
 function ManageUsersPage() {
-    const location =
-        useLocation();
-
+    const location = useLocation();
 
     const selectedUserId =
-        location.state
-            ?.selectedUserId ||
-        null;
-
+        location.state?.selectedUserId || null;
 
     const passwordResetRequest =
-        location.state
-            ?.passwordResetRequest ||
-        null;
-
+        location.state?.passwordResetRequest || null;
 
     return (
         <DashboardLayout
             role="admin"
             title="Manage Users"
-            subtitle="View and manage Trainer and Trainee accounts."
+            subtitle="View and manage Trainer and Trainee access."
         >
-            <div
-                className="
-                    space-y-4
-                "
-            >
+            <div className="space-y-5">
+                {/* Training assignment section */}
                 <TrainerAssignmentsPanel />
 
-
+                {/* User management section */}
                 <ManageUsersTable
-                    selectedUserId={
-                        selectedUserId
-                    }
-                    passwordResetRequest={
-                        passwordResetRequest
-                    }
+                    selectedUserId={selectedUserId}
+                    passwordResetRequest={passwordResetRequest}
                 />
             </div>
         </DashboardLayout>
     );
 }
-
 
 export default ManageUsersPage;

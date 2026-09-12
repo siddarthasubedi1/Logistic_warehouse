@@ -1,5 +1,7 @@
 import {
+    useCallback,
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
@@ -8,14 +10,11 @@ import {
 } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
-
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminStats from "../components/admin/AdminStats";
-import AdminQuickActions from "../components/admin/AdminQuickActions";
 import AdminUsersOverview from "../components/admin/AdminUsersOverview";
+import AdminQuickActions from "../components/admin/AdminQuickActions";
 import PasswordResetRequests from "../components/admin/PasswordResetRequests";
-
-import FeedbackAlert from "../components/ui/FeedbackAlert";
 
 import api from "../services/api";
 
@@ -29,7 +28,7 @@ function AdminDashboard() {
         useNavigate();
 
 
-    const user =
+    const sessionUser =
         getSessionUser();
 
 
@@ -57,12 +56,8 @@ function AdminDashboard() {
     ] = useState("");
 
 
-    useEffect(() => {
-        let mounted =
-            true;
-
-
-        const loadDashboard =
+    const loadDashboard =
+        useCallback(
             async () => {
                 try {
                     setLoading(
@@ -89,12 +84,7 @@ function AdminDashboard() {
                         ]);
 
 
-                    if (!mounted) {
-                        return;
-                    }
-
-
-                    const usersData =
+                    const userList =
                         Array.isArray(
                             usersResponse.data
                         )
@@ -103,7 +93,7 @@ function AdminDashboard() {
                             [];
 
 
-                    const pendingData =
+                    const pendingList =
                         Array.isArray(
                             pendingResponse.data
                         )
@@ -114,111 +104,143 @@ function AdminDashboard() {
 
 
                     setUsers(
-                        usersData
+                        userList
                     );
 
 
                     setPendingUsers(
-                        pendingData
+                        pendingList
                     );
 
                 } catch (error) {
                     console.error(
-                        "Admin dashboard error:",
+                        "Admin dashboard loading error:",
                         error
                     );
 
 
-                    if (
-                        mounted
-                    ) {
-                        setError(
-                            error.response?.data?.message ||
-                            "Unable to load dashboard information."
-                        );
-                    }
+                    setError(
+                        error.response?.data?.message ||
+                        "Unable to load administrator dashboard."
+                    );
 
                 } finally {
-                    if (
-                        mounted
-                    ) {
-                        setLoading(
-                            false
-                        );
-                    }
+                    setLoading(
+                        false
+                    );
                 }
-            };
-
-
-        loadDashboard();
-
-
-        return () => {
-            mounted =
-                false;
-        };
-    }, []);
-
-
-    const activeUsers =
-        users.filter(
-            (
-                currentUser
-            ) =>
-                currentUser.status ===
-                "active"
-        ).length;
-
-
-    const deactivatedUsers =
-        users.filter(
-            (
-                currentUser
-            ) =>
-                currentUser.status ===
-                "deactivated" ||
-                currentUser.status ===
-                "inactive"
-        ).length;
-
-
-    const trainers =
-        users.filter(
-            (
-                currentUser
-            ) =>
-                currentUser.role ===
-                "trainer"
-        ).length;
-
-
-    const trainees =
-        users.filter(
-            (
-                currentUser
-            ) =>
-                currentUser.role ===
-                "trainee"
-        ).length;
-
-
-    const handleManageResetUser = (
-        userId,
-        request
-    ) => {
-        navigate(
-            "/admin/users",
-            {
-                state: {
-                    selectedUserId:
-                        userId,
-
-                    passwordResetRequest:
-                        request,
-                },
-            }
+            },
+            []
         );
-    };
+
+
+    useEffect(() => {
+        loadDashboard();
+    }, [
+        loadDashboard,
+    ]);
+
+
+    const statistics =
+        useMemo(
+            () => {
+                const active =
+                    users.filter(
+                        (
+                            user
+                        ) =>
+                            String(
+                                user.status ||
+                                ""
+                            ).toLowerCase() ===
+                            "active"
+                    ).length;
+
+
+                const deactivated =
+                    users.filter(
+                        (
+                            user
+                        ) =>
+                            [
+                                "deactivated",
+                                "inactive",
+                            ].includes(
+                                String(
+                                    user.status ||
+                                    ""
+                                ).toLowerCase()
+                            )
+                    ).length;
+
+
+                const trainers =
+                    users.filter(
+                        (
+                            user
+                        ) =>
+                            String(
+                                user.role ||
+                                ""
+                            ).toLowerCase() ===
+                            "trainer"
+                    ).length;
+
+
+                const trainees =
+                    users.filter(
+                        (
+                            user
+                        ) =>
+                            String(
+                                user.role ||
+                                ""
+                            ).toLowerCase() ===
+                            "trainee"
+                    ).length;
+
+
+                return {
+                    total:
+                        users.length,
+
+                    active,
+
+                    deactivated,
+
+                    pending:
+                        pendingUsers.length,
+
+                    trainers,
+
+                    trainees,
+                };
+            },
+            [
+                users,
+                pendingUsers,
+            ]
+        );
+
+
+    const handleManageResetUser =
+        (
+            userId,
+            request
+        ) => {
+            navigate(
+                "/admin/users",
+                {
+                    state: {
+                        selectedUserId:
+                            userId,
+
+                        passwordResetRequest:
+                            request,
+                    },
+                }
+            );
+        };
 
 
     return (
@@ -228,7 +250,7 @@ function AdminDashboard() {
         >
             <AdminHeader
                 user={
-                    user
+                    sessionUser
                 }
             />
 
@@ -240,17 +262,44 @@ function AdminDashboard() {
                     sm:pt-5
                 "
             >
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        error
-                    }
-                    onClose={() =>
-                        setError(
-                            ""
-                        )
-                    }
-                />
+                {error && (
+                    <div
+                        className="
+                            flex
+                            items-start
+                            justify-between
+                            gap-4
+                            rounded-xl
+                            border
+                            border-red-200
+                            bg-red-50
+                            px-4
+                            py-3
+                            text-[12px]
+                            text-red-700
+                        "
+                    >
+                        <span>
+                            {error}
+                        </span>
+
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setError(
+                                    ""
+                                )
+                            }
+                            className="
+                                shrink-0
+                                font-bold
+                            "
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
 
                 <AdminStats
@@ -258,49 +307,54 @@ function AdminDashboard() {
                         loading
                     }
                     totalUsers={
-                        users.length
+                        statistics.total
                     }
                     activeUsers={
-                        activeUsers
+                        statistics.active
                     }
                     pendingUsers={
-                        pendingUsers.length
+                        statistics.pending
                     }
                     deactivatedUsers={
-                        deactivatedUsers
+                        statistics.deactivated
                     }
                 />
 
 
-                <section
+                <div
                     className="
                         grid
                         gap-4
-                        xl:grid-cols-[minmax(0,2fr)_minmax(280px,0.8fr)]
+                        xl:grid-cols-[minmax(0,1fr)_370px]
                     "
                 >
                     <AdminUsersOverview
-                        loading={
-                            loading
-                        }
                         users={
                             users
                         }
-                        trainers={
-                            trainers
-                        }
                         trainees={
-                            trainees
+                            statistics.trainees
+                        }
+                        trainers={
+                            statistics.trainers
+                        }
+                        loading={
+                            loading
+                        }
+                        onViewAll={() =>
+                            navigate(
+                                "/admin/users"
+                            )
                         }
                     />
 
 
                     <AdminQuickActions
-                        pendingCount={
-                            pendingUsers.length
+                        pendingUsers={
+                            statistics.pending
                         }
                     />
-                </section>
+                </div>
 
 
                 <PasswordResetRequests

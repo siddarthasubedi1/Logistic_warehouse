@@ -4,7 +4,7 @@ import {
 
 
 function AdminQuickActions({
-    pendingCount = 0,
+    pendingUsers = 0,
 }) {
     const navigate =
         useNavigate();
@@ -16,17 +16,20 @@ function AdminQuickActions({
                 "Create User Account",
 
             description:
-                `${pendingCount} pending ${pendingCount ===
+                `${pendingUsers} pending ${pendingUsers ===
                     1
                     ? "user"
                     : "users"
                 }`,
 
+            action:
+                () =>
+                    navigate(
+                        "/admin/create-user"
+                    ),
+
             icon:
                 "create",
-
-            path:
-                "/admin/create-user",
         },
 
         {
@@ -36,11 +39,14 @@ function AdminQuickActions({
             description:
                 "Edit, activate, deactivate or remove accounts",
 
+            action:
+                () =>
+                    navigate(
+                        "/admin/users"
+                    ),
+
             icon:
                 "users",
-
-            path:
-                "/admin/users",
         },
 
         {
@@ -50,11 +56,14 @@ function AdminQuickActions({
             description:
                 "Review important account and system activity",
 
+            action:
+                () =>
+                    navigate(
+                        "/admin/audit-logs"
+                    ),
+
             icon:
                 "audit",
-
-            path:
-                "/admin/audit-logs",
         },
     ];
 
@@ -65,23 +74,22 @@ function AdminQuickActions({
                 overflow-hidden
                 rounded-xl
                 border
-                border-slate-200
+                border-[#dbe4ef]
                 bg-white
-                shadow-sm
+                shadow-[0_1px_3px_rgba(15,23,42,0.08)]
             "
         >
             <div
                 className="
                     border-b
-                    border-slate-100
-                    px-4
+                    border-[#e8eef5]
+                    px-5
                     py-4
-                    sm:px-5
                 "
             >
                 <h2
                     className="
-                        text-[12px]
+                        text-[14px]
                         font-bold
                         text-[#172033]
                     "
@@ -93,9 +101,8 @@ function AdminQuickActions({
                 <p
                     className="
                         mt-1
-                        text-[8px]
-                        font-medium
-                        text-slate-500
+                        text-[9px]
+                        text-[#7c8da6]
                     "
                 >
                     Common administrator tasks.
@@ -105,9 +112,8 @@ function AdminQuickActions({
 
             <div
                 className="
-                    space-y-3
-                    p-4
-                    sm:p-5
+                    space-y-2
+                    p-5
                 "
             >
                 {actions.map(
@@ -119,27 +125,25 @@ function AdminQuickActions({
                                 action.title
                             }
                             type="button"
-                            onClick={() =>
-                                navigate(
-                                    action.path
-                                )
+                            onClick={
+                                action.action
                             }
                             className="
-                                group
                                 flex
+                                min-h-[73px]
                                 w-full
                                 items-center
                                 gap-3
                                 rounded-lg
                                 border
-                                border-transparent
+                                border-[#e2e8f0]
                                 bg-white
-                                px-3
+                                px-4
                                 py-3
                                 text-left
                                 transition
-                                hover:border-blue-100
-                                hover:bg-blue-50/50
+                                hover:border-blue-200
+                                hover:bg-blue-50/30
                             "
                         >
                             <div
@@ -171,9 +175,9 @@ function AdminQuickActions({
                             >
                                 <p
                                     className="
-                                        text-[9px]
-                                        font-bold
-                                        text-slate-800
+                                        text-[10px]
+                                        font-semibold
+                                        text-[#172033]
                                     "
                                 >
                                     {action.title}
@@ -183,27 +187,21 @@ function AdminQuickActions({
                                 <p
                                     className="
                                         mt-1
-                                        text-[7px]
-                                        font-medium
+                                        text-[8px]
                                         leading-4
-                                        text-slate-500
+                                        text-[#7c8da6]
                                     "
                                 >
-                                    {
-                                        action.description
-                                    }
+                                    {action.description}
                                 </p>
                             </div>
 
 
                             <span
                                 className="
-                                    shrink-0
-                                    text-[15px]
-                                    font-semibold
+                                    text-[20px]
+                                    font-light
                                     text-blue-600
-                                    transition
-                                    group-hover:translate-x-0.5
                                 "
                             >
                                 ›
@@ -211,6 +209,77 @@ function AdminQuickActions({
                         </button>
                     )
                 )}
+
+
+                <div
+                    className="
+                        mt-3
+                        flex
+                        items-center
+                        gap-3
+                        rounded-lg
+                        border
+                        border-blue-100
+                        bg-[#eef6ff]
+                        px-4
+                        py-4
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-white
+                            text-blue-600
+                            shadow-sm
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="
+                                h-5
+                                w-5
+                            "
+                        >
+                            <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z" />
+
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </div>
+
+
+                    <div>
+                        <p
+                            className="
+                                text-[10px]
+                                font-semibold
+                                text-[#172033]
+                            "
+                        >
+                            Access Control
+                        </p>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                leading-4
+                                text-[#64748b]
+                            "
+                        >
+                            Administrative routes are protected by role-based access control.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
     );
@@ -220,29 +289,43 @@ function AdminQuickActions({
 function ActionIcon({
     type,
 }) {
+    const props = {
+        viewBox:
+            "0 0 24 24",
+
+        fill:
+            "none",
+
+        stroke:
+            "currentColor",
+
+        strokeWidth:
+            "1.8",
+
+        className:
+            "h-5 w-5",
+    };
+
+
     if (
         type ===
-        "create"
+        "audit"
     ) {
         return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-4 w-4"
-            >
-                <circle
-                    cx="9"
-                    cy="8"
-                    r="3"
+            <svg {...props}>
+                <rect
+                    x="6"
+                    y="3"
+                    width="12"
+                    height="18"
+                    rx="1"
                 />
 
-                <path d="M3 20c.5-4 2.5-6 6-6" />
+                <path d="M9 8h6" />
 
-                <path d="M18 13v8" />
+                <path d="M9 12h6" />
 
-                <path d="M14 17h8" />
+                <path d="M9 16h4" />
             </svg>
         );
     }
@@ -253,13 +336,7 @@ function ActionIcon({
         "users"
     ) {
         return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-4 w-4"
-            >
+            <svg {...props}>
                 <circle
                     cx="9"
                     cy="8"
@@ -281,20 +358,18 @@ function ActionIcon({
 
 
     return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-4 w-4"
-        >
-            <path d="M6 3h12v18H6z" />
+        <svg {...props}>
+            <circle
+                cx="9"
+                cy="8"
+                r="3"
+            />
 
-            <path d="M9 8h6" />
+            <path d="M3 20c.6-4 2.6-6 6-6" />
 
-            <path d="M9 12h6" />
+            <path d="M18 13v8" />
 
-            <path d="M9 16h4" />
+            <path d="M14 17h8" />
         </svg>
     );
 }

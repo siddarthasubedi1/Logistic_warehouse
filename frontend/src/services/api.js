@@ -7,17 +7,9 @@ import {
 } from "../utils/session";
 
 
-// ======================================================
-// API CONFIGURATION
-// ======================================================
-
-const API_BASE_URL =
+export const API_BASE_URL =
     "http://localhost:5000/api";
 
-
-// ======================================================
-// MAIN API CLIENT
-// ======================================================
 
 const api =
     axios.create({
@@ -29,27 +21,6 @@ const api =
     });
 
 
-// ======================================================
-// REFRESH CLIENT
-// ======================================================
-//
-// IMPORTANT:
-//
-// The refresh client must NOT use the main API response
-// interceptor.
-//
-// Otherwise:
-//
-// access token expires
-//      ↓
-// interceptor calls refresh
-//      ↓
-// refresh also hits interceptor
-//      ↓
-// possible infinite refresh loop
-//
-// ======================================================
-
 const refreshClient =
     axios.create({
         baseURL:
@@ -60,111 +31,80 @@ const refreshClient =
     });
 
 
-// ======================================================
-// REDIRECT TO LOGIN
-// ======================================================
-
-const redirectToLogin =
-    () => {
-        if (
-            typeof window ===
-            "undefined"
-        ) {
-            return;
-        }
+function redirectToLogin() {
+    if (
+        typeof window ===
+        "undefined"
+    ) {
+        return;
+    }
 
 
-        if (
-            window.location.pathname !==
+    if (
+        window.location.pathname !==
+        "/login"
+    ) {
+        window.location.replace(
             "/login"
-        ) {
-            window.location.replace(
-                "/login"
-            );
-        }
-    };
+        );
+    }
+}
 
-
-// ======================================================
-// REFRESH PROMISE
-// ======================================================
-//
-// Multiple API requests can fail at the same time when
-// an access token expires.
-//
-// Only ONE refresh request should be sent.
-//
-// Every other failed request waits for this promise.
-//
-// ======================================================
 
 let refreshPromise =
     null;
 
 
-// ======================================================
-// REFRESH ACCESS TOKEN
-// ======================================================
-
-const refreshAccessToken =
-    async () => {
-        if (
-            refreshPromise
-        ) {
-            return refreshPromise;
-        }
-
-
-        refreshPromise =
-            refreshClient
-                .post(
-                    "/auth/refresh"
-                )
-                .then(
-                    (
-                        response
-                    ) => {
-                        const accessToken =
-                            response.data
-                                ?.accessToken;
-
-
-                        if (
-                            !accessToken
-                        ) {
-                            throw new Error(
-                                "Refresh response did not contain an access token."
-                            );
-                        }
-
-
-                        // ==========================================
-                        // STORE NEW ACCESS TOKEN
-                        // ==========================================
-
-                        saveAccessToken(
-                            accessToken
-                        );
-
-
-                        return accessToken;
-                    }
-                )
-                .finally(
-                    () => {
-                        refreshPromise =
-                            null;
-                    }
-                );
-
-
+async function refreshAccessToken() {
+    if (
+        refreshPromise
+    ) {
         return refreshPromise;
-    };
+    }
 
 
-// ======================================================
-// REQUEST INTERCEPTOR
-// ======================================================
+    refreshPromise =
+        refreshClient
+            .post(
+                "/auth/refresh"
+            )
+            .then(
+                (
+                    response
+                ) => {
+                    const accessToken =
+                        response.data
+                            ?.accessToken;
+
+
+                    if (
+                        !accessToken
+                    ) {
+                        throw new Error(
+                            "Refresh response did not contain an access token."
+                        );
+                    }
+
+
+                    saveAccessToken(
+                        accessToken
+                    );
+
+
+                    return accessToken;
+                }
+            )
+            .finally(
+                () => {
+                    refreshPromise =
+                        null;
+                }
+            );
+
+
+    return refreshPromise;
+}
+
 
 api.interceptors.request.use(
     (
@@ -173,10 +113,6 @@ api.interceptors.request.use(
         const accessToken =
             getAccessToken();
 
-
-        // ==================================================
-        // AUTHORIZATION
-        // ==================================================
 
         if (
             accessToken
@@ -191,19 +127,6 @@ api.interceptors.request.use(
         }
 
 
-        // ==================================================
-        // FILE UPLOAD / FORM DATA
-        // ==================================================
-        //
-        // When FormData is used, do NOT manually set:
-        //
-        // Content-Type: multipart/form-data
-        //
-        // The browser automatically includes the required
-        // boundary.
-        //
-        // ==================================================
-
         if (
             typeof FormData !==
             "undefined" &&
@@ -213,8 +136,7 @@ api.interceptors.request.use(
             if (
                 config.headers
             ) {
-                delete config
-                    .headers[
+                delete config.headers[
                     "Content-Type"
                 ];
             }
@@ -226,24 +148,18 @@ api.interceptors.request.use(
 
     (
         error
-    ) => {
-        return Promise.reject(
+    ) =>
+        Promise.reject(
             error
-        );
-    }
+        )
 );
 
-
-// ======================================================
-// RESPONSE INTERCEPTOR
-// ======================================================
 
 api.interceptors.response.use(
     (
         response
-    ) => {
-        return response;
-    },
+    ) =>
+        response,
 
     async (
         error
@@ -254,24 +170,42 @@ api.interceptors.response.use(
 
 
         const code =
-            error.response
-                ?.data
-                ?.code;
+            String(
+                error.response
+                    ?.data
+                    ?.code ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
 
 
         const originalRequest =
             error.config;
 
 
+        const requestUrl =
+            originalRequest
+                ?.url ||
+            "";
+
+
+        const isPublicAuthRequest =
+            [
+                "/auth/login",
+                "/auth/forgot-password",
+            ].some(
+                (
+                    endpoint
+                ) =>
+                    requestUrl.includes(
+                        endpoint
+                    )
+            );
+
+
         // ==================================================
         // ACCOUNT DEACTIVATED
-        // ==================================================
-        //
-        // Admin may deactivate Trainer/Trainee.
-        //
-        // Their current frontend session must immediately
-        // become unusable.
-        //
         // ==================================================
 
         if (
@@ -282,9 +216,7 @@ api.interceptors.response.use(
         ) {
             clearAuthSession();
 
-
             redirectToLogin();
-
 
             return Promise.reject(
                 error
@@ -293,20 +225,10 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // PASSWORD CHANGE REQUIRED
-        // ==================================================
-        //
-        // IMPORTANT:
-        //
-        // Do NOT clear the authentication session here.
-        //
-        // A Trainer/Trainee using a temporary password
-        // needs the authenticated temporary session to call:
-        //
-        // POST /api/auth/change-password
-        //
-        // Admin is not part of this forced-first-login rule.
-        //
+        // FIRST LOGIN PASSWORD CHANGE
+        // Do NOT clear session.
+        // The temporary authenticated session is required
+        // to call /auth/change-password.
         // ==================================================
 
         if (
@@ -318,8 +240,7 @@ api.interceptors.response.use(
             if (
                 typeof window !==
                 "undefined" &&
-                window.location
-                    .pathname !==
+                window.location.pathname !==
                 "/login"
             ) {
                 window.location.replace(
@@ -337,14 +258,6 @@ api.interceptors.response.use(
         // ==================================================
         // SESSION REVOKED
         // ==================================================
-        //
-        // Can happen after:
-        //
-        // - user changes password
-        // - Admin resets password
-        // - session invalidation
-        //
-        // ==================================================
 
         if (
             status ===
@@ -354,9 +267,7 @@ api.interceptors.response.use(
         ) {
             clearAuthSession();
 
-
             redirectToLogin();
-
 
             return Promise.reject(
                 error
@@ -367,21 +278,25 @@ api.interceptors.response.use(
         // ==================================================
         // INVALID ACCESS TOKEN
         // ==================================================
-        //
-        // An invalid token must NOT be refreshed.
-        //
-        // ==================================================
 
         if (
             status ===
             401 &&
-            code ===
-            "INVALID_ACCESS_TOKEN"
+            [
+                "INVALID_ACCESS_TOKEN",
+                "AUTHENTICATION_REQUIRED",
+                "TOKEN_INVALID",
+            ].includes(
+                code
+            )
         ) {
-            clearAuthSession();
+            if (
+                !isPublicAuthRequest
+            ) {
+                clearAuthSession();
 
-
-            redirectToLogin();
+                redirectToLogin();
+            }
 
 
             return Promise.reject(
@@ -392,19 +307,6 @@ api.interceptors.response.use(
 
         // ==================================================
         // ACCESS TOKEN EXPIRED
-        // ==================================================
-        //
-        // Backend access tokens are short lived.
-        //
-        // Flow:
-        //
-        // 1. API returns ACCESS_TOKEN_EXPIRED
-        // 2. Call /auth/refresh
-        // 3. Browser sends refresh cookie
-        // 4. Receive new access token
-        // 5. Save token
-        // 6. Retry original request
-        //
         // ==================================================
 
         if (
@@ -424,24 +326,14 @@ api.interceptors.response.use(
                     await refreshAccessToken();
 
 
-                // ==========================================
-                // UPDATE FAILED REQUEST
-                // ==========================================
-
                 originalRequest.headers =
                     originalRequest.headers ||
                     {};
 
 
-                originalRequest
-                    .headers
-                    .Authorization =
+                originalRequest.headers.Authorization =
                     `Bearer ${newAccessToken}`;
 
-
-                // ==========================================
-                // RETRY
-                // ==========================================
 
                 return api(
                     originalRequest
@@ -450,25 +342,9 @@ api.interceptors.response.use(
             } catch (
             refreshError
             ) {
-                // ==========================================
-                // REFRESH FAILED
-                // ==========================================
-                //
-                // Refresh token may be:
-                //
-                // - expired
-                // - missing
-                // - revoked
-                // - invalid
-                // - attached to a deactivated account
-                //
-                // ==========================================
-
                 clearAuthSession();
 
-
                 redirectToLogin();
-
 
                 return Promise.reject(
                     refreshError
@@ -478,42 +354,55 @@ api.interceptors.response.use(
 
 
         // ==================================================
-        // OTHER 401 ERRORS
+        // ROLE / AUTHORIZATION DENIED
+        //
+        // THIS IS THE IMPORTANT FIX FOR YOUR SCREENSHOT.
+        // Instead of showing /unauthorized,
+        // clear session and return to login.
         // ==================================================
-        //
-        // Do not redirect failed public login or password
-        // reset requests.
-        //
+
+        if (
+            status ===
+            403 &&
+            [
+                "FORBIDDEN",
+                "ACCESS_DENIED",
+                "UNAUTHORIZED",
+                "ROLE_NOT_ALLOWED",
+                "INSUFFICIENT_PERMISSION",
+                "INSUFFICIENT_PERMISSIONS",
+            ].includes(
+                code
+            )
+        ) {
+            clearAuthSession();
+
+            redirectToLogin();
+
+            return Promise.reject(
+                error
+            );
+        }
+
+
+        // ==================================================
+        // OTHER 401
         // ==================================================
 
         if (
             status ===
             401 &&
-            originalRequest
-                ?.url !==
-            "/auth/login" &&
-            originalRequest
-                ?.url !==
-            "/auth/forgot-password"
+            !isPublicAuthRequest
         ) {
-            const accessToken =
-                getAccessToken();
+            clearAuthSession();
 
+            redirectToLogin();
 
-            if (
-                accessToken
-            ) {
-                clearAuthSession();
-
-
-                redirectToLogin();
-            }
+            return Promise.reject(
+                error
+            );
         }
 
-
-        // ==================================================
-        // DEFAULT ERROR
-        // ==================================================
 
         return Promise.reject(
             error
@@ -521,22 +410,5 @@ api.interceptors.response.use(
     }
 );
 
-
-// ======================================================
-// EXPORT API BASE URL
-// ======================================================
-//
-// Useful for profile-image paths if needed.
-//
-// ======================================================
-
-export {
-    API_BASE_URL,
-};
-
-
-// ======================================================
-// EXPORT
-// ======================================================
 
 export default api;

@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
-
 /* =========================================================
-   ROOT
+   DESIGN SYSTEM
 ========================================================= */
 
 :root {
@@ -18,8 +17,30 @@
     font-synthesis: none;
     text-rendering: optimizeLegibility;
 
-    color: #172033;
-    background: #f4f7fb;
+    --app-bg: #f5f7fb;
+    --app-bg-soft: #f8fafc;
+
+    --text-main: #172033;
+    --text-secondary: #52627a;
+    --text-muted: #7c8da6;
+
+    --navy: #073763;
+    --navy-dark: #062d52;
+    --navy-light: #0b4f87;
+
+    --blue: #1769e8;
+    --blue-dark: #0b5ed7;
+    --blue-light: #55a0ff;
+
+    --border: #dbe4ef;
+    --border-soft: #e8eef5;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    color: var(--text-main);
+    background: var(--app-bg);
 }
 
 
@@ -31,7 +52,7 @@ html {
     min-width: 320px;
     min-height: 100%;
 
-    background: #f4f7fb;
+    background: var(--app-bg);
 
     scroll-behavior: smooth;
 }
@@ -45,15 +66,30 @@ body {
 
     overflow-x: hidden;
 
-    background: #f4f7fb;
+    background:
+        linear-gradient(135deg,
+            #f8fafc 0%,
+            #f5f7fb 100%);
 
-    color: #172033;
+    color: var(--text-main);
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 
 #root {
-    min-height: 100vh;
     min-width: 0;
+    min-height: 100vh;
 }
 
 
@@ -69,7 +105,7 @@ body {
 
 
 /* =========================================================
-   TEXT
+   TYPOGRAPHY
 ========================================================= */
 
 h1,
@@ -83,6 +119,16 @@ p {
 }
 
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #111827;
+}
+
+
 p,
 span,
 td,
@@ -91,6 +137,12 @@ button,
 a,
 label {
     overflow-wrap: anywhere;
+}
+
+
+a {
+    color: inherit;
+    text-decoration: none;
 }
 
 
@@ -126,8 +178,7 @@ input,
 textarea,
 select {
     max-width: 100%;
-
-    color: #172033;
+    color: var(--text-main);
 }
 
 
@@ -154,13 +205,12 @@ button:disabled {
 
 
 /* =========================================================
-   SELECTION
+   PLACEHOLDER
 ========================================================= */
 
-::selection {
-    background: rgba(37, 99, 235, 0.16);
-
-    color: #172033;
+input::placeholder,
+textarea::placeholder {
+    color: #a6b4c7;
 }
 
 
@@ -174,8 +224,17 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
     outline: 2px solid #3b82f6;
-
     outline-offset: 2px;
+}
+
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+::selection {
+    background: rgba(37, 99, 235, 0.18);
+    color: #172033;
 }
 
 
@@ -185,15 +244,13 @@ select:focus-visible {
 
 * {
     scrollbar-width: thin;
-
-    scrollbar-color:
-        #cbd5e1 transparent;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 
 *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
 }
 
 
@@ -204,7 +261,6 @@ select:focus-visible {
 
 *::-webkit-scrollbar-thumb {
     border-radius: 999px;
-
     background: #cbd5e1;
 }
 
@@ -246,161 +302,134 @@ div {
 
 table {
     width: 100%;
-
     border-collapse: collapse;
 }
 
 
 .table-scroll {
     width: 100%;
-
     overflow-x: auto;
-
     -webkit-overflow-scrolling: touch;
 }
 
 
 /* =========================================================
-   LONG CONTENT
+   SHARED UI
 ========================================================= */
 
-pre,
-code {
-    max-width: 100%;
+.app-card {
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    background: #ffffff;
 
-    overflow-x: auto;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 2px 5px rgba(15, 23, 42, 0.04);
+}
 
-    white-space: pre-wrap;
 
-    word-break: break-word;
+.app-panel {
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+
+.app-title {
+    color: #111827;
+    font-weight: 700;
+}
+
+
+.app-muted {
+    color: #64748b;
+}
+
+
+.app-input {
+    width: 100%;
+    min-height: 44px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    padding: 0 14px;
+
+    color: #172033;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.app-input:focus {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.10);
+}
+
+
+.app-primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+
+    border-radius: 7px;
+
+    background: #1769e8;
+
+    color: #ffffff;
+
+    font-weight: 600;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+
+
+.app-primary-button:hover:not(:disabled) {
+    background: #0b5ed7;
+}
+
+
+.app-primary-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+
+.app-primary-button:disabled {
+    opacity: 0.55;
 }
 
 
 /* =========================================================
-   MODALS
+   RESPONSIVE
 ========================================================= */
 
-.modal-scroll {
-    max-height: calc(100vh - 32px);
-
-    overflow-y: auto;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 639px) {
+@media (max-width: 1023px) {
     body {
         font-size: 14px;
     }
-
-
-    input,
-    textarea,
-    select {
-        font-size: 16px;
-    }
-
-
-    /*
-       Prevents iPhone/iOS Safari from automatically
-       zooming when focusing a form field.
-    */
-
-    button {
-        min-height: 36px;
-    }
 }
 
 
-/* =========================================================
-   VERY SMALL DEVICES
-========================================================= */
-
-@media (max-width: 359px) {
-
-    html,
+@media (max-width: 640px) {
     body {
-        min-width: 320px;
-    }
-}
-
-
-/* =========================================================
-   PRINT
-========================================================= */
-
-@media print {
-    body {
-        background: white;
+        font-size: 13px;
     }
 
-
-    button,
-    nav,
-    aside {
-        display: none !important;
-    }
-
-
-    * {
-        box-shadow: none !important;
-    }
-}
-
-/* =========================================================
-   GLOBAL READABILITY + RESPONSIVE POLISH
-   Keeps the same UI theme but makes secondary writing darker.
-========================================================= */
-
-.text-slate-400 {
-    color: #64748b !important;
-}
-
-.text-slate-500 {
-    color: #475569 !important;
-}
-
-.text-slate-600 {
-    color: #334155 !important;
-}
-
-/* Prevent grid/flex children from forcing horizontal overflow. */
-.grid>*,
-.flex>* {
-    min-width: 0;
-}
-
-/* Long values such as email addresses and usernames stay inside cards. */
-.break-responsive,
-td,
-th,
-p {
-    overflow-wrap: anywhere;
-    word-break: normal;
-}
-
-/* Improve usable touch sizes without changing desktop appearance. */
-@media (max-width: 1023px) {
-
-    button,
-    a,
-    select,
-    input {
-        min-height: 40px;
-    }
-}
-
-@media (max-width: 767px) {
-    .responsive-stack {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    table.responsive-table {
-        min-width: 720px;
+    .app-card,
+    .app-panel {
+        border-radius: 10px;
     }
 }

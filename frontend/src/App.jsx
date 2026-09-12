@@ -7,7 +7,6 @@ import {
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
-import Unauthorized from "./pages/Unauthorized";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
@@ -29,17 +28,15 @@ import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 
 import {
+  clearAuthSession,
+  getAccessToken,
   getSessionUser,
 } from "./utils/session";
 
 
-// ======================================================
-// ROLE DASHBOARD PATH
-// ======================================================
-
-const getRoleDashboardPath = (
+function getRoleDashboardPath(
   role
-) => {
+) {
   const normalizedRole =
     String(
       role ||
@@ -74,19 +71,24 @@ const getRoleDashboardPath = (
 
 
   return "/login";
-};
+}
 
-
-// ======================================================
-// HOME REDIRECT
-// ======================================================
 
 function HomeRedirect() {
+  const accessToken =
+    getAccessToken();
+
+
   const user =
     getSessionUser();
 
 
-  if (!user) {
+  if (
+    !accessToken ||
+    !user
+  ) {
+    clearAuthSession();
+
     return (
       <Navigate
         to="/login"
@@ -96,22 +98,30 @@ function HomeRedirect() {
   }
 
 
+  const destination =
+    getRoleDashboardPath(
+      user.role
+    );
+
+
+  if (
+    destination ===
+    "/login"
+  ) {
+    clearAuthSession();
+  }
+
+
   return (
     <Navigate
       to={
-        getRoleDashboardPath(
-          user.role
-        )
+        destination
       }
       replace
     />
   );
 }
 
-
-// ======================================================
-// APP
-// ======================================================
 
 function App() {
   return (
@@ -128,10 +138,22 @@ function App() {
       />
 
 
+      {/* ================================================= */}
+      {/* OLD UNAUTHORIZED URL */}
+      {/* ================================================= */}
+      {/*
+              IMPORTANT:
+              Do not show Access Denied page anymore.
+              Any visit to /unauthorized goes straight to login.
+          */}
+
       <Route
         path="/unauthorized"
         element={
-          <Unauthorized />
+          <Navigate
+            to="/login"
+            replace
+          />
         }
       />
 
@@ -273,7 +295,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* ADMIN + TRAINER PROGRAMME MANAGEMENT */}
+      {/* ADMIN + TRAINER */}
       {/* ================================================= */}
 
       <Route
@@ -307,7 +329,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* ADMIN ASSIGNMENT */}
+      {/* ADMIN ASSIGNMENTS */}
       {/* ================================================= */}
 
       <Route
@@ -399,7 +421,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* UNKNOWN */}
+      {/* UNKNOWN ROUTE */}
       {/* ================================================= */}
 
       <Route

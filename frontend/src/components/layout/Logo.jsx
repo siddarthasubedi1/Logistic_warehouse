@@ -6,112 +6,120 @@ function Logo({
         <div
             className="
                 flex
-                min-w-0
                 items-center
                 gap-3
             "
         >
-
-            {/* ================================================= */}
-            {/* LOGO ICON */}
-            {/* ================================================= */}
-
             <div
                 className={`
                     flex
                     shrink-0
                     items-center
                     justify-center
-                    rounded-md
+                    rounded-lg
 
                     ${compact
-                        ? "h-8 w-8"
-                        : "h-9 w-9"
+                        ? "h-9 w-9"
+                        : "h-11 w-11"
                     }
 
                     ${light
-                        ? "text-white"
-                        : "text-[#0a4371]"
+                        ? "bg-[#1769e8] text-white"
+                        : "bg-[#1769e8] text-white"
                     }
                 `}
             >
-
                 <svg
                     viewBox="0 0 24 24"
-                    fill="currentColor"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
                     className={
                         compact
-                            ? "h-6 w-6"
-                            : "h-7 w-7"
+                            ? "h-5 w-5"
+                            : "h-6 w-6"
                     }
                 >
-                    <path d="M12 2.5 3.5 7.2v9.6L12 21.5l8.5-4.7V7.2L12 2.5Zm0 2.1 6.4 3.5L12 11.6 5.6 8.1 12 4.6Zm-6.7 5.1 5.7 3.1v6L5.3 15.7v-6Zm7.7 9.1v-6l5.7-3.1v6L13 18.8Z" />
-                </svg>
+                    <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z" />
 
+                    <path d="m4 7.5 8 4.5 8-4.5" />
+
+                    <path d="M12 12v9" />
+                </svg>
             </div>
 
-
-            {/* ================================================= */}
-            {/* LOGO TEXT */}
-            {/* ================================================= */}
 
             <div
                 className="
                     min-w-0
                 "
             >
-
-                <p
-                    className={`
-                        truncate
-                        font-bold
+                <div
+                    className="
+                        flex
+                        items-baseline
+                        gap-1
                         leading-none
-
-                        ${compact
-                            ? "text-[14px]"
-                            : "text-[17px]"
-                        }
-
-                        ${light
-                            ? "text-white"
-                            : "text-[#172033]"
-                        }
-                    `}
+                    "
                 >
-                    UK{" "}
+                    <span
+                        className={`
+                            font-extrabold
+                            tracking-tight
+
+                            ${compact
+                                ? "text-[15px]"
+                                : "text-[19px]"
+                            }
+
+                            ${light
+                                ? "text-white"
+                                : "text-[#172033]"
+                            }
+                        `}
+                    >
+                        UK
+                    </span>
+
 
                     <span
-                        className={
-                            light
-                                ? "text-[#4f94e8]"
-                                : "text-[#176dc1]"
-                        }
+                        className={`
+                            font-extrabold
+                            tracking-tight
+
+                            ${compact
+                                ? "text-[15px]"
+                                : "text-[19px]"
+                            }
+
+                            ${light
+                                ? "text-white"
+                                : "text-[#172033]"
+                            }
+                        `}
                     >
                         LogiWare
                     </span>
-                </p>
+                </div>
 
 
                 <p
                     className={`
                         mt-1
-                        truncate
-                        text-[6px]
+                        text-[7px]
                         font-semibold
                         uppercase
                         tracking-[0.12em]
 
                         ${light
-                            ? "text-blue-100"
-                            : "text-slate-500"
+                            ? "text-[#79c4ff]"
+                            : "text-blue-600"
                         }
                     `}
                 >
                     Safety Training
                 </p>
-
             </div>
-
         </div>
     );
 }

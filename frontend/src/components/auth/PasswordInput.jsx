@@ -4,18 +4,17 @@ import {
 
 
 function PasswordInput({
-    id = "password",
-    name,
     value,
     onChange,
-    error = false,
-    disabled = false,
-    autoComplete = "current-password",
     placeholder = "Enter your password",
+    disabled = false,
+    required = false,
+    name = "password",
+    autoComplete = "current-password",
 }) {
     const [
-        showPassword,
-        setShowPassword,
+        visible,
+        setVisible,
     ] = useState(false);
 
 
@@ -23,20 +22,20 @@ function PasswordInput({
         <div
             className="
                 relative
+                w-full
             "
         >
-            {/* LOCK */}
-
-            <span
+            <div
                 className="
                     pointer-events-none
                     absolute
                     inset-y-0
                     left-0
                     flex
+                    w-11
                     items-center
-                    pl-3
-                    text-slate-400
+                    justify-center
+                    text-[#8da2bd]
                 "
             >
                 <svg
@@ -44,108 +43,125 @@ function PasswordInput({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    className="h-4 w-4"
+                    className="
+                        h-4
+                        w-4
+                    "
                 >
                     <rect
-                        x="5"
+                        x="6"
                         y="10"
-                        width="14"
+                        width="12"
                         height="10"
                         rx="2"
                     />
 
                     <path d="M8 10V7a4 4 0 0 1 8 0v3" />
                 </svg>
-            </span>
+            </div>
 
-
-            {/* INPUT */}
 
             <input
-                id={id}
-                name={name}
                 type={
-                    showPassword
+                    visible
                         ? "text"
                         : "password"
                 }
-                value={value}
-                onChange={onChange}
-                disabled={disabled}
-                autoComplete={
-                    autoComplete
+                name={
+                    name
+                }
+                value={
+                    value
+                }
+                onChange={
+                    onChange
                 }
                 placeholder={
                     placeholder
                 }
-                className={`
-                    h-11
+                disabled={
+                    disabled
+                }
+                required={
+                    required
+                }
+                autoComplete={
+                    autoComplete
+                }
+                className="
+                    h-[48px]
                     w-full
                     rounded-lg
                     border
-                    bg-white
-                    pl-9
-                    pr-10
-                    text-[10px]
-                    text-slate-700
+                    border-[#d4deeb]
+                    bg-[#edf4ff]
+                    pl-11
+                    pr-12
+                    text-[14px]
+                    font-medium
+                    text-[#172033]
                     outline-none
                     transition
-                    placeholder:text-slate-400
+                    placeholder:text-[#9aabc1]
+                    focus:border-[#3b82f6]
+                    focus:bg-white
+                    focus:ring-2
+                    focus:ring-blue-100
                     disabled:cursor-not-allowed
-                    disabled:bg-slate-50
-
-                    ${error
-                        ? "border-red-300 focus:border-red-500"
-                        : "border-slate-300 focus:border-blue-500"
-                    }
-                `}
+                    disabled:opacity-60
+                "
             />
 
 
-            {/* SHOW/HIDE */}
-
             <button
                 type="button"
-                disabled={disabled}
+                aria-label={
+                    visible
+                        ? "Hide password"
+                        : "Show password"
+                }
                 onClick={() =>
-                    setShowPassword(
+                    setVisible(
                         (
                             current
                         ) =>
                             !current
                     )
                 }
-                aria-label={
-                    showPassword
-                        ? "Hide password"
-                        : "Show password"
+                disabled={
+                    disabled
                 }
                 className="
                     absolute
                     inset-y-0
                     right-0
                     flex
-                    w-10
+                    w-11
                     items-center
                     justify-center
-                    text-slate-400
+                    text-[#8da2bd]
                     transition
                     hover:text-blue-600
-                    disabled:opacity-40
                 "
             >
-                {showPassword ? (
+                {visible ? (
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="1.8"
-                        className="h-4 w-4"
+                        className="
+                            h-4
+                            w-4
+                        "
                     >
                         <path d="M3 3l18 18" />
-                        <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
-                        <path d="M9.9 4.2A10.5 10.5 0 0 1 12 4c5 0 8.5 4 9.5 6-0.4.9-1.2 2.1-2.3 3.2" />
-                        <path d="M6.2 6.2C4.4 7.4 3.2 9 2.5 10c1 2 4.5 6 9.5 6 1 0 1.9-.2 2.8-.5" />
+
+                        <path d="M10.7 10.7a2 2 0 0 0 2.6 2.6" />
+
+                        <path d="M9.8 5.2A10.6 10.6 0 0 1 12 5c5 0 8.5 4.2 9 7-.2 1.2-1 2.6-2.1 3.8" />
+
+                        <path d="M6.2 6.2C4.3 7.5 3.2 9.5 3 12c.5 2.8 4 7 9 7 1.5 0 2.9-.4 4.1-1" />
                     </svg>
                 ) : (
                     <svg
@@ -153,9 +169,12 @@ function PasswordInput({
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="1.8"
-                        className="h-4 w-4"
+                        className="
+                            h-4
+                            w-4
+                        "
                     >
-                        <path d="M2.5 12S6 6 12 6s9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z" />
+                        <path d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7Z" />
 
                         <circle
                             cx="12"

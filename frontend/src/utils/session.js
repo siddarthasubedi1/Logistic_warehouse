@@ -1,7 +1,3 @@
-// ======================================================
-// STORAGE KEYS
-// ======================================================
-
 const ACCESS_TOKEN_KEY =
     "accessToken";
 
@@ -10,25 +6,29 @@ const USER_KEY =
     "user";
 
 
-// ======================================================
-// CHECK BROWSER STORAGE
-// ======================================================
-
-const canUseSessionStorage = () => {
+function canUseSessionStorage() {
     return (
         typeof window !==
         "undefined" &&
         typeof window.sessionStorage !==
         "undefined"
     );
-};
+}
 
 
-// ======================================================
-// GET SESSION USER
-// ======================================================
+export function normalizeRole(
+    role
+) {
+    return String(
+        role ||
+        ""
+    )
+        .trim()
+        .toLowerCase();
+}
 
-export const getSessionUser = () => {
+
+export function getSessionUser() {
     if (
         !canUseSessionStorage()
     ) {
@@ -37,20 +37,22 @@ export const getSessionUser = () => {
 
 
     try {
-        const storedUser =
-            sessionStorage.getItem(
+        const stored =
+            window.sessionStorage.getItem(
                 USER_KEY
             );
 
 
-        if (!storedUser) {
+        if (
+            !stored
+        ) {
             return null;
         }
 
 
         const user =
             JSON.parse(
-                storedUser
+                stored
             );
 
 
@@ -68,33 +70,25 @@ export const getSessionUser = () => {
 
         return user;
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
-            "Unable to read session user:",
+            "Unable to read user session:",
             error
         );
 
 
         return null;
     }
-};
+}
 
 
-// ======================================================
-// SAVE SESSION USER
-// ======================================================
-
-export const saveSessionUser = (
+export function saveSessionUser(
     user
-) => {
+) {
     if (
-        !canUseSessionStorage()
-    ) {
-        return;
-    }
-
-
-    if (
+        !canUseSessionStorage() ||
         !user ||
         typeof user !==
         "object" ||
@@ -107,43 +101,37 @@ export const saveSessionUser = (
 
 
     try {
-        sessionStorage.setItem(
+        window.sessionStorage.setItem(
             USER_KEY,
             JSON.stringify(
                 user
             )
         );
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
             "Unable to save session user:",
             error
         );
     }
-};
+}
 
 
-// ======================================================
-// UPDATE SESSION USER
-// ======================================================
-
-export const updateSessionUser = (
+export function updateSessionUser(
     updates
-) => {
-    if (
-        !updates ||
-        typeof updates !==
-        "object"
-    ) {
-        return null;
-    }
-
-
+) {
     const currentUser =
         getSessionUser();
 
 
-    if (!currentUser) {
+    if (
+        !currentUser ||
+        !updates ||
+        typeof updates !==
+        "object"
+    ) {
         return null;
     }
 
@@ -160,14 +148,10 @@ export const updateSessionUser = (
 
 
     return updatedUser;
-};
+}
 
 
-// ======================================================
-// GET ACCESS TOKEN
-// ======================================================
-
-export const getAccessToken = () => {
+export function getAccessToken() {
     if (
         !canUseSessionStorage()
     ) {
@@ -176,29 +160,19 @@ export const getAccessToken = () => {
 
 
     return (
-        sessionStorage.getItem(
+        window.sessionStorage.getItem(
             ACCESS_TOKEN_KEY
         ) ||
         ""
     );
-};
+}
 
 
-// ======================================================
-// SAVE ACCESS TOKEN
-// ======================================================
-
-export const saveAccessToken = (
+export function saveAccessToken(
     accessToken
-) => {
+) {
     if (
-        !canUseSessionStorage()
-    ) {
-        return;
-    }
-
-
-    if (
+        !canUseSessionStorage() ||
         !accessToken ||
         typeof accessToken !==
         "string"
@@ -207,21 +181,17 @@ export const saveAccessToken = (
     }
 
 
-    sessionStorage.setItem(
+    window.sessionStorage.setItem(
         ACCESS_TOKEN_KEY,
         accessToken
     );
-};
+}
 
 
-// ======================================================
-// SAVE AUTH SESSION
-// ======================================================
-
-export const saveAuthSession = ({
+export function saveAuthSession({
     accessToken,
     user,
-}) => {
+}) {
     if (
         accessToken
     ) {
@@ -238,14 +208,10 @@ export const saveAuthSession = ({
             user
         );
     }
-};
+}
 
 
-// ======================================================
-// CLEAR AUTH SESSION
-// ======================================================
-
-export const clearAuthSession = () => {
+export function clearAuthSession() {
     if (
         !canUseSessionStorage()
     ) {
@@ -253,91 +219,109 @@ export const clearAuthSession = () => {
     }
 
 
-    sessionStorage.removeItem(
+    window.sessionStorage.removeItem(
         ACCESS_TOKEN_KEY
     );
 
 
-    sessionStorage.removeItem(
+    window.sessionStorage.removeItem(
         USER_KEY
     );
-};
+}
 
 
-// ======================================================
-// AUTHENTICATED
-// ======================================================
-
-export const hasAuthSession = () => {
+export function hasAuthSession() {
     return Boolean(
         getAccessToken() &&
         getSessionUser()
     );
-};
+}
 
 
-// ======================================================
-// CHECK USER ROLE
-// ======================================================
-
-export const isUserRole = (
+export function isUserRole(
     role
-) => {
+) {
+    const user =
+        getSessionUser();
+
+
+    return (
+        Boolean(
+            user
+        ) &&
+        normalizeRole(
+            user.role
+        ) ===
+        normalizeRole(
+            role
+        )
+    );
+}
+
+
+export function getDashboardPath(
+    role
+) {
+    const normalizedRole =
+        normalizeRole(
+            role
+        );
+
+
+    if (
+        normalizedRole ===
+        "admin"
+    ) {
+        return "/admin";
+    }
+
+
+    if (
+        normalizedRole ===
+        "trainer"
+    ) {
+        return "/trainer";
+    }
+
+
+    if (
+        normalizedRole ===
+        "trainee"
+    ) {
+        return "/trainee";
+    }
+
+
+    return "/login";
+}
+
+
+export function sessionRequiresPasswordChange() {
     const user =
         getSessionUser();
 
 
     if (
-        !user?.role ||
-        !role
+        !user
     ) {
         return false;
     }
 
 
-    return (
-        String(
+    const role =
+        normalizeRole(
             user.role
-        )
-            .trim()
-            .toLowerCase() ===
-        String(
-            role
-        )
-            .trim()
-            .toLowerCase()
-    );
-};
-
-
-// ======================================================
-// TEMPORARY PASSWORD RULE
-// ======================================================
-
-export const sessionRequiresPasswordChange =
-    () => {
-        const user =
-            getSessionUser();
-
-
-        if (!user) {
-            return false;
-        }
-
-
-        return (
-            [
-                "trainer",
-                "trainee",
-            ].includes(
-                String(
-                    user.role ||
-                    ""
-                )
-                    .trim()
-                    .toLowerCase()
-            ) &&
-            user.mustChangePassword ===
-            true
         );
-    };
+
+
+    return (
+        [
+            "trainer",
+            "trainee",
+        ].includes(
+            role
+        ) &&
+        user.mustChangePassword ===
+        true
+    );
+}
