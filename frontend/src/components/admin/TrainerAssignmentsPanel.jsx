@@ -1177,7 +1177,7 @@ function TrainerAssignmentsPanel() {
                         </div>
 
 
-                        <div
+                        {/* <div
                             className="
                                 mt-5
                                 flex
@@ -1209,7 +1209,7 @@ function TrainerAssignmentsPanel() {
                                     : "Save Training Access"}
                             </ActionButton>
 
-                        </div>
+                        </div> */}
 
                     </div>
                 )}

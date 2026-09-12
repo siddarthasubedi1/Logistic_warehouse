@@ -204,31 +204,7 @@ function AdminQuickActions({
                         </div>
 
 
-                        <div>
 
-                            <p
-                                className="
-                                    text-[11px]
-                                    font-semibold
-                                    text-slate-700
-                                "
-                            >
-                                Protected Administration
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    leading-4
-                                    text-slate-500
-                                "
-                            >
-                                Administrative routes use role-based access control to protect user and training management.
-                            </p>
-
-                        </div>
 
                     </div>
 

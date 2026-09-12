@@ -382,7 +382,6 @@ function AdminHeader({
                 lg:px-7
             "
         >
-
             <div
                 className="
                     flex
@@ -391,55 +390,13 @@ function AdminHeader({
                     gap-3
                 "
             >
-
-                {/* ================================================= */}
-                {/* LEFT */}
-                {/* ================================================= */}
-
                 <div className="min-w-0">
-
-                    <div
-                        className="
-                            flex
-                            items-center
-                            gap-2
-                        "
-                    >
-                        <span
-                            className="
-                                hidden
-                                h-2
-                                w-2
-                                rounded-full
-                                bg-emerald-500
-                                sm:block
-                            "
-                        />
-
-
-                        <p
-                            className="
-                                hidden
-                                text-[8px]
-                                font-bold
-                                uppercase
-                                tracking-[0.16em]
-                                text-blue-600
-                                sm:block
-                            "
-                        >
-                            Administration Workspace
-                        </p>
-                    </div>
-
-
                     <h1
                         className="
                             truncate
                             text-base
                             font-bold
                             text-[#172033]
-                            sm:mt-1
                             sm:text-lg
                             lg:text-xl
                         "
@@ -468,13 +425,8 @@ function AdminHeader({
                             {fullName}
                         </span>
                     </p>
-
                 </div>
 
-
-                {/* ================================================= */}
-                {/* RIGHT */}
-                {/* ================================================= */}
 
                 <div
                     className="
@@ -485,74 +437,10 @@ function AdminHeader({
                         sm:gap-3
                     "
                 >
-
-                    {/* ============================================= */}
-                    {/* SECURITY LABEL */}
-                    {/* ============================================= */}
-
-                    <div
-                        className="
-                            hidden
-                            items-center
-                            gap-2
-                            rounded-xl
-                            border
-                            border-emerald-100
-                            bg-emerald-50
-                            px-3
-                            py-2
-                            lg:flex
-                        "
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="
-                                h-4
-                                w-4
-                                text-emerald-600
-                            "
-                        >
-                            <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
-
-                            <path d="m9 12 2 2 4-4" />
-                        </svg>
-
-
-                        <div>
-                            <p
-                                className="
-                                    text-[8px]
-                                    font-bold
-                                    text-emerald-700
-                                "
-                            >
-                                Secure Admin
-                            </p>
-
-                            <p
-                                className="
-                                    text-[7px]
-                                    text-emerald-600
-                                "
-                            >
-                                Authorized access
-                            </p>
-                        </div>
-                    </div>
-
-
-                    {/* ============================================= */}
-                    {/* NOTIFICATION */}
-                    {/* ============================================= */}
-
                     <div
                         ref={notificationRef}
                         className="relative"
                     >
-
                         <button
                             type="button"
                             onClick={
@@ -569,7 +457,6 @@ function AdminHeader({
                                 rounded-xl
                                 border
                                 transition
-
                                 ${showNotifications
                                     ? "border-blue-300 bg-blue-50 text-blue-600"
                                     : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
@@ -584,15 +471,13 @@ function AdminHeader({
                                 className="h-5 w-5"
                             >
                                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-
                                 <path d="M10 21h4" />
                             </svg>
 
 
-                            {resetRequests.length >
-                                0 && (
-                                    <span
-                                        className="
+                            {resetRequests.length > 0 && (
+                                <span
+                                    className="
                                         absolute
                                         -right-1
                                         -top-1
@@ -611,20 +496,14 @@ function AdminHeader({
                                         ring-2
                                         ring-white
                                     "
-                                    >
-                                        {resetRequests.length >
-                                            9
-                                            ? "9+"
-                                            : resetRequests.length}
-                                    </span>
-                                )}
-
+                                >
+                                    {resetRequests.length > 9
+                                        ? "9+"
+                                        : resetRequests.length}
+                                </span>
+                            )}
                         </button>
 
-
-                        {/* ========================================= */}
-                        {/* NOTIFICATION PANEL */}
-                        {/* ========================================= */}
 
                         {showNotifications && (
                             <div
@@ -647,9 +526,6 @@ function AdminHeader({
                                     sm:w-[360px]
                                 "
                             >
-
-                                {/* HEADER */}
-
                                 <div
                                     className="
                                         border-b
@@ -668,24 +544,9 @@ function AdminHeader({
                                             gap-3
                                         "
                                     >
-
                                         <div>
-                                            <p
-                                                className="
-                                                    text-[8px]
-                                                    font-bold
-                                                    uppercase
-                                                    tracking-[0.14em]
-                                                    text-blue-600
-                                                "
-                                            >
-                                                Account Security
-                                            </p>
-
-
                                             <h2
                                                 className="
-                                                    mt-1
                                                     text-sm
                                                     font-bold
                                                     text-slate-900
@@ -703,8 +564,7 @@ function AdminHeader({
                                                 "
                                             >
                                                 {resetRequests.length} pending request
-                                                {resetRequests.length ===
-                                                    1
+                                                {resetRequests.length === 1
                                                     ? ""
                                                     : "s"}
                                             </p>
@@ -734,14 +594,9 @@ function AdminHeader({
                                         >
                                             ×
                                         </button>
-
                                     </div>
                                 </div>
 
-
-                                {/* ================================= */}
-                                {/* BODY */}
-                                {/* ================================= */}
 
                                 <div
                                     className="
@@ -749,7 +604,6 @@ function AdminHeader({
                                         overflow-y-auto
                                     "
                                 >
-
                                     {loadingNotifications && (
                                         <div
                                             className="
@@ -787,11 +641,7 @@ function AdminHeader({
 
                                     {!loadingNotifications &&
                                         notificationError && (
-                                            <div
-                                                className="
-                                                p-4
-                                            "
-                                            >
+                                            <div className="p-4">
                                                 <div
                                                     className="
                                                     rounded-xl
@@ -810,7 +660,6 @@ function AdminHeader({
                                                     >
                                                         {notificationError}
                                                     </p>
-
 
                                                     <button
                                                         type="button"
@@ -834,8 +683,7 @@ function AdminHeader({
 
                                     {!loadingNotifications &&
                                         !notificationError &&
-                                        resetRequests.length ===
-                                        0 && (
+                                        resetRequests.length === 0 && (
                                             <div
                                                 className="
                                                 px-5
@@ -852,8 +700,8 @@ function AdminHeader({
                                                     items-center
                                                     justify-center
                                                     rounded-full
-                                                    bg-emerald-50
-                                                    text-emerald-600
+                                                    bg-blue-50
+                                                    text-blue-600
                                                 "
                                                 >
                                                     <svg
@@ -863,12 +711,10 @@ function AdminHeader({
                                                         strokeWidth="1.8"
                                                         className="h-5 w-5"
                                                     >
-                                                        <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
-
-                                                        <path d="m9 12 2 2 4-4" />
+                                                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                                                        <path d="M10 21h4" />
                                                     </svg>
                                                 </div>
-
 
                                                 <p
                                                     className="
@@ -878,19 +724,7 @@ function AdminHeader({
                                                     text-slate-700
                                                 "
                                                 >
-                                                    No pending requests
-                                                </p>
-
-
-                                                <p
-                                                    className="
-                                                    mt-1
-                                                    text-[9px]
-                                                    text-slate-500
-                                                "
-                                                >
-                                                    Trainer and Trainee reset
-                                                    requests will appear here.
+                                                    No pending password reset requests
                                                 </p>
                                             </div>
                                         )}
@@ -910,15 +744,12 @@ function AdminHeader({
 
                                                 const requestRole =
                                                     request.role ||
-                                                    request.user
-                                                        ?.role;
+                                                    request.user?.role;
 
 
                                                 const firstLetter =
                                                     userName
-                                                        .charAt(
-                                                            0
-                                                        )
+                                                        .charAt(0)
                                                         .toUpperCase();
 
 
@@ -948,7 +779,6 @@ function AdminHeader({
                                                             hover:bg-blue-50/50
                                                         "
                                                     >
-
                                                         <div
                                                             className="
                                                                 flex
@@ -965,8 +795,7 @@ function AdminHeader({
                                                                 text-blue-700
                                                             "
                                                         >
-                                                            {firstLetter ||
-                                                                "U"}
+                                                            {firstLetter || "U"}
                                                         </div>
 
 
@@ -976,7 +805,6 @@ function AdminHeader({
                                                                 flex-1
                                                             "
                                                         >
-
                                                             <div
                                                                 className="
                                                                     flex
@@ -995,7 +823,6 @@ function AdminHeader({
                                                                 >
                                                                     {userName}
                                                                 </p>
-
 
                                                                 <span
                                                                     className="
@@ -1059,23 +886,15 @@ function AdminHeader({
                                                                     )}
                                                                 </span>
                                                             </div>
-
                                                         </div>
-
                                                     </button>
                                                 );
                                             }
                                         )}
-
                                 </div>
 
 
-                                {/* ================================= */}
-                                {/* FOOTER */}
-                                {/* ================================= */}
-
-                                {resetRequests.length >
-                                    0 &&
+                                {resetRequests.length > 0 &&
                                     !notificationError && (
                                         <div
                                             className="
@@ -1113,16 +932,10 @@ function AdminHeader({
                                             </button>
                                         </div>
                                     )}
-
                             </div>
                         )}
-
                     </div>
 
-
-                    {/* ============================================= */}
-                    {/* DIVIDER */}
-                    {/* ============================================= */}
 
                     <div
                         className="
@@ -1135,10 +948,6 @@ function AdminHeader({
                     />
 
 
-                    {/* ============================================= */}
-                    {/* ADMIN PROFILE */}
-                    {/* ============================================= */}
-
                     <div
                         className="
                             flex
@@ -1147,7 +956,6 @@ function AdminHeader({
                             sm:gap-3
                         "
                     >
-
                         <div
                             className="
                                 flex
@@ -1198,13 +1006,9 @@ function AdminHeader({
                                 Administrator
                             </p>
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </header>
     );
 }
