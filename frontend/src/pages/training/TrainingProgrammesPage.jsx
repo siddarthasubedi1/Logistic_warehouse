@@ -9,7 +9,6 @@ import {
 
 
 function TrainingProgrammesPage() {
-
     // ======================================================
     // CURRENT USER
     // ======================================================
@@ -24,37 +23,14 @@ function TrainingProgrammesPage() {
 
 
     // ======================================================
-    // ROLE CHECK
-    // ======================================================
-
-    const isAdmin =
-        role ===
-        "admin";
-
-
-    const isTrainer =
-        role ===
-        "trainer";
-
-
-    // ======================================================
     // PAGE DESCRIPTION
     // ======================================================
 
-    let description =
-        "Manage workplace safety training programmes.";
-
-
-    if (isAdmin) {
-        description =
-            "Create and manage training programmes, assign programme owners, and authorize Trainers.";
-    }
-
-
-    if (isTrainer) {
-        description =
-            "Create and manage the training programmes that you are authorized to work with.";
-    }
+    const description =
+        role ===
+            "admin"
+            ? "Create and manage workplace safety training programmes."
+            : "Create and manage training programmes available to your Trainer account.";
 
 
     // ======================================================

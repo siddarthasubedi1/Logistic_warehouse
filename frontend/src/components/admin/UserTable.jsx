@@ -1,11 +1,18 @@
 import ActionButton from "../ui/ActionButton";
-import EmptyState from "../ui/EmptyState";
 import StatusBadge from "../ui/StatusBadge";
 
 import {
-    formatProgrammeType,
     getUserDisplayName,
 } from "../../utils/training";
+
+
+const TRAINING_SECTION_NAMES = {
+    "manual-handling":
+        "Manual Handling",
+
+    "working-at-height":
+        "Working at Height",
+};
 
 
 function UserTable({
@@ -19,21 +26,82 @@ function UserTable({
     onReactivate,
     onDelete,
 }) {
-
     // ======================================================
-    // EMPTY TABLE
+    // EMPTY
     // ======================================================
 
     if (
+        !Array.isArray(
+            users
+        ) ||
         users.length ===
         0
     ) {
         return (
-            <div className="p-5">
-                <EmptyState
-                    title="No users found."
-                    description="No Trainer or Trainee accounts match the current filters."
-                />
+            <div
+                className="
+                    py-12
+                    text-center
+                "
+            >
+                <div
+                    className="
+                        mx-auto
+                        flex
+                        h-10
+                        w-10
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-blue-50
+                        text-blue-500
+                    "
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-5 w-5"
+                    >
+                        <circle
+                            cx="9"
+                            cy="8"
+                            r="3"
+                        />
+
+                        <circle
+                            cx="17"
+                            cy="9"
+                            r="2"
+                        />
+
+                        <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
+                    </svg>
+                </div>
+
+
+                <p
+                    className="
+                        mt-3
+                        text-[10px]
+                        font-medium
+                        text-slate-600
+                    "
+                >
+                    No users found
+                </p>
+
+
+                <p
+                    className="
+                        mt-1
+                        text-[8px]
+                        text-slate-400
+                    "
+                >
+                    Try changing your search or filters.
+                </p>
             </div>
         );
     }
@@ -48,127 +116,31 @@ function UserTable({
     ) => {
         const sections =
             Array.isArray(
-                user?.assignedTrainingSections
+                user.assignedTrainingSections
             )
                 ? user.assignedTrainingSections
                 : [];
 
 
-        if (
-            sections.length ===
-            0
-        ) {
-            return [];
-        }
-
-
         return sections.map(
             (
-                section
+                sectionId
             ) => ({
                 id:
-                    section,
+                    sectionId,
 
                 name:
-                    formatProgrammeType(
-                        section
-                    ),
+                    TRAINING_SECTION_NAMES[
+                    sectionId
+                    ] ||
+                    sectionId,
             })
         );
     };
 
 
     // ======================================================
-    // CHECK INACTIVE
-    // ======================================================
-
-    const isInactiveUser = (
-        user
-    ) => {
-        const status =
-            String(
-                user?.status ||
-                ""
-            ).toLowerCase();
-
-
-        return (
-            status ===
-            "deactivated" ||
-            status ===
-            "inactive"
-        );
-    };
-
-
-    // ======================================================
-    // CHECK PASSWORD RESET REQUEST
-    // ======================================================
-
-    const hasPendingResetRequest = (
-        user
-    ) => {
-        if (
-            !user?._id
-        ) {
-            return false;
-        }
-
-
-        return pendingResetUserIds.includes(
-            String(
-                user._id
-            )
-        );
-    };
-
-
-    // ======================================================
-    // CHECK SELECTED USER
-    // ======================================================
-
-    const isSelectedUser = (
-        user
-    ) => {
-        if (
-            !selectedUserId ||
-            !user?._id
-        ) {
-            return false;
-        }
-
-
-        return (
-            String(
-                selectedUserId
-            ) ===
-            String(
-                user._id
-            )
-        );
-    };
-
-
-    // ======================================================
-    // USER INITIAL
-    // ======================================================
-
-    const getUserInitial = (
-        user
-    ) => {
-        return getUserDisplayName(
-            user,
-            "U"
-        )
-            .charAt(
-                0
-            )
-            .toUpperCase();
-    };
-
-
-    // ======================================================
-    // MOBILE USER CARD
+    // MOBILE CARD
     // ======================================================
 
     const renderMobileCard = (
@@ -180,20 +152,40 @@ function UserTable({
 
 
         const inactive =
-            isInactiveUser(
-                user
+            [
+                "inactive",
+                "deactivated",
+            ].includes(
+                String(
+                    user.status ||
+                    ""
+                ).toLowerCase()
             );
 
 
         const pendingReset =
-            hasPendingResetRequest(
-                user
+            pendingResetUserIds.includes(
+                String(
+                    user._id
+                )
             );
 
 
         const selected =
-            isSelectedUser(
-                user
+            String(
+                selectedUserId ||
+                ""
+            ) ===
+            String(
+                user._id
+            );
+
+
+        const name =
+            getUserDisplayName(
+                user,
+                user.username ||
+                "User"
             );
 
 
@@ -214,12 +206,10 @@ function UserTable({
                         : undefined
                 }
                 className={`
-                    overflow-hidden
-                    rounded-2xl
+                    rounded-xl
                     border
                     bg-white
-                    shadow-sm
-                    transition
+                    p-4
 
                     ${selected
                         ? "border-blue-400 ring-2 ring-blue-100"
@@ -227,271 +217,83 @@ function UserTable({
                     }
                 `}
             >
-
-                {/* ================================================= */}
-                {/* CARD TOP */}
-                {/* ================================================= */}
-
                 <div
                     className="
-                        border-b
-                        border-slate-100
-                        bg-gradient-to-r
-                        from-white
-                        to-blue-50/40
-                        p-4
+                        flex
+                        items-start
+                        gap-3
                     "
                 >
+                    <Avatar
+                        name={
+                            name
+                        }
+                    />
+
 
                     <div
                         className="
-                            flex
-                            items-start
-                            justify-between
-                            gap-3
+                            min-w-0
+                            flex-1
                         "
                     >
-
                         <div
                             className="
                                 flex
-                                min-w-0
-                                items-center
-                                gap-3
-                            "
-                        >
-
-                            {/* AVATAR */}
-
-                            <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-gradient-to-br
-                                    from-blue-100
-                                    to-blue-50
-                                    text-sm
-                                    font-bold
-                                    text-blue-700
-                                    ring-1
-                                    ring-blue-200
-                                "
-                            >
-                                {getUserInitial(
-                                    user
-                                )}
-                            </div>
-
-
-                            {/* USER */}
-
-                            <div className="min-w-0">
-
-                                <p
-                                    className="
-                                        truncate
-                                        text-sm
-                                        font-bold
-                                        text-slate-900
-                                    "
-                                >
-                                    {getUserDisplayName(
-                                        user,
-                                        "Unnamed user"
-                                    )}
-                                </p>
-
-
-                                {user.email && (
-                                    <p
-                                        className="
-                                            mt-1
-                                            truncate
-                                            text-[10px]
-                                            text-slate-500
-                                        "
-                                    >
-                                        {user.email}
-                                    </p>
-                                )}
-
-
-                                {user.username && (
-                                    <p
-                                        className="
-                                            mt-1
-                                            truncate
-                                            text-[10px]
-                                            font-medium
-                                            text-blue-600
-                                        "
-                                    >
-                                        @{user.username}
-                                    </p>
-                                )}
-
-                            </div>
-
-                        </div>
-
-
-                        <StatusBadge
-                            status={
-                                user.status
-                            }
-                        />
-
-                    </div>
-
-                </div>
-
-
-                {/* ================================================= */}
-                {/* INFORMATION */}
-                {/* ================================================= */}
-
-                <div className="p-4">
-
-                    <div
-                        className="
-                            grid
-                            grid-cols-2
-                            gap-4
-                        "
-                    >
-
-                        {/* ROLE */}
-
-                        <div>
-
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                "
-                            >
-                                Role
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-xs
-                                    font-semibold
-                                    capitalize
-                                    text-slate-700
-                                "
-                            >
-                                {user.role ||
-                                    "—"}
-                            </p>
-
-                        </div>
-
-
-                        {/* ACCOUNT STATUS */}
-
-                        <div>
-
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                "
-                            >
-                                Account
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-xs
-                                    font-semibold
-                                    capitalize
-                                    text-slate-700
-                                "
-                            >
-                                {user.accountStatus ||
-                                    "created"}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ================================================= */}
-                    {/* TRAINING */}
-                    {/* ================================================= */}
-
-                    <div
-                        className="
-                            mt-4
-                            border-t
-                            border-slate-100
-                            pt-4
-                        "
-                    >
-
-                        <div
-                            className="
-                                flex
-                                items-center
+                                flex-wrap
+                                items-start
+                                justify-between
                                 gap-2
                             "
                         >
-
                             <div
                                 className="
-                                    flex
-                                    h-7
-                                    w-7
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    bg-amber-50
-                                    text-amber-600
+                                    min-w-0
                                 "
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-4 w-4"
+                                <p
+                                    className="
+                                        truncate
+                                        text-[10px]
+                                        font-semibold
+                                        text-slate-700
+                                    "
                                 >
-                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
+                                    {name}
+                                </p>
 
-                                    <path d="m9 12 2 2 4-4" />
-                                </svg>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        truncate
+                                        text-[8px]
+                                        text-slate-400
+                                    "
+                                >
+                                    {user.email ||
+                                        "—"}
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[8px]
+                                        text-slate-400
+                                    "
+                                >
+                                    @{user.username ||
+                                        "—"}
+                                </p>
                             </div>
 
 
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                "
-                            >
-                                Assigned Safety Training
-                            </p>
-
+                            <StatusBadge
+                                status={
+                                    user.status
+                                }
+                            />
                         </div>
 
 
@@ -503,238 +305,218 @@ function UserTable({
                                 gap-2
                             "
                         >
+                            <RoleBadge
+                                role={
+                                    user.role
+                                }
+                            />
 
-                            {trainingSections.length >
-                                0 ? (
-                                trainingSections.map(
-                                    (
-                                        section
-                                    ) => (
-                                        <span
-                                            key={
-                                                section.id
-                                            }
-                                            className="
-                                                rounded-full
-                                                border
-                                                border-blue-100
-                                                bg-blue-50
-                                                px-2.5
-                                                py-1
-                                                text-[9px]
-                                                font-semibold
-                                                text-blue-700
-                                            "
-                                        >
-                                            {section.name}
-                                        </span>
-                                    )
-                                )
-                            ) : (
+
+                            {pendingReset && (
                                 <span
                                     className="
-                                        text-[10px]
-                                        text-slate-400
+                                        rounded-full
+                                        bg-amber-50
+                                        px-2.5
+                                        py-1
+                                        text-[7px]
+                                        font-medium
+                                        text-amber-600
                                     "
                                 >
-                                    No training assigned.
+                                    Reset Requested
                                 </span>
                             )}
-
                         </div>
-
                     </div>
+                </div>
 
 
-                    {/* ================================================= */}
-                    {/* RESET REQUEST NOTICE */}
-                    {/* ================================================= */}
+                {/* TRAINING */}
 
-                    {pendingReset && (
-                        <div
-                            className="
-                                mt-4
-                                flex
-                                items-start
-                                gap-3
-                                rounded-xl
-                                border
-                                border-amber-200
-                                bg-amber-50
-                                p-3
-                            "
-                        >
+                <div
+                    className="
+                        mt-4
+                        border-t
+                        border-slate-100
+                        pt-4
+                    "
+                >
+                    <p
+                        className="
+                            text-[7px]
+                            uppercase
+                            tracking-wide
+                            text-slate-400
+                        "
+                    >
+                        Training Access
+                    </p>
 
-                            <div
-                                className="
-                                    flex
-                                    h-7
-                                    w-7
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-full
-                                    bg-white
-                                    text-amber-600
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-4 w-4"
-                                >
-                                    <circle
-                                        cx="12"
-                                        cy="12"
-                                        r="9"
-                                    />
-
-                                    <path d="M12 7v6" />
-
-                                    <path d="M12 17h.01" />
-                                </svg>
-                            </div>
-
-
-                            <div>
-
-                                <p
-                                    className="
-                                        text-[10px]
-                                        font-semibold
-                                        text-amber-800
-                                    "
-                                >
-                                    Password Reset Requested
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[9px]
-                                        leading-4
-                                        text-amber-700
-                                    "
-                                >
-                                    This user has submitted a pending password reset request.
-                                </p>
-
-                            </div>
-
-                        </div>
-                    )}
-
-
-                    {/* ================================================= */}
-                    {/* MOBILE ACTIONS */}
-                    {/* ================================================= */}
 
                     <div
                         className="
-                            mt-5
-                            grid
-                            grid-cols-2
+                            mt-2
+                            flex
+                            flex-wrap
                             gap-2
                         "
                     >
-
-                        {onEdit && (
-                            <ActionButton
-                                variant="secondary"
-                                className="justify-center"
-                                disabled={
-                                    processing
-                                }
-                                onClick={() =>
-                                    onEdit(
-                                        user
-                                    )
-                                }
-                            >
-                                Edit
-                            </ActionButton>
-                        )}
-
-
-                        {onResetPassword &&
-                            pendingReset && (
-                                <ActionButton
-                                    variant="secondary"
-                                    className="justify-center"
-                                    disabled={
-                                        processing ||
-                                        inactive
-                                    }
-                                    onClick={() =>
-                                        onResetPassword(
-                                            user
-                                        )
-                                    }
-                                >
-                                    Reset Password
-                                </ActionButton>
-                            )}
-
-
-                        {inactive ? (
-                            <ActionButton
-                                variant="success"
-                                className="justify-center"
-                                disabled={
-                                    processing
-                                }
-                                onClick={() =>
-                                    onReactivate(
-                                        user
-                                    )
-                                }
-                            >
-                                {processing
-                                    ? "Processing..."
-                                    : "Reactivate"}
-                            </ActionButton>
+                        {trainingSections.length >
+                            0 ? (
+                            trainingSections.map(
+                                (
+                                    section
+                                ) => (
+                                    <span
+                                        key={
+                                            section.id
+                                        }
+                                        className="
+                                            rounded-full
+                                            bg-blue-50
+                                            px-2.5
+                                            py-1
+                                            text-[7px]
+                                            text-blue-600
+                                        "
+                                    >
+                                        {section.name}
+                                    </span>
+                                )
+                            )
                         ) : (
-                            <ActionButton
-                                variant="warning"
-                                className="justify-center"
-                                disabled={
-                                    processing
-                                }
-                                onClick={() =>
-                                    onDeactivate(
-                                        user
-                                    )
-                                }
+                            <span
+                                className="
+                                    text-[8px]
+                                    text-slate-400
+                                "
                             >
-                                {processing
-                                    ? "Processing..."
-                                    : "Deactivate"}
-                            </ActionButton>
+                                No training assigned
+                            </span>
                         )}
+                    </div>
+                </div>
 
 
+                {/* ACTIONS */}
+
+                <div
+                    className="
+                        mt-4
+                        grid
+                        grid-cols-2
+                        gap-2
+                        border-t
+                        border-slate-100
+                        pt-4
+                    "
+                >
+                    {onEdit && (
                         <ActionButton
-                            variant="danger"
-                            className="justify-center"
+                            variant="secondary"
                             disabled={
                                 processing
                             }
                             onClick={() =>
-                                onDelete(
+                                onEdit(
                                     user
                                 )
                             }
+                            className="
+                                w-full
+                                justify-center
+                            "
                         >
-                            Delete
+                            Edit
                         </ActionButton>
+                    )}
 
-                    </div>
 
+                    {onResetPassword &&
+                        pendingReset && (
+                            <ActionButton
+                                variant="secondary"
+                                disabled={
+                                    processing ||
+                                    inactive
+                                }
+                                onClick={() =>
+                                    onResetPassword(
+                                        user
+                                    )
+                                }
+                                className="
+                                    w-full
+                                    justify-center
+                                "
+                            >
+                                Reset Password
+                            </ActionButton>
+                        )}
+
+
+                    {inactive ? (
+                        <ActionButton
+                            variant="success"
+                            disabled={
+                                processing
+                            }
+                            onClick={() =>
+                                onReactivate(
+                                    user
+                                )
+                            }
+                            className="
+                                w-full
+                                justify-center
+                            "
+                        >
+                            {processing
+                                ? "Processing..."
+                                : "Reactivate"}
+                        </ActionButton>
+                    ) : (
+                        <ActionButton
+                            variant="warning"
+                            disabled={
+                                processing
+                            }
+                            onClick={() =>
+                                onDeactivate(
+                                    user
+                                )
+                            }
+                            className="
+                                w-full
+                                justify-center
+                            "
+                        >
+                            {processing
+                                ? "Processing..."
+                                : "Deactivate"}
+                        </ActionButton>
+                    )}
+
+
+                    <ActionButton
+                        variant="danger"
+                        disabled={
+                            processing
+                        }
+                        onClick={() =>
+                            onDelete(
+                                user
+                            )
+                        }
+                        className="
+                            w-full
+                            justify-center
+                        "
+                    >
+                        Delete
+                    </ActionButton>
                 </div>
-
             </article>
         );
     };
@@ -753,20 +535,40 @@ function UserTable({
 
 
         const inactive =
-            isInactiveUser(
-                user
+            [
+                "inactive",
+                "deactivated",
+            ].includes(
+                String(
+                    user.status ||
+                    ""
+                ).toLowerCase()
             );
 
 
         const pendingReset =
-            hasPendingResetRequest(
-                user
+            pendingResetUserIds.includes(
+                String(
+                    user._id
+                )
             );
 
 
         const selected =
-            isSelectedUser(
-                user
+            String(
+                selectedUserId ||
+                ""
+            ) ===
+            String(
+                user._id
+            );
+
+
+        const name =
+            getUserDisplayName(
+                user,
+                user.username ||
+                "User"
             );
 
 
@@ -787,23 +589,24 @@ function UserTable({
                         : undefined
                 }
                 className={`
-                    text-xs
-                    text-slate-700
-                    transition
+                    border-b
+                    border-slate-100
+                    last:border-0
 
                     ${selected
-                        ? "bg-blue-50/80"
-                        : "hover:bg-slate-50/80"
+                        ? "bg-blue-50/60"
+                        : "hover:bg-slate-50/60"
                     }
                 `}
             >
-
-                {/* ================================================= */}
                 {/* USER */}
-                {/* ================================================= */}
 
-                <td className="px-5 py-4">
-
+                <td
+                    className="
+                        px-5
+                        py-4
+                    "
+                >
                     <div
                         className="
                             flex
@@ -811,87 +614,61 @@ function UserTable({
                             gap-3
                         "
                     >
+                        <Avatar
+                            name={
+                                name
+                            }
+                        />
+
 
                         <div
                             className="
-                                flex
-                                h-10
-                                w-10
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-gradient-to-br
-                                from-blue-100
-                                to-blue-50
-                                text-xs
-                                font-bold
-                                text-blue-700
-                                ring-1
-                                ring-blue-200
+                                min-w-0
                             "
                         >
-                            {getUserInitial(
-                                user
-                            )}
-                        </div>
-
-
-                        <div className="min-w-0">
-
                             <p
                                 className="
-                                    max-w-[180px]
+                                    max-w-[170px]
                                     truncate
+                                    text-[9px]
                                     font-semibold
-                                    text-slate-900
+                                    text-slate-700
                                 "
                             >
-                                {getUserDisplayName(
-                                    user,
-                                    "Unnamed user"
-                                )}
+                                {name}
                             </p>
 
 
-                            {user.email && (
-                                <p
-                                    className="
-                                        mt-1
-                                        max-w-[220px]
-                                        truncate
-                                        text-[10px]
-                                        text-slate-500
-                                    "
-                                >
-                                    {user.email}
-                                </p>
-                            )}
+                            <p
+                                className="
+                                    mt-1
+                                    max-w-[190px]
+                                    truncate
+                                    text-[7px]
+                                    text-slate-400
+                                "
+                            >
+                                {user.email ||
+                                    "—"}
+                            </p>
 
 
-                            {user.username && (
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[9px]
-                                        font-medium
-                                        text-blue-600
-                                    "
-                                >
-                                    @{user.username}
-                                </p>
-                            )}
-
+                            <p
+                                className="
+                                    mt-0.5
+                                    text-[7px]
+                                    text-slate-400
+                                "
+                            >
+                                @{user.username ||
+                                    "—"}
+                            </p>
                         </div>
-
                     </div>
-
                 </td>
 
 
-                {/* ================================================= */}
                 {/* ROLE */}
-                {/* ================================================= */}
 
                 <td
                     className="
@@ -900,39 +677,30 @@ function UserTable({
                         py-4
                     "
                 >
-                    <span
-                        className="
-                            rounded-full
-                            bg-slate-100
-                            px-2.5
-                            py-1
-                            text-[10px]
-                            font-semibold
-                            capitalize
-                            text-slate-700
-                        "
-                    >
-                        {user.role ||
-                            "—"}
-                    </span>
+                    <RoleBadge
+                        role={
+                            user.role
+                        }
+                    />
                 </td>
 
 
-                {/* ================================================= */}
                 {/* TRAINING */}
-                {/* ================================================= */}
 
-                <td className="px-5 py-4">
-
+                <td
+                    className="
+                        px-5
+                        py-4
+                    "
+                >
                     <div
                         className="
                             flex
-                            max-w-[280px]
+                            max-w-[240px]
                             flex-wrap
                             gap-1.5
                         "
                     >
-
                         {trainingSections.length >
                             0 ? (
                             trainingSections.map(
@@ -945,14 +713,11 @@ function UserTable({
                                         }
                                         className="
                                             rounded-full
-                                            border
-                                            border-blue-100
                                             bg-blue-50
                                             px-2
                                             py-1
-                                            text-[9px]
-                                            font-semibold
-                                            text-blue-700
+                                            text-[7px]
+                                            text-blue-600
                                         "
                                     >
                                         {section.name}
@@ -962,22 +727,18 @@ function UserTable({
                         ) : (
                             <span
                                 className="
-                                    text-[10px]
+                                    text-[8px]
                                     text-slate-400
                                 "
                             >
                                 —
                             </span>
                         )}
-
                     </div>
-
                 </td>
 
 
-                {/* ================================================= */}
                 {/* STATUS */}
-                {/* ================================================= */}
 
                 <td
                     className="
@@ -997,24 +758,25 @@ function UserTable({
                         <p
                             className="
                                 mt-2
-                                text-[9px]
-                                font-semibold
+                                text-[7px]
+                                font-medium
                                 text-amber-600
                             "
                         >
                             Reset requested
                         </p>
                     )}
-
                 </td>
 
 
-                {/* ================================================= */}
                 {/* ACTIONS */}
-                {/* ================================================= */}
 
-                <td className="px-5 py-4">
-
+                <td
+                    className="
+                        px-5
+                        py-4
+                    "
+                >
                     <div
                         className="
                             flex
@@ -1023,7 +785,6 @@ function UserTable({
                             gap-2
                         "
                     >
-
                         {onEdit && (
                             <ActionButton
                                 variant="secondary"
@@ -1108,30 +869,23 @@ function UserTable({
                         >
                             Delete
                         </ActionButton>
-
                     </div>
-
                 </td>
-
             </tr>
         );
     };
 
 
-    // ======================================================
-    // UI
-    // ======================================================
-
     return (
         <div>
 
             {/* ================================================= */}
-            {/* MOBILE / TABLET CARDS */}
+            {/* MOBILE + TABLET */}
             {/* ================================================= */}
 
             <div
                 className="
-                    space-y-4
+                    space-y-3
                     p-4
                     lg:hidden
                 "
@@ -1143,7 +897,7 @@ function UserTable({
 
 
             {/* ================================================= */}
-            {/* DESKTOP TABLE */}
+            {/* DESKTOP */}
             {/* ================================================= */}
 
             <div
@@ -1153,77 +907,140 @@ function UserTable({
                     lg:block
                 "
             >
-
                 <table
                     className="
-                        min-w-[1000px]
+                        min-w-[900px]
                         w-full
-                        divide-y
-                        divide-slate-200
+                        border-collapse
                     "
                 >
-
                     <thead
                         className="
-                            bg-gradient-to-r
-                            from-slate-50
-                            to-blue-50/40
+                            bg-slate-50
                         "
                     >
-
-                        <tr
-                            className="
-                                text-left
-                                text-[9px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.08em]
-                                text-slate-500
-                            "
-                        >
-
-                            <th className="px-5 py-3.5">
+                        <tr>
+                            <TableHead>
                                 User
-                            </th>
+                            </TableHead>
 
-                            <th className="px-5 py-3.5">
+                            <TableHead>
                                 Role
-                            </th>
+                            </TableHead>
 
-                            <th className="px-5 py-3.5">
-                                Safety Training
-                            </th>
+                            <TableHead>
+                                Training
+                            </TableHead>
 
-                            <th className="px-5 py-3.5">
+                            <TableHead>
                                 Status
-                            </th>
+                            </TableHead>
 
-                            <th className="px-5 py-3.5 text-right">
+                            <TableHead right>
                                 Actions
-                            </th>
-
+                            </TableHead>
                         </tr>
-
                     </thead>
 
 
-                    <tbody
-                        className="
-                            divide-y
-                            divide-slate-100
-                            bg-white
-                        "
-                    >
+                    <tbody>
                         {users.map(
                             renderDesktopRow
                         )}
                     </tbody>
-
                 </table>
-
             </div>
 
         </div>
+    );
+}
+
+
+function Avatar({
+    name,
+}) {
+    return (
+        <div
+            className="
+                flex
+                h-9
+                w-9
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                bg-blue-50
+                text-[10px]
+                font-semibold
+                text-blue-600
+            "
+        >
+            {String(
+                name ||
+                "U"
+            )
+                .charAt(0)
+                .toUpperCase()}
+        </div>
+    );
+}
+
+
+function RoleBadge({
+    role,
+}) {
+    const trainer =
+        role ===
+        "trainer";
+
+
+    return (
+        <span
+            className={`
+                inline-flex
+                rounded-full
+                px-2.5
+                py-1
+                text-[7px]
+                font-medium
+                capitalize
+
+                ${trainer
+                    ? "bg-purple-50 text-purple-600"
+                    : "bg-blue-50 text-blue-600"
+                }
+            `}
+        >
+            {role ||
+                "User"}
+        </span>
+    );
+}
+
+
+function TableHead({
+    children,
+    right = false,
+}) {
+    return (
+        <th
+            className={`
+                px-5
+                py-3
+                text-[7px]
+                font-semibold
+                uppercase
+                tracking-wide
+                text-slate-400
+
+                ${right
+                    ? "text-right"
+                    : "text-left"
+                }
+            `}
+        >
+            {children}
+        </th>
     );
 }
 

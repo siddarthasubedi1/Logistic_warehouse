@@ -56,7 +56,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // INVALID ROLE
+    // ROLE
     // ======================================================
 
     const role =
@@ -82,7 +82,7 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // DEACTIVATED ACCOUNT
+    // ACCOUNT STATUS
     // ======================================================
 
     const status =
@@ -118,12 +118,8 @@ function ProtectedRoute({
     // FIRST LOGIN PASSWORD CHANGE
     // ======================================================
     //
-    // IMPORTANT:
-    //
-    // Only Trainer and Trainee accounts use the
-    // Administrator-generated temporary password policy.
-    //
-    // Admin must NOT be blocked here.
+    // TRAINER AND TRAINEE ONLY.
+    // ADMIN MUST NOT BE FORCED THROUGH THIS FLOW.
     //
     // ======================================================
 
@@ -158,25 +154,31 @@ function ProtectedRoute({
 
 
     // ======================================================
-    // ROLE-BASED ACCESS
+    // ALLOWED ROLES
     // ======================================================
 
     const normalizedAllowedRoles =
         Array.isArray(
             allowedRoles
         )
-            ? allowedRoles.map(
-                (
-                    allowedRole
-                ) =>
-                    String(
+            ? allowedRoles
+                .map(
+                    (
                         allowedRole
-                    )
-                        .trim()
-                        .toLowerCase()
-            )
+                    ) =>
+                        String(
+                            allowedRole
+                        )
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
             : [];
 
+
+    // ======================================================
+    // ROLE ACCESS
+    // ======================================================
 
     if (
         normalizedAllowedRoles.length >

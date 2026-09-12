@@ -10,17 +10,10 @@ const TRAINING_SECTIONS = [
     {
         id: "manual-handling",
         name: "Manual Handling",
-
-        description:
-            "Safe lifting, carrying and manual handling procedures.",
     },
-
     {
         id: "working-at-height",
         name: "Working at Height",
-
-        description:
-            "Safety procedures for working at elevated locations.",
     },
 ];
 
@@ -80,7 +73,7 @@ function CreateUserForm() {
     const [
         loadingUsers,
         setLoadingUsers,
-    ] = useState(false);
+    ] = useState(true);
 
 
     const [
@@ -134,6 +127,12 @@ function CreateUserForm() {
                 );
 
             } catch (error) {
+                console.error(
+                    "Load pending users error:",
+                    error
+                );
+
+
                 setError(
                     error.response
                         ?.data
@@ -160,9 +159,12 @@ function CreateUserForm() {
 
     const toggleCreateForm = () => {
         setShowCreateForm(
-            (current) =>
+            (
+                current
+            ) =>
                 !current
         );
+
 
         setError("");
         setSuccess("");
@@ -174,16 +176,19 @@ function CreateUserForm() {
             false
         );
 
+
         setFormData(
             getInitialFormData()
         );
 
+
         setError("");
+        setSuccess("");
     };
 
 
     // ======================================================
-    // NORMAL FORM CHANGE
+    // CHANGE
     // ======================================================
 
     const handleChange = (
@@ -192,17 +197,23 @@ function CreateUserForm() {
         const {
             name,
             value,
-        } = event.target;
+        } =
+            event.target;
 
 
         setFormData(
-            (current) => {
+            (
+                current
+            ) => {
                 if (
-                    name === "role"
+                    name ===
+                    "role"
                 ) {
                     return {
                         ...current,
-                        role: value,
+
+                        role:
+                            value,
 
                         assignedTrainingSections:
                             value ===
@@ -220,7 +231,9 @@ function CreateUserForm() {
 
                 return {
                     ...current,
-                    [name]: value,
+
+                    [name]:
+                        value,
                 };
             }
         );
@@ -232,7 +245,7 @@ function CreateUserForm() {
 
 
     // ======================================================
-    // TRAINING SECTION TOGGLE
+    // TRAINER TRAINING SELECTION
     // ======================================================
 
     const toggleTrainingSection = (
@@ -247,14 +260,15 @@ function CreateUserForm() {
 
 
         setFormData(
-            (current) => {
-                const currentSections =
-                    current
-                        .assignedTrainingSections;
+            (
+                current
+            ) => {
+                const selected =
+                    current.assignedTrainingSections;
 
 
                 if (
-                    currentSections.includes(
+                    selected.includes(
                         sectionId
                     )
                 ) {
@@ -262,11 +276,11 @@ function CreateUserForm() {
                         ...current,
 
                         assignedTrainingSections:
-                            currentSections.filter(
+                            selected.filter(
                                 (
-                                    item
+                                    id
                                 ) =>
-                                    item !==
+                                    id !==
                                     sectionId
                             ),
                     };
@@ -278,21 +292,17 @@ function CreateUserForm() {
 
                     assignedTrainingSections:
                         [
-                            ...currentSections,
+                            ...selected,
                             sectionId,
                         ],
                 };
             }
         );
-
-
-        setError("");
-        setSuccess("");
     };
 
 
     // ======================================================
-    // SAVE USER
+    // SAVE PENDING USER
     // ======================================================
 
     const handleSaveUser =
@@ -344,7 +354,8 @@ function CreateUserForm() {
             if (
                 Number(
                     age
-                ) < 16
+                ) <
+                16
             ) {
                 setError(
                     "Age must be 16 or above."
@@ -357,8 +368,7 @@ function CreateUserForm() {
             if (
                 role ===
                 "trainer" &&
-                assignedTrainingSections
-                    .length ===
+                assignedTrainingSections.length ===
                 0
             ) {
                 setError(
@@ -428,9 +438,13 @@ function CreateUserForm() {
 
                 await loadPendingUsers();
 
-            } catch (
-            error
-            ) {
+            } catch (error) {
+                console.error(
+                    "Create pending user error:",
+                    error
+                );
+
+
                 setError(
                     error.response
                         ?.data
@@ -450,7 +464,7 @@ function CreateUserForm() {
     // SELECT PENDING USER
     // ======================================================
 
-    const handleUserSelect = (
+    const handlePendingUserChange = (
         event
     ) => {
         const userId =
@@ -467,19 +481,8 @@ function CreateUserForm() {
         );
 
 
-        setError("");
         setSuccess("");
-
-
-        if (
-            !userId
-        ) {
-            setSelectedUser(
-                null
-            );
-
-            return;
-        }
+        setError("");
 
 
         const user =
@@ -488,7 +491,7 @@ function CreateUserForm() {
                     item
                 ) =>
                     String(
-                        item.id
+                        item._id
                     ) ===
                     String(
                         userId
@@ -527,7 +530,6 @@ function CreateUserForm() {
 
                 setError("");
                 setSuccess("");
-
                 setCredentials(
                     null
                 );
@@ -552,7 +554,7 @@ function CreateUserForm() {
 
                 if (
                     response.data
-                        .user
+                        ?.user
                 ) {
                     setSelectedUser(
                         response.data
@@ -575,9 +577,13 @@ function CreateUserForm() {
 
                 await loadPendingUsers();
 
-            } catch (
-            error
-            ) {
+            } catch (error) {
+                console.error(
+                    "Generate credentials error:",
+                    error
+                );
+
+
                 setError(
                     error.response
                         ?.data
@@ -594,7 +600,7 @@ function CreateUserForm() {
 
 
     // ======================================================
-    // SEND EMAIL
+    // SEND GMAIL
     // ======================================================
 
     const handleSendEmail =
@@ -656,26 +662,24 @@ UK LogiWare Administrator`;
 
 
     // ======================================================
-    // SECTION NAME
+    // DONE
     // ======================================================
 
-    const getSectionName = (
-        sectionId
-    ) => {
-        const section =
-            TRAINING_SECTIONS.find(
-                (
-                    item
-                ) =>
-                    item.id ===
-                    sectionId
-            );
-
-
-        return (
-            section?.name ||
-            sectionId
+    const handleDone = () => {
+        setCredentials(
+            null
         );
+
+        setSelectedUser(
+            null
+        );
+
+        setSelectedUserId(
+            ""
+        );
+
+        setSuccess("");
+        setError("");
     };
 
 
@@ -684,209 +688,26 @@ UK LogiWare Administrator`;
     // ======================================================
 
     return (
-        <div className="space-y-6">
+        <div
+            className="
+                space-y-4
+            "
+        >
 
             {/* ================================================= */}
-            {/* CREATE USER HERO */}
+            {/* FEEDBACK */}
             {/* ================================================= */}
-
-            <section
-                className="
-                    overflow-hidden
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    shadow-sm
-                "
-            >
-
-                <div
-                    className="
-                        relative
-                        overflow-hidden
-                        bg-gradient-to-r
-                        from-blue-600
-                        to-indigo-600
-                        px-6
-                        py-7
-                    "
-                >
-
-                    <div
-                        className="
-                            absolute
-                            -right-14
-                            -top-16
-                            h-40
-                            w-40
-                            rounded-full
-                            bg-white/10
-                        "
-                    />
-
-
-                    <div
-                        className="
-                            relative
-                            flex
-                            flex-col
-                            gap-5
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
-                    >
-
-                        <div className="flex items-center gap-4">
-
-                            <div
-                                className="
-                                    flex
-                                    h-14
-                                    w-14
-                                    items-center
-                                    justify-center
-                                    rounded-2xl
-                                    bg-white/15
-                                "
-                            >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-7 w-7 text-white"
-                                >
-                                    <circle
-                                        cx="9"
-                                        cy="7"
-                                        r="3"
-                                    />
-
-                                    <path
-                                        d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6"
-                                    />
-
-                                    <path
-                                        d="M18 5v8"
-                                    />
-
-                                    <path
-                                        d="M14 9h8"
-                                    />
-                                </svg>
-
-                            </div>
-
-
-                            <div>
-
-                                <p
-                                    className="
-                                        text-xs
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.16em]
-                                        text-blue-100
-                                    "
-                                >
-                                    User Accounts
-                                </p>
-
-
-                                <h1
-                                    className="
-                                        mt-1
-                                        text-xl
-                                        font-bold
-                                        text-white
-                                    "
-                                >
-                                    Create Trainer or Trainee
-                                </h1>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-sm
-                                        text-blue-100
-                                    "
-                                >
-                                    Enter user information and assign their training.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onClick={
-                                toggleCreateForm
-                            }
-                            className="
-                                rounded-xl
-                                bg-white
-                                px-5
-                                py-3
-                                text-sm
-                                font-bold
-                                text-blue-700
-                                shadow-sm
-                                transition
-                                hover:bg-blue-50
-                            "
-                        >
-                            {showCreateForm
-                                ? "Close Form"
-                                : "+ Add New User"}
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            {/* ================================================= */}
-            {/* MESSAGES */}
-            {/* ================================================= */}
-
-            {error && (
-                <div
-                    className="
-                        rounded-xl
-                        border
-                        border-red-200
-                        bg-red-50
-                        px-4
-                        py-3
-                        text-sm
-                        font-medium
-                        text-red-700
-                    "
-                >
-                    {error}
-                </div>
-            )}
-
 
             {success && (
                 <div
                     className="
-                        rounded-xl
+                        rounded-lg
                         border
                         border-emerald-200
                         bg-emerald-50
                         px-4
                         py-3
-                        text-sm
-                        font-medium
+                        text-[10px]
                         text-emerald-700
                     "
                 >
@@ -895,378 +716,284 @@ UK LogiWare Administrator`;
             )}
 
 
-            {/* ================================================= */}
-            {/* CREATE FORM */}
-            {/* ================================================= */}
-
-            {showCreateForm && (
-                <section
+            {error && (
+                <div
                     className="
-                        rounded-2xl
+                        rounded-lg
                         border
-                        border-slate-200
-                        bg-white
-                        shadow-sm
+                        border-red-200
+                        bg-red-50
+                        px-4
+                        py-3
+                        text-[10px]
+                        text-red-700
                     "
                 >
+                    {error}
+                </div>
+            )}
 
-                    <div
-                        className="
-                            border-b
-                            border-slate-200
-                            px-6
-                            py-5
-                        "
-                    >
 
+            {/* ================================================= */}
+            {/* USER FORM */}
+            {/* ================================================= */}
+
+            <section
+                className="
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+
+                {/* HEADER */}
+
+                <div
+                    className="
+                        flex
+                        flex-col
+                        gap-3
+                        border-b
+                        border-slate-100
+                        px-5
+                        py-4
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                    "
+                >
+                    <div>
                         <h2
                             className="
-                                text-lg
-                                font-bold
-                                text-slate-900
+                                text-[13px]
+                                font-semibold
+                                text-slate-800
                             "
                         >
-                            User Information
+                            Create Trainer or Trainee
                         </h2>
 
 
                         <p
                             className="
                                 mt-1
-                                text-sm
-                                text-slate-500
+                                text-[9px]
+                                text-slate-400
                             "
                         >
-                            Complete the user details. Trainers can be assigned one or both sections; Trainees automatically receive both.
+                            Enter user information and assign training access.
                         </p>
-
                     </div>
 
 
+                    <button
+                        type="button"
+                        onClick={
+                            toggleCreateForm
+                        }
+                        className="
+                            rounded-lg
+                            border
+                            border-blue-200
+                            bg-white
+                            px-4
+                            py-2.5
+                            text-[10px]
+                            font-medium
+                            text-blue-600
+                            transition
+                            hover:bg-blue-50
+                        "
+                    >
+                        {showCreateForm
+                            ? "Close Form"
+                            : "+ Add New User"}
+                    </button>
+                </div>
+
+
+                {/* FORM */}
+
+                {showCreateForm && (
                     <form
                         onSubmit={
                             handleSaveUser
                         }
-                        className="space-y-6 p-6"
+                        className="
+                            p-5
+                            sm:p-6
+                        "
                     >
 
-                        {/* ===================================== */}
-                        {/* PERSONAL INFORMATION */}
-                        {/* ===================================== */}
+                        <h3
+                            className="
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
+                            "
+                        >
+                            Personal Information
+                        </h3>
 
-                        <div>
 
-                            <h3
-                                className="
-                                    text-sm
-                                    font-bold
-                                    text-slate-900
-                                "
+                        <div
+                            className="
+                                mt-4
+                                grid
+                                gap-4
+                                md:grid-cols-2
+                            "
+                        >
+
+                            <FormField
+                                label="First Name"
+                                required
                             >
-                                Personal Information
-                            </h3>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    value={
+                                        formData.firstName
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="Enter first name"
+                                    className={
+                                        inputClass
+                                    }
+                                />
+                            </FormField>
 
 
-                            <div
-                                className="
-                                    mt-4
-                                    grid
-                                    gap-4
-                                    md:grid-cols-2
-                                "
+                            <FormField
+                                label="Last Name"
+                                required
                             >
-
-                                {/* FIRST NAME */}
-
-                                <div>
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        First Name *
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        value={
-                                            formData.firstName
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="Enter first name"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    />
-
-                                </div>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    value={
+                                        formData.lastName
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="Enter last name"
+                                    className={
+                                        inputClass
+                                    }
+                                />
+                            </FormField>
 
 
-                                {/* LAST NAME */}
-
-                                <div>
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Last Name *
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        value={
-                                            formData.lastName
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="Enter last name"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    />
-
-                                </div>
+                            <FormField
+                                label="Age"
+                                required
+                            >
+                                <input
+                                    type="number"
+                                    name="age"
+                                    min="16"
+                                    value={
+                                        formData.age
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="Enter age"
+                                    className={
+                                        inputClass
+                                    }
+                                />
+                            </FormField>
 
 
-                                {/* AGE */}
+                            <FormField
+                                label="Gender"
+                                required
+                            >
+                                <select
+                                    name="gender"
+                                    value={
+                                        formData.gender
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    className={
+                                        inputClass
+                                    }
+                                >
+                                    <option value="">
+                                        Select gender
+                                    </option>
 
-                                <div>
+                                    <option value="male">
+                                        Male
+                                    </option>
 
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Age *
-                                    </label>
+                                    <option value="female">
+                                        Female
+                                    </option>
 
-
-                                    <input
-                                        type="number"
-                                        min="16"
-                                        name="age"
-                                        value={
-                                            formData.age
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="Enter age"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    />
-
-                                </div>
+                                    <option value="other">
+                                        Other
+                                    </option>
+                                </select>
+                            </FormField>
 
 
-                                {/* GENDER */}
-
-                                <div>
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Gender *
-                                    </label>
-
-
-                                    <select
-                                        name="gender"
-                                        value={
-                                            formData.gender
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            bg-white
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    >
-                                        <option value="">
-                                            Select gender
-                                        </option>
-
-                                        <option value="male">
-                                            Male
-                                        </option>
-
-                                        <option value="female">
-                                            Female
-                                        </option>
-
-                                        <option value="other">
-                                            Other
-                                        </option>
-                                    </select>
-
-                                </div>
+                            <FormField
+                                label="Email"
+                                required
+                            >
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={
+                                        formData.email
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="example@email.com"
+                                    className={
+                                        inputClass
+                                    }
+                                />
+                            </FormField>
 
 
-                                {/* EMAIL */}
-
-                                <div>
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Email *
-                                    </label>
-
-
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={
-                                            formData.email
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="example@email.com"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    />
-
-                                </div>
+                            <FormField
+                                label="Phone Number"
+                                required
+                            >
+                                <input
+                                    type="text"
+                                    name="phoneNumber"
+                                    value={
+                                        formData.phoneNumber
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="Enter phone number"
+                                    className={
+                                        inputClass
+                                    }
+                                />
+                            </FormField>
 
 
-                                {/* PHONE */}
-
-                                <div>
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Phone Number *
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        name="phoneNumber"
-                                        value={
-                                            formData.phoneNumber
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="Enter phone number"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
-                                    />
-
-                                </div>
-
-
-                                {/* ADDRESS */}
-
-                                <div className="md:col-span-2">
-
-                                    <label
-                                        className="
-                                            mb-2
-                                            block
-                                            text-sm
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Address *
-                                    </label>
-
-
+                            <div className="md:col-span-2">
+                                <FormField
+                                    label="Address"
+                                    required
+                                >
                                     <input
                                         type="text"
                                         name="address"
@@ -1277,43 +1004,31 @@ UK LogiWare Administrator`;
                                             handleChange
                                         }
                                         placeholder="Enter address"
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-300
-                                            px-4
-                                            py-3
-                                            text-sm
-                                            outline-none
-                                            focus:border-blue-500
-                                        "
+                                        className={
+                                            inputClass
+                                        }
                                     />
-
-                                </div>
-
+                                </FormField>
                             </div>
 
                         </div>
 
 
-                        {/* ===================================== */}
                         {/* ROLE */}
-                        {/* ===================================== */}
 
                         <div
                             className="
+                                mt-6
                                 border-t
-                                border-slate-200
-                                pt-6
+                                border-slate-100
+                                pt-5
                             "
                         >
-
                             <h3
                                 className="
-                                    text-sm
-                                    font-bold
-                                    text-slate-900
+                                    text-[11px]
+                                    font-semibold
+                                    text-slate-800
                                 "
                             >
                                 User Role
@@ -1323,8 +1038,8 @@ UK LogiWare Administrator`;
                             <p
                                 className="
                                     mt-1
-                                    text-xs
-                                    text-slate-500
+                                    text-[9px]
+                                    text-slate-400
                                 "
                             >
                                 Select whether this user is a Trainer or Trainee.
@@ -1335,386 +1050,165 @@ UK LogiWare Administrator`;
                                 className="
                                     mt-4
                                     grid
-                                    gap-4
-                                    md:grid-cols-2
+                                    gap-3
+                                    sm:grid-cols-2
                                 "
                             >
-
-                                {[
-                                    {
-                                        id:
-                                            "trainer",
-
-                                        title:
-                                            "Trainer",
-
-                                        description:
-                                            "Can manage assigned training sections and trainee activities.",
-                                    },
-
-                                    {
-                                        id:
-                                            "trainee",
-
-                                        title:
-                                            "Trainee",
-
-                                        description:
-                                            "Can complete the training sections assigned by the Administrator.",
-                                    },
-                                ].map(
-                                    (
-                                        roleOption
-                                    ) => {
-                                        const selected =
-                                            formData.role ===
-                                            roleOption.id;
-
-
-                                        return (
-                                            <button
-                                                key={
-                                                    roleOption.id
-                                                }
-                                                type="button"
-                                                onClick={() =>
-                                                    handleChange({
-                                                        target: {
-                                                            name:
-                                                                "role",
-
-                                                            value:
-                                                                roleOption.id,
-                                                        },
-                                                    })
-                                                }
-                                                className={`
-                                                    rounded-xl
-                                                    border
-                                                    p-5
-                                                    text-left
-                                                    transition
-
-                                                    ${selected
-                                                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
-                                                        : "border-slate-200 hover:border-blue-300"
-                                                    }
-                                                `}
-                                            >
-
-                                                <div
-                                                    className="
-                                                        flex
-                                                        items-center
-                                                        justify-between
-                                                        gap-3
-                                                    "
-                                                >
-
-                                                    <div>
-
-                                                        <p
-                                                            className="
-                                                                font-bold
-                                                                text-slate-900
-                                                            "
-                                                        >
-                                                            {roleOption.title}
-                                                        </p>
-
-
-                                                        <p
-                                                            className="
-                                                                mt-1
-                                                                text-xs
-                                                                leading-5
-                                                                text-slate-500
-                                                            "
-                                                        >
-                                                            {roleOption.description}
-                                                        </p>
-
-                                                    </div>
-
-
-                                                    <div
-                                                        className={`
-                                                            flex
-                                                            h-5
-                                                            w-5
-                                                            shrink-0
-                                                            items-center
-                                                            justify-center
-                                                            rounded-full
-                                                            border
-
-                                                            ${selected
-                                                                ? "border-blue-600 bg-blue-600"
-                                                                : "border-slate-300"
-                                                            }
-                                                        `}
-                                                    >
-                                                        {selected && (
-                                                            <div
-                                                                className="
-                                                                    h-2
-                                                                    w-2
-                                                                    rounded-full
-                                                                    bg-white
-                                                                "
-                                                            />
-                                                        )}
-                                                    </div>
-
-                                                </div>
-
-                                            </button>
-                                        );
+                                <RoleOption
+                                    title="Trainer"
+                                    description="Can manage assigned training sections."
+                                    value="trainer"
+                                    checked={
+                                        formData.role ===
+                                        "trainer"
                                     }
-                                )}
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
 
+
+                                <RoleOption
+                                    title="Trainee"
+                                    description="Receives both training sections automatically."
+                                    value="trainee"
+                                    checked={
+                                        formData.role ===
+                                        "trainee"
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
                             </div>
-
                         </div>
 
 
-                        {/* ===================================== */}
-                        {/* TRAINING ASSIGNMENT */}
-                        {/* ===================================== */}
+                        {/* TRAINING ACCESS */}
 
                         {formData.role && (
                             <div
                                 className="
+                                    mt-6
                                     border-t
-                                    border-slate-200
-                                    pt-6
+                                    border-slate-100
+                                    pt-5
                                 "
                             >
-
-                                <div>
-
-                                    <h3
-                                        className="
-                                            text-sm
-                                            font-bold
-                                            text-slate-900
-                                        "
-                                    >
-                                        Training Assignment *
-                                    </h3>
+                                <h3
+                                    className="
+                                        text-[11px]
+                                        font-semibold
+                                        text-slate-800
+                                    "
+                                >
+                                    Training Access
+                                </h3>
 
 
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-xs
-                                            leading-5
-                                            text-slate-500
-                                        "
-                                    >
-                                        {formData.role ===
-                                            "trainer"
-                                            ? "Select Manual Handling, Working at Height, or both."
-                                            : "Both training sections are assigned automatically to every Trainee."}
-                                    </p>
-
-                                </div>
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[9px]
+                                        text-slate-400
+                                    "
+                                >
+                                    {formData.role ===
+                                        "trainee"
+                                        ? "Both training sections are assigned automatically."
+                                        : "Select training sections for this Trainer."}
+                                </p>
 
 
                                 <div
                                     className="
                                         mt-4
-                                        grid
-                                        gap-4
-                                        md:grid-cols-2
+                                        flex
+                                        flex-wrap
+                                        gap-3
                                     "
                                 >
-
                                     {TRAINING_SECTIONS.map(
                                         (
                                             section
                                         ) => {
-                                            const selected =
-                                                formData
-                                                    .assignedTrainingSections
-                                                    .includes(
-                                                        section.id
-                                                    );
+                                            const checked =
+                                                formData.assignedTrainingSections.includes(
+                                                    section.id
+                                                );
 
 
                                             return (
-                                                <button
+                                                <label
                                                     key={
                                                         section.id
                                                     }
-                                                    type="button"
-                                                    onClick={() =>
-                                                        toggleTrainingSection(
-                                                            section.id
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        formData.role ===
-                                                        "trainee"
-                                                    }
                                                     className={`
-                                                        rounded-xl
+                                                        flex
+                                                        min-w-[190px]
+                                                        items-center
+                                                        gap-3
+                                                        rounded-lg
                                                         border
-                                                        p-5
-                                                        text-left
-                                                        transition
+                                                        px-4
+                                                        py-3
+                                                        text-[10px]
 
-                                                        ${selected
-                                                            ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
-                                                            : "border-slate-200 bg-white hover:border-blue-300"
+                                                        ${checked
+                                                            ? "border-blue-300 bg-blue-50 text-blue-700"
+                                                            : "border-slate-200 bg-white text-slate-600"
                                                         }
 
                                                         ${formData.role ===
                                                             "trainee"
-                                                            ? "cursor-not-allowed opacity-80"
-                                                            : ""
+                                                            ? "cursor-default"
+                                                            : "cursor-pointer"
                                                         }
                                                     `}
                                                 >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            checked
+                                                        }
+                                                        disabled={
+                                                            formData.role ===
+                                                            "trainee"
+                                                        }
+                                                        onChange={() =>
+                                                            toggleTrainingSection(
+                                                                section.id
+                                                            )
+                                                        }
+                                                    />
 
-                                                    <div
-                                                        className="
-                                                            flex
-                                                            items-start
-                                                            gap-3
-                                                        "
-                                                    >
-
-                                                        <div
-                                                            className={`
-                                                                mt-0.5
-                                                                flex
-                                                                h-5
-                                                                w-5
-                                                                shrink-0
-                                                                items-center
-                                                                justify-center
-                                                                rounded
-                                                                border
-
-                                                                ${selected
-                                                                    ? "border-blue-600 bg-blue-600 text-white"
-                                                                    : "border-slate-300"
-                                                                }
-                                                            `}
-                                                        >
-                                                            {selected && (
-                                                                <span
-                                                                    className="
-                                                                        text-xs
-                                                                        font-bold
-                                                                    "
-                                                                >
-                                                                    ✓
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-
-                                                        <div>
-
-                                                            <p
-                                                                className="
-                                                                    font-bold
-                                                                    text-slate-900
-                                                                "
-                                                            >
-                                                                {section.name}
-                                                            </p>
-
-
-                                                            <p
-                                                                className="
-                                                                    mt-1
-                                                                    text-xs
-                                                                    leading-5
-                                                                    text-slate-500
-                                                                "
-                                                            >
-                                                                {section.description}
-                                                            </p>
-
-                                                        </div>
-
-                                                    </div>
-
-                                                </button>
+                                                    {
+                                                        section.name
+                                                    }
+                                                </label>
                                             );
                                         }
                                     )}
-
                                 </div>
-
-
-                                {formData
-                                    .assignedTrainingSections
-                                    .length >
-                                    0 && (
-                                        <div
-                                            className="
-                                            mt-4
-                                            flex
-                                            flex-wrap
-                                            gap-2
-                                        "
-                                        >
-
-                                            {formData
-                                                .assignedTrainingSections
-                                                .map(
-                                                    (
-                                                        sectionId
-                                                    ) => (
-                                                        <span
-                                                            key={
-                                                                sectionId
-                                                            }
-                                                            className="
-                                                            rounded-full
-                                                            bg-blue-100
-                                                            px-3
-                                                            py-1.5
-                                                            text-xs
-                                                            font-semibold
-                                                            text-blue-700
-                                                        "
-                                                        >
-                                                            {getSectionName(
-                                                                sectionId
-                                                            )}
-                                                        </span>
-                                                    )
-                                                )}
-
-                                        </div>
-                                    )}
-
                             </div>
                         )}
 
 
-                        {/* ===================================== */}
-                        {/* BUTTONS */}
-                        {/* ===================================== */}
+                        {/* ACTIONS */}
 
                         <div
                             className="
+                                mt-6
                                 flex
                                 flex-col-reverse
-                                gap-3
+                                gap-2
                                 border-t
-                                border-slate-200
-                                pt-6
+                                border-slate-100
+                                pt-5
                                 sm:flex-row
                                 sm:justify-end
                             "
                         >
-
                             <button
                                 type="button"
                                 onClick={
@@ -1724,15 +1218,15 @@ UK LogiWare Administrator`;
                                     savingUser
                                 }
                                 className="
-                                    rounded-xl
+                                    rounded-lg
                                     border
                                     border-slate-300
+                                    bg-white
                                     px-5
-                                    py-3
-                                    text-sm
-                                    font-semibold
-                                    text-slate-700
-                                    transition
+                                    py-2.5
+                                    text-[10px]
+                                    font-medium
+                                    text-slate-600
                                     hover:bg-slate-50
                                 "
                             >
@@ -1746,16 +1240,14 @@ UK LogiWare Administrator`;
                                     savingUser
                                 }
                                 className="
-                                    rounded-xl
+                                    rounded-lg
                                     bg-blue-600
-                                    px-6
-                                    py-3
-                                    text-sm
-                                    font-bold
+                                    px-5
+                                    py-2.5
+                                    text-[10px]
+                                    font-medium
                                     text-white
-                                    transition
                                     hover:bg-blue-700
-                                    disabled:cursor-not-allowed
                                     disabled:opacity-50
                                 "
                             >
@@ -1763,451 +1255,247 @@ UK LogiWare Administrator`;
                                     ? "Saving..."
                                     : "Save User"}
                             </button>
-
                         </div>
 
                     </form>
+                )}
 
-                </section>
-            )}
+            </section>
 
 
             {/* ================================================= */}
-            {/* PENDING ACCOUNT CREATION */}
+            {/* PENDING USERS */}
             {/* ================================================= */}
 
             <section
                 className="
                     overflow-hidden
-                    rounded-2xl
+                    rounded-xl
                     border
                     border-slate-200
                     bg-white
                     shadow-sm
                 "
             >
-
                 <div
                     className="
+                        flex
+                        items-center
+                        justify-between
                         border-b
-                        border-slate-200
-                        px-6
-                        py-5
+                        border-slate-100
+                        px-5
+                        py-4
                     "
                 >
-
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            justify-between
-                            gap-3
-                            sm:flex-row
-                            sm:items-center
-                        "
-                    >
-
-                        <div>
-
-                            <h2
-                                className="
-                                    text-lg
-                                    font-bold
-                                    text-slate-900
-                                "
-                            >
-                                Pending Account Creation
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-sm
-                                    text-slate-500
-                                "
-                            >
-                                Review the user and generate their login credentials.
-                            </p>
-
-                        </div>
-
-
-                        <span
+                    <div>
+                        <h2
                             className="
-                                w-fit
-                                rounded-full
-                                bg-blue-50
-                                px-3
-                                py-1.5
-                                text-xs
+                                text-[12px]
                                 font-semibold
-                                text-blue-700
+                                text-slate-800
                             "
                         >
-                            {pendingUsers.length} Pending
-                        </span>
+                            Pending Account Creation
+                        </h2>
 
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                text-slate-400
+                            "
+                        >
+                            Review a user and generate their login credentials.
+                        </p>
                     </div>
 
+
+                    <span
+                        className="
+                            rounded-full
+                            bg-blue-50
+                            px-3
+                            py-1
+                            text-[8px]
+                            font-medium
+                            text-blue-600
+                        "
+                    >
+                        {pendingUsers.length} Pending
+                    </span>
                 </div>
 
 
-                <div className="space-y-5 p-6">
-
-                    {/* ========================================= */}
-                    {/* SELECT PENDING USER */}
-                    {/* ========================================= */}
-
-                    <div>
-
-                        <label
-                            className="
-                                mb-2
-                                block
-                                text-sm
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
-                            Select Pending User
-                        </label>
+                <div
+                    className="
+                        p-5
+                    "
+                >
+                    <label
+                        className="
+                            block
+                            text-[9px]
+                            font-medium
+                            text-slate-600
+                        "
+                    >
+                        Select Pending User
+                    </label>
 
 
-                        <select
-                            value={
-                                selectedUserId
-                            }
-                            onChange={
-                                handleUserSelect
-                            }
-                            disabled={
-                                loadingUsers
-                            }
-                            className="
-                                w-full
-                                rounded-xl
-                                border
-                                border-slate-300
-                                bg-white
-                                px-4
-                                py-3
-                                text-sm
-                                outline-none
-                                focus:border-blue-500
-                            "
-                        >
-
-                            <option value="">
-
-                                {loadingUsers
-                                    ? "Loading pending users..."
-                                    : pendingUsers.length ===
-                                        0
-                                        ? "No pending users"
-                                        : "Select pending user"}
-
-                            </option>
-
-
-                            {pendingUsers.map(
-                                (
-                                    user
-                                ) => (
-                                    <option
-                                        key={
-                                            user.id
-                                        }
-                                        value={
-                                            user.id
-                                        }
-                                    >
-                                        {user.firstName}{" "}
-                                        {user.lastName}
-                                        {" — "}
-                                        {user.role ===
-                                            "trainer"
-                                            ? "Trainer"
-                                            : "Trainee"}
-                                    </option>
-                                )
-                            )}
-
-                        </select>
-
-                    </div>
+                    <select
+                        value={
+                            selectedUserId
+                        }
+                        onChange={
+                            handlePendingUserChange
+                        }
+                        disabled={
+                            loadingUsers
+                        }
+                        className="
+                            mt-2
+                            h-11
+                            w-full
+                            rounded-lg
+                            border
+                            border-slate-300
+                            bg-white
+                            px-3
+                            text-[10px]
+                            text-slate-700
+                            outline-none
+                            focus:border-blue-500
+                        "
+                    >
+                        <option value="">
+                            {loadingUsers
+                                ? "Loading..."
+                                : pendingUsers.length ===
+                                    0
+                                    ? "No pending users"
+                                    : "Select pending user"}
+                        </option>
 
 
-                    {/* ========================================= */}
-                    {/* REVIEW */}
-                    {/* ========================================= */}
+                        {pendingUsers.map(
+                            (
+                                user
+                            ) => (
+                                <option
+                                    key={
+                                        user._id
+                                    }
+                                    value={
+                                        user._id
+                                    }
+                                >
+                                    {user.firstName}{" "}
+                                    {user.lastName} —{" "}
+                                    {user.role}
+                                </option>
+                            )
+                        )}
+                    </select>
+
+
+                    {/* SELECTED USER */}
 
                     {selectedUser &&
                         !credentials && (
                             <div
                                 className="
-                                    rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-slate-50
-                                    p-5
-                                "
+                                mt-4
+                                rounded-lg
+                                border
+                                border-slate-200
+                                bg-slate-50
+                                p-4
+                            "
                             >
-
                                 <div
                                     className="
-                                        flex
-                                        flex-col
-                                        justify-between
-                                        gap-4
-                                        md:flex-row
-                                        md:items-start
-                                    "
+                                    flex
+                                    flex-col
+                                    gap-4
+                                    sm:flex-row
+                                    sm:items-start
+                                    sm:justify-between
+                                "
                                 >
-
                                     <div>
-
                                         <p
                                             className="
-                                                text-xs
-                                                font-semibold
-                                                uppercase
-                                                tracking-wider
-                                                text-slate-400
-                                            "
-                                        >
-                                            Account Review
-                                        </p>
-
-
-                                        <h3
-                                            className="
-                                                mt-2
-                                                text-lg
-                                                font-bold
-                                                text-slate-900
-                                            "
-                                        >
-                                            {selectedUser.firstName}{" "}
-                                            {selectedUser.lastName}
-                                        </h3>
-
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-sm
-                                                text-slate-500
-                                            "
-                                        >
-                                            {selectedUser.email}
-                                        </p>
-
-                                    </div>
-
-
-                                    <span
-                                        className="
-                                            w-fit
-                                            rounded-full
-                                            bg-blue-100
-                                            px-3
-                                            py-1.5
-                                            text-xs
-                                            font-bold
-                                            capitalize
-                                            text-blue-700
-                                        "
-                                    >
-                                        {selectedUser.role}
-                                    </span>
-
-                                </div>
-
-
-                                {/* USER INFORMATION */}
-
-                                <div
-                                    className="
-                                        mt-5
-                                        grid
-                                        gap-4
-                                        sm:grid-cols-2
-                                        lg:grid-cols-4
-                                    "
-                                >
-
-                                    <div>
-
-                                        <p className="text-xs text-slate-400">
-                                            Age
-                                        </p>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-sm
-                                                font-semibold
-                                                text-slate-800
-                                            "
-                                        >
-                                            {selectedUser.age}
-                                        </p>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <p className="text-xs text-slate-400">
-                                            Gender
-                                        </p>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-sm
-                                                font-semibold
-                                                capitalize
-                                                text-slate-800
-                                            "
-                                        >
-                                            {selectedUser.gender}
-                                        </p>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <p className="text-xs text-slate-400">
-                                            Phone
-                                        </p>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-sm
-                                                font-semibold
-                                                text-slate-800
-                                            "
-                                        >
-                                            {selectedUser.phoneNumber}
-                                        </p>
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <p className="text-xs text-slate-400">
-                                            Address
-                                        </p>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-sm
-                                                font-semibold
-                                                text-slate-800
-                                            "
-                                        >
-                                            {selectedUser.address}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* ================================= */}
-                                {/* ASSIGNED TRAINING */}
-                                {/* ================================= */}
-
-                                <div
-                                    className="
-                                        mt-5
-                                        border-t
-                                        border-slate-200
-                                        pt-4
-                                    "
-                                >
-
-                                    <p
-                                        className="
-                                            text-xs
+                                            text-[11px]
                                             font-semibold
-                                            uppercase
-                                            tracking-wider
-                                            text-slate-400
+                                            text-slate-800
                                         "
-                                    >
-                                        Assigned Training
-                                    </p>
+                                        >
+                                            {
+                                                selectedUser.firstName
+                                            }{" "}
+                                            {
+                                                selectedUser.lastName
+                                            }
+                                        </p>
 
 
-                                    <div
-                                        className="
+                                        <p
+                                            className="
+                                            mt-1
+                                            text-[9px]
+                                            text-slate-500
+                                        "
+                                        >
+                                            {
+                                                selectedUser.email
+                                            }
+                                        </p>
+
+
+                                        <div
+                                            className="
                                             mt-3
                                             flex
                                             flex-wrap
                                             gap-2
                                         "
-                                    >
+                                        >
+                                            <SmallBadge>
+                                                {
+                                                    selectedUser.role
+                                                }
+                                            </SmallBadge>
 
-                                        {Array.isArray(
-                                            selectedUser
-                                                .assignedTrainingSections
-                                        ) &&
-                                            selectedUser
-                                                .assignedTrainingSections
-                                                .length >
-                                            0 ? (
-                                            selectedUser
-                                                .assignedTrainingSections
-                                                .map(
+
+                                            {selectedUser.assignedTrainingSections
+                                                ?.map(
                                                     (
-                                                        sectionId
+                                                        id
                                                     ) => (
-                                                        <span
+                                                        <SmallBadge
                                                             key={
-                                                                sectionId
+                                                                id
                                                             }
-                                                            className="
-                                                                rounded-full
-                                                                bg-blue-100
-                                                                px-3
-                                                                py-1.5
-                                                                text-xs
-                                                                font-semibold
-                                                                text-blue-700
-                                                            "
                                                         >
-                                                            {getSectionName(
-                                                                sectionId
-                                                            )}
-                                                        </span>
+                                                            {
+                                                                TRAINING_SECTIONS.find(
+                                                                    (
+                                                                        section
+                                                                    ) =>
+                                                                        section.id ===
+                                                                        id
+                                                                )
+                                                                    ?.name
+                                                            }
+                                                        </SmallBadge>
                                                     )
-                                                )
-                                        ) : (
-                                            <span
-                                                className="
-                                                    text-sm
-                                                    text-slate-400
-                                                "
-                                            >
-                                                No training assigned.
-                                            </span>
-                                        )}
-
+                                                )}
+                                        </div>
                                     </div>
 
-                                </div>
-
-
-                                {/* GENERATE BUTTON */}
-
-                                <div className="mt-5 flex justify-end">
 
                                     <button
                                         type="button"
@@ -2218,199 +1506,111 @@ UK LogiWare Administrator`;
                                             generating
                                         }
                                         className="
-                                            rounded-xl
-                                            bg-blue-600
-                                            px-6
-                                            py-3
-                                            text-sm
-                                            font-bold
-                                            text-white
-                                            transition
-                                            hover:bg-blue-700
-                                            disabled:opacity-50
-                                        "
+                                        rounded-lg
+                                        bg-blue-600
+                                        px-5
+                                        py-2.5
+                                        text-[10px]
+                                        font-medium
+                                        text-white
+                                        hover:bg-blue-700
+                                        disabled:opacity-50
+                                    "
                                     >
                                         {generating
                                             ? "Generating..."
                                             : "Generate Username & Password"}
                                     </button>
-
                                 </div>
-
                             </div>
                         )}
 
 
-                    {/* ========================================= */}
                     {/* CREDENTIALS */}
-                    {/* ========================================= */}
 
                     {credentials && (
                         <div
                             className="
-                                rounded-xl
+                                mt-4
+                                rounded-lg
                                 border
                                 border-emerald-200
                                 bg-emerald-50
                                 p-5
                             "
                         >
-
-                            <div>
-
-                                <p
-                                    className="
-                                        text-xs
-                                        font-semibold
-                                        uppercase
-                                        tracking-wider
-                                        text-emerald-600
-                                    "
-                                >
-                                    Account Created
-                                </p>
+                            <p
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    text-emerald-800
+                                "
+                            >
+                                Credentials Generated Successfully
+                            </p>
 
 
-                                <h3
-                                    className="
-                                        mt-2
-                                        text-lg
-                                        font-bold
-                                        text-slate-900
-                                    "
-                                >
-                                    Credentials Generated Successfully
-                                </h3>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-sm
-                                        text-slate-600
-                                    "
-                                >
-                                    These credentials are shown only once.
-                                </p>
-
-                            </div>
+                            <p
+                                className="
+                                    mt-1
+                                    text-[8px]
+                                    text-emerald-600
+                                "
+                            >
+                                These credentials are shown only once.
+                            </p>
 
 
                             <div
                                 className="
-                                    mt-5
+                                    mt-4
                                     grid
-                                    gap-4
+                                    gap-3
                                     md:grid-cols-2
                                 "
                             >
-
-                                {/* USERNAME */}
-
-                                <div
-                                    className="
-                                        rounded-xl
-                                        bg-white
-                                        p-4
-                                    "
-                                >
-
-                                    <p
-                                        className="
-                                            text-xs
-                                            font-semibold
-                                            text-slate-400
-                                        "
-                                    >
-                                        Username
-                                    </p>
+                                <CredentialBox
+                                    label="Username"
+                                    value={
+                                        credentials.username
+                                    }
+                                />
 
 
-                                    <p
-                                        className="
-                                            mt-2
-                                            break-all
-                                            font-mono
-                                            text-sm
-                                            font-bold
-                                            text-slate-900
-                                        "
-                                    >
-                                        {credentials.username}
-                                    </p>
-
-                                </div>
-
-
-                                {/* TEMP PASSWORD */}
-
-                                <div
-                                    className="
-                                        rounded-xl
-                                        bg-white
-                                        p-4
-                                    "
-                                >
-
-                                    <p
-                                        className="
-                                            text-xs
-                                            font-semibold
-                                            text-slate-400
-                                        "
-                                    >
-                                        Temporary Password
-                                    </p>
-
-
-                                    <p
-                                        className="
-                                            mt-2
-                                            break-all
-                                            font-mono
-                                            text-sm
-                                            font-bold
-                                            text-slate-900
-                                        "
-                                    >
-                                        {credentials.password}
-                                    </p>
-
-                                </div>
-
+                                <CredentialBox
+                                    label="Temporary Password"
+                                    value={
+                                        credentials.password
+                                    }
+                                />
                             </div>
 
 
-                            {/* ================================= */}
-                            {/* CREDENTIAL BUTTONS */}
-                            {/* ================================= */}
-
                             <div
                                 className="
-                                    mt-5
+                                    mt-4
                                     flex
-                                    flex-wrap
-                                    justify-end
-                                    gap-3
+                                    flex-col
+                                    gap-2
+                                    sm:flex-row
+                                    sm:justify-end
                                 "
                             >
-
                                 <button
                                     type="button"
                                     onClick={
                                         handleSendEmail
                                     }
                                     className="
-                                        rounded-xl
+                                        rounded-lg
                                         border
                                         border-emerald-300
                                         bg-white
-                                        px-5
-                                        py-3
-                                        text-sm
-                                        font-bold
+                                        px-4
+                                        py-2.5
+                                        text-[10px]
+                                        font-medium
                                         text-emerald-700
-                                        transition
                                         hover:bg-emerald-100
                                     "
                                 >
@@ -2420,46 +1620,207 @@ UK LogiWare Administrator`;
 
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setCredentials(
-                                            null
-                                        );
-
-                                        setSelectedUser(
-                                            null
-                                        );
-
-                                        setSuccess(
-                                            ""
-                                        );
-                                    }}
+                                    onClick={
+                                        handleDone
+                                    }
                                     className="
-                                        rounded-xl
+                                        rounded-lg
                                         bg-emerald-600
                                         px-5
-                                        py-3
-                                        text-sm
-                                        font-bold
+                                        py-2.5
+                                        text-[10px]
+                                        font-medium
                                         text-white
-                                        transition
                                         hover:bg-emerald-700
                                     "
                                 >
                                     Done
                                 </button>
-
                             </div>
-
                         </div>
                     )}
 
                 </div>
-
             </section>
 
         </div>
     );
 }
+
+
+function FormField({
+    label,
+    required = false,
+    children,
+}) {
+    return (
+        <label className="block">
+            <span
+                className="
+                    text-[9px]
+                    font-medium
+                    text-slate-600
+                "
+            >
+                {label}
+
+                {required && (
+                    <span className="text-red-500">
+                        {" "}*
+                    </span>
+                )}
+            </span>
+
+
+            <div className="mt-2">
+                {children}
+            </div>
+        </label>
+    );
+}
+
+
+function RoleOption({
+    title,
+    description,
+    value,
+    checked,
+    onChange,
+}) {
+    return (
+        <label
+            className={`
+                flex
+                cursor-pointer
+                items-center
+                justify-between
+                rounded-lg
+                border
+                p-4
+
+                ${checked
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-slate-200 bg-white"
+                }
+            `}
+        >
+            <div>
+                <p
+                    className="
+                        text-[10px]
+                        font-semibold
+                        text-slate-700
+                    "
+                >
+                    {title}
+                </p>
+
+
+                <p
+                    className="
+                        mt-1
+                        text-[8px]
+                        text-slate-400
+                    "
+                >
+                    {description}
+                </p>
+            </div>
+
+
+            <input
+                type="radio"
+                name="role"
+                value={
+                    value
+                }
+                checked={
+                    checked
+                }
+                onChange={
+                    onChange
+                }
+            />
+        </label>
+    );
+}
+
+
+function SmallBadge({
+    children,
+}) {
+    return (
+        <span
+            className="
+                rounded-full
+                bg-blue-50
+                px-2.5
+                py-1
+                text-[8px]
+                capitalize
+                text-blue-600
+            "
+        >
+            {children}
+        </span>
+    );
+}
+
+
+function CredentialBox({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                bg-white
+                px-4
+                py-3
+            "
+        >
+            <p
+                className="
+                    text-[8px]
+                    text-slate-400
+                "
+            >
+                {label}
+            </p>
+
+
+            <p
+                className="
+                    mt-1
+                    break-all
+                    font-mono
+                    text-[11px]
+                    font-semibold
+                    text-slate-800
+                "
+            >
+                {value}
+            </p>
+        </div>
+    );
+}
+
+
+const inputClass = `
+    h-11
+    w-full
+    rounded-lg
+    border
+    border-slate-300
+    bg-white
+    px-3
+    text-[10px]
+    text-slate-700
+    outline-none
+    placeholder:text-slate-400
+    focus:border-blue-500
+`;
 
 
 export default CreateUserForm;

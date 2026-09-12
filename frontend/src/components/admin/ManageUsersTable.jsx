@@ -23,27 +23,15 @@ import {
 } from "../../utils/training";
 
 
-// ======================================================
-// MANAGE USERS TABLE
-// ======================================================
-
 function ManageUsersTable({
     selectedUserId = null,
     passwordResetRequest = null,
 }) {
-    // ======================================================
-    // USERS
-    // ======================================================
-
     const [
         users,
         setUsers,
     ] = useState([]);
 
-
-    // ======================================================
-    // PASSWORD RESET REQUESTS
-    // ======================================================
 
     const [
         pendingResetUserIds,
@@ -51,14 +39,11 @@ function ManageUsersTable({
     ] = useState([]);
 
 
-    // ======================================================
-    // PAGE STATE
-    // ======================================================
-
     const [
         loading,
         setLoading,
     ] = useState(true);
+
 
     const [
         processingId,
@@ -66,19 +51,17 @@ function ManageUsersTable({
     ] = useState("");
 
 
-    // ======================================================
-    // FILTERS
-    // ======================================================
-
     const [
         searchTerm,
         setSearchTerm,
     ] = useState("");
 
+
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("all");
+
 
     const [
         statusFilter,
@@ -86,14 +69,11 @@ function ManageUsersTable({
     ] = useState("all");
 
 
-    // ======================================================
-    // FEEDBACK
-    // ======================================================
-
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
+
 
     const [
         successMessage,
@@ -101,29 +81,23 @@ function ManageUsersTable({
     ] = useState("");
 
 
-    // ======================================================
-    // CONFIRM DIALOG
-    // ======================================================
-
     const [
         confirmAction,
         setConfirmAction,
     ] = useState(null);
 
 
-    // ======================================================
-    // EDIT USER
-    // ======================================================
-
     const [
         editingUser,
         setEditingUser,
     ] = useState(null);
 
+
     const [
         editSaving,
         setEditSaving,
     ] = useState(false);
+
 
     const [
         editError,
@@ -131,14 +105,11 @@ function ManageUsersTable({
     ] = useState("");
 
 
-    // ======================================================
-    // RESET CREDENTIALS
-    // ======================================================
-
     const [
         resetCredentials,
         setResetCredentials,
     ] = useState(null);
+
 
     const [
         credentialUser,
@@ -146,18 +117,15 @@ function ManageUsersTable({
     ] = useState(null);
 
 
-    // ======================================================
-    // CLEAR FEEDBACK
-    // ======================================================
-
-    const clearFeedback = () => {
-        setErrorMessage("");
-        setSuccessMessage("");
-    };
+    const clearFeedback =
+        () => {
+            setErrorMessage("");
+            setSuccessMessage("");
+        };
 
 
     // ======================================================
-    // LOAD USERS
+    // USERS
     // ======================================================
 
     const loadUsers =
@@ -204,7 +172,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // LOAD RESET REQUESTS
+    // RESET REQUESTS
     // ======================================================
 
     const loadPasswordResetRequests =
@@ -262,9 +230,7 @@ function ManageUsersTable({
                                 );
                             }
                         )
-                        .filter(
-                            Boolean
-                        );
+                        .filter(Boolean);
 
 
                 setPendingResetUserIds(
@@ -277,7 +243,7 @@ function ManageUsersTable({
 
             } catch (error) {
                 console.error(
-                    "Load password reset requests error:",
+                    "Load reset requests error:",
                     error
                 );
 
@@ -289,10 +255,6 @@ function ManageUsersTable({
         }, []);
 
 
-    // ======================================================
-    // INITIAL LOAD
-    // ======================================================
-
     useEffect(() => {
         loadUsers();
         loadPasswordResetRequests();
@@ -303,7 +265,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // SCROLL TO USER FROM RESET REQUEST
+    // SCROLL TO RESET USER
     // ======================================================
 
     useEffect(() => {
@@ -346,7 +308,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // FILTERED USERS
+    // FILTERING
     // ======================================================
 
     const filteredUsers =
@@ -380,7 +342,6 @@ function ManageUsersTable({
                                 user.status ||
                                 ""
                             )
-                                .trim()
                                 .toLowerCase();
 
 
@@ -414,7 +375,7 @@ function ManageUsersTable({
                     }
 
 
-                    const text =
+                    const searchable =
                         [
                             getUserDisplayName(
                                 user,
@@ -423,19 +384,15 @@ function ManageUsersTable({
 
                             user.username,
                             user.email,
-                            user.phoneNumber,
-                            user.address,
                             user.role,
                             user.status,
                         ]
-                            .filter(
-                                Boolean
-                            )
+                            .filter(Boolean)
                             .join(" ")
                             .toLowerCase();
 
 
-                    return text.includes(
+                    return searchable.includes(
                         query
                     );
                 }
@@ -450,64 +407,23 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // COUNTS
-    // ======================================================
-
-    const trainerCount =
-        users.filter(
-            (
-                user
-            ) =>
-                user.role ===
-                "trainer"
-        ).length;
-
-
-    const traineeCount =
-        users.filter(
-            (
-                user
-            ) =>
-                user.role ===
-                "trainee"
-        ).length;
-
-
-    const activeCount =
-        users.filter(
-            (
-                user
-            ) =>
-                user.status ===
-                "active"
-        ).length;
-
-
-    // ======================================================
-    // EDIT USER
+    // EDIT
     // ======================================================
 
     const handleEditUser = (
         user
     ) => {
-        if (!user?._id) {
-            return;
-        }
-
-
         clearFeedback();
-
-        setEditError("");
 
         setEditingUser(
             user
         );
+
+        setEditError(
+            ""
+        );
     };
 
-
-    // ======================================================
-    // SAVE EDITED USER
-    // ======================================================
 
     const handleSaveEditedUser =
         async (
@@ -521,67 +437,13 @@ function ManageUsersTable({
             }
 
 
-            setEditError(
-                ""
-            );
-
-
-            if (
-                !formData.firstName ||
-                !formData.lastName ||
-                !formData.age ||
-                !formData.email ||
-                !formData.phoneNumber ||
-                !formData.address ||
-                !formData.gender
-            ) {
-                setEditError(
-                    "Please complete all user information."
-                );
-
-                return;
-            }
-
-
-            if (
-                !Number.isInteger(
-                    Number(
-                        formData.age
-                    )
-                ) ||
-                Number(
-                    formData.age
-                ) <
-                16
-            ) {
-                setEditError(
-                    "Age must be 16 or above."
-                );
-
-                return;
-            }
-
-
-            const emailPattern =
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-            if (
-                !emailPattern.test(
-                    formData.email
-                )
-            ) {
-                setEditError(
-                    "Please enter a valid email address."
-                );
-
-                return;
-            }
-
-
             try {
                 setEditSaving(
                     true
+                );
+
+                setEditError(
+                    ""
                 );
 
 
@@ -601,10 +463,6 @@ function ManageUsersTable({
 
                 setEditingUser(
                     null
-                );
-
-                setEditError(
-                    ""
                 );
 
 
@@ -633,29 +491,7 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // CLOSE EDIT
-    // ======================================================
-
-    const handleCloseEdit = () => {
-        if (
-            editSaving
-        ) {
-            return;
-        }
-
-
-        setEditingUser(
-            null
-        );
-
-        setEditError(
-            ""
-        );
-    };
-
-
-    // ======================================================
-    // DEACTIVATE REQUEST
+    // ACTION REQUESTS
     // ======================================================
 
     const requestDeactivate = (
@@ -677,7 +513,7 @@ function ManageUsersTable({
                 `Deactivate ${getUserDisplayName(
                     user,
                     "this user"
-                )}? They will not be able to access protected areas until reactivated.`,
+                )}?`,
 
             confirmText:
                 "Deactivate",
@@ -687,10 +523,6 @@ function ManageUsersTable({
         });
     };
 
-
-    // ======================================================
-    // REACTIVATE REQUEST
-    // ======================================================
 
     const requestReactivate = (
         user
@@ -722,10 +554,6 @@ function ManageUsersTable({
     };
 
 
-    // ======================================================
-    // DELETE REQUEST
-    // ======================================================
-
     const requestDelete = (
         user
     ) => {
@@ -742,7 +570,7 @@ function ManageUsersTable({
                 "Delete User",
 
             message:
-                `Permanently delete ${getUserDisplayName(
+                `Delete ${getUserDisplayName(
                     user,
                     "this user"
                 )}? This action cannot be undone.`,
@@ -755,10 +583,6 @@ function ManageUsersTable({
         });
     };
 
-
-    // ======================================================
-    // RESET PASSWORD REQUEST
-    // ======================================================
 
     const requestResetPassword = (
         user
@@ -792,11 +616,11 @@ function ManageUsersTable({
                 "Reset Password",
 
             message:
-                `Reset the password for ${getUserDisplayName(
+                `Generate a new temporary password for ${getUserDisplayName(
                     user,
                     user.username ||
                     "this user"
-                )}? A new temporary password will be generated.`,
+                )}?`,
 
             confirmText:
                 "Reset Password",
@@ -808,15 +632,13 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // NORMAL USER ACTION
+    // USER ACTION
     // ======================================================
 
-    const handleConfirmAction =
-        async () => {
-            const action =
-                confirmAction;
-
-
+    const handleNormalAction =
+        async (
+            action
+        ) => {
             const user =
                 action?.user;
 
@@ -837,21 +659,17 @@ function ManageUsersTable({
                 clearFeedback();
 
 
+                let response;
+
+
                 if (
                     action.type ===
                     "deactivate"
                 ) {
-                    const response =
+                    response =
                         await api.patch(
                             `/admin/users/${user._id}/deactivate`
                         );
-
-
-                    setSuccessMessage(
-                        response.data
-                            ?.message ||
-                        "User deactivated successfully."
-                    );
                 }
 
 
@@ -859,17 +677,10 @@ function ManageUsersTable({
                     action.type ===
                     "reactivate"
                 ) {
-                    const response =
+                    response =
                         await api.patch(
                             `/admin/users/${user._id}/reactivate`
                         );
-
-
-                    setSuccessMessage(
-                        response.data
-                            ?.message ||
-                        "User reactivated successfully."
-                    );
                 }
 
 
@@ -877,18 +688,18 @@ function ManageUsersTable({
                     action.type ===
                     "delete"
                 ) {
-                    const response =
+                    response =
                         await api.delete(
                             `/admin/users/${user._id}`
                         );
-
-
-                    setSuccessMessage(
-                        response.data
-                            ?.message ||
-                        "User deleted successfully."
-                    );
                 }
+
+
+                setSuccessMessage(
+                    response?.data
+                        ?.message ||
+                    "Action completed successfully."
+                );
 
 
                 setConfirmAction(
@@ -908,7 +719,7 @@ function ManageUsersTable({
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to complete the requested action."
+                        "Unable to complete the action."
                     )
                 );
 
@@ -921,24 +732,17 @@ function ManageUsersTable({
 
 
     // ======================================================
-    // RESET PASSWORD
+    // PASSWORD RESET
     // ======================================================
 
     const handleResetPassword =
         async (
             user
         ) => {
-            if (!user?._id) {
-                return;
-            }
-
-
             try {
                 setProcessingId(
                     user._id
                 );
-
-                clearFeedback();
 
 
                 const response =
@@ -952,9 +756,7 @@ function ManageUsersTable({
                         ?.credentials;
 
 
-                if (
-                    !credentials
-                ) {
+                if (!credentials) {
                     throw new Error(
                         "Credential information was not returned."
                     );
@@ -1009,27 +811,23 @@ function ManageUsersTable({
         };
 
 
-    // ======================================================
-    // CONFIRM HANDLER
-    // ======================================================
-
     const handleConfirmDialog =
         async () => {
+            const action =
+                confirmAction;
+
+
             if (
-                confirmAction?.type ===
+                action?.type ===
                 "reset-password"
             ) {
-                const user =
-                    confirmAction.user;
-
-
                 setConfirmAction(
                     null
                 );
 
 
                 await handleResetPassword(
-                    user
+                    action.user
                 );
 
 
@@ -1037,12 +835,14 @@ function ManageUsersTable({
             }
 
 
-            await handleConfirmAction();
+            await handleNormalAction(
+                action
+            );
         };
 
 
     // ======================================================
-    // RESET NOTICE
+    // NOTICE
     // ======================================================
 
     const showPendingResetNotice =
@@ -1062,6 +862,30 @@ function ManageUsersTable({
 
 
     // ======================================================
+    // COUNTS
+    // ======================================================
+
+    const trainerCount =
+        users.filter(
+            (
+                user
+            ) =>
+                user.role ===
+                "trainer"
+        ).length;
+
+
+    const traineeCount =
+        users.filter(
+            (
+                user
+            ) =>
+                user.role ===
+                "trainee"
+        ).length;
+
+
+    // ======================================================
     // UI
     // ======================================================
 
@@ -1069,7 +893,7 @@ function ManageUsersTable({
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -1077,195 +901,84 @@ function ManageUsersTable({
             "
         >
 
-            {/* ================================================= */}
             {/* HEADER */}
-            {/* ================================================= */}
 
             <div
                 className="
-                    relative
-                    overflow-hidden
+                    flex
+                    flex-col
+                    gap-3
                     border-b
                     border-slate-100
-                    bg-gradient-to-r
-                    from-white
-                    via-white
-                    to-blue-50
-                    p-5
-                    sm:p-6
+                    px-5
+                    py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                 "
             >
-
-                <div
-                    className="
-                        pointer-events-none
-                        absolute
-                        -right-20
-                        -top-20
-                        h-48
-                        w-48
-                        rounded-full
-                        bg-blue-50
-                    "
-                />
-
-
-                <div
-                    className="
-                        relative
-                        z-10
-                        flex
-                        flex-col
-                        gap-4
-                        xl:flex-row
-                        xl:items-center
-                        xl:justify-between
-                    "
-                >
-
-                    <div
+                <div>
+                    <h2
                         className="
-                            flex
-                            items-start
-                            gap-3
+                            text-[12px]
+                            font-semibold
+                            text-slate-800
                         "
                     >
-
-                        <div
-                            className="
-                                flex
-                                h-11
-                                w-11
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-blue-50
-                                text-blue-600
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <circle
-                                    cx="9"
-                                    cy="8"
-                                    r="3"
-                                />
-
-                                <circle
-                                    cx="17"
-                                    cy="9"
-                                    r="2"
-                                />
-
-                                <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                                <path d="M15 15c3 0 5 1.6 5.5 5" />
-                            </svg>
-                        </div>
+                        Trainer & Trainee Accounts
+                    </h2>
 
 
-                        <div>
-                            <p
-                                className="
-                                    text-[8px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-[0.16em]
-                                    text-blue-600
-                                "
-                            >
-                                User Administration
-                            </p>
-
-
-                            <h2
-                                className="
-                                    mt-1
-                                    text-base
-                                    font-bold
-                                    text-slate-900
-                                "
-                            >
-                                Trainer & Trainee Accounts
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    max-w-xl
-                                    text-[10px]
-                                    leading-5
-                                    text-slate-500
-                                "
-                            >
-                                Search, edit, deactivate, reactivate
-                                and manage password-reset requests.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <div
+                    <p
                         className="
-                            grid
-                            grid-cols-3
-                            gap-2
-                            sm:w-fit
+                            mt-1
+                            text-[8px]
+                            text-slate-400
                         "
                     >
-                        <MiniStat
-                            label="Trainers"
-                            value={
-                                trainerCount
-                            }
-                        />
-
-                        <MiniStat
-                            label="Trainees"
-                            value={
-                                traineeCount
-                            }
-                        />
-
-                        <MiniStat
-                            label="Active"
-                            value={
-                                activeCount
-                            }
-                        />
-                    </div>
-
+                        Search and manage user accounts.
+                    </p>
                 </div>
 
+
+                <div
+                    className="
+                        flex
+                        gap-2
+                    "
+                >
+                    <CountBadge
+                        label="Trainers"
+                        value={
+                            trainerCount
+                        }
+                    />
+
+
+                    <CountBadge
+                        label="Trainees"
+                        value={
+                            traineeCount
+                        }
+                    />
+                </div>
             </div>
 
 
-            {/* ================================================= */}
-            {/* FILTERS */}
-            {/* ================================================= */}
+            {/* FILTER AREA */}
 
             <div
                 className="
-                    space-y-4
+                    space-y-3
                     border-b
                     border-slate-100
-                    p-4
-                    sm:p-5
+                    p-5
                 "
             >
-
                 {showPendingResetNotice && (
                     <FeedbackAlert
-                        type="warning"
-                        message="This user has a pending password reset request. The Reset Password action is now available for this account."
+                        type="info"
+                        message="This user has a pending password reset request. Reset Password is now available."
                     />
                 )}
 
@@ -1316,13 +1029,10 @@ function ManageUsersTable({
                         setStatusFilter
                     }
                 />
-
             </div>
 
 
-            {/* ================================================= */}
-            {/* USER TABLE */}
-            {/* ================================================= */}
+            {/* TABLE */}
 
             {loading ? (
                 <div className="p-5">
@@ -1363,9 +1073,7 @@ function ManageUsersTable({
             )}
 
 
-            {/* ================================================= */}
             {/* EDIT USER */}
-            {/* ================================================= */}
 
             <EditUserModal
                 open={
@@ -1385,15 +1093,23 @@ function ManageUsersTable({
                 onSave={
                     handleSaveEditedUser
                 }
-                onClose={
-                    handleCloseEdit
-                }
+                onClose={() => {
+                    if (
+                        !editSaving
+                    ) {
+                        setEditingUser(
+                            null
+                        );
+
+                        setEditError(
+                            ""
+                        );
+                    }
+                }}
             />
 
 
-            {/* ================================================= */}
             {/* CONFIRM */}
-            {/* ================================================= */}
 
             <ConfirmDialog
                 open={
@@ -1437,9 +1153,7 @@ function ManageUsersTable({
             />
 
 
-            {/* ================================================= */}
-            {/* GENERATED CREDENTIALS */}
-            {/* ================================================= */}
+            {/* RESET CREDENTIALS */}
 
             <GeneratedCredentialsModal
                 open={
@@ -1469,52 +1183,31 @@ function ManageUsersTable({
 }
 
 
-// ======================================================
-// MINI STAT
-// ======================================================
-
-function MiniStat({
+function CountBadge({
     label,
     value,
 }) {
     return (
-        <div
+        <span
             className="
-                min-w-[72px]
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
+                rounded-full
+                bg-slate-100
                 px-3
-                py-2.5
-                text-center
-                shadow-sm
+                py-1.5
+                text-[8px]
+                text-slate-500
             "
         >
-            <p
+            {label}:{" "}
+
+            <strong
                 className="
-                    text-lg
-                    font-bold
-                    text-slate-900
+                    text-slate-700
                 "
             >
                 {value}
-            </p>
-
-
-            <p
-                className="
-                    mt-0.5
-                    text-[7px]
-                    font-semibold
-                    uppercase
-                    tracking-wide
-                    text-slate-400
-                "
-            >
-                {label}
-            </p>
-        </div>
+            </strong>
+        </span>
     );
 }
 

@@ -3,9 +3,7 @@ import {
     useState,
 } from "react";
 
-import ActionButton from "../ui/ActionButton";
 import FeedbackAlert from "../ui/FeedbackAlert";
-import StatusBadge from "../ui/StatusBadge";
 
 import {
     getUserDisplayName,
@@ -13,32 +11,39 @@ import {
 
 
 // ======================================================
-// INITIAL FORM DATA
+// INITIAL FORM
 // ======================================================
 
 const getInitialFormData = (
     user
 ) => ({
     firstName:
-        user?.firstName || "",
+        user?.firstName ||
+        "",
 
     lastName:
-        user?.lastName || "",
+        user?.lastName ||
+        "",
 
     age:
-        user?.age || "",
+        user?.age ||
+        "",
 
     email:
-        user?.email || "",
+        user?.email ||
+        "",
 
     phoneNumber:
-        user?.phoneNumber || "",
+        user?.phoneNumber ||
+        "",
 
     address:
-        user?.address || "",
+        user?.address ||
+        "",
 
     gender:
-        user?.gender || "",
+        user?.gender ||
+        "",
 });
 
 
@@ -64,9 +69,9 @@ function EditUserModal({
     );
 
 
-    // ==================================================
-    // RESET WHEN USER CHANGES
-    // ==================================================
+    // ======================================================
+    // UPDATE FORM WHEN USER CHANGES
+    // ======================================================
 
     useEffect(() => {
         if (
@@ -85,9 +90,47 @@ function EditUserModal({
     ]);
 
 
-    // ==================================================
-    // HIDDEN
-    // ==================================================
+    // ======================================================
+    // CLOSE USING ESC
+    // ======================================================
+
+    useEffect(() => {
+        if (!open) {
+            return undefined;
+        }
+
+
+        const handleKeyDown = (
+            event
+        ) => {
+            if (
+                event.key ===
+                "Escape" &&
+                !saving
+            ) {
+                onClose?.();
+            }
+        };
+
+
+        window.addEventListener(
+            "keydown",
+            handleKeyDown
+        );
+
+
+        return () => {
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+        };
+    }, [
+        open,
+        saving,
+        onClose,
+    ]);
+
 
     if (
         !open ||
@@ -97,9 +140,9 @@ function EditUserModal({
     }
 
 
-    // ==================================================
+    // ======================================================
     // CHANGE
-    // ==================================================
+    // ======================================================
 
     const handleChange = (
         event
@@ -107,7 +150,8 @@ function EditUserModal({
         const {
             name,
             value,
-        } = event.target;
+        } =
+            event.target;
 
 
         setFormData(
@@ -123,9 +167,9 @@ function EditUserModal({
     };
 
 
-    // ==================================================
+    // ======================================================
     // SUBMIT
-    // ==================================================
+    // ======================================================
 
     const handleSubmit = (
         event
@@ -133,12 +177,7 @@ function EditUserModal({
         event.preventDefault();
 
 
-        if (!onSave) {
-            return;
-        }
-
-
-        onSave({
+        onSave?.({
             firstName:
                 formData
                     .firstName
@@ -175,10 +214,6 @@ function EditUserModal({
     };
 
 
-    // ==================================================
-    // DISPLAY
-    // ==================================================
-
     const displayName =
         getUserDisplayName(
             user,
@@ -193,9 +228,9 @@ function EditUserModal({
             .toUpperCase();
 
 
-    // ==================================================
+    // ======================================================
     // UI
-    // ==================================================
+    // ======================================================
 
     return (
         <div
@@ -206,151 +241,54 @@ function EditUserModal({
                 flex
                 items-center
                 justify-center
-                bg-slate-950/55
+                overflow-y-auto
+                bg-slate-950/45
                 p-3
-                backdrop-blur-[2px]
-                sm:p-4
+                sm:p-5
             "
         >
             <div
                 role="dialog"
                 aria-modal="true"
                 className="
+                    my-auto
                     max-h-[94vh]
                     w-full
                     max-w-2xl
                     overflow-y-auto
-                    rounded-2xl
+                    rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    shadow-2xl
+                    shadow-xl
                 "
             >
 
-                {/* ====================================== */}
+                {/* ================================================= */}
                 {/* HEADER */}
-                {/* ====================================== */}
+                {/* ================================================= */}
 
                 <div
                     className="
-                        relative
-                        overflow-hidden
+                        flex
+                        items-start
+                        justify-between
+                        gap-4
                         border-b
-                        border-slate-100
-                        bg-gradient-to-r
-                        from-white
-                        via-white
-                        to-blue-50
-                        px-4
-                        py-5
-                        sm:px-6
+                        border-slate-200
+                        px-5
+                        py-4
                     "
                 >
-
                     <div
                         className="
-                            pointer-events-none
-                            absolute
-                            -right-16
-                            -top-16
-                            h-40
-                            w-40
-                            rounded-full
-                            bg-blue-50
-                        "
-                    />
-
-
-                    <div
-                        className="
-                            relative
-                            z-10
                             flex
-                            items-start
-                            justify-between
-                            gap-4
+                            min-w-0
+                            items-center
+                            gap-3
                         "
                     >
-
                         <div
-                            className="
-                                flex
-                                min-w-0
-                                items-start
-                                gap-3
-                            "
-                        >
-
-                            <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-full
-                                    bg-[#073763]
-                                    text-sm
-                                    font-bold
-                                    text-white
-                                "
-                            >
-                                {initial}
-                            </div>
-
-
-                            <div className="min-w-0">
-
-                                <p
-                                    className="
-                                        text-[8px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.16em]
-                                        text-blue-600
-                                    "
-                                >
-                                    User Management
-                                </p>
-
-
-                                <h2
-                                    className="
-                                        mt-1
-                                        truncate
-                                        text-base
-                                        font-bold
-                                        text-slate-900
-                                        sm:text-lg
-                                    "
-                                >
-                                    Edit User
-                                </h2>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        truncate
-                                        text-[10px]
-                                        text-slate-500
-                                    "
-                                >
-                                    {displayName}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={saving}
-                            aria-label="Close edit user"
                             className="
                                 flex
                                 h-9
@@ -358,217 +296,168 @@ function EditUserModal({
                                 shrink-0
                                 items-center
                                 justify-center
-                                rounded-xl
-                                border
-                                border-slate-200
-                                bg-white
-                                text-lg
-                                text-slate-400
-                                shadow-sm
-                                transition
-                                hover:bg-slate-50
-                                hover:text-slate-700
-                                disabled:cursor-not-allowed
-                                disabled:opacity-50
+                                rounded-full
+                                bg-blue-50
+                                text-[10px]
+                                font-semibold
+                                text-blue-600
                             "
                         >
-                            ×
-                        </button>
+                            {initial}
+                        </div>
 
+
+                        <div
+                            className="
+                                min-w-0
+                            "
+                        >
+                            <h2
+                                className="
+                                    text-[13px]
+                                    font-semibold
+                                    text-slate-800
+                                "
+                            >
+                                Edit User
+                            </h2>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    truncate
+                                    text-[8px]
+                                    text-slate-400
+                                "
+                            >
+                                {displayName}
+                            </p>
+                        </div>
                     </div>
 
+
+                    <button
+                        type="button"
+                        onClick={
+                            onClose
+                        }
+                        disabled={
+                            saving
+                        }
+                        aria-label="Close"
+                        className="
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-md
+                            text-lg
+                            text-slate-400
+                            transition
+                            hover:bg-slate-100
+                            hover:text-slate-700
+                            disabled:opacity-40
+                        "
+                    >
+                        ×
+                    </button>
                 </div>
 
 
-                {/* ====================================== */}
+                {/* ================================================= */}
                 {/* FORM */}
-                {/* ====================================== */}
+                {/* ================================================= */}
 
                 <form
-                    onSubmit={handleSubmit}
+                    onSubmit={
+                        handleSubmit
+                    }
                     className="
-                        space-y-5
-                        p-4
+                        p-5
                         sm:p-6
                     "
                 >
-
                     <FeedbackAlert
                         type="error"
-                        message={errorMessage}
+                        message={
+                            errorMessage
+                        }
                     />
 
 
-                    {/* ================================== */}
-                    {/* ACCOUNT SUMMARY */}
-                    {/* ================================== */}
+                    {/* ================================================= */}
+                    {/* ACCOUNT INFO */}
+                    {/* ================================================= */}
 
-                    <section
+                    <div
                         className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-slate-50/70
+                            mt-1
+                            grid
+                            gap-3
+                            rounded-lg
+                            bg-slate-50
                             p-4
+                            sm:grid-cols-2
                         "
                     >
+                        <InformationItem
+                            label="Username"
+                            value={
+                                user.username ||
+                                "—"
+                            }
+                        />
 
-                        <div
+
+                        <InformationItem
+                            label="Role"
+                            value={
+                                user.role ||
+                                "—"
+                            }
+                        />
+
+
+                        <InformationItem
+                            label="Account Status"
+                            value={
+                                user.status ||
+                                "—"
+                            }
+                        />
+
+
+                        <InformationItem
+                            label="Account Type"
+                            value={
+                                user.accountStatus ||
+                                "Created"
+                            }
+                        />
+                    </div>
+
+
+                    {/* ================================================= */}
+                    {/* USER DETAILS */}
+                    {/* ================================================= */}
+
+                    <div
+                        className="
+                            mt-6
+                        "
+                    >
+                        <h3
                             className="
-                                flex
-                                flex-col
-                                gap-3
-                                sm:flex-row
-                                sm:items-center
-                                sm:justify-between
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
                             "
                         >
-
-                            <div>
-                                <p
-                                    className="
-                                        text-[8px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-wide
-                                        text-slate-400
-                                    "
-                                >
-                                    Account Information
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[10px]
-                                        font-semibold
-                                        text-slate-700
-                                    "
-                                >
-                                    Username and account role are
-                                    protected account fields.
-                                </p>
-                            </div>
-
-
-                            <div
-                                className="
-                                    flex
-                                    flex-wrap
-                                    gap-2
-                                "
-                            >
-                                <StatusBadge
-                                    status={user.role}
-                                />
-
-                                <StatusBadge
-                                    status={user.status}
-                                />
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            className="
-                                mt-4
-                                grid
-                                gap-3
-                                sm:grid-cols-2
-                            "
-                        >
-                            <InfoItem
-                                label="Username"
-                                value={
-                                    user.username ||
-                                    "—"
-                                }
-                            />
-
-
-                            <InfoItem
-                                label="Role"
-                                value={
-                                    user.role ||
-                                    "—"
-                                }
-                            />
-                        </div>
-
-                    </section>
-
-
-                    {/* ================================== */}
-                    {/* PERSONAL DETAILS */}
-                    {/* ================================== */}
-
-                    <section>
-
-                        <div
-                            className="
-                                flex
-                                items-start
-                                gap-3
-                            "
-                        >
-                            <span
-                                className="
-                                    flex
-                                    h-8
-                                    w-8
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    bg-blue-50
-                                    text-blue-600
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-4 w-4"
-                                >
-                                    <circle
-                                        cx="12"
-                                        cy="8"
-                                        r="3"
-                                    />
-
-                                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-                                </svg>
-                            </span>
-
-
-                            <div>
-                                <h3
-                                    className="
-                                        text-xs
-                                        font-bold
-                                        text-slate-900
-                                    "
-                                >
-                                    Personal Details
-                                </h3>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[9px]
-                                        leading-5
-                                        text-slate-500
-                                    "
-                                >
-                                    Update the user's personal
-                                    information below.
-                                </p>
-                            </div>
-                        </div>
+                            Personal Information
+                        </h3>
 
 
                         <div
@@ -579,7 +468,6 @@ function EditUserModal({
                                 md:grid-cols-2
                             "
                         >
-
                             <FormField
                                 label="First Name"
                                 required
@@ -593,8 +481,12 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 />
                             </FormField>
@@ -613,8 +505,12 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 />
                             </FormField>
@@ -634,8 +530,12 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 />
                             </FormField>
@@ -653,8 +553,12 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 >
                                     <option value="">
@@ -677,7 +581,7 @@ function EditUserModal({
 
 
                             <FormField
-                                label="Personal Email"
+                                label="Email"
                                 required
                             >
                                 <input
@@ -689,8 +593,12 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 />
                             </FormField>
@@ -709,14 +617,22 @@ function EditUserModal({
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={saving}
-                                    className={inputClass}
+                                    disabled={
+                                        saving
+                                    }
+                                    className={
+                                        inputClass
+                                    }
                                     required
                                 />
                             </FormField>
 
 
-                            <div className="md:col-span-2">
+                            <div
+                                className="
+                                    md:col-span-2
+                                "
+                            >
                                 <FormField
                                     label="Address"
                                     required
@@ -730,75 +646,27 @@ function EditUserModal({
                                         onChange={
                                             handleChange
                                         }
-                                        disabled={saving}
-                                        className={inputClass}
+                                        disabled={
+                                            saving
+                                        }
+                                        className={
+                                            inputClass
+                                        }
                                         required
                                     />
                                 </FormField>
                             </div>
-
                         </div>
-
-                    </section>
-
-
-                    {/* ================================== */}
-                    {/* NOTE */}
-                    {/* ================================== */}
-
-                    <div
-                        className="
-                            flex
-                            items-start
-                            gap-3
-                            rounded-xl
-                            border
-                            border-blue-100
-                            bg-blue-50/70
-                            p-4
-                        "
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="
-                                mt-0.5
-                                h-4
-                                w-4
-                                shrink-0
-                                text-blue-600
-                            "
-                        >
-                            <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
-
-                            <path d="M12 9v4" />
-
-                            <path d="M12 16h.01" />
-                        </svg>
-
-
-                        <p
-                            className="
-                                text-[9px]
-                                leading-5
-                                text-blue-700
-                            "
-                        >
-                            Editing these details does not change the
-                            user's role, password, account status, or
-                            training assignments.
-                        </p>
                     </div>
 
 
-                    {/* ================================== */}
+                    {/* ================================================= */}
                     {/* ACTIONS */}
-                    {/* ================================== */}
+                    {/* ================================================= */}
 
                     <div
                         className="
+                            mt-6
                             flex
                             flex-col-reverse
                             gap-2
@@ -809,47 +677,60 @@ function EditUserModal({
                             sm:justify-end
                         "
                     >
-                        <ActionButton
-                            variant="secondary"
-                            onClick={onClose}
-                            disabled={saving}
+                        <button
+                            type="button"
+                            onClick={
+                                onClose
+                            }
+                            disabled={
+                                saving
+                            }
                             className="
-                                w-full
-                                justify-center
-                                sm:w-auto
+                                rounded-lg
+                                border
+                                border-slate-300
+                                bg-white
+                                px-5
+                                py-2.5
+                                text-[9px]
+                                font-medium
+                                text-slate-600
+                                hover:bg-slate-50
+                                disabled:opacity-50
                             "
                         >
                             Cancel
-                        </ActionButton>
+                        </button>
 
 
-                        <ActionButton
+                        <button
                             type="submit"
-                            variant="primary"
-                            disabled={saving}
+                            disabled={
+                                saving
+                            }
                             className="
-                                w-full
-                                justify-center
-                                sm:w-auto
+                                rounded-lg
+                                bg-blue-600
+                                px-5
+                                py-2.5
+                                text-[9px]
+                                font-medium
+                                text-white
+                                hover:bg-blue-700
+                                disabled:opacity-50
                             "
                         >
                             {saving
                                 ? "Saving..."
                                 : "Save Changes"}
-                        </ActionButton>
+                        </button>
                     </div>
-
                 </form>
-
             </div>
         </div>
     );
 }
 
-
-// ======================================================
-// FORM FIELD
-// ======================================================
 
 function FormField({
     label,
@@ -857,57 +738,53 @@ function FormField({
     children,
 }) {
     return (
-        <label className="block">
-
+        <label
+            className="
+                block
+            "
+        >
             <span
                 className="
-                    mb-2
-                    block
-                    text-[10px]
-                    font-semibold
-                    text-slate-700
+                    text-[9px]
+                    font-medium
+                    text-slate-600
                 "
             >
                 {label}
 
                 {required && (
-                    <span className="ml-1 text-red-500">
-                        *
+                    <span
+                        className="
+                            text-red-500
+                        "
+                    >
+                        {" "}*
                     </span>
                 )}
             </span>
 
 
-            {children}
-
+            <div
+                className="
+                    mt-2
+                "
+            >
+                {children}
+            </div>
         </label>
     );
 }
 
 
-// ======================================================
-// INFO ITEM
-// ======================================================
-
-function InfoItem({
+function InformationItem({
     label,
     value,
 }) {
     return (
-        <div
-            className="
-                rounded-lg
-                border
-                border-slate-100
-                bg-white
-                px-3
-                py-2.5
-            "
-        >
+        <div>
             <p
                 className="
-                    text-[8px]
-                    font-semibold
+                    text-[7px]
                     uppercase
                     tracking-wide
                     text-slate-400
@@ -921,10 +798,10 @@ function InfoItem({
                 className="
                     mt-1
                     break-words
-                    text-[10px]
-                    font-semibold
+                    text-[9px]
+                    font-medium
                     capitalize
-                    text-slate-800
+                    text-slate-700
                 "
             >
                 {value}
@@ -934,29 +811,22 @@ function InfoItem({
 }
 
 
-// ======================================================
-// INPUT STYLE
-// ======================================================
-
 const inputClass = `
-    h-11
+    h-10
     w-full
-    rounded-xl
+    rounded-lg
     border
     border-slate-300
     bg-white
     px-3
-    text-[10px]
-    text-slate-800
+    text-[9px]
+    text-slate-700
     outline-none
-    transition
     placeholder:text-slate-400
     focus:border-blue-500
-    focus:ring-2
-    focus:ring-blue-100
     disabled:cursor-not-allowed
-    disabled:bg-slate-100
-    disabled:text-slate-500
+    disabled:bg-slate-50
+    disabled:text-slate-400
 `;
 
 

@@ -7,7 +7,6 @@ function LearningSectionList({
     currentSectionIndex = 0,
     onSelectSection,
 }) {
-
     // ======================================================
     // EMPTY
     // ======================================================
@@ -17,231 +16,142 @@ function LearningSectionList({
         0
     ) {
         return (
-            <EmptyState
-                title="No learning sections available."
-                description="This programme does not currently contain active learning content."
-            />
+            <div
+                className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+                <EmptyState
+                    title="No learning sections available."
+                    description="This programme does not currently contain active learning content."
+                    icon="training"
+                />
+            </div>
         );
     }
 
 
     // ======================================================
-    // PROGRESS
+    // POSITION
     // ======================================================
 
     const progressPercentage =
-        sections.length > 0
-            ? Math.round(
-                ((currentSectionIndex + 1) /
-                    sections.length) *
-                100
-            )
-            : 0;
+        Math.round(
+            (
+                (
+                    currentSectionIndex +
+                    1
+                ) /
+                sections.length
+            ) *
+            100
+        );
 
+
+    // ======================================================
+    // UI
+    // ======================================================
 
     return (
         <aside
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
                 shadow-sm
             "
         >
-
             {/* ================================================= */}
             {/* HEADER */}
             {/* ================================================= */}
 
             <div
                 className="
-                    relative
-                    overflow-hidden
                     border-b
-                    border-blue-200
-                    bg-gradient-to-r
-                    from-[#073763]
-                    via-[#0b4f87]
-                    to-[#1769aa]
-                    p-4
-                    text-white
+                    border-slate-100
+                    px-4
+                    py-4
                 "
             >
+                <div
+                    className="
+                        flex
+                        items-center
+                        justify-between
+                        gap-3
+                    "
+                >
+                    <div>
+                        <h2
+                            className="
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
+                            "
+                        >
+                            Learning Sections
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                text-slate-400
+                            "
+                        >
+                            Section {currentSectionIndex + 1} of{" "}
+                            {sections.length}
+                        </p>
+                    </div>
+
+
+                    <span
+                        className="
+                            text-[8px]
+                            font-medium
+                            text-blue-600
+                        "
+                    >
+                        {progressPercentage}%
+                    </span>
+                </div>
+
 
                 <div
                     className="
-                        pointer-events-none
-                        absolute
-                        -right-10
-                        -top-10
-                        h-28
-                        w-28
+                        mt-3
+                        h-1.5
+                        overflow-hidden
                         rounded-full
-                        bg-white/10
+                        bg-slate-200
                     "
-                />
-
-
-                <div className="relative">
-
+                >
                     <div
                         className="
-                            flex
-                            items-start
-                            gap-3
+                            h-full
+                            rounded-full
+                            bg-blue-600
+                            transition-all
+                            duration-300
                         "
-                    >
-
-                        <div
-                            className="
-                                flex
-                                h-9
-                                w-9
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                border
-                                border-white/15
-                                bg-white/10
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <path d="M4 5h7v14H4z" />
-                                <path d="M13 5h7v14h-7z" />
-                                <path d="M7 9h2" />
-                                <path d="M16 9h2" />
-                            </svg>
-                        </div>
-
-
-                        <div>
-
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-[0.16em]
-                                    text-blue-100
-                                "
-                            >
-                                Learning Navigation
-                            </p>
-
-
-                            <h2
-                                className="
-                                    mt-1
-                                    text-sm
-                                    font-bold
-                                    text-white
-                                "
-                            >
-                                Learning Sections
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    leading-4
-                                    text-blue-100
-                                "
-                            >
-                                Select a section to read its training
-                                content.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ================================================= */}
-                    {/* PROGRESS */}
-                    {/* ================================================= */}
-
-                    <div className="mt-4">
-
-                        <div
-                            className="
-                                flex
-                                items-center
-                                justify-between
-                                gap-3
-                            "
-                        >
-
-                            <span
-                                className="
-                                    text-[9px]
-                                    font-medium
-                                    text-blue-100
-                                "
-                            >
-                                Section {currentSectionIndex + 1} of{" "}
-                                {sections.length}
-                            </span>
-
-
-                            <span
-                                className="
-                                    text-[9px]
-                                    font-bold
-                                    text-white
-                                "
-                            >
-                                {progressPercentage}%
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            className="
-                                mt-2
-                                h-1.5
-                                overflow-hidden
-                                rounded-full
-                                bg-white/20
-                            "
-                        >
-
-                            <div
-                                className="
-                                    h-full
-                                    rounded-full
-                                    bg-white
-                                    transition-all
-                                    duration-300
-                                "
-                                style={{
-                                    width:
-                                        `${progressPercentage}%`,
-                                }}
-                            />
-
-                        </div>
-
-                    </div>
-
+                        style={{
+                            width:
+                                `${progressPercentage}%`,
+                        }}
+                    />
                 </div>
-
             </div>
 
 
             {/* ================================================= */}
-            {/* MOBILE LIST */}
+            {/* MOBILE NAVIGATION */}
             {/* ================================================= */}
 
             <div
@@ -253,7 +163,6 @@ function LearningSectionList({
                     lg:hidden
                 "
             >
-
                 <div
                     className="
                         flex
@@ -261,13 +170,11 @@ function LearningSectionList({
                         gap-2
                     "
                 >
-
                     {sections.map(
                         (
                             section,
                             index
                         ) => {
-
                             const selected =
                                 index ===
                                 currentSectionIndex;
@@ -281,29 +188,27 @@ function LearningSectionList({
                                     }
                                     type="button"
                                     onClick={() =>
-                                        onSelectSection(
+                                        onSelectSection?.(
                                             index
                                         )
                                     }
                                     className={`
                                         flex
-                                        max-w-[220px]
+                                        max-w-[210px]
                                         items-center
                                         gap-2
-                                        rounded-xl
+                                        rounded-lg
                                         border
                                         px-3
                                         py-2.5
                                         text-left
-                                        transition
 
                                         ${selected
-                                            ? "border-blue-300 bg-blue-50 text-blue-700 shadow-sm"
-                                            : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-slate-50"
+                                            ? "border-blue-300 bg-blue-50"
+                                            : "border-slate-200 bg-white"
                                         }
                                     `}
                                 >
-
                                     <SectionNumber
                                         number={
                                             index +
@@ -316,28 +221,32 @@ function LearningSectionList({
 
 
                                     <span
-                                        className="
+                                        className={`
                                             max-w-[150px]
                                             truncate
-                                            text-[10px]
-                                            font-semibold
-                                        "
-                                    >
-                                        {section.title}
-                                    </span>
+                                            text-[8px]
+                                            font-medium
 
+                                            ${selected
+                                                ? "text-blue-700"
+                                                : "text-slate-600"
+                                            }
+                                        `}
+                                    >
+                                        {
+                                            section.title
+                                        }
+                                    </span>
                                 </button>
                             );
                         }
                     )}
-
                 </div>
-
             </div>
 
 
             {/* ================================================= */}
-            {/* DESKTOP SECTION LIST */}
+            {/* DESKTOP LIST */}
             {/* ================================================= */}
 
             <div
@@ -348,20 +257,13 @@ function LearningSectionList({
                     lg:block
                 "
             >
-
                 {sections.map(
                     (
                         section,
                         index
                     ) => {
-
                         const selected =
                             index ===
-                            currentSectionIndex;
-
-
-                        const completed =
-                            index <
                             currentSectionIndex;
 
 
@@ -373,42 +275,23 @@ function LearningSectionList({
                                 }
                                 type="button"
                                 onClick={() =>
-                                    onSelectSection(
+                                    onSelectSection?.(
                                         index
                                     )
                                 }
                                 className={`
-                                    relative
                                     w-full
                                     px-4
-                                    py-4
+                                    py-3
                                     text-left
-                                    transition-all
-                                    duration-200
+                                    transition
 
                                     ${selected
-                                        ? "bg-gradient-to-r from-blue-50 to-white"
+                                        ? "bg-blue-50"
                                         : "bg-white hover:bg-slate-50"
                                     }
                                 `}
                             >
-
-                                {/* ACTIVE LINE */}
-
-                                {selected && (
-                                    <span
-                                        className="
-                                            absolute
-                                            bottom-0
-                                            left-0
-                                            top-0
-                                            w-1
-                                            bg-blue-500
-                                        "
-                                    />
-                                )}
-
-
                                 <div
                                     className="
                                         flex
@@ -416,7 +299,6 @@ function LearningSectionList({
                                         gap-3
                                     "
                                 >
-
                                     <SectionNumber
                                         number={
                                             index +
@@ -424,9 +306,6 @@ function LearningSectionList({
                                         }
                                         selected={
                                             selected
-                                        }
-                                        completed={
-                                            completed
                                         }
                                     />
 
@@ -437,221 +316,64 @@ function LearningSectionList({
                                             flex-1
                                         "
                                     >
-
                                         <div
                                             className="
                                                 flex
-                                                flex-wrap
-                                                items-center
+                                                items-start
+                                                justify-between
                                                 gap-2
                                             "
                                         >
-
                                             <p
                                                 className={`
-                                                    break-words
-                                                    text-[11px]
-                                                    font-semibold
+                                                    truncate
+                                                    text-[9px]
+                                                    font-medium
 
                                                     ${selected
                                                         ? "text-blue-700"
-                                                        : "text-slate-800"
+                                                        : "text-slate-700"
                                                     }
                                                 `}
                                             >
-                                                {section.title}
+                                                {
+                                                    section.title
+                                                }
                                             </p>
 
 
-                                            <StatusBadge
-                                                status={
-                                                    section.status ||
-                                                    "active"
-                                                }
-                                            />
-
+                                            {section.status && (
+                                                <StatusBadge
+                                                    status={
+                                                        section.status
+                                                    }
+                                                />
+                                            )}
                                         </div>
 
 
                                         {section.content && (
                                             <p
                                                 className="
-                                                    mt-1.5
+                                                    mt-1
                                                     line-clamp-2
-                                                    text-[9px]
+                                                    text-[7px]
                                                     leading-4
-                                                    text-slate-500
+                                                    text-slate-400
                                                 "
                                             >
-                                                {section.content}
+                                                {
+                                                    section.content
+                                                }
                                             </p>
                                         )}
-
-
-                                        <div
-                                            className="
-                                                mt-2
-                                                flex
-                                                flex-wrap
-                                                items-center
-                                                gap-2
-                                            "
-                                        >
-
-                                            {selected && (
-                                                <span
-                                                    className="
-                                                        inline-flex
-                                                        items-center
-                                                        gap-1
-                                                        rounded-full
-                                                        bg-blue-100
-                                                        px-2
-                                                        py-1
-                                                        text-[8px]
-                                                        font-semibold
-                                                        text-blue-700
-                                                    "
-                                                >
-                                                    <span
-                                                        className="
-                                                            h-1.5
-                                                            w-1.5
-                                                            rounded-full
-                                                            bg-blue-500
-                                                        "
-                                                    />
-
-                                                    Currently Reading
-                                                </span>
-                                            )}
-
-
-                                            {completed && (
-                                                <span
-                                                    className="
-                                                        inline-flex
-                                                        items-center
-                                                        gap-1
-                                                        text-[8px]
-                                                        font-semibold
-                                                        text-emerald-600
-                                                    "
-                                                >
-                                                    ✓ Viewed
-                                                </span>
-                                            )}
-
-
-                                            {section.imageUrl && (
-                                                <span
-                                                    className="
-                                                        inline-flex
-                                                        items-center
-                                                        gap-1
-                                                        text-[8px]
-                                                        font-medium
-                                                        text-slate-400
-                                                    "
-                                                >
-                                                    <svg
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.8"
-                                                        className="h-3 w-3"
-                                                    >
-                                                        <rect
-                                                            x="3"
-                                                            y="4"
-                                                            width="18"
-                                                            height="16"
-                                                            rx="2"
-                                                        />
-
-                                                        <circle
-                                                            cx="8"
-                                                            cy="9"
-                                                            r="2"
-                                                        />
-
-                                                        <path d="m4 18 5-5 3 3 3-4 5 6" />
-                                                    </svg>
-
-                                                    Image
-                                                </span>
-                                            )}
-
-                                        </div>
-
                                     </div>
-
                                 </div>
-
                             </button>
                         );
                     }
                 )}
-
             </div>
-
-
-            {/* ================================================= */}
-            {/* FOOTER */}
-            {/* ================================================= */}
-
-            <div
-                className="
-                    hidden
-                    border-t
-                    border-slate-100
-                    bg-slate-50/70
-                    px-4
-                    py-3
-                    lg:block
-                "
-            >
-
-                <div
-                    className="
-                        flex
-                        items-center
-                        gap-2
-                    "
-                >
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="
-                            h-4
-                            w-4
-                            shrink-0
-                            text-blue-500
-                        "
-                    >
-                        <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-                        <path d="m9 12 2 2 4-4" />
-                    </svg>
-
-
-                    <p
-                        className="
-                            text-[8px]
-                            leading-4
-                            text-slate-500
-                        "
-                    >
-                        Complete each section carefully before moving
-                        through the workplace safety programme.
-                    </p>
-
-                </div>
-
-            </div>
-
         </aside>
     );
 }
@@ -663,51 +385,29 @@ function LearningSectionList({
 
 function SectionNumber({
     number,
-    selected = false,
-    completed = false,
+    selected,
 }) {
-
-    let style =
-        "bg-slate-100 text-slate-500";
-
-
-    if (
-        completed
-    ) {
-        style =
-            "bg-emerald-100 text-emerald-700";
-    }
-
-
-    if (
-        selected
-    ) {
-        style =
-            "bg-blue-600 text-white shadow-sm";
-    }
-
-
     return (
-        <div
+        <span
             className={`
                 flex
-                h-8
-                w-8
+                h-7
+                w-7
                 shrink-0
                 items-center
                 justify-center
-                rounded-xl
-                text-[10px]
-                font-bold
-                transition
+                rounded-full
+                text-[8px]
+                font-semibold
 
-                ${style}
+                ${selected
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-100 text-slate-500"
+                }
             `}
         >
-            {completed && !selected
-                ? "✓"
-                : number}
-        </div>
+            {number}
+        </span>
     );
 }
 

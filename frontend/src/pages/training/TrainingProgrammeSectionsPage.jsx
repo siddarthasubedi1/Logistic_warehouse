@@ -9,7 +9,6 @@ import {
 
 
 function TrainingProgrammeSectionsPage() {
-
     // ======================================================
     // CURRENT USER
     // ======================================================
@@ -19,39 +18,19 @@ function TrainingProgrammeSectionsPage() {
 
 
     const role =
-        user?.role || "";
+        user?.role ||
+        "";
 
 
     // ======================================================
-    // ROLE CHECK
+    // DESCRIPTION
     // ======================================================
 
-    const isAdmin =
-        role === "admin";
-
-
-    const isTrainer =
-        role === "trainer";
-
-
-    // ======================================================
-    // PAGE DESCRIPTION
-    // ======================================================
-
-    let description =
-        "Manage the learning sections for this training programme.";
-
-
-    if (isAdmin) {
-        description =
-            "Create, edit, reorder, activate, and deactivate learning sections for this training programme.";
-    }
-
-
-    if (isTrainer) {
-        description =
-            "Manage learning content for training programmes that you own or are authorized to manage.";
-    }
+    const description =
+        role ===
+            "admin"
+            ? "Create, edit, reorder, activate and deactivate learning sections."
+            : "Manage learning content for programmes you are authorised to work with.";
 
 
     // ======================================================
@@ -60,15 +39,21 @@ function TrainingProgrammeSectionsPage() {
 
     return (
         <DashboardLayout
-            role={role}
+            role={
+                role
+            }
             showHeader={false}
         >
             <TrainingManagementShell
-                title="Programme Learning Sections"
-                description={description}
+                title="Learning Sections"
+                description={
+                    description
+                }
             >
                 <LearningSectionManager
-                    role={role}
+                    role={
+                        role
+                    }
                 />
             </TrainingManagementShell>
         </DashboardLayout>

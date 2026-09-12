@@ -1,51 +1,36 @@
-import {
-  StrictMode,
-} from "react";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 
-import {
-  createRoot,
-} from "react-dom/client";
-
-import {
-  BrowserRouter,
-} from "react-router-dom";
-
-import App from "./App.jsx";
-
+import App from "./App";
 import "./index.css";
 
 
 // ======================================================
-// ROOT ELEMENT
+// APPLICATION ROOT
 // ======================================================
 
 const rootElement =
-  document.getElementById(
-    "root"
-  );
+  document.getElementById("root");
 
 
 if (!rootElement) {
   throw new Error(
-    "Root element was not found."
+    'Root element with id "root" was not found.'
   );
 }
 
 
 // ======================================================
-// APPLICATION
+// RENDER APPLICATION
 // ======================================================
 
-createRoot(
+ReactDOM.createRoot(
   rootElement
 ).render(
-  <StrictMode>
-
+  <React.StrictMode>
     <BrowserRouter>
-
       <App />
-
     </BrowserRouter>
-
-  </StrictMode>
+  </React.StrictMode>
 );

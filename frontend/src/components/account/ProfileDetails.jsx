@@ -5,6 +5,8 @@ import {
 
 import api from "../../services/api";
 
+import FeedbackAlert from "../ui/FeedbackAlert";
+
 
 const BACKEND_URL =
     "http://localhost:5000";
@@ -18,10 +20,6 @@ function ProfileDetails({
     const fileInputRef =
         useRef(null);
 
-
-    // ======================================================
-    // STATE
-    // ======================================================
 
     const [
         uploading,
@@ -49,17 +47,19 @@ function ProfileDetails({
         return (
             <section
                 className="
-                    overflow-hidden
-                    rounded-2xl
+                    rounded-xl
                     border
                     border-slate-200
                     bg-white
+                    p-5
                     shadow-sm
                 "
             >
-
-                <div className="animate-pulse p-5 sm:p-6">
-
+                <div
+                    className="
+                        animate-pulse
+                    "
+                >
                     <div
                         className="
                             flex
@@ -67,23 +67,25 @@ function ProfileDetails({
                             gap-4
                         "
                     >
-
                         <div
                             className="
-                                h-20
-                                w-20
-                                rounded-2xl
+                                h-16
+                                w-16
+                                rounded-full
                                 bg-slate-100
                             "
                         />
 
 
-                        <div className="flex-1">
-
+                        <div
+                            className="
+                                flex-1
+                            "
+                        >
                             <div
                                 className="
                                     h-4
-                                    w-40
+                                    w-36
                                     rounded
                                     bg-slate-100
                                 "
@@ -91,121 +93,75 @@ function ProfileDetails({
 
                             <div
                                 className="
-                                    mt-3
+                                    mt-2
                                     h-3
-                                    w-56
-                                    max-w-full
+                                    w-48
                                     rounded
                                     bg-slate-100
                                 "
                             />
-
                         </div>
-
                     </div>
 
 
                     <div
                         className="
-                            mt-7
+                            mt-6
                             grid
                             gap-3
                             sm:grid-cols-2
+                            lg:grid-cols-3
                         "
                     >
-
                         {Array.from({
-                            length: 10,
+                            length: 6,
                         }).map(
                             (
                                 _,
                                 index
                             ) => (
                                 <div
-                                    key={
-                                        index
-                                    }
+                                    key={index}
                                     className="
                                         h-16
-                                        rounded-xl
+                                        rounded-lg
                                         bg-slate-100
                                     "
                                 />
                             )
                         )}
-
                     </div>
-
                 </div>
-
             </section>
         );
     }
 
 
     // ======================================================
-    // NO USER
+    // EMPTY
     // ======================================================
 
     if (!user) {
         return (
             <section
                 className="
-                    rounded-2xl
+                    rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    p-6
+                    p-8
+                    text-center
                     shadow-sm
                 "
             >
-
-                <div className="text-center">
-
-                    <div
-                        className="
-                            mx-auto
-                            flex
-                            h-11
-                            w-11
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-slate-100
-                            text-slate-500
-                        "
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-5 w-5"
-                        >
-                            <circle
-                                cx="12"
-                                cy="8"
-                                r="3"
-                            />
-
-                            <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-                        </svg>
-                    </div>
-
-
-                    <p
-                        className="
-                            mt-3
-                            text-[11px]
-                            font-semibold
-                            text-slate-600
-                        "
-                    >
-                        Profile information is unavailable.
-                    </p>
-
-                </div>
-
+                <p
+                    className="
+                        text-[10px]
+                        text-slate-500
+                    "
+                >
+                    Profile information is unavailable.
+                </p>
             </section>
         );
     }
@@ -216,7 +172,8 @@ function ProfileDetails({
     // ======================================================
 
     const fullName =
-        `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+        `${user.firstName || ""} ${user.lastName || ""}`
+            .trim() ||
         "User";
 
 
@@ -233,8 +190,16 @@ function ProfileDetails({
             : "";
 
 
+    const assignedSections =
+        Array.isArray(
+            user.assignedTrainingSections
+        )
+            ? user.assignedTrainingSections
+            : [];
+
+
     // ======================================================
-    // OPEN IMAGE PICKER
+    // UPLOAD IMAGE
     // ======================================================
 
     const handleAvatarClick =
@@ -245,7 +210,6 @@ function ProfileDetails({
 
 
             setImageError("");
-
             setImageSuccess("");
 
 
@@ -253,10 +217,6 @@ function ProfileDetails({
                 ?.click();
         };
 
-
-    // ======================================================
-    // IMAGE UPLOAD
-    // ======================================================
 
     const handleImageChange =
         async (
@@ -268,7 +228,6 @@ function ProfileDetails({
 
 
             setImageError("");
-
             setImageSuccess("");
 
 
@@ -293,7 +252,6 @@ function ProfileDetails({
                     "Only JPG, PNG and WebP images are allowed."
                 );
 
-
                 event.target.value =
                     "";
 
@@ -309,7 +267,6 @@ function ProfileDetails({
                     "Profile image must not be larger than 2 MB."
                 );
 
-
                 event.target.value =
                     "";
 
@@ -318,9 +275,7 @@ function ProfileDetails({
 
 
             try {
-                setUploading(
-                    true
-                );
+                setUploading(true);
 
 
                 const formData =
@@ -342,20 +297,15 @@ function ProfileDetails({
 
 
                 const updatedUser =
-                    response.data
-                        ?.user;
+                    response.data?.user;
 
 
                 if (!updatedUser) {
                     throw new Error(
-                        "The server did not return the updated profile."
+                        "Updated profile was not returned."
                     );
                 }
 
-
-                // ===========================================
-                // UPDATE SESSION STORAGE
-                // ===========================================
 
                 const storedUserRaw =
                     sessionStorage.getItem(
@@ -373,7 +323,6 @@ function ProfileDetails({
                                 storedUserRaw
                             )
                             : {};
-
                 } catch {
                     storedUser = {};
                 }
@@ -393,16 +342,14 @@ function ProfileDetails({
                 );
 
 
-                // ===========================================
-                // UPDATE PARENT
-                // ===========================================
-
                 onProfileImageUpdated?.(
                     updatedUser
                 );
 
 
                 setImageSuccess(
+                    response.data
+                        ?.message ||
                     "Profile image updated successfully."
                 );
 
@@ -417,97 +364,60 @@ function ProfileDetails({
                     error.response
                         ?.data
                         ?.message ||
-                    error.message ||
-                    "Unable to update profile image."
+                    "Unable to upload profile image."
                 );
 
             } finally {
-                setUploading(
-                    false
-                );
+                setUploading(false);
 
-
-                if (
-                    fileInputRef.current
-                ) {
-                    fileInputRef.current.value =
-                        "";
-                }
+                event.target.value =
+                    "";
             }
         };
 
 
     // ======================================================
-    // PAGE
+    // UI
     // ======================================================
 
     return (
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
                 shadow-sm
             "
         >
-
-            {/* ================================================= */}
             {/* PROFILE TOP */}
-            {/* ================================================= */}
 
             <div
                 className="
-                    relative
-                    overflow-hidden
                     border-b
                     border-slate-100
-                    bg-gradient-to-br
-                    from-slate-50
-                    via-white
-                    to-blue-50
-                    p-5
-                    sm:p-6
+                    p-4
+                    sm:p-5
                 "
             >
-
                 <div
                     className="
-                        pointer-events-none
-                        absolute
-                        -right-14
-                        -top-16
-                        h-44
-                        w-44
-                        rounded-full
-                        bg-blue-100/60
-                        blur-2xl
-                    "
-                />
-
-
-                <div
-                    className="
-                        relative
                         flex
                         flex-col
-                        gap-5
+                        gap-4
                         sm:flex-row
                         sm:items-center
                     "
                 >
-
-                    {/* AVATAR */}
+                    {/* IMAGE */}
 
                     <div
                         className="
                             relative
                             w-fit
-                            shrink-0
                         "
                     >
-
                         <button
                             type="button"
                             onClick={
@@ -516,20 +426,20 @@ function ProfileDetails({
                             disabled={
                                 uploading
                             }
-                            title="Change profile image"
                             className="
                                 group
                                 relative
                                 block
-                                rounded-2xl
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-blue-500
-                                focus:ring-offset-2
-                                disabled:cursor-wait
+                                h-20
+                                w-20
+                                overflow-hidden
+                                rounded-full
+                                border-4
+                                border-white
+                                bg-blue-50
+                                shadow-sm
                             "
                         >
-
                             {profileImageUrl ? (
                                 <img
                                     src={
@@ -539,138 +449,49 @@ function ProfileDetails({
                                         `${fullName} profile`
                                     }
                                     className="
-                                        h-24
-                                        w-24
-                                        rounded-2xl
-                                        border-4
-                                        border-white
+                                        h-full
+                                        w-full
                                         object-cover
-                                        shadow-lg
                                     "
                                 />
                             ) : (
-                                <div
+                                <span
                                     className="
                                         flex
-                                        h-24
-                                        w-24
+                                        h-full
+                                        w-full
                                         items-center
                                         justify-center
-                                        rounded-2xl
-                                        border-4
-                                        border-white
-                                        bg-gradient-to-br
-                                        from-blue-100
-                                        to-blue-200
-                                        text-3xl
-                                        font-bold
-                                        text-blue-700
-                                        shadow-lg
+                                        text-xl
+                                        font-semibold
+                                        text-blue-600
                                     "
                                 >
                                     {initial}
-                                </div>
+                                </span>
                             )}
 
 
                             <span
                                 className="
                                     absolute
-                                    inset-1
+                                    inset-0
                                     flex
                                     items-center
                                     justify-center
-                                    rounded-xl
-                                    bg-slate-950/0
+                                    bg-slate-900/50
+                                    text-[8px]
+                                    font-medium
                                     text-white
                                     opacity-0
                                     transition
-                                    group-hover:bg-slate-950/45
                                     group-hover:opacity-100
                                 "
                             >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-5 w-5"
-                                >
-                                    <path d="M14.5 4 16 6h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l1.5-2h5Z" />
-
-                                    <circle
-                                        cx="12"
-                                        cy="12"
-                                        r="3"
-                                    />
-                                </svg>
-
+                                {uploading
+                                    ? "Uploading..."
+                                    : "Change"}
                             </span>
-
-
-                            {uploading && (
-                                <span
-                                    className="
-                                        absolute
-                                        inset-1
-                                        flex
-                                        items-center
-                                        justify-center
-                                        rounded-xl
-                                        bg-slate-950/65
-                                        text-[9px]
-                                        font-semibold
-                                        text-white
-                                    "
-                                >
-                                    Uploading...
-                                </span>
-                            )}
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            onClick={
-                                handleAvatarClick
-                            }
-                            disabled={
-                                uploading
-                            }
-                            title="Change profile image"
-                            className="
-                                absolute
-                                -bottom-2
-                                -right-2
-                                flex
-                                h-8
-                                w-8
-                                items-center
-                                justify-center
-                                rounded-xl
-                                border-[3px]
-                                border-white
-                                bg-blue-600
-                                text-white
-                                shadow-md
-                                transition
-                                hover:bg-blue-700
-                                disabled:opacity-50
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                className="h-3.5 w-3.5"
-                            >
-                                <path d="M12 20h9" />
-
-                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                            </svg>
                         </button>
 
 
@@ -679,479 +500,295 @@ function ProfileDetails({
                                 fileInputRef
                             }
                             type="file"
-                            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                            accept="image/jpeg,image/png,image/webp"
                             onChange={
                                 handleImageChange
                             }
                             className="hidden"
                         />
-
                     </div>
 
 
-                    {/* USER INFORMATION */}
+                    {/* NAME */}
 
                     <div
                         className="
                             min-w-0
-                            flex-1
                         "
                     >
-
-                        <div
+                        <h2
                             className="
-                                flex
-                                flex-wrap
-                                items-center
-                                gap-2
+                                break-words
+                                text-[16px]
+                                font-semibold
+                                text-slate-800
                             "
                         >
-
-                            <h2
-                                className="
-                                    break-words
-                                    text-lg
-                                    font-bold
-                                    text-slate-900
-                                "
-                            >
-                                {fullName}
-                            </h2>
-
-
-                            <span
-                                className={`
-                                    inline-flex
-                                    items-center
-                                    gap-1.5
-                                    rounded-full
-                                    px-2.5
-                                    py-1
-                                    text-[9px]
-                                    font-semibold
-                                    ring-1
-                                    ring-inset
-
-                                    ${user.status ===
-                                        "active"
-                                        ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
-                                        : "bg-red-50 text-red-600 ring-red-100"
-                                    }
-                                `}
-                            >
-
-                                <span
-                                    className={`
-                                        h-1.5
-                                        w-1.5
-                                        rounded-full
-
-                                        ${user.status ===
-                                            "active"
-                                            ? "bg-emerald-500"
-                                            : "bg-red-500"
-                                        }
-                                    `}
-                                />
-
-                                {user.status ===
-                                    "active"
-                                    ? "Active Account"
-                                    : "Deactivated Account"}
-
-                            </span>
-
-                        </div>
+                            {fullName}
+                        </h2>
 
 
                         <p
                             className="
                                 mt-1
-                                text-[10px]
-                                font-semibold
-                                capitalize
-                                text-blue-600
+                                text-[9px]
+                                text-slate-400
                             "
                         >
-                            {user.role} Account
+                            @{user.username || "—"}
                         </p>
+
+
+                        <div
+                            className="
+                                mt-2
+                                flex
+                                flex-wrap
+                                gap-2
+                            "
+                        >
+                            <Badge>
+                                {formatLabel(
+                                    user.role
+                                )}
+                            </Badge>
+
+
+                            <Badge>
+                                {formatLabel(
+                                    user.status
+                                )}
+                            </Badge>
+                        </div>
 
 
                         <p
                             className="
                                 mt-3
-                                max-w-lg
-                                text-[9px]
-                                leading-5
-                                text-slate-500
+                                text-[7px]
+                                text-slate-400
                             "
                         >
-                            Click your profile image or the edit button
-                            to upload a JPG, PNG or WebP image up to
-                            2 MB.
+                            Click your profile image to upload a new image. Maximum 2 MB.
                         </p>
-
-
-                        <div
-                            className="
-                                mt-4
-                                flex
-                                flex-wrap
-                                gap-2
-                            "
-                        >
-
-                            <span
-                                className="
-                                    rounded-lg
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    text-slate-600
-                                "
-                            >
-                                @{user.username ||
-                                    "username"}
-                            </span>
-
-
-                            {user.email && (
-                                <span
-                                    className="
-                                        max-w-full
-                                        truncate
-                                        rounded-lg
-                                        border
-                                        border-slate-200
-                                        bg-white
-                                        px-3
-                                        py-1.5
-                                        text-[9px]
-                                        font-semibold
-                                        text-slate-600
-                                    "
-                                >
-                                    {user.email}
-                                </span>
-                            )}
-
-                        </div>
-
                     </div>
-
                 </div>
-
             </div>
 
 
-            {/* ================================================= */}
-            {/* IMAGE FEEDBACK */}
-            {/* ================================================= */}
+            {/* FEEDBACK */}
 
-            {(imageError ||
-                imageSuccess) && (
-                    <div
-                        className="
-                            px-4
-                            pt-4
-                            sm:px-6
-                            sm:pt-5
-                        "
-                    >
-
-                        {imageError && (
-                            <FeedbackMessage
-                                type="error"
-                                message={
-                                    imageError
-                                }
-                            />
-                        )}
+            <div
+                className="
+                    space-y-2
+                    px-4
+                    pt-4
+                    sm:px-5
+                "
+            >
+                <FeedbackAlert
+                    type="success"
+                    message={
+                        imageSuccess
+                    }
+                    onClose={() =>
+                        setImageSuccess("")
+                    }
+                />
 
 
-                        {imageSuccess && (
-                            <FeedbackMessage
-                                type="success"
-                                message={
-                                    imageSuccess
-                                }
-                            />
-                        )}
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        imageError
+                    }
+                    onClose={() =>
+                        setImageError("")
+                    }
+                />
+            </div>
 
-                    </div>
-                )}
 
-
-            {/* ================================================= */}
-            {/* PERSONAL DETAILS */}
-            {/* ================================================= */}
+            {/* DETAILS */}
 
             <div
                 className="
                     p-4
-                    sm:p-6
+                    sm:p-5
                 "
             >
-
-                <div
+                <h3
                     className="
-                        flex
-                        flex-col
-                        gap-3
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
+                        text-[11px]
+                        font-semibold
+                        text-slate-800
                     "
                 >
-
-                    <div>
-
-                        <h3
-                            className="
-                                text-sm
-                                font-bold
-                                text-slate-900
-                            "
-                        >
-                            Personal Details
-                        </h3>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[9px]
-                                text-slate-500
-                            "
-                        >
-                            Your account and personal information.
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        className="
-                            w-fit
-                            rounded-lg
-                            bg-slate-50
-                            px-3
-                            py-2
-                            text-[9px]
-                            font-semibold
-                            text-slate-500
-                        "
-                    >
-                        Read Only
-                    </span>
-
-                </div>
+                    Personal Information
+                </h3>
 
 
                 <div
                     className="
-                        mt-5
+                        mt-4
                         grid
                         gap-3
                         sm:grid-cols-2
+                        xl:grid-cols-3
                     "
                 >
-
                     <DetailField
                         label="First Name"
                         value={
                             user.firstName
                         }
-                        icon="user"
                     />
-
 
                     <DetailField
                         label="Last Name"
                         value={
                             user.lastName
                         }
-                        icon="user"
                     />
-
-
-                    <DetailField
-                        label="Username"
-                        value={
-                            user.username
-                        }
-                        icon="at"
-                    />
-
-
-                    <DetailField
-                        label="Email"
-                        value={
-                            user.email
-                        }
-                        icon="mail"
-                    />
-
-
-                    <DetailField
-                        label="Role"
-                        value={
-                            user.role
-                        }
-                        capitalize
-                        icon="role"
-                    />
-
-
-                    <DetailField
-                        label="Account Status"
-                        value={
-                            user.status
-                        }
-                        capitalize
-                        icon="status"
-                    />
-
 
                     <DetailField
                         label="Age"
                         value={
                             user.age
                         }
-                        icon="calendar"
                     />
-
 
                     <DetailField
                         label="Gender"
                         value={
-                            user.gender
+                            formatLabel(
+                                user.gender
+                            )
                         }
-                        capitalize
-                        icon="user"
                     />
 
+                    <DetailField
+                        label="Email"
+                        value={
+                            user.email ||
+                            user.personalEmail
+                        }
+                    />
 
                     <DetailField
                         label="Phone Number"
                         value={
                             user.phoneNumber
                         }
-                        icon="phone"
                     />
-
 
                     <DetailField
                         label="Address"
                         value={
-                            user.address
+                            formatAddress(
+                                user.address
+                            )
                         }
-                        icon="location"
                     />
 
+                    <DetailField
+                        label="Username"
+                        value={
+                            user.username
+                        }
+                    />
+
+                    <DetailField
+                        label="Role"
+                        value={
+                            formatLabel(
+                                user.role
+                            )
+                        }
+                    />
                 </div>
 
-            </div>
 
+                {/* TRAINING */}
+
+                {assignedSections.length >
+                    0 && (
+                        <div
+                            className="
+                            mt-6
+                            border-t
+                            border-slate-100
+                            pt-5
+                        "
+                        >
+                            <h3
+                                className="
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
+                            "
+                            >
+                                Training Access
+                            </h3>
+
+
+                            <div
+                                className="
+                                mt-3
+                                flex
+                                flex-wrap
+                                gap-2
+                            "
+                            >
+                                {assignedSections.map(
+                                    (
+                                        section
+                                    ) => (
+                                        <span
+                                            key={
+                                                section
+                                            }
+                                            className="
+                                            rounded-full
+                                            bg-blue-50
+                                            px-3
+                                            py-1.5
+                                            text-[8px]
+                                            font-medium
+                                            text-blue-600
+                                        "
+                                        >
+                                            {formatTrainingSection(
+                                                section
+                                            )}
+                                        </span>
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+            </div>
         </section>
     );
 }
 
 
-// ======================================================
-// FEEDBACK
-// ======================================================
-
-function FeedbackMessage({
-    type,
-    message,
-}) {
-    const success =
-        type ===
-        "success";
-
-
-    return (
-        <div
-            className={`
-                flex
-                items-start
-                gap-2
-                rounded-xl
-                border
-                px-4
-                py-3
-                text-[10px]
-
-                ${success
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-red-200 bg-red-50 text-red-600"
-                }
-            `}
-        >
-
-            <span
-                className="
-                    font-bold
-                "
-            >
-                {success
-                    ? "✓"
-                    : "!"}
-            </span>
-
-
-            <span>
-                {message}
-            </span>
-
-        </div>
-    );
-}
-
-
-// ======================================================
-// DETAIL FIELD
-// ======================================================
-
 function DetailField({
     label,
     value,
-    capitalize = false,
-    icon,
 }) {
-    const displayValue =
-        value === null ||
-            value === undefined ||
-            value === ""
-            ? "Not provided"
-            : String(
-                value
-            );
-
-
     return (
         <div
             className="
-                rounded-xl
-                border
-                border-slate-200
-                bg-slate-50/60
+                min-w-0
+                rounded-lg
+                bg-slate-50
                 p-3
-                transition
-                hover:border-blue-100
-                hover:bg-blue-50/30
             "
         >
-
             <p
                 className="
-                    text-[8px]
-                    font-semibold
+                    text-[7px]
                     uppercase
                     tracking-wide
                     text-slate-400
@@ -1161,267 +798,126 @@ function DetailField({
             </p>
 
 
-            <div
+            <p
                 className="
-                    mt-2
-                    flex
-                    items-start
-                    gap-2.5
+                    mt-1
+                    break-words
+                    text-[9px]
+                    font-medium
+                    text-slate-700
                 "
             >
-
-                <div
-                    className="
-                        flex
-                        h-7
-                        w-7
-                        shrink-0
-                        items-center
-                        justify-center
-                        rounded-lg
-                        bg-white
-                        text-blue-600
-                        shadow-sm
-                    "
-                >
-
-                    <FieldIcon
-                        type={
-                            icon
-                        }
-                    />
-
-                </div>
-
-
-                <p
-                    className={`
-                        min-w-0
-                        break-words
-                        pt-1
-                        text-[10px]
-                        font-semibold
-                        text-slate-700
-
-                        ${capitalize
-                            ? "capitalize"
-                            : ""
-                        }
-                    `}
-                >
-                    {displayValue}
-                </p>
-
-            </div>
-
+                {value ===
+                    undefined ||
+                    value ===
+                    null ||
+                    value ===
+                    ""
+                    ? "—"
+                    : value}
+            </p>
         </div>
     );
 }
 
 
-// ======================================================
-// FIELD ICON
-// ======================================================
-
-function FieldIcon({
-    type,
+function Badge({
+    children,
 }) {
-    const common =
-        "h-3.5 w-3.5";
-
-
-    if (
-        type ===
-        "mail"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="2"
-                />
-
-                <path d="m4 7 8 6 8-6" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "phone"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <path d="M7 3h3l1.5 4-2 1.5a15 15 0 0 0 6 6l1.5-2L21 14v3c0 2-1 4-4 4C9.3 21 3 14.7 3 7c0-3 2-4 4-4Z" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "location"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
-
-                <circle
-                    cx="12"
-                    cy="10"
-                    r="2.5"
-                />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "calendar"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <rect
-                    x="4"
-                    y="5"
-                    width="16"
-                    height="15"
-                    rx="2"
-                />
-
-                <path d="M8 3v4M16 3v4M4 10h16" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "at"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <circle
-                    cx="12"
-                    cy="12"
-                    r="4"
-                />
-
-                <path d="M16 12v1a2 2 0 0 0 4 0v-1a8 8 0 1 0-3 6" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "role"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <path d="M12 3 5 6v5c0 4.7 2.9 8.2 7 10 4.1-1.8 7-5.3 7-10V6l-7-3Z" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "status"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className={
-                    common
-                }
-            >
-                <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
-                />
-
-                <path d="m8 12 2.5 2.5L16 9" />
-            </svg>
-        );
-    }
-
-
     return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className={
-                common
-            }
+        <span
+            className="
+                rounded-full
+                bg-slate-100
+                px-2.5
+                py-1
+                text-[7px]
+                font-medium
+                text-slate-600
+            "
         >
-            <circle
-                cx="12"
-                cy="8"
-                r="4"
-            />
+            {children}
+        </span>
+    );
+}
 
-            <path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6" />
-        </svg>
+
+function formatLabel(
+    value
+) {
+    if (!value) {
+        return "—";
+    }
+
+
+    return String(value)
+        .replace(
+            /[-_]/g,
+            " "
+        )
+        .replace(
+            /\b\w/g,
+            (letter) =>
+                letter.toUpperCase()
+        );
+}
+
+
+function formatAddress(
+    address
+) {
+    if (!address) {
+        return "—";
+    }
+
+
+    if (
+        typeof address ===
+        "string"
+    ) {
+        return address;
+    }
+
+
+    if (
+        typeof address ===
+        "object"
+    ) {
+        return Object.values(
+            address
+        )
+            .filter(Boolean)
+            .join(", ");
+    }
+
+
+    return String(
+        address
+    );
+}
+
+
+function formatTrainingSection(
+    section
+) {
+    if (
+        section ===
+        "manual-handling"
+    ) {
+        return "Manual Handling";
+    }
+
+
+    if (
+        section ===
+        "working-at-height"
+    ) {
+        return "Working at Height";
+    }
+
+
+    return formatLabel(
+        section
     );
 }
 

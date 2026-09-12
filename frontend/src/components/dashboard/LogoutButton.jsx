@@ -43,26 +43,15 @@ function LogoutButton() {
                 );
 
 
-                /*
-                    Backend logout route:
-
-                    POST /api/auth/logout
-
-                    Axios already uses withCredentials,
-                    so the refresh cookie is included.
-                */
-
+                // Existing backend logout endpoint.
                 await api.post(
                     "/auth/logout"
                 );
 
             } catch (error) {
                 /*
-                    Frontend session must still be removed
-                    if the logout request fails.
-
-                    This prevents users remaining inside
-                    protected frontend routes.
+                    Even if the backend request fails,
+                    the frontend session is still cleared.
                 */
 
                 console.error(
@@ -72,14 +61,14 @@ function LogoutButton() {
 
             } finally {
                 // ===========================================
-                // CLEAR SESSION
+                // CLEAR AUTH SESSION
                 // ===========================================
 
                 clearAuthSession();
 
 
                 // ===========================================
-                // LOGIN PAGE
+                // RETURN TO LOGIN
                 // ===========================================
 
                 navigate(
@@ -114,28 +103,27 @@ function LogoutButton() {
             className="
                 group
                 flex
-                min-h-[42px]
+                min-h-[40px]
                 w-full
                 items-center
                 gap-3
-                rounded-xl
+                rounded-md
                 px-3
-                py-2.5
+                py-2
                 text-left
-                text-[11px]
+                text-[10px]
                 font-medium
-                text-slate-200
+                text-slate-100
                 transition
-                hover:bg-red-500/10
-                hover:text-red-200
+                hover:bg-white/10
+                hover:text-white
                 focus:outline-none
                 focus:ring-2
-                focus:ring-red-300/30
+                focus:ring-white/20
                 disabled:cursor-not-allowed
-                disabled:opacity-60
+                disabled:opacity-50
             "
         >
-
             {/* ================================================= */}
             {/* ICON */}
             {/* ================================================= */}
@@ -143,20 +131,14 @@ function LogoutButton() {
             <span
                 className="
                     flex
-                    h-8
-                    w-8
+                    h-7
+                    w-7
                     shrink-0
                     items-center
                     justify-center
-                    rounded-lg
-                    bg-white/5
-                    text-slate-300
-                    transition
-                    group-hover:bg-red-500/10
-                    group-hover:text-red-200
+                    text-slate-200
                 "
             >
-
                 {loggingOut ? (
                     <span
                         className="
@@ -175,7 +157,7 @@ function LogoutButton() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="1.8"
-                        className="h-[17px] w-[17px]"
+                        className="h-[16px] w-[16px]"
                     >
                         <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
 
@@ -184,7 +166,6 @@ function LogoutButton() {
                         <path d="M18 12H8" />
                     </svg>
                 )}
-
             </span>
 
 
@@ -192,61 +173,15 @@ function LogoutButton() {
             {/* LABEL */}
             {/* ================================================= */}
 
-            <div
+            <span
                 className="
-                    min-w-0
-                    flex-1
+                    truncate
                 "
             >
-
-                <p
-                    className="
-                        truncate
-                        text-[11px]
-                        font-semibold
-                    "
-                >
-                    {loggingOut
-                        ? "Signing Out..."
-                        : "Logout"}
-                </p>
-
-
-                <p
-                    className="
-                        mt-0.5
-                        text-[8px]
-                        text-slate-400
-                        transition
-                        group-hover:text-red-200/70
-                    "
-                >
-                    End secure session
-                </p>
-
-            </div>
-
-
-            {!loggingOut && (
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="
-                        h-3.5
-                        w-3.5
-                        shrink-0
-                        text-slate-400
-                        transition
-                        group-hover:translate-x-0.5
-                        group-hover:text-red-200
-                    "
-                >
-                    <path d="m9 6 6 6-6 6" />
-                </svg>
-            )}
-
+                {loggingOut
+                    ? "Signing Out..."
+                    : "Logout"}
+            </span>
         </button>
     );
 }

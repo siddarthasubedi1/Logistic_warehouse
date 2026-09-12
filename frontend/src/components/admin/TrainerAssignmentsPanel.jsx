@@ -7,10 +7,8 @@ import {
 
 import api from "../../services/api";
 
-import ActionButton from "../ui/ActionButton";
 import FeedbackAlert from "../ui/FeedbackAlert";
 import LoadingCard from "../ui/LoadingCard";
-import StatusBadge from "../ui/StatusBadge";
 
 import {
     getApiErrorMessage,
@@ -20,7 +18,7 @@ import {
 
 
 // ======================================================
-// APPROVED SPRINT 1 BROAD TRAINING AREAS
+// TRAINING AREAS
 // ======================================================
 
 const TRAINING_SECTIONS = [
@@ -32,7 +30,7 @@ const TRAINING_SECTIONS = [
             "Manual Handling",
 
         description:
-            "Safe lifting, carrying and manual handling procedures.",
+            "Manual lifting, carrying and handling procedures.",
     },
 
     {
@@ -43,13 +41,13 @@ const TRAINING_SECTIONS = [
             "Working at Height",
 
         description:
-            "Safety procedures for working at elevated locations.",
+            "Training for safe work at elevated locations.",
     },
 ];
 
 
 // ======================================================
-// TRAINER ASSIGNMENTS PANEL
+// PANEL
 // ======================================================
 
 function TrainerAssignmentsPanel() {
@@ -58,35 +56,42 @@ function TrainerAssignmentsPanel() {
         setUsers,
     ] = useState([]);
 
+
     const [
         selectedUserId,
         setSelectedUserId,
     ] = useState("");
+
 
     const [
         selectedSections,
         setSelectedSections,
     ] = useState([]);
 
+
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("all");
+
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
+
     const [
         saving,
         setSaving,
     ] = useState(false);
 
+
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
+
 
     const [
         successMessage,
@@ -148,7 +153,7 @@ function TrainerAssignmentsPanel() {
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to load Trainers and Trainees."
+                        "Unable to load users."
                     )
                 );
 
@@ -171,7 +176,7 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // FILTER USERS
+    // FILTER
     // ======================================================
 
     const filteredUsers =
@@ -199,12 +204,12 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // SELECTED USER
+    // CURRENT USER
     // ======================================================
 
     const selectedUser =
-        useMemo(
-            () =>
+        useMemo(() => {
+            return (
                 users.find(
                     (
                         user
@@ -216,16 +221,17 @@ function TrainerAssignmentsPanel() {
                             selectedUserId
                         )
                 ) ||
-                null,
-            [
-                users,
-                selectedUserId,
-            ]
-        );
+                null
+            );
+
+        }, [
+            users,
+            selectedUserId,
+        ]);
 
 
     // ======================================================
-    // ROLE FILTER
+    // ROLE FILTER CHANGE
     // ======================================================
 
     const handleRoleFilterChange = (
@@ -235,17 +241,21 @@ function TrainerAssignmentsPanel() {
             event.target.value
         );
 
+
         setSelectedUserId(
             ""
         );
+
 
         setSelectedSections(
             []
         );
 
+
         setErrorMessage(
             ""
         );
+
 
         setSuccessMessage(
             ""
@@ -268,9 +278,11 @@ function TrainerAssignmentsPanel() {
             userId
         );
 
+
         setErrorMessage(
             ""
         );
+
 
         setSuccessMessage(
             ""
@@ -300,10 +312,7 @@ function TrainerAssignmentsPanel() {
         }
 
 
-        // ==================================================
-        // TRAINEE ALWAYS GETS BOTH
-        // ==================================================
-
+        // Trainees receive both areas.
         if (
             user.role ===
             "trainee"
@@ -321,10 +330,6 @@ function TrainerAssignmentsPanel() {
         }
 
 
-        // ==================================================
-        // TRAINER USES CURRENT ASSIGNMENTS
-        // ==================================================
-
         setSelectedSections(
             Array.isArray(
                 user.assignedTrainingSections
@@ -337,14 +342,15 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // TRAINER SECTION TOGGLE
+    // TOGGLE TRAINER AREA
     // ======================================================
 
     const toggleTrainingSection = (
         sectionId
     ) => {
         if (
-            selectedUser?.role !==
+            selectedUser
+                ?.role !==
             "trainer"
         ) {
             return;
@@ -355,6 +361,7 @@ function TrainerAssignmentsPanel() {
             ""
         );
 
+
         setSuccessMessage(
             ""
         );
@@ -363,21 +370,27 @@ function TrainerAssignmentsPanel() {
         setSelectedSections(
             (
                 current
-            ) =>
-                current.includes(
-                    sectionId
-                )
-                    ? current.filter(
+            ) => {
+                if (
+                    current.includes(
+                        sectionId
+                    )
+                ) {
+                    return current.filter(
                         (
                             item
                         ) =>
                             item !==
                             sectionId
-                    )
-                    : [
-                        ...current,
-                        sectionId,
-                    ]
+                    );
+                }
+
+
+                return [
+                    ...current,
+                    sectionId,
+                ];
+            }
         );
     };
 
@@ -389,7 +402,8 @@ function TrainerAssignmentsPanel() {
     const handleSave =
         async () => {
             if (
-                !selectedUser?._id
+                !selectedUser
+                    ?._id
             ) {
                 setErrorMessage(
                     "Please select a user."
@@ -406,14 +420,14 @@ function TrainerAssignmentsPanel() {
                 0
             ) {
                 setErrorMessage(
-                    "Please select at least one training section for the Trainer."
+                    "Please select at least one training section."
                 );
 
                 return;
             }
 
 
-            const sections =
+            const trainingSections =
                 selectedUser.role ===
                     "trainee"
                     ? TRAINING_SECTIONS.map(
@@ -430,9 +444,11 @@ function TrainerAssignmentsPanel() {
                     true
                 );
 
+
                 setErrorMessage(
                     ""
                 );
+
 
                 setSuccessMessage(
                     ""
@@ -442,9 +458,9 @@ function TrainerAssignmentsPanel() {
                 const response =
                     await api.patch(
                         `/admin/users/${selectedUser._id}/training-sections`,
+
                         {
-                            trainingSections:
-                                sections,
+                            trainingSections,
                         }
                     );
 
@@ -493,8 +509,7 @@ function TrainerAssignmentsPanel() {
                     } else {
                         setSelectedSections(
                             Array.isArray(
-                                refreshedUser
-                                    .assignedTrainingSections
+                                refreshedUser.assignedTrainingSections
                             )
                                 ? refreshedUser
                                     .assignedTrainingSections
@@ -541,14 +556,14 @@ function TrainerAssignmentsPanel() {
 
 
     // ======================================================
-    // UI
+    // PAGE
     // ======================================================
 
     return (
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
@@ -562,136 +577,46 @@ function TrainerAssignmentsPanel() {
 
             <div
                 className="
-                    relative
-                    overflow-hidden
                     border-b
                     border-slate-100
-                    bg-gradient-to-r
-                    from-white
-                    via-white
-                    to-blue-50
-                    p-5
-                    sm:p-6
+                    px-5
+                    py-4
                 "
             >
-
-                <div
+                <h2
                     className="
-                        pointer-events-none
-                        absolute
-                        -right-16
-                        -top-16
-                        h-40
-                        w-40
-                        rounded-full
-                        bg-blue-50
-                    "
-                />
-
-
-                <div
-                    className="
-                        relative
-                        z-10
-                        flex
-                        items-start
-                        gap-3
+                        text-[12px]
+                        font-semibold
+                        text-slate-800
                     "
                 >
-
-                    <div
-                        className="
-                            flex
-                            h-11
-                            w-11
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-blue-50
-                            text-blue-600
-                        "
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-5 w-5"
-                        >
-                            <circle
-                                cx="9"
-                                cy="8"
-                                r="3"
-                            />
-
-                            <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                            <path d="M16 5h5v5" />
-
-                            <path d="m21 5-6 6" />
-                        </svg>
-                    </div>
+                    Training Access
+                </h2>
 
 
-                    <div>
-                        <p
-                            className="
-                                text-[8px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.16em]
-                                text-blue-600
-                            "
-                        >
-                            Sprint 1 Training Access
-                        </p>
-
-
-                        <h2
-                            className="
-                                mt-1
-                                text-base
-                                font-bold
-                                text-slate-900
-                            "
-                        >
-                            Roles & Training Assignments
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-1
-                                max-w-2xl
-                                text-[10px]
-                                leading-5
-                                text-slate-500
-                            "
-                        >
-                            Control the broad training areas available
-                            to Trainer and Trainee accounts.
-                        </p>
-                    </div>
-
-                </div>
-
+                <p
+                    className="
+                        mt-1
+                        text-[8px]
+                        text-slate-400
+                    "
+                >
+                    View or update training areas for Trainer and
+                    Trainee accounts.
+                </p>
             </div>
 
 
             {/* ================================================= */}
-            {/* CONTENT */}
+            {/* BODY */}
             {/* ================================================= */}
 
             <div
                 className="
-                    space-y-5
-                    p-4
-                    sm:p-5
-                    lg:p-6
+                    space-y-4
+                    p-5
                 "
             >
-
                 <FeedbackAlert
                     type="success"
                     message={
@@ -719,7 +644,7 @@ function TrainerAssignmentsPanel() {
 
 
                 {/* ================================================= */}
-                {/* RULE */}
+                {/* SELECT USER */}
                 {/* ================================================= */}
 
                 <div
@@ -729,168 +654,104 @@ function TrainerAssignmentsPanel() {
                         md:grid-cols-2
                     "
                 >
-
-                    <RuleCard
-                        title="Trainer"
-                        text="A Trainer can be assigned Manual Handling, Working at Height, or both broad training areas."
-                        type="trainer"
-                    />
-
-
-                    <RuleCard
-                        title="Trainee"
-                        text="A Trainee automatically receives both broad training areas. The Administrator does not manually remove either area."
-                        type="trainee"
-                    />
-
-                </div>
-
-
-                {/* ================================================= */}
-                {/* SELECT USER */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-slate-50/50
-                        p-4
-                        sm:p-5
-                    "
-                >
-
-                    <h3
+                    <label
                         className="
-                            text-xs
-                            font-bold
-                            text-slate-900
+                            block
                         "
                     >
-                        Select Account
-                    </h3>
+                        <span
+                            className="
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Filter Role
+                        </span>
 
 
-                    <p
+                        <select
+                            value={
+                                roleFilter
+                            }
+                            onChange={
+                                handleRoleFilterChange
+                            }
+                            className={
+                                inputClass
+                            }
+                        >
+                            <option value="all">
+                                All Trainer & Trainee
+                            </option>
+
+                            <option value="trainer">
+                                Trainer
+                            </option>
+
+                            <option value="trainee">
+                                Trainee
+                            </option>
+                        </select>
+                    </label>
+
+
+                    <label
                         className="
-                            mt-1
-                            text-[9px]
-                            leading-5
-                            text-slate-500
+                            block
                         "
                     >
-                        First filter by role, then choose the Trainer or
-                        Trainee whose training access you want to view.
-                    </p>
+                        <span
+                            className="
+                                text-[8px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Select User
+                        </span>
 
 
-                    <div
-                        className="
-                            mt-4
-                            grid
-                            gap-4
-                            md:grid-cols-2
-                        "
-                    >
-
-                        <label className="block">
-
-                            <span
-                                className="
-                                    text-[10px]
-                                    font-semibold
-                                    text-slate-700
-                                "
-                            >
-                                Role Filter
-                            </span>
+                        <select
+                            value={
+                                selectedUserId
+                            }
+                            onChange={
+                                handleUserChange
+                            }
+                            className={
+                                inputClass
+                            }
+                        >
+                            <option value="">
+                                Select user
+                            </option>
 
 
-                            <select
-                                value={
-                                    roleFilter
-                                }
-                                onChange={
-                                    handleRoleFilterChange
-                                }
-                                className={
-                                    inputClass
-                                }
-                            >
-                                <option value="all">
-                                    All Trainer & Trainee
-                                </option>
-
-                                <option value="trainer">
-                                    Trainer
-                                </option>
-
-                                <option value="trainee">
-                                    Trainee
-                                </option>
-                            </select>
-
-                        </label>
-
-
-                        <label className="block">
-
-                            <span
-                                className="
-                                    text-[10px]
-                                    font-semibold
-                                    text-slate-700
-                                "
-                            >
-                                User
-                            </span>
-
-
-                            <select
-                                value={
-                                    selectedUserId
-                                }
-                                onChange={
-                                    handleUserChange
-                                }
-                                className={
-                                    inputClass
-                                }
-                            >
-                                <option value="">
-                                    Select user
-                                </option>
-
-
-                                {filteredUsers.map(
-                                    (
-                                        user
-                                    ) => (
-                                        <option
-                                            key={
-                                                user._id
-                                            }
-                                            value={
-                                                user._id
-                                            }
-                                        >
-                                            {getUserDisplayName(
-                                                user,
-                                                user.username ||
-                                                "User"
-                                            )}
-                                            {" — "}
-                                            {user.role}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-
-                        </label>
-
-                    </div>
-
+                            {filteredUsers.map(
+                                (
+                                    user
+                                ) => (
+                                    <option
+                                        key={
+                                            user._id
+                                        }
+                                        value={
+                                            user._id
+                                        }
+                                    >
+                                        {getUserDisplayName(
+                                            user,
+                                            user.username ||
+                                            "User"
+                                        )}
+                                        {" — "}
+                                        {user.role}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                    </label>
                 </div>
 
 
@@ -901,49 +762,43 @@ function TrainerAssignmentsPanel() {
                 {selectedUser && (
                     <div
                         className="
-                            rounded-xl
+                            mt-4
+                            rounded-lg
                             border
-                            border-blue-100
-                            bg-white
+                            border-slate-200
+                            bg-slate-50
                             p-4
-                            shadow-sm
-                            sm:p-5
                         "
                     >
-
                         <div
                             className="
                                 flex
                                 flex-col
-                                gap-4
+                                gap-3
                                 sm:flex-row
                                 sm:items-center
                                 sm:justify-between
                             "
                         >
-
                             <div
                                 className="
                                     flex
-                                    min-w-0
                                     items-center
                                     gap-3
                                 "
                             >
-
                                 <div
                                     className="
                                         flex
-                                        h-11
-                                        w-11
-                                        shrink-0
+                                        h-9
+                                        w-9
                                         items-center
                                         justify-center
                                         rounded-full
-                                        bg-[#073763]
-                                        text-sm
-                                        font-bold
-                                        text-white
+                                        bg-blue-50
+                                        text-[10px]
+                                        font-semibold
+                                        text-blue-600
                                     "
                                 >
                                     {getUserDisplayName(
@@ -957,112 +812,83 @@ function TrainerAssignmentsPanel() {
                                 </div>
 
 
-                                <div className="min-w-0">
-
-                                    <h3
+                                <div>
+                                    <p
                                         className="
-                                            truncate
-                                            text-xs
-                                            font-bold
-                                            text-slate-900
+                                            text-[10px]
+                                            font-semibold
+                                            text-slate-700
                                         "
                                     >
                                         {getUserDisplayName(
                                             selectedUser,
                                             selectedUser.username
                                         )}
-                                    </h3>
+                                    </p>
 
 
                                     <p
                                         className="
                                             mt-1
-                                            truncate
-                                            text-[9px]
-                                            text-slate-500
+                                            text-[8px]
+                                            capitalize
+                                            text-slate-400
                                         "
                                     >
-                                        {selectedUser.email ||
-                                            selectedUser.username ||
-                                            "—"}
+                                        {selectedUser.role}
+                                        {" · "}
+                                        {selectedUser.status}
                                     </p>
-
                                 </div>
-
                             </div>
-
-
-                            <div
-                                className="
-                                    flex
-                                    flex-wrap
-                                    gap-2
-                                "
-                            >
-                                <StatusBadge
-                                    status={
-                                        selectedUser.role
-                                    }
-                                />
-
-                                <StatusBadge
-                                    status={
-                                        selectedUser.status
-                                    }
-                                />
-                            </div>
-
                         </div>
 
 
                         {/* ================================================= */}
-                        {/* TRAINING AREAS */}
+                        {/* TRAINING */}
                         {/* ================================================= */}
 
                         <div
                             className="
-                                mt-5
+                                mt-4
                                 border-t
-                                border-slate-100
-                                pt-5
+                                border-slate-200
+                                pt-4
                             "
                         >
-
-                            <h3
+                            <p
                                 className="
-                                    text-xs
-                                    font-bold
-                                    text-slate-900
+                                    text-[9px]
+                                    font-medium
+                                    text-slate-600
                                 "
                             >
                                 Training Areas
-                            </h3>
+                            </p>
 
 
                             <p
                                 className="
                                     mt-1
-                                    text-[9px]
-                                    leading-5
-                                    text-slate-500
+                                    text-[8px]
+                                    text-slate-400
                                 "
                             >
                                 {selectedUser.role ===
                                     "trainee"
-                                    ? "Both areas are automatically required for Trainees."
-                                    : "Select one or both broad training areas for this Trainer."}
+                                    ? "Trainees receive both training areas automatically."
+                                    : "Select the training areas available to this Trainer."}
                             </p>
 
 
                             <div
                                 className="
-                                    mt-4
+                                    mt-3
                                     grid
                                     gap-3
-                                    md:grid-cols-2
+                                    sm:grid-cols-2
                                 "
                             >
-
                                 {TRAINING_SECTIONS.map(
                                     (
                                         section
@@ -1074,274 +900,139 @@ function TrainerAssignmentsPanel() {
 
 
                                         return (
-                                            <button
+                                            <label
                                                 key={
                                                     section.id
                                                 }
-                                                type="button"
-                                                disabled={
-                                                    selectedUser.role ===
-                                                    "trainee"
-                                                }
-                                                onClick={() =>
-                                                    toggleTrainingSection(
-                                                        section.id
-                                                    )
-                                                }
                                                 className={`
-                                                    rounded-xl
+                                                    flex
+                                                    items-start
+                                                    gap-3
+                                                    rounded-lg
                                                     border
                                                     p-4
-                                                    text-left
-                                                    transition
 
                                                     ${selected
-                                                        ? "border-blue-400 bg-blue-50 ring-1 ring-blue-100"
-                                                        : "border-slate-200 bg-white hover:border-blue-300"
+                                                        ? "border-blue-300 bg-blue-50"
+                                                        : "border-slate-200 bg-white"
                                                     }
 
                                                     ${selectedUser.role ===
                                                         "trainee"
                                                         ? "cursor-default"
-                                                        : ""
+                                                        : "cursor-pointer"
                                                     }
                                                 `}
                                             >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        selected
+                                                    }
+                                                    disabled={
+                                                        selectedUser.role ===
+                                                        "trainee" ||
+                                                        saving
+                                                    }
+                                                    onChange={() =>
+                                                        toggleTrainingSection(
+                                                            section.id
+                                                        )
+                                                    }
+                                                />
 
-                                                <div
-                                                    className="
-                                                        flex
-                                                        items-start
-                                                        gap-3
-                                                    "
-                                                >
 
-                                                    <span
-                                                        className={`
-                                                            flex
-                                                            h-6
-                                                            w-6
-                                                            shrink-0
-                                                            items-center
-                                                            justify-center
-                                                            rounded-lg
-                                                            border
-                                                            text-[10px]
-                                                            font-bold
-
-                                                            ${selected
-                                                                ? "border-blue-600 bg-blue-600 text-white"
-                                                                : "border-slate-300 bg-white text-transparent"
-                                                            }
-                                                        `}
+                                                <div>
+                                                    <p
+                                                        className="
+                                                            text-[9px]
+                                                            font-medium
+                                                            text-slate-700
+                                                        "
                                                     >
-                                                        ✓
-                                                    </span>
+                                                        {section.name}
+                                                    </p>
 
 
-                                                    <div>
-
-                                                        <p
-                                                            className="
-                                                                text-[10px]
-                                                                font-bold
-                                                                text-slate-800
-                                                            "
-                                                        >
-                                                            {section.name}
-                                                        </p>
-
-
-                                                        <p
-                                                            className="
-                                                                mt-1
-                                                                text-[9px]
-                                                                leading-5
-                                                                text-slate-500
-                                                            "
-                                                        >
-                                                            {section.description}
-                                                        </p>
-
-                                                    </div>
-
+                                                    <p
+                                                        className="
+                                                            mt-1
+                                                            text-[7px]
+                                                            leading-4
+                                                            text-slate-400
+                                                        "
+                                                    >
+                                                        {section.description}
+                                                    </p>
                                                 </div>
-
-                                            </button>
+                                            </label>
                                         );
                                     }
                                 )}
-
                             </div>
 
-                        </div>
 
+                            {/* SAVE */}
 
-                        {/* <div
-                            className="
-                                mt-5
-                                flex
-                                justify-end
-                                border-t
-                                border-slate-100
-                                pt-5
-                            "
-                        >
-
-                            <ActionButton
-                                variant="primary"
-                                disabled={
-                                    saving ||
-                                    selectedUser.status !==
-                                    "active"
-                                }
-                                onClick={
-                                    handleSave
-                                }
+                            <div
                                 className="
-                                    w-full
-                                    justify-center
-                                    sm:w-auto
+                                    mt-4
+                                    flex
+                                    justify-end
                                 "
                             >
-                                {saving
-                                    ? "Saving..."
-                                    : "Save Training Access"}
-                            </ActionButton>
-
-                        </div> */}
-
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleSave
+                                    }
+                                    disabled={
+                                        saving ||
+                                        selectedUser.status !==
+                                        "active"
+                                    }
+                                    className="
+                                        w-full
+                                        rounded-lg
+                                        bg-blue-600
+                                        px-5
+                                        py-2.5
+                                        text-[9px]
+                                        font-medium
+                                        text-white
+                                        hover:bg-blue-700
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-50
+                                        sm:w-auto
+                                    "
+                                >
+                                    {saving
+                                        ? "Saving..."
+                                        : "Save Training Access"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
-
             </div>
-
         </section>
     );
 }
 
 
-// ======================================================
-// RULE CARD
-// ======================================================
-
-function RuleCard({
-    title,
-    text,
-    type,
-}) {
-    const trainer =
-        type ===
-        "trainer";
-
-
-    return (
-        <div
-            className={`
-                rounded-xl
-                border
-                p-4
-
-                ${trainer
-                    ? "border-blue-100 bg-blue-50/60"
-                    : "border-emerald-100 bg-emerald-50/60"
-                }
-            `}
-        >
-
-            <div
-                className="
-                    flex
-                    items-start
-                    gap-3
-                "
-            >
-
-                <div
-                    className={`
-                        flex
-                        h-8
-                        w-8
-                        shrink-0
-                        items-center
-                        justify-center
-                        rounded-lg
-
-                        ${trainer
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-emerald-100 text-emerald-600"
-                        }
-                    `}
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-4 w-4"
-                    >
-                        <circle
-                            cx="12"
-                            cy="8"
-                            r="3"
-                        />
-
-                        <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-                    </svg>
-                </div>
-
-
-                <div>
-                    <h3
-                        className="
-                            text-[10px]
-                            font-bold
-                            text-slate-800
-                        "
-                    >
-                        {title}
-                    </h3>
-
-
-                    <p
-                        className="
-                            mt-1
-                            text-[9px]
-                            leading-5
-                            text-slate-500
-                        "
-                    >
-                        {text}
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-    );
-}
-
-
-// ======================================================
-// INPUT CLASS
-// ======================================================
-
 const inputClass = `
     mt-2
-    h-11
+    h-10
     w-full
-    rounded-xl
+    rounded-lg
     border
     border-slate-300
     bg-white
     px-3
-    text-[10px]
-    text-slate-800
+    text-[9px]
+    text-slate-700
     outline-none
-    transition
     focus:border-blue-500
-    focus:ring-2
-    focus:ring-blue-100
 `;
 
 

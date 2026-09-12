@@ -1,31 +1,60 @@
 import {
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
+import {
+    useNavigate,
+} from "react-router-dom";
+
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 
-import TrainerHeader from "../components/trainer/TrainerHeader";
-import TrainerModuleCard from "../components/trainer/TrainerModuleCard";
-import TrainerStats from "../components/trainer/TrainerStats";
-import TrainerTaskOverview from "../components/trainer/TrainerTaskOverview";
-import TrainerScores from "../components/trainer/TrainerScores";
-import TrainerProgressOverview from "../components/trainer/TrainerProgressOverview";
-import TrainerRecentActivity from "../components/trainer/TrainerRecentActivity";
+import ActionButton from "../components/ui/ActionButton";
+import FeedbackAlert from "../components/ui/FeedbackAlert";
+import LoadingCard from "../components/ui/LoadingCard";
+import StatusBadge from "../components/ui/StatusBadge";
 
 import api from "../services/api";
 
+import {
+    formatProgrammeType,
+    getApiErrorMessage,
+    parseArrayResponse,
+} from "../utils/training";
+
+import {
+    getSessionUser,
+} from "../utils/session";
 
 function TrainerDashboard() {
+    const navigate =
+        useNavigate();
+
+
+    const user =
+        getSessionUser();
+
+
     // ======================================================
-    // USER STATE
+    // DATA
     // ======================================================
 
     const [
-        user,
-        setUser,
-    ] = useState(null);
+        programmes,
+        setProgrammes,
+    ] = useState([]);
 
+
+    const [
+        assignments,
+        setAssignments,
+    ] = useState([]);
+
+
+    // ======================================================
+    // STATE
+    // ======================================================
 
     const [
         loading,
@@ -34,292 +63,133 @@ function TrainerDashboard() {
 
 
     const [
-        error,
-        setError,
+        errorMessage,
+        setErrorMessage,
     ] = useState("");
 
 
     // ======================================================
-    // LOAD TRAINER PROFILE
+    // LOAD
     // ======================================================
 
     useEffect(() => {
-        const loadTrainerProfile =
+        let active =
+            true;
+
+
+        const loadDashboard =
             async () => {
                 try {
-                    setLoading(true);
-
-                    setError("");
-
-
-                    const response =
-                        await api.get(
-                            "/users/me"
-                        );
+                    setLoading(
+                        true
+                    );
 
 
-                    const currentUser =
-                        response.data?.user;
+                    setErrorMessage(
+                        ""
+                    );
 
 
-                    if (!currentUser) {
-                        setError(
-                            "Unable to load trainer information."
-                        );
+                    const results =
+                        await Promise.allSettled([
+                            api.get(
+                                "/training-programmes"
+                            ),
 
+                            api.get(
+                                "/training-assignments"
+                            ),
+                        ]);
+
+
+                    if (!active) {
                         return;
+                    }
+
+
+                    const programmeResult =
+                        results[0];
+
+
+                    const assignmentResult =
+                        results[1];
+
+
+                    if (
+                        programmeResult.status ===
+                        "fulfilled"
+                    ) {
+                        setProgrammes(
+                            parseArrayResponse(
+                                programmeResult.value.data,
+                                "programmes"
+                            )
+                        );
                     }
 
 
                     if (
-                        currentUser.role !==
-                        "trainer"
+                        assignmentResult.status ===
+                        "fulfilled"
                     ) {
-                        setError(
-                            "This account is not authorised to access the Trainer Dashboard."
+                        setAssignments(
+                            parseArrayResponse(
+                                assignmentResult.value.data,
+                                "assignments"
+                            )
                         );
-
-                        return;
                     }
 
 
-                    setUser(
-                        currentUser
-                    );
-
-
-                    sessionStorage.setItem(
-                        "user",
-                        JSON.stringify(
-                            currentUser
-                        )
-                    );
+                    if (
+                        programmeResult.status ===
+                        "rejected" &&
+                        assignmentResult.status ===
+                        "rejected"
+                    ) {
+                        throw (
+                            programmeResult.reason
+                        );
+                    }
 
                 } catch (error) {
                     console.error(
-                        "Trainer dashboard profile error:",
+                        "Trainer dashboard error:",
                         error
                     );
 
 
-                    setError(
-                        error.response
-                            ?.data
-                            ?.message ||
-                        "Unable to load Trainer Dashboard information."
-                    );
+                    if (active) {
+                        setErrorMessage(
+                            getApiErrorMessage(
+                                error,
+                                "Unable to load Trainer dashboard data."
+                            )
+                        );
+                    }
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    if (active) {
+                        setLoading(
+                            false
+                        );
+                    }
                 }
             };
 
 
-        loadTrainerProfile();
+        loadDashboard();
 
+
+        return () => {
+            active =
+                false;
+        };
     }, []);
 
 
     // ======================================================
-    // LOADING
-    // ======================================================
-
-    if (loading) {
-        return (
-            <DashboardLayout
-                role="trainer"
-                showHeader={false}
-            >
-
-                <div
-                    className="
-                        flex
-                        min-h-[70vh]
-                        items-center
-                        justify-center
-                    "
-                >
-
-                    <div
-                        className="
-                            w-full
-                            max-w-sm
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-6
-                            text-center
-                            shadow-sm
-                        "
-                    >
-
-                        <div
-                            className="
-                                mx-auto
-                                flex
-                                h-12
-                                w-12
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-blue-50
-                            "
-                        >
-
-                            <div
-                                className="
-                                    h-6
-                                    w-6
-                                    animate-spin
-                                    rounded-full
-                                    border-2
-                                    border-blue-100
-                                    border-t-blue-600
-                                "
-                            />
-
-                        </div>
-
-
-                        <h2
-                            className="
-                                mt-4
-                                text-sm
-                                font-bold
-                                text-slate-900
-                            "
-                        >
-                            Loading Trainer Dashboard
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-2
-                                text-[10px]
-                                leading-5
-                                text-slate-500
-                            "
-                        >
-                            Preparing your assigned training areas and
-                            account information.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </DashboardLayout>
-        );
-    }
-
-
-    // ======================================================
-    // ERROR
-    // ======================================================
-
-    if (error) {
-        return (
-            <DashboardLayout
-                role="trainer"
-                showHeader={false}
-            >
-
-                <div
-                    className="
-                        flex
-                        min-h-[70vh]
-                        items-center
-                        justify-center
-                    "
-                >
-
-                    <div
-                        className="
-                            w-full
-                            max-w-md
-                            rounded-2xl
-                            border
-                            border-red-200
-                            bg-white
-                            p-6
-                            text-center
-                            shadow-sm
-                        "
-                    >
-
-                        <div
-                            className="
-                                mx-auto
-                                flex
-                                h-12
-                                w-12
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-red-50
-                                text-red-600
-                            "
-                        >
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-6 w-6"
-                            >
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="9"
-                                />
-
-                                <path d="M12 7v6" />
-
-                                <path d="M12 17h.01" />
-                            </svg>
-
-                        </div>
-
-
-                        <h2
-                            className="
-                                mt-4
-                                text-base
-                                font-bold
-                                text-slate-900
-                            "
-                        >
-                            Unable to Load Dashboard
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-2
-                                text-[11px]
-                                leading-5
-                                text-slate-500
-                            "
-                        >
-                            {error}
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </DashboardLayout>
-        );
-    }
-
-
-    // ======================================================
-    // TRAINING ASSIGNMENTS
+    // ASSIGNED TRAINING AREAS
     // ======================================================
 
     const assignedTrainingSections =
@@ -331,439 +201,790 @@ function TrainerDashboard() {
 
 
     // ======================================================
-    // DISPLAY NAME
+    // COUNTS
     // ======================================================
 
-    const fullName =
-        [
-            user?.firstName,
-            user?.lastName,
-        ]
-            .filter(Boolean)
-            .join(" ") ||
-        "Trainer";
+    const activeProgrammes =
+        programmes.filter(
+            (
+                programme
+            ) =>
+                programme.status ===
+                "active"
+        );
+
+
+    const activeAssignments =
+        assignments.filter(
+            (
+                assignment
+            ) =>
+                assignment.status !==
+                "inactive"
+        );
 
 
     // ======================================================
-    // DASHBOARD
+    // DISPLAY PROGRAMMES
+    // ======================================================
+
+    const displayedProgrammes =
+        useMemo(
+            () =>
+                programmes.slice(
+                    0,
+                    4
+                ),
+            [
+                programmes,
+            ]
+        );
+
+
+    // ======================================================
+    // LOADING
+    // ======================================================
+
+    if (loading) {
+        return (
+            <DashboardLayout
+                role="trainer"
+                title="Trainer Dashboard"
+                subtitle="Manage your workplace safety training."
+            >
+                <LoadingCard
+                    message="Loading Trainer dashboard..."
+                />
+            </DashboardLayout>
+        );
+    }
+
+
+    // ======================================================
+    // PAGE
     // ======================================================
 
     return (
         <DashboardLayout
             role="trainer"
-            showHeader={false}
+            title="Trainer Dashboard"
+            subtitle="Manage your workplace safety training."
         >
-
-            <div className="space-y-5">
-
-                {/* ================================================= */}
-                {/* HEADER */}
-                {/* ================================================= */}
-
-                <TrainerHeader
-                    user={
-                        user
+            <div
+                className="
+                    space-y-4
+                "
+            >
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        errorMessage
+                    }
+                    onClose={() =>
+                        setErrorMessage(
+                            ""
+                        )
                     }
                 />
 
 
                 {/* ================================================= */}
-                {/* ACCOUNT OVERVIEW */}
+                {/* WELCOME */}
                 {/* ================================================= */}
 
                 <section
                     className="
-                        relative
                         overflow-hidden
-                        rounded-2xl
+                        rounded-xl
                         border
                         border-slate-200
                         bg-white
-                        p-5
                         shadow-sm
-                        sm:p-6
                     "
                 >
-
                     <div
                         className="
-                            pointer-events-none
-                            absolute
-                            -right-16
-                            -top-16
-                            h-44
-                            w-44
-                            rounded-full
-                            bg-blue-50
-                        "
-                    />
-
-
-                    <div
-                        className="
-                            relative
-                            z-10
-                            flex
-                            flex-col
+                            grid
                             gap-5
-                            md:flex-row
+                            p-5
+                            md:grid-cols-[1fr_auto]
                             md:items-center
-                            md:justify-between
+                            lg:p-6
                         "
                     >
-
-                        <div
-                            className="
-                                flex
-                                items-start
-                                gap-4
-                            "
-                        >
-
-                            <div
+                        <div>
+                            <span
                                 className="
-                                    flex
-                                    h-12
-                                    w-12
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-2xl
+                                    inline-flex
+                                    rounded-full
                                     bg-blue-50
-                                    text-blue-700
+                                    px-3
+                                    py-1
+                                    text-[7px]
+                                    font-medium
+                                    text-blue-600
                                 "
                             >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="h-6 w-6"
-                                >
-                                    <circle
-                                        cx="12"
-                                        cy="8"
-                                        r="3"
-                                    />
-
-                                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-
-                                    <path d="M18 5v4" />
-
-                                    <path d="M16 7h4" />
-                                </svg>
-
-                            </div>
+                                TRAINER
+                            </span>
 
 
-                            <div>
-
-                                <p
-                                    className="
-                                        text-[9px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.16em]
-                                        text-blue-600
-                                    "
-                                >
-                                    Trainer Account
-                                </p>
-
-
-                                <h2
-                                    className="
-                                        mt-1
-                                        break-words
-                                        text-lg
-                                        font-bold
-                                        text-slate-900
-                                        sm:text-xl
-                                    "
-                                >
-                                    {fullName}
-                                </h2>
+                            <h2
+                                className="
+                                    mt-3
+                                    text-[18px]
+                                    font-semibold
+                                    text-slate-800
+                                    sm:text-[20px]
+                                "
+                            >
+                                Welcome
+                                {user?.firstName
+                                    ? `, ${user.firstName}`
+                                    : ""}
+                            </h2>
 
 
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[10px]
-                                        text-slate-500
-                                    "
-                                >
-                                    Username:{" "}
+                            <p
+                                className="
+                                    mt-2
+                                    max-w-xl
+                                    text-[9px]
+                                    leading-5
+                                    text-slate-500
+                                "
+                            >
+                                Manage training programmes and learning content for your assigned workplace safety area.
+                            </p>
 
-                                    <span
+
+                            {assignedTrainingSections.length >
+                                0 && (
+                                    <div
                                         className="
-                                            font-semibold
-                                            text-slate-700
-                                        "
+                                        mt-4
+                                        flex
+                                        flex-wrap
+                                        gap-2
+                                    "
                                     >
-                                        {user?.username ||
-                                            "—"}
-                                    </span>
-                                </p>
-
-                            </div>
-
+                                        {assignedTrainingSections.map(
+                                            (
+                                                section
+                                            ) => (
+                                                <span
+                                                    key={
+                                                        section
+                                                    }
+                                                    className="
+                                                    rounded-full
+                                                    bg-slate-100
+                                                    px-3
+                                                    py-1.5
+                                                    text-[8px]
+                                                    font-medium
+                                                    text-slate-600
+                                                "
+                                                >
+                                                    {formatProgrammeType(
+                                                        section
+                                                    )}
+                                                </span>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                         </div>
 
 
                         <div
                             className="
-                                flex
-                                flex-wrap
-                                gap-2
+                                hidden
+                                h-20
+                                w-20
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                bg-blue-50
+                                text-blue-600
+                                md:flex
                             "
                         >
-
-                            <span
-                                className="
-                                    rounded-full
-                                    bg-blue-50
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    capitalize
-                                    text-blue-700
-                                "
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                className="h-9 w-9"
                             >
-                                {user?.role ||
-                                    "trainer"}
-                            </span>
-
-
-                            <span
-                                className={`
-                                    rounded-full
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    capitalize
-
-                                    ${user?.status ===
-                                        "active"
-                                        ? "bg-emerald-50 text-emerald-700"
-                                        : "bg-red-50 text-red-600"
-                                    }
-                                `}
-                            >
-                                {user?.status ||
-                                    "unknown"}
-                            </span>
-
-
-                            <span
-                                className="
-                                    rounded-full
-                                    bg-indigo-50
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                    text-indigo-700
-                                "
-                            >
-                                {
-                                    assignedTrainingSections.length
-                                }{" "}
-                                {assignedTrainingSections.length ===
-                                    1
-                                    ? "Training Area"
-                                    : "Training Areas"}
-                            </span>
-
+                                <path d="M4 5h16v14H4z" />
+                                <path d="M8 9h8" />
+                                <path d="M8 13h5" />
+                                <path d="M17 15v5" />
+                                <path d="M14.5 17.5h5" />
+                            </svg>
                         </div>
-
                     </div>
-
                 </section>
-
-
-                {/* ================================================= */}
-                {/* TRAINING AREA */}
-                {/* ================================================= */}
-
-                <TrainerModuleCard
-                    assignedTrainingSections={
-                        assignedTrainingSections
-                    }
-                />
 
 
                 {/* ================================================= */}
                 {/* STATS */}
                 {/* ================================================= */}
 
-                <TrainerStats />
-
-
-                {/* ================================================= */}
-                {/* TASKS + SCORES */}
-                {/* ================================================= */}
-
-                <div
+                <section
                     className="
                         grid
-                        gap-5
-                        xl:grid-cols-2
+                        gap-3
+                        sm:grid-cols-2
+                        xl:grid-cols-4
                     "
                 >
+                    <DashboardStat
+                        label="Programmes"
+                        value={
+                            programmes.length
+                        }
+                        icon="programme"
+                    />
 
-                    <TrainerTaskOverview />
 
-                    <TrainerScores />
+                    <DashboardStat
+                        label="Active Programmes"
+                        value={
+                            activeProgrammes.length
+                        }
+                        icon="active"
+                    />
 
-                </div>
+
+                    <DashboardStat
+                        label="Training Assignments"
+                        value={
+                            assignments.length
+                        }
+                        icon="assignment"
+                    />
+
+
+                    <DashboardStat
+                        label="Active Assignments"
+                        value={
+                            activeAssignments.length
+                        }
+                        icon="users"
+                    />
+                </section>
 
 
                 {/* ================================================= */}
-                {/* PROGRESS + ACTIVITY */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        grid
-                        gap-5
-                        xl:grid-cols-2
-                    "
-                >
-
-                    <TrainerProgressOverview />
-
-                    <TrainerRecentActivity />
-
-                </div>
-
-
-                {/* ================================================= */}
-                {/* SAFETY NOTE */}
+                {/* QUICK ACTIONS */}
                 {/* ================================================= */}
 
                 <section
                     className="
-                        rounded-2xl
+                        rounded-xl
                         border
-                        border-blue-100
-                        bg-gradient-to-r
-                        from-blue-50
-                        via-white
-                        to-emerald-50
-                        p-5
+                        border-slate-200
+                        bg-white
+                        p-4
+                        shadow-sm
+                        sm:p-5
                     "
                 >
+                    <div>
+                        <h2
+                            className="
+                                text-[11px]
+                                font-semibold
+                                text-slate-800
+                            "
+                        >
+                            Quick Actions
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                text-slate-400
+                            "
+                        >
+                            Open your main training management areas.
+                        </p>
+                    </div>
+
 
                     <div
                         className="
-                            flex
-                            items-start
+                            mt-4
+                            grid
                             gap-3
+                            sm:grid-cols-2
                         "
                     >
-
-                        <div
-                            className="
-                                flex
-                                h-9
-                                w-9
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-white
-                                text-blue-600
-                                shadow-sm
-                            "
-                        >
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                <path d="m9 12 2 2 4-4" />
-                            </svg>
-
-                        </div>
+                        <QuickAction
+                            title="Training Programmes"
+                            description="Create and manage your training programmes."
+                            onClick={() =>
+                                navigate(
+                                    "/training-programmes"
+                                )
+                            }
+                        />
 
 
+                        <QuickAction
+                            title="Training Assignments"
+                            description="View training access and assigned Trainees."
+                            onClick={() =>
+                                navigate(
+                                    "/training-assignments"
+                                )
+                            }
+                        />
+                    </div>
+                </section>
+
+
+                {/* ================================================= */}
+                {/* PROGRAMMES */}
+                {/* ================================================= */}
+
+                <section
+                    className="
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        shadow-sm
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-4
+                            py-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                            sm:px-5
+                        "
+                    >
                         <div>
-
-                            <p
+                            <h2
                                 className="
-                                    text-xs
-                                    font-bold
+                                    text-[11px]
+                                    font-semibold
                                     text-slate-800
                                 "
                             >
-                                Trainer Access Control
-                            </p>
+                                Training Programmes
+                            </h2>
 
 
                             <p
                                 className="
                                     mt-1
-                                    max-w-4xl
-                                    text-[10px]
-                                    leading-5
-                                    text-slate-500
+                                    text-[8px]
+                                    text-slate-400
                                 "
                             >
-                                Your assigned training areas determine
-                                which Manual Handling or Working at
-                                Height programmes you are permitted to
-                                create and manage.
+                                Recently available programmes.
                             </p>
-
                         </div>
 
+
+                        <ActionButton
+                            variant="secondary"
+                            onClick={() =>
+                                navigate(
+                                    "/training-programmes"
+                                )
+                            }
+                            className="
+                                w-full
+                                justify-center
+                                sm:w-auto
+                            "
+                        >
+                            View All
+                        </ActionButton>
                     </div>
 
+
+                    {displayedProgrammes.length ===
+                        0 ? (
+                        <div
+                            className="
+                                p-6
+                                text-center
+                            "
+                        >
+                            <p
+                                className="
+                                    text-[9px]
+                                    text-slate-400
+                                "
+                            >
+                                No training programmes available.
+                            </p>
+                        </div>
+                    ) : (
+                        <div
+                            className="
+                                divide-y
+                                divide-slate-100
+                            "
+                        >
+                            {displayedProgrammes.map(
+                                (
+                                    programme
+                                ) => (
+                                    <div
+                                        key={
+                                            programme._id
+                                        }
+                                        className="
+                                            flex
+                                            flex-col
+                                            gap-3
+                                            px-4
+                                            py-4
+                                            sm:flex-row
+                                            sm:items-center
+                                            sm:justify-between
+                                            sm:px-5
+                                        "
+                                    >
+                                        <div
+                                            className="
+                                                min-w-0
+                                            "
+                                        >
+                                            <p
+                                                className="
+                                                    truncate
+                                                    text-[10px]
+                                                    font-medium
+                                                    text-slate-700
+                                                "
+                                            >
+                                                {
+                                                    programme.title
+                                                }
+                                            </p>
+
+
+                                            <div
+                                                className="
+                                                    mt-2
+                                                    flex
+                                                    flex-wrap
+                                                    items-center
+                                                    gap-2
+                                                "
+                                            >
+                                                <span
+                                                    className="
+                                                        rounded-full
+                                                        bg-blue-50
+                                                        px-2.5
+                                                        py-1
+                                                        text-[7px]
+                                                        text-blue-600
+                                                    "
+                                                >
+                                                    {formatProgrammeType(
+                                                        programme.programmeType
+                                                    )}
+                                                </span>
+
+
+                                                <StatusBadge
+                                                    status={
+                                                        programme.status
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+
+
+                                        <ActionButton
+                                            variant="secondary"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/training-programmes/${programme._id}/sections`
+                                                )
+                                            }
+                                            className="
+                                                w-full
+                                                justify-center
+                                                sm:w-auto
+                                            "
+                                        >
+                                            Learning Sections
+                                        </ActionButton>
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    )}
                 </section>
+            </div>
+        </DashboardLayout>
+    );
+}
 
 
-                {/* ================================================= */}
-                {/* FOOTER */}
-                {/* ================================================= */}
+// ======================================================
+// DASHBOARD STAT
+// ======================================================
 
-                <footer
+function DashboardStat({
+    label,
+    value,
+    icon,
+}) {
+    return (
+        <article
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                p-4
+                shadow-sm
+            "
+        >
+            <div
+                className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                "
+            >
+                <div>
+                    <p
+                        className="
+                            text-[8px]
+                            text-slate-400
+                        "
+                    >
+                        {label}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-xl
+                            font-bold
+                            text-slate-800
+                        "
+                    >
+                        {value}
+                    </p>
+                </div>
+
+
+                <div
                     className="
                         flex
-                        flex-col
-                        gap-2
-                        border-t
-                        border-slate-200
-                        pt-4
-                        text-[9px]
-                        text-slate-400
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
+                        h-9
+                        w-9
+                        items-center
+                        justify-center
+                        rounded-lg
+                        bg-blue-50
+                        text-blue-600
                     "
                 >
-
-                    <span>
-                        © 2026 UK LogiWare. All rights reserved.
-                    </span>
-
-
-                    <span>
-                        Version 1.0.0
-                    </span>
-
-                </footer>
-
+                    <StatIcon
+                        type={
+                            icon
+                        }
+                    />
+                </div>
             </div>
+        </article>
+    );
+}
 
-        </DashboardLayout>
+
+// ======================================================
+// QUICK ACTION
+// ======================================================
+
+function QuickAction({
+    title,
+    description,
+    onClick,
+}) {
+    return (
+        <button
+            type="button"
+            onClick={
+                onClick
+            }
+            className="
+                group
+                rounded-xl
+                border
+                border-slate-200
+                bg-slate-50
+                p-4
+                text-left
+                transition
+                hover:border-blue-200
+                hover:bg-blue-50
+            "
+        >
+            <div
+                className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                "
+            >
+                <div>
+                    <p
+                        className="
+                            text-[10px]
+                            font-semibold
+                            text-slate-700
+                            group-hover:text-blue-700
+                        "
+                    >
+                        {title}
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[8px]
+                            leading-4
+                            text-slate-400
+                        "
+                    >
+                        {description}
+                    </p>
+                </div>
+
+
+                <span
+                    className="
+                        text-blue-500
+                    "
+                >
+                    →
+                </span>
+            </div>
+        </button>
+    );
+}
+
+
+// ======================================================
+// ICON
+// ======================================================
+
+function StatIcon({
+    type,
+}) {
+    if (
+        type ===
+        "users"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                className="h-4 w-4"
+            >
+                <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                />
+
+                <path d="M3 19c.5-4 2.5-6 6-6s5.5 2 6 6" />
+
+                <path d="M16 6a3 3 0 0 1 0 6" />
+
+                <path d="M17 14c2.5.5 3.5 2 4 5" />
+            </svg>
+        );
+    }
+
+
+    if (
+        type ===
+        "assignment"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                className="h-4 w-4"
+            >
+                <path d="M6 4h12v16H6z" />
+                <path d="M9 8h6" />
+                <path d="M9 12h6" />
+                <path d="M9 16h4" />
+            </svg>
+        );
+    }
+
+
+    if (
+        type ===
+        "active"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                className="h-4 w-4"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                />
+
+                <path d="m8 12 2.5 2.5L16 9" />
+            </svg>
+        );
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            className="h-4 w-4"
+        >
+            <path d="M4 5h7v14H4z" />
+            <path d="M13 5h7v14h-7z" />
+        </svg>
     );
 }
 

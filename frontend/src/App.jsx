@@ -40,8 +40,17 @@ import {
 const getRoleDashboardPath = (
   role
 ) => {
+  const normalizedRole =
+    String(
+      role ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
   if (
-    role ===
+    normalizedRole ===
     "admin"
   ) {
     return "/admin";
@@ -49,7 +58,7 @@ const getRoleDashboardPath = (
 
 
   if (
-    role ===
+    normalizedRole ===
     "trainer"
   ) {
     return "/trainer";
@@ -57,7 +66,7 @@ const getRoleDashboardPath = (
 
 
   if (
-    role ===
+    normalizedRole ===
     "trainee"
   ) {
     return "/trainee";
@@ -107,9 +116,8 @@ function HomeRedirect() {
 function App() {
   return (
     <Routes>
-
       {/* ================================================= */}
-      {/* PUBLIC ROUTES */}
+      {/* PUBLIC */}
       {/* ================================================= */}
 
       <Route
@@ -129,7 +137,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* ADMIN ROUTES */}
+      {/* ADMIN */}
       {/* ================================================= */}
 
       <Route
@@ -231,7 +239,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* TRAINER ROUTES */}
+      {/* TRAINER */}
       {/* ================================================= */}
 
       <Route
@@ -265,7 +273,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* ADMIN + TRAINER TRAINING MANAGEMENT */}
+      {/* ADMIN + TRAINER PROGRAMME MANAGEMENT */}
       {/* ================================================= */}
 
       <Route
@@ -299,7 +307,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* ADMIN TRAINING ASSIGNMENTS */}
+      {/* ADMIN ASSIGNMENT */}
       {/* ================================================= */}
 
       <Route
@@ -317,7 +325,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* TRAINEE ROUTES */}
+      {/* TRAINEE */}
       {/* ================================================= */}
 
       <Route
@@ -349,10 +357,6 @@ function App() {
         }
       />
 
-
-      {/* ================================================= */}
-      {/* TRAINEE MY TRAINING */}
-      {/* ================================================= */}
 
       <Route
         path="/my-training"
@@ -395,7 +399,7 @@ function App() {
 
 
       {/* ================================================= */}
-      {/* UNKNOWN ROUTES */}
+      {/* UNKNOWN */}
       {/* ================================================= */}
 
       <Route
@@ -407,7 +411,6 @@ function App() {
           />
         }
       />
-
     </Routes>
   );
 }

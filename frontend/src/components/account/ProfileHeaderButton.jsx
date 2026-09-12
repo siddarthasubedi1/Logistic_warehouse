@@ -35,7 +35,8 @@ function ProfileHeaderButton({
 
 
     const fullName =
-        `${firstName} ${lastName}`.trim();
+        `${firstName} ${lastName}`
+            .trim();
 
 
     const initial =
@@ -83,12 +84,13 @@ function ProfileHeaderButton({
             className="
                 group
                 flex
+                min-w-0
                 max-w-full
                 items-center
                 gap-2.5
-                rounded-xl
-                px-1.5
-                py-1
+                rounded-lg
+                px-2
+                py-1.5
                 text-left
                 transition
                 hover:bg-slate-50
@@ -97,7 +99,6 @@ function ProfileHeaderButton({
                 focus:ring-blue-100
             "
         >
-
             {/* ================================================= */}
             {/* PROFILE IMAGE */}
             {/* ================================================= */}
@@ -108,7 +109,6 @@ function ProfileHeaderButton({
                     shrink-0
                 "
             >
-
                 {profileImageUrl ? (
                     <img
                         src={
@@ -120,14 +120,10 @@ function ProfileHeaderButton({
                         className="
                             h-9
                             w-9
-                            rounded-xl
+                            rounded-full
                             border
                             border-slate-200
                             object-cover
-                            ring-2
-                            ring-transparent
-                            transition
-                            group-hover:ring-blue-100
                         "
                     />
                 ) : (
@@ -138,17 +134,11 @@ function ProfileHeaderButton({
                             w-9
                             items-center
                             justify-center
-                            rounded-xl
-                            bg-gradient-to-br
-                            from-blue-100
-                            to-blue-200
-                            text-xs
-                            font-bold
-                            text-blue-700
-                            ring-2
-                            ring-transparent
-                            transition
-                            group-hover:ring-blue-100
+                            rounded-full
+                            bg-blue-50
+                            text-[10px]
+                            font-semibold
+                            text-blue-600
                         "
                     >
                         {initial}
@@ -159,8 +149,8 @@ function ProfileHeaderButton({
                 <span
                     className="
                         absolute
-                        -bottom-0.5
-                        -right-0.5
+                        bottom-0
+                        right-0
                         h-2.5
                         w-2.5
                         rounded-full
@@ -169,12 +159,11 @@ function ProfileHeaderButton({
                         bg-emerald-500
                     "
                 />
-
             </div>
 
 
             {/* ================================================= */}
-            {/* NAME */}
+            {/* USER */}
             {/* ================================================= */}
 
             <div
@@ -184,12 +173,11 @@ function ProfileHeaderButton({
                     sm:block
                 "
             >
-
                 <p
                     className="
-                        max-w-[145px]
+                        max-w-[150px]
                         truncate
-                        text-[10px]
+                        text-[9px]
                         font-semibold
                         text-slate-800
                     "
@@ -198,48 +186,16 @@ function ProfileHeaderButton({
                 </p>
 
 
-                <div
+                <p
                     className="
                         mt-0.5
-                        flex
-                        items-center
-                        gap-1.5
+                        text-[7px]
+                        capitalize
+                        text-slate-400
                     "
                 >
-
-                    <span
-                        className="
-                            text-[8px]
-                            capitalize
-                            text-slate-400
-                        "
-                    >
-                        {role}
-                    </span>
-
-
-                    <span
-                        className="
-                            h-1
-                            w-1
-                            rounded-full
-                            bg-slate-300
-                        "
-                    />
-
-
-                    <span
-                        className="
-                            text-[8px]
-                            font-medium
-                            text-blue-500
-                        "
-                    >
-                        Profile
-                    </span>
-
-                </div>
-
+                    {role}
+                </p>
             </div>
 
 
@@ -247,35 +203,24 @@ function ProfileHeaderButton({
             {/* ARROW */}
             {/* ================================================= */}
 
-            <div
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
                 className="
                     hidden
-                    h-7
-                    w-7
+                    h-3.5
+                    w-3.5
                     shrink-0
-                    items-center
-                    justify-center
-                    rounded-lg
                     text-slate-400
                     transition
-                    group-hover:bg-blue-50
                     group-hover:text-blue-600
-                    sm:flex
+                    sm:block
                 "
             >
-
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    className="h-3.5 w-3.5"
-                >
-                    <path d="m9 6 6 6-6 6" />
-                </svg>
-
-            </div>
-
+                <path d="m9 6 6 6-6 6" />
+            </svg>
         </button>
     );
 }

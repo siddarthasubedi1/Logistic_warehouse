@@ -16,16 +16,23 @@ function TrainingProgrammeTable({
     onDeactivate,
     onReactivate,
 }) {
-
-    if (
-        programmes.length ===
-        0
-    ) {
+    if (programmes.length === 0) {
         return (
-            <EmptyState
-                title="No training programmes found."
-                description="Create a programme or change the current filters."
-            />
+            <div
+                className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+                <EmptyState
+                    title="No training programmes found."
+                    description="Create a programme or change the current filters."
+                    icon="training"
+                />
+            </div>
         );
     }
 
@@ -34,28 +41,22 @@ function TrainingProgrammeTable({
         <section
             className="
                 overflow-hidden
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-200
                 bg-white
                 shadow-sm
             "
         >
-
-            {/* ================================================= */}
             {/* HEADER */}
-            {/* ================================================= */}
 
             <div
                 className="
                     flex
                     flex-col
-                    gap-3
+                    gap-2
                     border-b
-                    border-slate-200
-                    bg-gradient-to-r
-                    from-white
-                    to-blue-50/40
+                    border-slate-100
                     px-4
                     py-4
                     sm:flex-row
@@ -64,87 +65,68 @@ function TrainingProgrammeTable({
                     sm:px-5
                 "
             >
-
                 <div>
-
                     <h2
                         className="
-                            text-sm
-                            font-bold
-                            text-slate-900
+                            text-[11px]
+                            font-semibold
+                            text-slate-800
                         "
                     >
-                        Training Programme List
+                        Training Programmes
                     </h2>
-
 
                     <p
                         className="
                             mt-1
-                            text-[10px]
-                            leading-5
-                            text-slate-500
+                            text-[8px]
+                            text-slate-400
                         "
                     >
-                        Manage programme details, learning sections and status.
+                        Manage programme details, sections and status.
                     </p>
-
                 </div>
-
 
                 <span
                     className="
                         w-fit
                         rounded-full
-                        bg-blue-50
+                        bg-slate-100
                         px-3
-                        py-1.5
-                        text-[9px]
-                        font-semibold
-                        text-blue-700
+                        py-1
+                        text-[8px]
+                        font-medium
+                        text-slate-500
                     "
                 >
                     {programmes.length} Programme
-                    {programmes.length ===
-                        1
+                    {programmes.length === 1
                         ? ""
                         : "s"}
                 </span>
-
             </div>
 
 
-            {/* ================================================= */}
-            {/* MOBILE / TABLET CARDS */}
-            {/* ================================================= */}
+            {/* MOBILE / TABLET */}
 
             <div
                 className="
                     grid
-                    gap-4
+                    gap-3
                     p-4
                     md:grid-cols-2
                     lg:hidden
                 "
             >
-
                 {programmes.map(
-                    (
-                        programme
-                    ) => (
+                    (programme) => (
                         <ProgrammeCard
-                            key={
-                                programme._id
-                            }
-                            programme={
-                                programme
-                            }
+                            key={programme._id}
+                            programme={programme}
                             processingId={
                                 processingId
                             }
-                            onEdit={
-                                onEdit
-                            }
+                            onEdit={onEdit}
                             onManageSections={
                                 onManageSections
                             }
@@ -157,13 +139,10 @@ function TrainingProgrammeTable({
                         />
                     )
                 )}
-
             </div>
 
 
-            {/* ================================================= */}
             {/* DESKTOP TABLE */}
-            {/* ================================================= */}
 
             <div
                 className="
@@ -172,60 +151,60 @@ function TrainingProgrammeTable({
                     lg:block
                 "
             >
-
                 <table
                     className="
-                        min-w-[900px]
                         w-full
+                        min-w-[850px]
                     "
                 >
-
-                    <thead className="bg-slate-50">
-
+                    <thead
+                        className="
+                            border-b
+                            border-slate-200
+                            bg-slate-50
+                        "
+                    >
                         <tr
                             className="
                                 text-left
-                                text-[9px]
-                                font-semibold
+                                text-[8px]
+                                font-medium
                                 uppercase
                                 tracking-wide
                                 text-slate-500
                             "
                         >
-
-                            <th className="px-5 py-3.5">
+                            <th className="px-5 py-3">
                                 Programme
                             </th>
 
-
-                            <th className="px-5 py-3.5">
-                                Type
+                            <th className="px-4 py-3">
+                                Training Area
                             </th>
 
-
-                            <th className="px-5 py-3.5">
+                            <th className="px-4 py-3">
                                 Owner
                             </th>
 
-
-                            <th className="px-5 py-3.5">
+                            <th className="px-4 py-3">
                                 Pass Mark
                             </th>
 
-
-                            <th className="px-5 py-3.5">
+                            <th className="px-4 py-3">
                                 Status
                             </th>
 
-
-                            <th className="px-5 py-3.5 text-right">
+                            <th
+                                className="
+                                    px-5
+                                    py-3
+                                    text-right
+                                "
+                            >
                                 Actions
                             </th>
-
                         </tr>
-
                     </thead>
-
 
                     <tbody
                         className="
@@ -233,20 +212,20 @@ function TrainingProgrammeTable({
                             divide-slate-100
                         "
                     >
-
                         {programmes.map(
-                            (
-                                programme
-                            ) => {
+                            (programme) => {
                                 const processing =
                                     processingId ===
                                     programme._id;
-
 
                                 const inactive =
                                     programme.status ===
                                     "inactive";
 
+                                const owner =
+                                    programme.ownerTrainer ||
+                                    programme.owner ||
+                                    null;
 
                                 return (
                                     <tr
@@ -255,68 +234,67 @@ function TrainingProgrammeTable({
                                         }
                                         className="
                                             bg-white
-                                            text-xs
-                                            text-slate-700
                                             transition
                                             hover:bg-slate-50
                                         "
                                     >
-
                                         {/* PROGRAMME */}
 
-                                        <td className="px-5 py-4">
-
+                                        <td
+                                            className="
+                                                px-5
+                                                py-4
+                                            "
+                                        >
                                             <div
                                                 className="
                                                     flex
-                                                    items-start
+                                                    items-center
                                                     gap-3
                                                 "
                                             >
-
                                                 <ProgrammeIcon
                                                     type={
                                                         programme.programmeType
                                                     }
                                                 />
 
-
                                                 <div
                                                     className="
-                                                        max-w-[280px]
                                                         min-w-0
                                                     "
                                                 >
-
                                                     <p
                                                         className="
-                                                            break-words
+                                                            max-w-[230px]
+                                                            truncate
+                                                            text-[9px]
                                                             font-semibold
-                                                            text-slate-900
+                                                            text-slate-700
                                                         "
                                                     >
-                                                        {programme.title}
+                                                        {
+                                                            programme.title
+                                                        }
                                                     </p>
-
 
                                                     {programme.description && (
                                                         <p
                                                             className="
                                                                 mt-1
-                                                                line-clamp-2
-                                                                text-[10px]
-                                                                leading-5
-                                                                text-slate-500
+                                                                max-w-[230px]
+                                                                truncate
+                                                                text-[7px]
+                                                                text-slate-400
                                                             "
                                                         >
-                                                            {programme.description}
+                                                            {
+                                                                programme.description
+                                                            }
                                                         </p>
                                                     )}
-
                                                 </div>
-
                                             </div>
-
                                         </td>
 
 
@@ -324,8 +302,7 @@ function TrainingProgrammeTable({
 
                                         <td
                                             className="
-                                                whitespace-nowrap
-                                                px-5
+                                                px-4
                                                 py-4
                                             "
                                         >
@@ -339,88 +316,40 @@ function TrainingProgrammeTable({
 
                                         {/* OWNER */}
 
-                                        <td className="px-5 py-4">
-
-                                            <p
-                                                className="
-                                                    max-w-[170px]
-                                                    truncate
-                                                    text-[10px]
-                                                    font-semibold
-                                                    text-slate-700
-                                                "
-                                            >
-                                                {getUserDisplayName(
-                                                    programme.ownerTrainer ||
-                                                    programme.owner ||
-                                                    programme.trainer,
-                                                    "—"
-                                                )}
-                                            </p>
-
+                                        <td
+                                            className="
+                                                px-4
+                                                py-4
+                                                text-[8px]
+                                                text-slate-600
+                                            "
+                                        >
+                                            {getUserDisplayName(
+                                                owner,
+                                                "—"
+                                            )}
                                         </td>
 
 
-                                        {/* PASS MARK */}
+                                        {/* PASS */}
 
                                         <td
                                             className="
-                                                whitespace-nowrap
-                                                px-5
+                                                px-4
                                                 py-4
                                             "
                                         >
-
-                                            <div
+                                            <span
                                                 className="
-                                                    inline-flex
-                                                    items-center
-                                                    gap-2
+                                                    text-[9px]
+                                                    font-medium
+                                                    text-slate-700
                                                 "
                                             >
-
-                                                <div
-                                                    className="
-                                                        h-1.5
-                                                        w-12
-                                                        overflow-hidden
-                                                        rounded-full
-                                                        bg-slate-100
-                                                    "
-                                                >
-                                                    <div
-                                                        className="
-                                                            h-full
-                                                            rounded-full
-                                                            bg-blue-500
-                                                        "
-                                                        style={{
-                                                            width:
-                                                                `${Math.min(
-                                                                    Number(
-                                                                        programme.passMark ??
-                                                                        0
-                                                                    ),
-                                                                    100
-                                                                )}%`,
-                                                        }}
-                                                    />
-                                                </div>
-
-
-                                                <span
-                                                    className="
-                                                        text-[10px]
-                                                        font-semibold
-                                                        text-slate-700
-                                                    "
-                                                >
-                                                    {programme.passMark ??
-                                                        0}%
-                                                </span>
-
-                                            </div>
-
+                                                {programme.passMark ??
+                                                    0}
+                                                %
+                                            </span>
                                         </td>
 
 
@@ -428,8 +357,7 @@ function TrainingProgrammeTable({
 
                                         <td
                                             className="
-                                                whitespace-nowrap
-                                                px-5
+                                                px-4
                                                 py-4
                                             "
                                         >
@@ -443,8 +371,12 @@ function TrainingProgrammeTable({
 
                                         {/* ACTIONS */}
 
-                                        <td className="px-5 py-4">
-
+                                        <td
+                                            className="
+                                                px-5
+                                                py-4
+                                            "
+                                        >
                                             <div
                                                 className="
                                                     flex
@@ -453,14 +385,13 @@ function TrainingProgrammeTable({
                                                     gap-2
                                                 "
                                             >
-
                                                 <ActionButton
                                                     variant="secondary"
                                                     disabled={
                                                         processing
                                                     }
                                                     onClick={() =>
-                                                        onManageSections(
+                                                        onManageSections?.(
                                                             programme
                                                         )
                                                     }
@@ -468,21 +399,19 @@ function TrainingProgrammeTable({
                                                     Sections
                                                 </ActionButton>
 
-
                                                 <ActionButton
                                                     variant="secondary"
                                                     disabled={
                                                         processing
                                                     }
                                                     onClick={() =>
-                                                        onEdit(
+                                                        onEdit?.(
                                                             programme
                                                         )
                                                     }
                                                 >
                                                     Edit
                                                 </ActionButton>
-
 
                                                 {inactive ? (
                                                     <ActionButton
@@ -491,7 +420,7 @@ function TrainingProgrammeTable({
                                                             processing
                                                         }
                                                         onClick={() =>
-                                                            onReactivate(
+                                                            onReactivate?.(
                                                                 programme
                                                             )
                                                         }
@@ -507,7 +436,7 @@ function TrainingProgrammeTable({
                                                             processing
                                                         }
                                                         onClick={() =>
-                                                            onDeactivate(
+                                                            onDeactivate?.(
                                                                 programme
                                                             )
                                                         }
@@ -517,22 +446,15 @@ function TrainingProgrammeTable({
                                                             : "Deactivate"}
                                                     </ActionButton>
                                                 )}
-
                                             </div>
-
                                         </td>
-
                                     </tr>
                                 );
                             }
                         )}
-
                     </tbody>
-
                 </table>
-
             </div>
-
         </section>
     );
 }
@@ -554,313 +476,205 @@ function ProgrammeCard({
         processingId ===
         programme._id;
 
-
     const inactive =
         programme.status ===
         "inactive";
 
-
     const owner =
         programme.ownerTrainer ||
         programme.owner ||
-        programme.trainer;
+        null;
 
 
     return (
         <article
             className="
-                overflow-hidden
-                rounded-2xl
+                rounded-lg
                 border
                 border-slate-200
                 bg-white
-                shadow-sm
+                p-4
             "
         >
-
             <div
-                className={`
-                    h-1
-                    w-full
-
-                    ${programme.programmeType ===
-                        "working-at-height"
-                        ? "bg-amber-500"
-                        : "bg-blue-500"
+                className="
+                    flex
+                    items-start
+                    gap-3
+                "
+            >
+                <ProgrammeIcon
+                    type={
+                        programme.programmeType
                     }
-                `}
-            />
-
-
-            <div className="p-4">
-
-                {/* TOP */}
+                />
 
                 <div
                     className="
-                        flex
-                        items-start
-                        justify-between
-                        gap-3
+                        min-w-0
+                        flex-1
                     "
                 >
-
-                    <ProgrammeIcon
-                        type={
-                            programme.programmeType
-                        }
-                    />
-
-
-                    <StatusBadge
-                        status={
-                            programme.status
-                        }
-                    />
-
-                </div>
-
-
-                {/* TITLE */}
-
-                <h3
-                    className="
-                        mt-4
-                        break-words
-                        text-sm
-                        font-bold
-                        text-slate-900
-                    "
-                >
-                    {programme.title}
-                </h3>
-
-
-                {programme.description && (
-                    <p
+                    <h3
                         className="
-                            mt-2
-                            line-clamp-3
+                            break-words
                             text-[10px]
-                            leading-5
-                            text-slate-500
+                            font-semibold
+                            text-slate-700
                         "
                     >
-                        {programme.description}
-                    </p>
-                )}
-
-
-                <div className="mt-3">
-
-                    <ProgrammeTypeBadge
-                        type={
-                            programme.programmeType
-                        }
-                    />
-
-                </div>
-
-
-                {/* INFO */}
-
-                <div
-                    className="
-                        mt-4
-                        grid
-                        grid-cols-2
-                        gap-3
-                        border-t
-                        border-slate-100
-                        pt-4
-                    "
-                >
-
-                    <ProgrammeDetail
-                        label="Owner"
-                        value={
-                            getUserDisplayName(
-                                owner,
-                                "—"
-                            )
-                        }
-                    />
-
-
-                    <ProgrammeDetail
-                        label="Pass Mark"
-                        value={`${programme.passMark ?? 0}%`}
-                    />
-
-                </div>
-
-
-                {/* PROGRESS STYLE */}
-
-                <div
-                    className="
-                        mt-4
-                        rounded-xl
-                        bg-slate-50
-                        p-3
-                    "
-                >
-
-                    <div
-                        className="
-                            flex
-                            items-center
-                            justify-between
-                        "
-                    >
-
-                        <span
-                            className="
-                                text-[9px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            Pass Requirement
-                        </span>
-
-
-                        <span
-                            className="
-                                text-[9px]
-                                font-bold
-                                text-slate-700
-                            "
-                        >
-                            {programme.passMark ??
-                                0}%
-                        </span>
-
-                    </div>
-
+                        {programme.title}
+                    </h3>
 
                     <div
                         className="
                             mt-2
-                            h-1.5
-                            overflow-hidden
-                            rounded-full
-                            bg-slate-200
+                            flex
+                            flex-wrap
+                            gap-2
                         "
                     >
-
-                        <div
-                            className="
-                                h-full
-                                rounded-full
-                                bg-blue-500
-                            "
-                            style={{
-                                width:
-                                    `${Math.min(
-                                        Number(
-                                            programme.passMark ??
-                                            0
-                                        ),
-                                        100
-                                    )}%`,
-                            }}
+                        <ProgrammeTypeBadge
+                            type={
+                                programme.programmeType
+                            }
                         />
 
+                        <StatusBadge
+                            status={
+                                programme.status
+                            }
+                        />
                     </div>
-
                 </div>
-
-
-                {/* ACTIONS */}
-
-                <div
-                    className="
-                        mt-4
-                        grid
-                        gap-2
-                        sm:grid-cols-2
-                    "
-                >
-
-                    <ActionButton
-                        variant="secondary"
-                        disabled={
-                            processing
-                        }
-                        onClick={() =>
-                            onManageSections(
-                                programme
-                            )
-                        }
-                        className="justify-center"
-                    >
-                        Sections
-                    </ActionButton>
-
-
-                    <ActionButton
-                        variant="secondary"
-                        disabled={
-                            processing
-                        }
-                        onClick={() =>
-                            onEdit(
-                                programme
-                            )
-                        }
-                        className="justify-center"
-                    >
-                        Edit
-                    </ActionButton>
-
-
-                    {inactive ? (
-                        <ActionButton
-                            variant="success"
-                            disabled={
-                                processing
-                            }
-                            onClick={() =>
-                                onReactivate(
-                                    programme
-                                )
-                            }
-                            className="
-                                justify-center
-                                sm:col-span-2
-                            "
-                        >
-                            {processing
-                                ? "Processing..."
-                                : "Reactivate Programme"}
-                        </ActionButton>
-                    ) : (
-                        <ActionButton
-                            variant="warning"
-                            disabled={
-                                processing
-                            }
-                            onClick={() =>
-                                onDeactivate(
-                                    programme
-                                )
-                            }
-                            className="
-                                justify-center
-                                sm:col-span-2
-                            "
-                        >
-                            {processing
-                                ? "Processing..."
-                                : "Deactivate Programme"}
-                        </ActionButton>
-                    )}
-
-                </div>
-
             </div>
 
+
+            {programme.description && (
+                <p
+                    className="
+                        mt-3
+                        line-clamp-2
+                        text-[8px]
+                        leading-4
+                        text-slate-400
+                    "
+                >
+                    {programme.description}
+                </p>
+            )}
+
+
+            <div
+                className="
+                    mt-4
+                    grid
+                    grid-cols-2
+                    gap-3
+                    border-t
+                    border-slate-100
+                    pt-4
+                "
+            >
+                <ProgrammeDetail
+                    label="Owner"
+                    value={
+                        getUserDisplayName(
+                            owner,
+                            "—"
+                        )
+                    }
+                />
+
+                <ProgrammeDetail
+                    label="Pass Mark"
+                    value={`${programme.passMark ??
+                        0
+                        }%`}
+                />
+            </div>
+
+
+            <div
+                className="
+                    mt-4
+                    grid
+                    grid-cols-2
+                    gap-2
+                "
+            >
+                <ActionButton
+                    variant="secondary"
+                    disabled={processing}
+                    onClick={() =>
+                        onManageSections?.(
+                            programme
+                        )
+                    }
+                    className="
+                        w-full
+                        justify-center
+                    "
+                >
+                    Sections
+                </ActionButton>
+
+                <ActionButton
+                    variant="secondary"
+                    disabled={processing}
+                    onClick={() =>
+                        onEdit?.(
+                            programme
+                        )
+                    }
+                    className="
+                        w-full
+                        justify-center
+                    "
+                >
+                    Edit
+                </ActionButton>
+
+                {inactive ? (
+                    <ActionButton
+                        variant="success"
+                        disabled={processing}
+                        onClick={() =>
+                            onReactivate?.(
+                                programme
+                            )
+                        }
+                        className="
+                            col-span-2
+                            w-full
+                            justify-center
+                        "
+                    >
+                        {processing
+                            ? "Processing..."
+                            : "Reactivate"}
+                    </ActionButton>
+                ) : (
+                    <ActionButton
+                        variant="warning"
+                        disabled={processing}
+                        onClick={() =>
+                            onDeactivate?.(
+                                programme
+                            )
+                        }
+                        className="
+                            col-span-2
+                            w-full
+                            justify-center
+                        "
+                    >
+                        {processing
+                            ? "Processing..."
+                            : "Deactivate"}
+                    </ActionButton>
+                )}
+            </div>
         </article>
     );
 }
@@ -882,36 +696,31 @@ function ProgrammeIcon({
         <div
             className={`
                 flex
-                h-10
-                w-10
+                h-9
+                w-9
                 shrink-0
                 items-center
                 justify-center
-                rounded-xl
+                rounded-lg
 
                 ${workingAtHeight
-                    ? "bg-amber-50 text-amber-700"
-                    : "bg-blue-50 text-blue-700"
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-blue-50 text-blue-600"
                 }
             `}
         >
-
             {workingAtHeight ? (
                 <svg
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                 >
                     <path d="M5 21V6" />
-
                     <path d="M19 21V6" />
-
                     <path d="M5 9h14" />
-
                     <path d="M5 14h14" />
-
                     <path d="M5 19h14" />
                 </svg>
             ) : (
@@ -920,7 +729,7 @@ function ProgrammeIcon({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                 >
                     <rect
                         x="3"
@@ -935,14 +744,13 @@ function ProgrammeIcon({
                     <path d="M8 13h8" />
                 </svg>
             )}
-
         </div>
     );
 }
 
 
 // ======================================================
-// TYPE BADGE
+// PROGRAMME TYPE
 // ======================================================
 
 function ProgrammeTypeBadge({
@@ -957,17 +765,16 @@ function ProgrammeTypeBadge({
         <span
             className={`
                 inline-flex
+                whitespace-nowrap
                 rounded-full
                 px-2.5
                 py-1
-                text-[9px]
-                font-semibold
-                ring-1
-                ring-inset
+                text-[7px]
+                font-medium
 
                 ${workingAtHeight
-                    ? "bg-amber-50 text-amber-700 ring-amber-200"
-                    : "bg-blue-50 text-blue-700 ring-blue-200"
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-blue-50 text-blue-600"
                 }
             `}
         >
@@ -989,11 +796,9 @@ function ProgrammeDetail({
 }) {
     return (
         <div className="min-w-0">
-
             <p
                 className="
-                    text-[8px]
-                    font-semibold
+                    text-[7px]
                     uppercase
                     tracking-wide
                     text-slate-400
@@ -1002,20 +807,17 @@ function ProgrammeDetail({
                 {label}
             </p>
 
-
             <p
                 className="
                     mt-1
                     break-words
-                    text-[10px]
-                    font-semibold
-                    text-slate-700
+                    text-[8px]
+                    font-medium
+                    text-slate-600
                 "
             >
-                {value ||
-                    "—"}
+                {value || "—"}
             </p>
-
         </div>
     );
 }

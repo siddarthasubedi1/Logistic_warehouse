@@ -10,6 +10,22 @@ import {
 } from "../../utils/session";
 
 
+// ======================================================
+// DASHBOARD LAYOUT
+// ======================================================
+//
+// FRONTEND LAYOUT ONLY.
+//
+// This file does NOT:
+// - call backend APIs
+// - change authentication
+// - change database records
+// - change user permissions
+//
+// It only controls page layout and responsive sidebar.
+//
+// ======================================================
+
 function DashboardLayout({
     children,
     role,
@@ -18,7 +34,6 @@ function DashboardLayout({
     subtitle = "",
     user = null,
 }) {
-
     // ======================================================
     // MOBILE SIDEBAR
     // ======================================================
@@ -30,7 +45,7 @@ function DashboardLayout({
 
 
     // ======================================================
-    // SESSION USER
+    // CURRENT USER
     // ======================================================
 
     const sessionUser =
@@ -44,7 +59,7 @@ function DashboardLayout({
 
 
     // ======================================================
-    // USER INFORMATION
+    // USER DISPLAY
     // ======================================================
 
     const firstName =
@@ -62,166 +77,91 @@ function DashboardLayout({
             .trim();
 
 
+    const displayName =
+        fullName ||
+        currentUser?.username ||
+        "User";
+
+
     const initial =
-        firstName
-            ? firstName
-                .charAt(0)
-                .toUpperCase()
-            : role
-                ?.charAt(0)
-                ?.toUpperCase() ||
-            "U";
+        displayName
+            .charAt(0)
+            .toUpperCase();
 
 
     // ======================================================
-    // CLOSE MOBILE SIDEBAR ON LARGE SCREEN
+    // CLOSE MOBILE SIDEBAR ON DESKTOP
     // ======================================================
 
-    useEffect(
-        () => {
-            const handleResize =
-                () => {
-                    if (
-                        window.innerWidth >=
-                        1024
-                    ) {
-                        setMobileSidebarOpen(
-                            false
-                        );
-                    }
-                };
+    useEffect(() => {
+        const handleResize =
+            () => {
+                if (
+                    window.innerWidth >=
+                    1024
+                ) {
+                    setMobileSidebarOpen(
+                        false
+                    );
+                }
+            };
 
 
-            window.addEventListener(
+        window.addEventListener(
+            "resize",
+            handleResize
+        );
+
+
+        return () => {
+            window.removeEventListener(
                 "resize",
                 handleResize
             );
-
-
-            return () => {
-                window.removeEventListener(
-                    "resize",
-                    handleResize
-                );
-            };
-        },
-        []
-    );
+        };
+    }, []);
 
 
     // ======================================================
-    // LOCK BODY SCROLL WHEN MOBILE MENU OPEN
+    // MOBILE BODY SCROLL
     // ======================================================
 
-    useEffect(
-        () => {
-            if (
-                mobileSidebarOpen
-            ) {
-                document.body.style.overflow =
-                    "hidden";
-            } else {
-                document.body.style.overflow =
-                    "";
-            }
+    useEffect(() => {
+        if (
+            mobileSidebarOpen
+        ) {
+            document.body.style.overflow =
+                "hidden";
+        } else {
+            document.body.style.overflow =
+                "";
+        }
 
 
-            return () => {
-                document.body.style.overflow =
-                    "";
-            };
-        },
-        [
-            mobileSidebarOpen,
-        ]
-    );
+        return () => {
+            document.body.style.overflow =
+                "";
+        };
+    }, [
+        mobileSidebarOpen,
+    ]);
 
 
     // ======================================================
-    // UI
+    // PAGE
     // ======================================================
 
     return (
         <div
             className="
-                relative
                 min-h-screen
-                overflow-x-hidden
                 bg-[#f4f7fb]
             "
         >
-
-            {/* ================================================= */}
-            {/* BACKGROUND DESIGN */}
-            {/* ================================================= */}
-
             <div
                 className="
-                    pointer-events-none
-                    fixed
-                    inset-0
-                    z-0
-                    overflow-hidden
-                "
-            >
-
-                <div
-                    className="
-                        absolute
-                        -right-32
-                        -top-32
-                        h-[420px]
-                        w-[420px]
-                        rounded-full
-                        bg-blue-100/40
-                        blur-3xl
-                    "
-                />
-
-
-                <div
-                    className="
-                        absolute
-                        -bottom-40
-                        left-[18%]
-                        h-[420px]
-                        w-[420px]
-                        rounded-full
-                        bg-cyan-100/30
-                        blur-3xl
-                    "
-                />
-
-
-                <div
-                    className="
-                        absolute
-                        inset-0
-                        opacity-[0.025]
-                    "
-                    style={{
-                        backgroundImage:
-                            "linear-gradient(#0f4c81 1px, transparent 1px), linear-gradient(90deg, #0f4c81 1px, transparent 1px)",
-
-                        backgroundSize:
-                            "32px 32px",
-                    }}
-                />
-
-            </div>
-
-
-            {/* ================================================= */}
-            {/* PAGE LAYOUT */}
-            {/* ================================================= */}
-
-            <div
-                className="
-                    relative
-                    z-10
                     flex
                     min-h-screen
-                    items-stretch
                 "
             >
 
@@ -229,27 +169,34 @@ function DashboardLayout({
                 {/* DESKTOP SIDEBAR */}
                 {/* ================================================= */}
 
-                <div
+                <aside
                     className="
                         hidden
-                        w-[220px]
+                        w-[225px]
                         shrink-0
-                        self-stretch
-                        bg-[#073763]
                         lg:block
-                        xl:w-[235px]
                     "
                 >
-                    <Sidebar
-                        role={
-                            role
-                        }
-                    />
-                </div>
+                    <div
+                        className="
+                            fixed
+                            bottom-0
+                            left-0
+                            top-0
+                            w-[225px]
+                        "
+                    >
+                        <Sidebar
+                            role={
+                                role
+                            }
+                        />
+                    </div>
+                </aside>
 
 
                 {/* ================================================= */}
-                {/* MOBILE SIDEBAR OVERLAY */}
+                {/* MOBILE SIDEBAR */}
                 {/* ================================================= */}
 
                 {mobileSidebarOpen && (
@@ -257,12 +204,12 @@ function DashboardLayout({
                         className="
                             fixed
                             inset-0
-                            z-[80]
+                            z-[100]
                             lg:hidden
                         "
                     >
 
-                        {/* BACKDROP */}
+                        {/* OVERLAY */}
 
                         <button
                             type="button"
@@ -275,25 +222,22 @@ function DashboardLayout({
                             className="
                                 absolute
                                 inset-0
-                                bg-slate-950/55
-                                backdrop-blur-[2px]
+                                bg-slate-950/50
                             "
                         />
 
 
-                        {/* DRAWER */}
+                        {/* SIDEBAR DRAWER */}
 
                         <div
                             className="
                                 relative
                                 h-full
-                                w-[270px]
+                                w-[250px]
                                 max-w-[85vw]
-                                bg-[#073763]
                                 shadow-2xl
                             "
                         >
-
                             <Sidebar
                                 role={
                                     role
@@ -304,7 +248,6 @@ function DashboardLayout({
                                     )
                                 }
                             />
-
                         </div>
 
                     </div>
@@ -312,10 +255,10 @@ function DashboardLayout({
 
 
                 {/* ================================================= */}
-                {/* MAIN AREA */}
+                {/* MAIN CONTENT */}
                 {/* ================================================= */}
 
-                <main
+                <div
                     className="
                         min-w-0
                         flex-1
@@ -326,20 +269,19 @@ function DashboardLayout({
                     {/* MOBILE TOP BAR */}
                     {/* ================================================= */}
 
-                    <div
+                    <header
                         className="
                             sticky
                             top-0
-                            z-50
+                            z-40
                             flex
                             h-16
                             items-center
                             justify-between
                             border-b
                             border-slate-200
-                            bg-white/95
+                            bg-white
                             px-4
-                            backdrop-blur
                             lg:hidden
                         "
                     >
@@ -366,17 +308,15 @@ function DashboardLayout({
                                     w-10
                                     items-center
                                     justify-center
-                                    rounded-xl
+                                    rounded-lg
                                     border
                                     border-slate-200
                                     bg-white
                                     text-slate-700
-                                    shadow-sm
                                     transition
                                     hover:bg-slate-50
                                 "
                             >
-
                                 <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
@@ -388,19 +328,15 @@ function DashboardLayout({
                                     <path d="M4 12h16" />
                                     <path d="M4 17h16" />
                                 </svg>
-
                             </button>
 
 
                             <div>
-
                                 <p
                                     className="
-                                        text-[10px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.16em]
-                                        text-blue-600
+                                        text-sm
+                                        font-bold
+                                        text-[#172033]
                                     "
                                 >
                                     UK LogiWare
@@ -409,152 +345,108 @@ function DashboardLayout({
 
                                 <p
                                     className="
-                                        text-sm
-                                        font-bold
-                                        text-slate-900
+                                        text-[9px]
+                                        uppercase
+                                        tracking-wide
+                                        text-slate-500
                                     "
                                 >
                                     Safety Training
                                 </p>
-
                             </div>
 
                         </div>
 
 
-                        <div
-                            className="
-                                flex
-                                h-9
-                                w-9
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-blue-100
-                                text-xs
-                                font-bold
-                                text-blue-700
-                            "
-                        >
-                            {initial}
-                        </div>
+                        {currentUser && (
+                            <div
+                                className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-blue-50
+                                    text-xs
+                                    font-bold
+                                    text-blue-700
+                                "
+                            >
+                                {initial}
+                            </div>
+                        )}
 
-                    </div>
+                    </header>
 
 
                     {/* ================================================= */}
-                    {/* PAGE HEADER */}
+                    {/* DESKTOP PAGE HEADER */}
                     {/* ================================================= */}
 
                     {showHeader && (
                         <header
                             className="
                                 border-b
-                                border-slate-200/90
-                                bg-white/90
-                                px-4
-                                py-4
-                                backdrop-blur
-                                sm:px-5
-                                lg:px-7
-                                xl:px-8
+                                border-slate-200
+                                bg-white
                             "
                         >
-
                             <div
                                 className="
                                     mx-auto
                                     flex
+                                    min-h-[82px]
                                     w-full
-                                    max-w-[1600px]
-                                    flex-col
-                                    gap-4
-                                    sm:flex-row
-                                    sm:items-center
-                                    sm:justify-between
+                                    max-w-[1500px]
+                                    items-center
+                                    justify-between
+                                    gap-5
+                                    px-4
+                                    py-4
+                                    sm:px-6
+                                    lg:px-7
                                 "
                             >
 
                                 {/* ================================= */}
-                                {/* TITLE */}
+                                {/* PAGE TITLE */}
                                 {/* ================================= */}
 
-                                <div className="min-w-0">
+                                <div
+                                    className="
+                                        min-w-0
+                                    "
+                                >
 
                                     {title && (
-                                        <div
+                                        <h1
                                             className="
-                                                flex
-                                                items-start
-                                                gap-3
+                                                truncate
+                                                text-[20px]
+                                                font-bold
+                                                leading-tight
+                                                text-[#172033]
+                                                sm:text-[22px]
                                             "
                                         >
-
-                                            <div
-                                                className="
-                                                    mt-0.5
-                                                    hidden
-                                                    h-10
-                                                    w-10
-                                                    shrink-0
-                                                    items-center
-                                                    justify-center
-                                                    rounded-xl
-                                                    bg-blue-50
-                                                    text-blue-600
-                                                    sm:flex
-                                                "
-                                            >
-
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.8"
-                                                    className="h-5 w-5"
-                                                >
-                                                    <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                                    <path d="m9 12 2 2 4-4" />
-                                                </svg>
-
-                                            </div>
+                                            {title}
+                                        </h1>
+                                    )}
 
 
-                                            <div className="min-w-0">
-
-                                                <h1
-                                                    className="
-                                                        truncate
-                                                        text-lg
-                                                        font-bold
-                                                        text-[#172033]
-                                                        sm:text-xl
-                                                        lg:text-[22px]
-                                                    "
-                                                >
-                                                    {title}
-                                                </h1>
-
-
-                                                {subtitle && (
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            max-w-3xl
-                                                            text-xs
-                                                            leading-5
-                                                            text-slate-500
-                                                            sm:text-[13px]
-                                                        "
-                                                    >
-                                                        {subtitle}
-                                                    </p>
-                                                )}
-
-                                            </div>
-
-                                        </div>
+                                    {subtitle && (
+                                        <p
+                                            className="
+                                                mt-1
+                                                truncate
+                                                text-[10px]
+                                                text-slate-500
+                                                sm:text-[11px]
+                                            "
+                                        >
+                                            {subtitle}
+                                        </p>
                                     )}
 
                                 </div>
@@ -571,13 +463,6 @@ function DashboardLayout({
                                             shrink-0
                                             items-center
                                             gap-3
-                                            rounded-xl
-                                            border
-                                            border-slate-200
-                                            bg-white
-                                            px-3
-                                            py-2
-                                            shadow-sm
                                             sm:flex
                                         "
                                     >
@@ -590,7 +475,7 @@ function DashboardLayout({
                                                 items-center
                                                 justify-center
                                                 rounded-full
-                                                bg-blue-100
+                                                bg-blue-50
                                                 text-xs
                                                 font-bold
                                                 text-blue-700
@@ -600,79 +485,75 @@ function DashboardLayout({
                                         </div>
 
 
-                                        <div>
-
+                                        <div
+                                            className="
+                                                hidden
+                                                md:block
+                                            "
+                                        >
                                             <p
                                                 className="
                                                     max-w-[180px]
                                                     truncate
-                                                    text-xs
+                                                    text-[10px]
                                                     font-semibold
                                                     text-slate-800
                                                 "
                                             >
-                                                {fullName ||
-                                                    currentUser.username ||
-                                                    "User"}
+                                                {displayName}
                                             </p>
 
 
                                             <p
                                                 className="
                                                     mt-[2px]
-                                                    text-[10px]
+                                                    text-[9px]
                                                     capitalize
                                                     text-slate-500
                                                 "
                                             >
                                                 {role}
                                             </p>
-
                                         </div>
 
                                     </div>
                                 )}
 
                             </div>
-
                         </header>
                     )}
 
 
                     {/* ================================================= */}
-                    {/* PAGE CONTENT */}
+                    {/* PAGE BODY */}
                     {/* ================================================= */}
 
-                    <div
+                    <main
                         className="
-                            relative
-                            min-w-0
-                            px-3
-                            py-4
-                            sm:px-5
-                            sm:py-5
-                            lg:px-6
-                            lg:py-6
-                            xl:px-8
+                            min-h-[calc(100vh-82px)]
+                            bg-[#f4f7fb]
                         "
                     >
-
                         <div
                             className="
                                 mx-auto
                                 w-full
-                                max-w-[1600px]
+                                max-w-[1500px]
+                                px-3
+                                py-4
+                                sm:px-5
+                                sm:py-5
+                                lg:px-7
+                                lg:py-6
                             "
                         >
                             {children}
                         </div>
+                    </main>
 
-                    </div>
-
-                </main>
+                </div>
 
             </div>
-
         </div>
     );
 }
