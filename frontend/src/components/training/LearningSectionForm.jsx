@@ -9,21 +9,21 @@ function LearningSectionForm({
     onSubmit,
     onCancel,
 }) {
-
-    // ======================================================
-    // IMAGE
-    // ======================================================
-
     const imageExists =
         Boolean(
-            formData.imageUrl
+            formData?.imageUrl
                 ?.trim()
         );
 
 
-    // ======================================================
-    // UI
-    // ======================================================
+    const titleLength =
+        formData?.title?.length || 0;
+
+
+    const altTextLength =
+        formData?.imageAltText?.length ||
+        0;
+
 
     return (
         <form
@@ -32,24 +32,19 @@ function LearningSectionForm({
             }
             className="
                 overflow-hidden
-<<<<<<< HEAD
                 rounded-2xl
-=======
-                rounded-xl
->>>>>>> sprint2
                 border
                 border-slate-200
                 bg-white
                 shadow-sm
             "
         >
-            {/* ================================================= */}
-            {/* HEADER */}
-            {/* ================================================= */}
+            {/* =====================================================
+                HEADER
+            ====================================================== */}
 
             <div
                 className="
-<<<<<<< HEAD
                     relative
                     overflow-hidden
                     border-b
@@ -64,7 +59,6 @@ function LearningSectionForm({
                     sm:px-6
                 "
             >
-
                 <div
                     className="
                         pointer-events-none
@@ -78,7 +72,6 @@ function LearningSectionForm({
                     "
                 />
 
-
                 <div
                     className="
                         relative
@@ -87,7 +80,6 @@ function LearningSectionForm({
                         gap-4
                     "
                 >
-
                     <div
                         className="
                             flex
@@ -102,7 +94,6 @@ function LearningSectionForm({
                             bg-white/10
                         "
                     >
-
                         <svg
                             viewBox="0 0 24 24"
                             fill="none"
@@ -111,19 +102,13 @@ function LearningSectionForm({
                             className="h-5 w-5"
                         >
                             <path d="M4 5h7v14H4z" />
-
                             <path d="M13 5h7v14h-7z" />
-
                             <path d="M7 9h2" />
-
                             <path d="M16 9h2" />
                         </svg>
-
                     </div>
 
-
                     <div>
-
                         <p
                             className="
                                 text-[9px]
@@ -136,12 +121,12 @@ function LearningSectionForm({
                             Learning Content
                         </p>
 
-
                         <h2
                             className="
                                 mt-1
                                 text-base
                                 font-bold
+                                text-white
                                 sm:text-lg
                             "
                         >
@@ -149,7 +134,6 @@ function LearningSectionForm({
                                 ? "Edit Learning Section"
                                 : "Add Learning Section"}
                         </h2>
-
 
                         <p
                             className="
@@ -160,56 +144,49 @@ function LearningSectionForm({
                                 text-blue-100
                             "
                         >
-                            Add structured workplace safety information,
-                            instructions and supporting visual content.
+                            Add structured workplace safety
+                            information, instructions and
+                            supporting visual content.
                         </p>
-
                     </div>
-
                 </div>
-
             </div>
 
 
-            {/* ================================================= */}
-            {/* FORM BODY */}
-            {/* ================================================= */}
+            {/* =====================================================
+                FORM BODY
+            ====================================================== */}
 
             <div
                 className="
-                    space-y-6
+                    space-y-7
                     p-4
                     sm:p-5
                     lg:p-6
                 "
             >
-
-                {/* ================================================= */}
-                {/* MAIN CONTENT */}
-                {/* ================================================= */}
+                {/* =================================================
+                    CONTENT
+                ================================================== */}
 
                 <FormSection
                     title="Section Content"
                     description="Enter the title and learning information Trainees will read."
                     icon="content"
                 >
-
                     <div className="space-y-5">
-
-                        {/* TITLE */}
-
                         <FormField
                             label="Section Title"
                             required
                         >
-
                             <input
                                 type="text"
                                 name="title"
                                 minLength="2"
                                 maxLength="150"
                                 value={
-                                    formData.title
+                                    formData?.title ||
+                                    ""
                                 }
                                 onChange={
                                     onChange
@@ -224,7 +201,6 @@ function LearningSectionForm({
                                 required
                             />
 
-
                             <div
                                 className="
                                     mt-2
@@ -236,37 +212,27 @@ function LearningSectionForm({
                                     text-slate-400
                                 "
                             >
-
                                 <span>
                                     Minimum 2 characters.
                                 </span>
 
-
-                                <span
-                                    className="
-                                        font-semibold
-                                    "
-                                >
-                                    {formData.title.length}/150
+                                <span className="font-semibold">
+                                    {titleLength}/150
                                 </span>
-
                             </div>
-
                         </FormField>
 
-
-                        {/* CONTENT */}
 
                         <FormField
                             label="Learning Content"
                             required
                         >
-
                             <textarea
                                 name="content"
                                 rows="10"
                                 value={
-                                    formData.content
+                                    formData?.content ||
+                                    ""
                                 }
                                 onChange={
                                     onChange
@@ -275,32 +241,34 @@ function LearningSectionForm({
                                     saving
                                 }
                                 placeholder="Enter safety information, instructions, examples and important learning points..."
-                                className={`${inputClass} min-h-[220px] resize-y`}
+                                className={`
+                                    ${inputClass}
+                                    min-h-[220px]
+                                    resize-y
+                                    py-3
+                                    leading-5
+                                `}
                                 required
                             />
 
-
                             <HelperText>
-                                Keep the section focused on one clear safety topic where possible.
+                                Keep the section focused on one
+                                clear safety topic where possible.
                             </HelperText>
-
                         </FormField>
-
                     </div>
-
                 </FormSection>
 
 
-                {/* ================================================= */}
-                {/* IMAGE */}
-                {/* ================================================= */}
+                {/* =================================================
+                    IMAGE
+                ================================================== */}
 
                 <FormSection
                     title="Section Image"
                     description="Add an optional supporting workplace safety image."
                     icon="image"
                 >
-
                     <div
                         className="
                             grid
@@ -308,18 +276,15 @@ function LearningSectionForm({
                             lg:grid-cols-2
                         "
                     >
-
-                        {/* IMAGE URL */}
-
                         <FormField
                             label="Image URL"
                         >
-
                             <input
                                 type="url"
                                 name="imageUrl"
                                 value={
-                                    formData.imageUrl
+                                    formData?.imageUrl ||
+                                    ""
                                 }
                                 onChange={
                                     onChange
@@ -333,15 +298,12 @@ function LearningSectionForm({
                                 }
                             />
 
-
                             <HelperText>
-                                Optional. Enter a direct URL to a relevant learning image.
+                                Optional. Enter a direct URL to a
+                                relevant learning image.
                             </HelperText>
-
                         </FormField>
 
-
-                        {/* ALT TEXT */}
 
                         <FormField
                             label="Image Alt Text"
@@ -349,13 +311,13 @@ function LearningSectionForm({
                                 imageExists
                             }
                         >
-
                             <input
                                 type="text"
                                 name="imageAltText"
                                 maxLength="250"
                                 value={
-                                    formData.imageAltText
+                                    formData?.imageAltText ||
+                                    ""
                                 }
                                 onChange={
                                     onChange
@@ -372,7 +334,6 @@ function LearningSectionForm({
                                 }
                             />
 
-
                             <div
                                 className="
                                     mt-2
@@ -384,13 +345,11 @@ function LearningSectionForm({
                                     text-slate-400
                                 "
                             >
-
                                 <span>
                                     {imageExists
                                         ? "Required because an image URL is provided."
                                         : "Required only when an image is used."}
                                 </span>
-
 
                                 <span
                                     className="
@@ -398,17 +357,12 @@ function LearningSectionForm({
                                         font-semibold
                                     "
                                 >
-                                    {formData.imageAltText.length}/250
+                                    {altTextLength}/250
                                 </span>
-
                             </div>
-
                         </FormField>
-
                     </div>
 
-
-                    {/* IMAGE PREVIEW */}
 
                     {imageExists && (
                         <div
@@ -422,7 +376,6 @@ function LearningSectionForm({
                                 p-4
                             "
                         >
-
                             <div
                                 className="
                                     mb-3
@@ -434,9 +387,7 @@ function LearningSectionForm({
                                     sm:justify-between
                                 "
                             >
-
                                 <div>
-
                                     <p
                                         className="
                                             text-[11px]
@@ -447,7 +398,6 @@ function LearningSectionForm({
                                         Image Preview
                                     </p>
 
-
                                     <p
                                         className="
                                             mt-1
@@ -455,11 +405,10 @@ function LearningSectionForm({
                                             text-slate-500
                                         "
                                     >
-                                        Preview how the supporting learning image will appear.
+                                        Preview how the supporting
+                                        learning image will appear.
                                     </p>
-
                                 </div>
-
 
                                 <span
                                     className="
@@ -475,7 +424,6 @@ function LearningSectionForm({
                                 >
                                     Optional Visual
                                 </span>
-
                             </div>
 
 
@@ -492,7 +440,6 @@ function LearningSectionForm({
                                     bg-white
                                 "
                             >
-
                                 <img
                                     src={
                                         formData.imageUrl
@@ -513,11 +460,10 @@ function LearningSectionForm({
                                             "none";
                                     }}
                                 />
-
                             </div>
 
 
-                            {formData.imageAltText && (
+                            {formData?.imageAltText && (
                                 <div
                                     className="
                                         mt-3
@@ -537,37 +483,34 @@ function LearningSectionForm({
                                     >
                                         Alternative text:
                                     </span>{" "}
+
                                     {formData.imageAltText}
                                 </div>
                             )}
-
                         </div>
                     )}
-
                 </FormSection>
 
 
-                {/* ================================================= */}
-                {/* STATUS */}
-                {/* ================================================= */}
+                {/* =================================================
+                    STATUS
+                ================================================== */}
 
                 <FormSection
                     title="Section Availability"
                     description="Control whether Trainees can access this learning section."
                     icon="status"
                 >
-
                     <FormField
                         label="Section Status"
                         required
                     >
-
                         <div className="relative">
-
                             <select
                                 name="status"
                                 value={
-                                    formData.status
+                                    formData?.status ||
+                                    "active"
                                 }
                                 onChange={
                                     onChange
@@ -589,9 +532,7 @@ function LearningSectionForm({
                                 </option>
                             </select>
 
-
                             <SelectArrow />
-
                         </div>
 
 
@@ -603,38 +544,33 @@ function LearningSectionForm({
                                 sm:grid-cols-2
                             "
                         >
-
                             <StatusCard
                                 title="Active"
                                 description="Available to Trainees through the learning flow."
                                 selected={
-                                    formData.status ===
+                                    formData?.status ===
                                     "active"
                                 }
                                 type="active"
                             />
 
-
                             <StatusCard
                                 title="Inactive"
                                 description="Retained in the programme but unavailable to normal Trainee access."
                                 selected={
-                                    formData.status ===
+                                    formData?.status ===
                                     "inactive"
                                 }
                                 type="inactive"
                             />
-
                         </div>
-
                     </FormField>
-
                 </FormSection>
 
 
-                {/* ================================================= */}
-                {/* ORDER */}
-                {/* ================================================= */}
+                {/* =================================================
+                    ORDER INFO
+                ================================================== */}
 
                 <div
                     className="
@@ -648,7 +584,6 @@ function LearningSectionForm({
                         sm:p-5
                     "
                 >
-
                     <div
                         className="
                             flex
@@ -656,7 +591,6 @@ function LearningSectionForm({
                             gap-3
                         "
                     >
-
                         <div
                             className="
                                 flex
@@ -671,7 +605,6 @@ function LearningSectionForm({
                                 shadow-sm
                             "
                         >
-
                             <svg
                                 viewBox="0 0 24 24"
                                 fill="none"
@@ -680,21 +613,14 @@ function LearningSectionForm({
                                 className="h-5 w-5"
                             >
                                 <path d="M8 5h12" />
-
                                 <path d="M8 12h12" />
-
                                 <path d="M8 19h12" />
-
                                 <path d="m3 7 2-2 2 2" />
-
                                 <path d="m3 17 2 2 2-2" />
                             </svg>
-
                         </div>
 
-
                         <div>
-
                             <p
                                 className="
                                     text-[11px]
@@ -705,7 +631,6 @@ function LearningSectionForm({
                                 Section Order
                             </p>
 
-
                             <p
                                 className="
                                     mt-1
@@ -714,423 +639,26 @@ function LearningSectionForm({
                                     text-blue-700
                                 "
                             >
-                                New sections are automatically added to
-                                the end of the programme. Their position
-                                can later be changed using the existing
-                                Move Up and Move Down controls.
+                                New sections are automatically
+                                added to the end of the programme.
+                                Their position can later be changed
+                                using the existing Move Up and
+                                Move Down controls.
                             </p>
-
                         </div>
-
                     </div>
-
                 </div>
 
 
-                {/* ================================================= */}
-                {/* ACTIONS */}
-                {/* ================================================= */}
+                {/* =================================================
+                    ACTIONS
+                ================================================== */}
 
                 <div
                     className="
                         flex
                         flex-col-reverse
                         gap-3
-                        border-t
-                        border-slate-100
-                        pt-5
-                        sm:flex-row
-                        sm:justify-end
-                    "
-                >
-
-                    <ActionButton
-                        variant="secondary"
-                        disabled={
-                            saving
-                        }
-                        onClick={
-                            onCancel
-                        }
-                        className="
-                            w-full
-                            justify-center
-                            sm:w-auto
-                        "
-                    >
-                        Cancel
-                    </ActionButton>
-
-
-                    <ActionButton
-                        type="submit"
-                        variant="primary"
-                        disabled={
-                            saving
-                        }
-                        className="
-                            w-full
-                            justify-center
-                            sm:w-auto
-                        "
-                    >
-                        {saving
-                            ? "Saving..."
-                            : editingSection
-                                ? "Save Changes"
-                                : "Add Section"}
-                    </ActionButton>
-
-                </div>
-
-            </div>
-=======
-                    border-b
-                    border-slate-100
-                    px-4
-                    py-4
-                    sm:px-5
-                "
-            >
-                <h2
-                    className="
-                        text-[12px]
-                        font-semibold
-                        text-slate-800
-                    "
-                >
-                    {editingSection
-                        ? "Edit Learning Section"
-                        : "Add Learning Section"}
-                </h2>
-
-
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        text-slate-400
-                    "
-                >
-                    Add learning content to this training programme.
-                </p>
-            </div>
-
-
-            <div
-                className="
-                    space-y-5
-                    p-4
-                    sm:p-5
-                "
-            >
-                {/* ================================================= */}
-                {/* TITLE */}
-                {/* ================================================= */}
-
-                <FormField
-                    label="Section Title"
-                    required
-                >
-                    <input
-                        type="text"
-                        name="title"
-                        minLength="2"
-                        maxLength="150"
-                        value={
-                            formData.title
-                        }
-                        onChange={
-                            onChange
-                        }
-                        disabled={
-                            saving
-                        }
-                        placeholder="Enter learning section title"
-                        className={
-                            inputClass
-                        }
-                        required
-                    />
-
-
-                    <div
-                        className="
-                            mt-1
-                            flex
-                            items-center
-                            justify-between
-                            gap-3
-                            text-[7px]
-                            text-slate-400
-                        "
-                    >
-                        <span>
-                            Minimum 2 characters
-                        </span>
-
-
-                        <span>
-                            {
-                                formData.title
-                                    .length
-                            }
-                            /150
-                        </span>
-                    </div>
-                </FormField>
-
-
-                {/* ================================================= */}
-                {/* CONTENT */}
-                {/* ================================================= */}
-
-                <FormField
-                    label="Learning Content"
-                    required
-                >
-                    <textarea
-                        name="content"
-                        rows="10"
-                        value={
-                            formData.content
-                        }
-                        onChange={
-                            onChange
-                        }
-                        disabled={
-                            saving
-                        }
-                        placeholder="Enter the learning content..."
-                        className={`
-                            ${inputClass}
-                            min-h-[220px]
-                            resize-y
-                            py-3
-                            leading-5
-                        `}
-                        required
-                    />
-                </FormField>
-
-
-                {/* ================================================= */}
-                {/* IMAGE */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        border-t
-                        border-slate-100
-                        pt-5
-                    "
-                >
-                    <h3
-                        className="
-                            text-[10px]
-                            font-semibold
-                            text-slate-700
-                        "
-                    >
-                        Learning Image
-                    </h3>
->>>>>>> sprint2
-
-
-                    <p
-                        className="
-                            mt-1
-                            text-[8px]
-                            text-slate-400
-                        "
-                    >
-                        Optional image for this learning section.
-                    </p>
-
-
-                    <div
-                        className="
-                            mt-4
-                            grid
-                            gap-4
-                            md:grid-cols-2
-                        "
-                    >
-                        <FormField
-                            label="Image URL"
-                        >
-                            <input
-                                type="url"
-                                name="imageUrl"
-                                value={
-                                    formData.imageUrl
-                                }
-                                onChange={
-                                    onChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                placeholder="https://example.com/image.jpg"
-                                className={
-                                    inputClass
-                                }
-                            />
-                        </FormField>
-
-
-                        <FormField
-                            label="Image Alt Text"
-                        >
-                            <input
-                                type="text"
-                                name="imageAltText"
-                                maxLength="250"
-                                value={
-                                    formData.imageAltText
-                                }
-                                onChange={
-                                    onChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                placeholder="Describe the image"
-                                className={
-                                    inputClass
-                                }
-                            />
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-right
-                                    text-[7px]
-                                    text-slate-400
-                                "
-                            >
-                                {
-                                    formData
-                                        .imageAltText
-                                        .length
-                                }
-                                /250
-                            </p>
-                        </FormField>
-                    </div>
-
-
-                    {/* IMAGE PREVIEW */}
-
-                    {imageExists && (
-                        <div
-                            className="
-                                mt-4
-                                overflow-hidden
-                                rounded-lg
-                                border
-                                border-slate-200
-                                bg-slate-50
-                                p-3
-                            "
-                        >
-                            <p
-                                className="
-                                    mb-2
-                                    text-[8px]
-                                    font-medium
-                                    text-slate-500
-                                "
-                            >
-                                Preview
-                            </p>
-
-
-                            <img
-                                src={
-                                    formData.imageUrl
-                                }
-                                alt={
-                                    formData.imageAltText ||
-                                    "Learning section"
-                                }
-                                className="
-                                    max-h-[260px]
-                                    w-full
-                                    rounded-md
-                                    object-cover
-                                "
-                                onError={(
-                                    event
-                                ) => {
-                                    event.currentTarget.style.display =
-                                        "none";
-                                }}
-                            />
-                        </div>
-                    )}
-                </div>
-
-
-                {/* ================================================= */}
-                {/* STATUS */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        border-t
-                        border-slate-100
-                        pt-5
-                    "
-                >
-                    <div
-                        className="
-                            max-w-md
-                        "
-                    >
-                        <FormField
-                            label="Section Status"
-                            required
-                        >
-                            <select
-                                name="status"
-                                value={
-                                    formData.status
-                                }
-                                onChange={
-                                    onChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    inputClass
-                                }
-                                required
-                            >
-                                <option value="active">
-                                    Active
-                                </option>
-
-                                <option value="inactive">
-                                    Inactive
-                                </option>
-                            </select>
-                        </FormField>
-                    </div>
-                </div>
-
-
-                {/* ================================================= */}
-                {/* ACTIONS */}
-                {/* ================================================= */}
-
-                <div
-                    className="
-                        flex
-                        flex-col-reverse
-                        gap-2
                         border-t
                         border-slate-100
                         pt-5
@@ -1149,6 +677,7 @@ function LearningSectionForm({
                         }
                         className="
                             w-full
+                            justify-center
                             sm:w-auto
                         "
                     >
@@ -1164,6 +693,7 @@ function LearningSectionForm({
                         }
                         className="
                             w-full
+                            justify-center
                             sm:w-auto
                         "
                     >
@@ -1180,10 +710,9 @@ function LearningSectionForm({
 }
 
 
-// ======================================================
-<<<<<<< HEAD
-// FORM SECTION
-// ======================================================
+/* =========================================================
+   FORM SECTION
+========================================================= */
 
 function FormSection({
     title,
@@ -1193,7 +722,6 @@ function FormSection({
 }) {
     return (
         <section>
-
             <div
                 className="
                     mb-5
@@ -1202,7 +730,6 @@ function FormSection({
                     gap-3
                 "
             >
-
                 <div
                     className="
                         flex
@@ -1223,9 +750,7 @@ function FormSection({
                     />
                 </div>
 
-
                 <div>
-
                     <h3
                         className="
                             text-sm
@@ -1235,7 +760,6 @@ function FormSection({
                     >
                         {title}
                     </h3>
-
 
                     <p
                         className="
@@ -1247,25 +771,18 @@ function FormSection({
                     >
                         {description}
                     </p>
-
                 </div>
-
             </div>
 
-
             {children}
-
         </section>
     );
 }
 
 
-// ======================================================
-// FORM FIELD
-=======
-// FIELD
->>>>>>> sprint2
-// ======================================================
+/* =========================================================
+   FORM FIELD
+========================================================= */
 
 function FormField({
     label,
@@ -1273,53 +790,24 @@ function FormField({
     children,
 }) {
     return (
-<<<<<<< HEAD
         <label className="block">
-
-            <span
-                className="
-                    text-[11px]
-                    font-semibold
-                    text-slate-700
-=======
-        <label
-            className="
-                block
-            "
-        >
             <span
                 className="
                     mb-2
                     block
-                    text-[8px]
-                    font-medium
-                    text-slate-500
->>>>>>> sprint2
+                    text-[11px]
+                    font-semibold
+                    text-slate-700
                 "
             >
                 {label}
 
-
                 {required && (
-                    <span
-                        className="
-<<<<<<< HEAD
-                            ml-1
-                            text-red-500
-                        "
-                    >
+                    <span className="ml-1 text-red-500">
                         *
-=======
-                            text-red-500
-                        "
-                    >
-                        {" "}*
->>>>>>> sprint2
                     </span>
                 )}
-
             </span>
-
 
             {children}
         </label>
@@ -1327,10 +815,9 @@ function FormField({
 }
 
 
-// ======================================================
-<<<<<<< HEAD
-// HELPER
-// ======================================================
+/* =========================================================
+   HELPER
+========================================================= */
 
 function HelperText({
     children,
@@ -1350,9 +837,9 @@ function HelperText({
 }
 
 
-// ======================================================
-// STATUS CARD
-// ======================================================
+/* =========================================================
+   STATUS CARD
+========================================================= */
 
 function StatusCard({
     title,
@@ -1369,15 +856,13 @@ function StatusCard({
                 transition
 
                 ${selected
-                    ? type ===
-                        "active"
+                    ? type === "active"
                         ? "border-emerald-300 bg-emerald-50"
                         : "border-red-200 bg-red-50"
                     : "border-slate-200 bg-slate-50"
                 }
             `}
         >
-
             <div
                 className="
                     flex
@@ -1385,7 +870,6 @@ function StatusCard({
                     gap-2
                 "
             >
-
                 <span
                     className={`
                         h-2
@@ -1393,15 +877,13 @@ function StatusCard({
                         rounded-full
 
                         ${selected
-                            ? type ===
-                                "active"
+                            ? type === "active"
                                 ? "bg-emerald-500"
                                 : "bg-red-500"
                             : "bg-slate-300"
                         }
                     `}
                 />
-
 
                 <p
                     className="
@@ -1412,9 +894,7 @@ function StatusCard({
                 >
                     {title}
                 </p>
-
             </div>
-
 
             <p
                 className="
@@ -1426,20 +906,18 @@ function StatusCard({
             >
                 {description}
             </p>
-
         </div>
     );
 }
 
 
-// ======================================================
-// ICON
-// ======================================================
+/* =========================================================
+   ICON
+========================================================= */
 
 function SectionIcon({
     type,
 }) {
-
     if (
         type ===
         "image"
@@ -1504,21 +982,18 @@ function SectionIcon({
             strokeWidth="1.8"
             className="h-5 w-5"
         >
-            <path d="M5 4h14v16H5z" />
-
-            <path d="M8 8h8" />
-
-            <path d="M8 12h8" />
-
-            <path d="M8 16h5" />
+            <path d="M4 5h7v14H4z" />
+            <path d="M13 5h7v14h-7z" />
+            <path d="M7 9h2" />
+            <path d="M16 9h2" />
         </svg>
     );
 }
 
 
-// ======================================================
-// SELECT ARROW
-// ======================================================
+/* =========================================================
+   SELECT ARROW
+========================================================= */
 
 function SelectArrow() {
     return (
@@ -1534,7 +1009,6 @@ function SelectArrow() {
                 text-slate-400
             "
         >
-
             <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -1544,18 +1018,14 @@ function SelectArrow() {
             >
                 <path d="m7 10 5 5 5-5" />
             </svg>
-
         </div>
     );
 }
 
 
-// ======================================================
-// SHARED INPUT STYLE
-=======
-// INPUT STYLE
->>>>>>> sprint2
-// ======================================================
+/* =========================================================
+   SHARED INPUT STYLE
+========================================================= */
 
 const inputClass = `
     min-h-[40px]
@@ -1564,7 +1034,6 @@ const inputClass = `
     border
     border-slate-300
     bg-white
-<<<<<<< HEAD
     px-3.5
     py-3
     text-xs
@@ -1582,6 +1051,7 @@ const inputClass = `
 
 
 const selectClass = `
+    min-h-[40px]
     w-full
     appearance-none
     rounded-xl
@@ -1593,20 +1063,14 @@ const selectClass = `
     pr-10
     text-xs
     text-slate-800
-=======
-    px-3
-    text-[9px]
-    text-slate-700
->>>>>>> sprint2
     outline-none
     transition
-    placeholder:text-slate-400
     focus:border-blue-500
-    focus:ring-1
+    focus:ring-2
     focus:ring-blue-100
     disabled:cursor-not-allowed
-    disabled:bg-slate-50
-    disabled:text-slate-400
+    disabled:bg-slate-100
+    disabled:text-slate-500
 `;
 
 
