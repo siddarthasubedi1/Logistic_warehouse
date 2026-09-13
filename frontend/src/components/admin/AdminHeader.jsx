@@ -18,22 +18,18 @@ function AdminHeader({
     const navigate =
         useNavigate();
 
-
     const notificationRef =
         useRef(null);
-
 
     const [
         open,
         setOpen,
     ] = useState(false);
 
-
     const [
         requests,
         setRequests,
     ] = useState([]);
-
 
     const [
         loading,
@@ -45,16 +41,13 @@ function AdminHeader({
         user?.firstName ||
         "System";
 
-
     const lastName =
         user?.lastName ||
         "Administrator";
 
-
     const name =
         `${firstName} ${lastName}`
             .trim();
-
 
     const initial =
         name
@@ -73,7 +66,6 @@ function AdminHeader({
                 return request.user;
             }
 
-
             return (
                 request?.user?._id ||
                 request?.user?.id ||
@@ -90,11 +82,9 @@ function AdminHeader({
             const requestUser =
                 request?.user;
 
-
             const fullName =
                 `${requestUser?.firstName || ""} ${requestUser?.lastName || ""}`
                     .trim();
-
 
             return (
                 fullName ||
@@ -109,16 +99,12 @@ function AdminHeader({
         useCallback(
             async () => {
                 try {
-                    setLoading(
-                        true
-                    );
-
+                    setLoading(true);
 
                     const response =
                         await api.get(
                             "/admin/password-reset-requests"
                         );
-
 
                     const data =
                         Array.isArray(
@@ -127,7 +113,6 @@ function AdminHeader({
                             ? response.data
                             : response.data?.requests ||
                             [];
-
 
                     setRequests(
                         data.filter(
@@ -146,15 +131,10 @@ function AdminHeader({
                         error
                     );
 
-
-                    setRequests(
-                        []
-                    );
+                    setRequests([]);
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
                 }
             },
             []
@@ -164,13 +144,11 @@ function AdminHeader({
     useEffect(() => {
         loadRequests();
 
-
         const interval =
             window.setInterval(
                 loadRequests,
                 60000
             );
-
 
         return () =>
             window.clearInterval(
@@ -192,18 +170,14 @@ function AdminHeader({
                         event.target
                     )
                 ) {
-                    setOpen(
-                        false
-                    );
+                    setOpen(false);
                 }
             };
-
 
         document.addEventListener(
             "mousedown",
             closeDropdown
         );
-
 
         return () =>
             document.removeEventListener(
@@ -222,11 +196,7 @@ function AdminHeader({
                     request
                 );
 
-
-            setOpen(
-                false
-            );
-
+            setOpen(false);
 
             navigate(
                 "/admin/users",
@@ -248,20 +218,20 @@ function AdminHeader({
             className="
                 relative
                 flex
-                min-h-[78px]
+                min-h-[80px]
                 items-center
                 justify-between
                 gap-4
-                rounded-none
-                border
-                border-[#e2e8f0]
+                border-b
+                border-[#dbe4ef]
                 bg-white
-                px-4
+                px-5
                 py-4
-                sm:px-5
                 lg:px-7
             "
         >
+            {/* LEFT */}
+
             <div
                 className="
                     min-w-0
@@ -272,33 +242,34 @@ function AdminHeader({
                         text-[20px]
                         font-bold
                         tracking-[-0.02em]
-                        text-[#111827]
+                        text-[#172033]
                         sm:text-[22px]
                     "
                 >
                     Admin Dashboard
                 </h1>
 
-
                 <p
                     className="
                         mt-1
-                        text-[11px]
+                        text-[10px]
                         text-[#64748b]
                     "
                 >
                     Welcome back,{" "}
                     <span
                         className="
-                            font-medium
+                            font-semibold
                             text-[#1769e8]
                         "
                     >
-                        {name}!
+                        {name}
                     </span>
                 </p>
             </div>
 
+
+            {/* RIGHT */}
 
             <div
                 className="
@@ -306,9 +277,10 @@ function AdminHeader({
                     shrink-0
                     items-center
                     gap-3
-                    sm:gap-4
                 "
             >
+                {/* NOTIFICATION */}
+
                 <div
                     ref={
                         notificationRef
@@ -328,10 +300,7 @@ function AdminHeader({
                                     !current
                             );
 
-
-                            if (
-                                !open
-                            ) {
+                            if (!open) {
                                 loadRequests();
                             }
                         }}
@@ -348,7 +317,9 @@ function AdminHeader({
                             bg-white
                             text-[#52627a]
                             transition
-                            hover:bg-slate-50
+                            hover:border-blue-200
+                            hover:bg-blue-50
+                            hover:text-blue-600
                         "
                     >
                         <svg
@@ -356,6 +327,8 @@ function AdminHeader({
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className="
                                 h-5
                                 w-5
@@ -371,21 +344,21 @@ function AdminHeader({
                             0 && (
                                 <span
                                     className="
-                                    absolute
-                                    -right-1
-                                    -top-1
-                                    flex
-                                    h-[18px]
-                                    min-w-[18px]
-                                    items-center
-                                    justify-center
-                                    rounded-full
-                                    bg-red-500
-                                    px-1
-                                    text-[9px]
-                                    font-bold
-                                    text-white
-                                "
+                                        absolute
+                                        -right-1
+                                        -top-1
+                                        flex
+                                        h-[18px]
+                                        min-w-[18px]
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        bg-red-500
+                                        px-1
+                                        text-[9px]
+                                        font-bold
+                                        text-white
+                                    "
                                 >
                                     {requests.length >
                                         9
@@ -402,15 +375,15 @@ function AdminHeader({
                                 absolute
                                 right-0
                                 top-[48px]
-                                z-[90]
-                                w-[310px]
+                                z-[150]
+                                w-[330px]
                                 max-w-[calc(100vw-30px)]
                                 overflow-hidden
                                 rounded-xl
                                 border
                                 border-[#dbe4ef]
                                 bg-white
-                                shadow-xl
+                                shadow-[0_18px_45px_rgba(15,23,42,0.16)]
                             "
                         >
                             <div
@@ -435,12 +408,11 @@ function AdminHeader({
                                         Notifications
                                     </p>
 
-
                                     <p
                                         className="
                                             mt-0.5
                                             text-[9px]
-                                            text-slate-500
+                                            text-[#64748b]
                                         "
                                     >
                                         Password reset requests
@@ -453,10 +425,14 @@ function AdminHeader({
                                     onClick={
                                         loadRequests
                                     }
+                                    disabled={
+                                        loading
+                                    }
                                     className="
-                                        text-[10px]
-                                        font-medium
+                                        text-[9px]
+                                        font-semibold
                                         text-blue-600
+                                        disabled:opacity-50
                                     "
                                 >
                                     Refresh
@@ -466,7 +442,7 @@ function AdminHeader({
 
                             <div
                                 className="
-                                    max-h-[300px]
+                                    max-h-[320px]
                                     overflow-y-auto
                                 "
                             >
@@ -474,20 +450,20 @@ function AdminHeader({
                                     <div
                                         className="
                                             px-4
-                                            py-8
+                                            py-10
                                             text-center
-                                            text-[11px]
-                                            text-slate-500
+                                            text-[10px]
+                                            text-[#64748b]
                                         "
                                     >
-                                        Loading...
+                                        Loading notifications...
                                     </div>
                                 ) : requests.length ===
                                     0 ? (
                                     <div
                                         className="
                                             px-4
-                                            py-8
+                                            py-9
                                             text-center
                                         "
                                     >
@@ -495,8 +471,8 @@ function AdminHeader({
                                             className="
                                                 mx-auto
                                                 flex
-                                                h-9
-                                                w-9
+                                                h-10
+                                                w-10
                                                 items-center
                                                 justify-center
                                                 rounded-full
@@ -506,7 +482,6 @@ function AdminHeader({
                                         >
                                             ✓
                                         </div>
-
 
                                         <p
                                             className="
@@ -518,164 +493,220 @@ function AdminHeader({
                                         >
                                             No pending requests
                                         </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-[9px]
+                                                text-[#64748b]
+                                            "
+                                        >
+                                            You are all caught up.
+                                        </p>
                                     </div>
                                 ) : (
                                     requests.map(
                                         (
-                                            request
-                                        ) => (
-                                            <button
-                                                key={
-                                                    request._id ||
-                                                    getUserId(
-                                                        request
-                                                    )
-                                                }
-                                                type="button"
-                                                onClick={() =>
-                                                    openUser(
-                                                        request
-                                                    )
-                                                }
-                                                className="
-                                                    flex
-                                                    w-full
-                                                    items-center
-                                                    gap-3
-                                                    border-b
-                                                    border-[#edf1f6]
-                                                    px-4
-                                                    py-3
-                                                    text-left
-                                                    transition
-                                                    last:border-0
-                                                    hover:bg-blue-50/50
-                                                "
-                                            >
-                                                <div
+                                            request,
+                                            index
+                                        ) => {
+                                            const requestName =
+                                                getName(
+                                                    request
+                                                );
+
+                                            const requestUser =
+                                                request?.user ||
+                                                {};
+
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={
+                                                        request._id ||
+                                                        `${getUserId(
+                                                            request
+                                                        )}-${index}`
+                                                    }
+                                                    onClick={() =>
+                                                        openUser(
+                                                            request
+                                                        )
+                                                    }
                                                     className="
                                                         flex
-                                                        h-9
-                                                        w-9
-                                                        shrink-0
-                                                        items-center
-                                                        justify-center
-                                                        rounded-full
-                                                        bg-[#073763]
-                                                        text-[11px]
-                                                        font-bold
-                                                        text-white
+                                                        w-full
+                                                        items-start
+                                                        gap-3
+                                                        border-b
+                                                        border-[#edf1f6]
+                                                        px-4
+                                                        py-3
+                                                        text-left
+                                                        transition
+                                                        last:border-0
+                                                        hover:bg-[#f8fafc]
                                                     "
                                                 >
-                                                    {getName(
-                                                        request
-                                                    )
-                                                        .charAt(
-                                                            0
-                                                        )
-                                                        .toUpperCase()}
-                                                </div>
-
-
-                                                <div
-                                                    className="
-                                                        min-w-0
-                                                        flex-1
-                                                    "
-                                                >
-                                                    <p
+                                                    <div
                                                         className="
-                                                            truncate
-                                                            text-[11px]
-                                                            font-semibold
-                                                            text-[#172033]
+                                                            flex
+                                                            h-9
+                                                            w-9
+                                                            shrink-0
+                                                            items-center
+                                                            justify-center
+                                                            rounded-full
+                                                            bg-[#eef6ff]
+                                                            text-[10px]
+                                                            font-bold
+                                                            text-blue-600
                                                         "
                                                     >
-                                                        {getName(
-                                                            request
-                                                        )}
-                                                    </p>
+                                                        {requestName
+                                                            .charAt(
+                                                                0
+                                                            )
+                                                            .toUpperCase()}
+                                                    </div>
 
 
-                                                    <p
+                                                    <div
                                                         className="
-                                                            mt-0.5
-                                                            text-[9px]
-                                                            capitalize
-                                                            text-slate-500
+                                                            min-w-0
+                                                            flex-1
                                                         "
                                                     >
-                                                        {request
-                                                            ?.user
-                                                            ?.role ||
-                                                            "User"}{" "}
-                                                        requested password reset
-                                                    </p>
-                                                </div>
+                                                        <div
+                                                            className="
+                                                                flex
+                                                                items-center
+                                                                justify-between
+                                                                gap-2
+                                                            "
+                                                        >
+                                                            <p
+                                                                className="
+                                                                    truncate
+                                                                    text-[10px]
+                                                                    font-semibold
+                                                                    text-[#172033]
+                                                                "
+                                                            >
+                                                                {requestName}
+                                                            </p>
+
+                                                            <span
+                                                                className="
+                                                                    shrink-0
+                                                                    rounded-full
+                                                                    bg-amber-50
+                                                                    px-2
+                                                                    py-1
+                                                                    text-[7px]
+                                                                    font-semibold
+                                                                    text-amber-600
+                                                                "
+                                                            >
+                                                                PENDING
+                                                            </span>
+                                                        </div>
 
 
-                                                <span
-                                                    className="
-                                                        text-blue-600
-                                                    "
-                                                >
-                                                    ›
-                                                </span>
-                                            </button>
-                                        )
+                                                        <p
+                                                            className="
+                                                                mt-1
+                                                                truncate
+                                                                text-[8px]
+                                                                text-[#64748b]
+                                                            "
+                                                        >
+                                                            {requestUser.username ||
+                                                                request.username ||
+                                                                "No username"}
+                                                        </p>
+
+
+                                                        <p
+                                                            className="
+                                                                mt-1
+                                                                text-[8px]
+                                                                text-[#94a3b8]
+                                                            "
+                                                        >
+                                                            Requested a password reset
+                                                        </p>
+                                                    </div>
+                                                </button>
+                                            );
+                                        }
                                     )
                                 )}
                             </div>
+
+
+                            {requests.length >
+                                0 && (
+                                    <div
+                                        className="
+                                        border-t
+                                        border-[#e8eef5]
+                                        bg-[#f8fafc]
+                                        p-3
+                                    "
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setOpen(false);
+
+                                                navigate(
+                                                    "/admin/users"
+                                                );
+                                            }}
+                                            className="
+                                            w-full
+                                            rounded-lg
+                                            bg-[#1769e8]
+                                            px-3
+                                            py-2
+                                            text-[10px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b5ed7]
+                                        "
+                                        >
+                                            Manage Users
+                                        </button>
+                                    </div>
+                                )}
                         </div>
                     )}
                 </div>
 
 
+                {/* ADMIN PROFILE */}
+
                 <div
                     className="
                         hidden
-                        h-8
-                        w-px
-                        bg-slate-200
-                        sm:block
-                    "
-                />
-
-
-                <div
-                    className="
-                        flex
                         items-center
                         gap-3
+                        sm:flex
                     "
                 >
                     <div
                         className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-[#eaf3ff]
-                            text-[12px]
-                            font-bold
-                            text-[#1769e8]
-                        "
-                    >
-                        {initial}
-                    </div>
-
-
-                    <div
-                        className="
-                            hidden
-                            sm:block
+                            min-w-0
+                            text-right
                         "
                     >
                         <p
                             className="
-                                text-[11px]
+                                max-w-[180px]
+                                truncate
+                                text-[10px]
                                 font-semibold
                                 text-[#172033]
                             "
@@ -683,16 +714,35 @@ function AdminHeader({
                             {name}
                         </p>
 
-
                         <p
                             className="
                                 mt-0.5
-                                text-[9px]
-                                text-slate-500
+                                text-[8px]
+                                text-[#64748b]
                             "
                         >
                             Administrator
                         </p>
+                    </div>
+
+
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-[#1769e8]
+                            text-[12px]
+                            font-bold
+                            text-white
+                            shadow-sm
+                        "
+                    >
+                        {initial}
                     </div>
                 </div>
             </div>

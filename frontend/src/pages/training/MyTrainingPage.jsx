@@ -10,7 +10,6 @@ import {
 } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-
 import AssignedProgrammeCard from "../../components/training/AssignedProgrammeCard";
 
 import FeedbackAlert from "../../components/ui/FeedbackAlert";
@@ -29,7 +28,6 @@ import {
 function MyTrainingPage() {
     const navigate =
         useNavigate();
-
 
     const [
         assignments,
@@ -56,13 +54,20 @@ function MyTrainingPage() {
         useCallback(
             async () => {
                 try {
-                    setLoading(true);
-                    setErrorMessage("");
+                    setLoading(
+                        true
+                    );
+
+                    setErrorMessage(
+                        ""
+                    );
+
 
                     const response =
                         await api.get(
                             "/my-training"
                         );
+
 
                     setAssignments(
                         parseArrayResponse(
@@ -71,11 +76,14 @@ function MyTrainingPage() {
                         )
                     );
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
                         "Load my training error:",
                         error
                     );
+
 
                     setErrorMessage(
                         getApiErrorMessage(
@@ -85,7 +93,9 @@ function MyTrainingPage() {
                     );
 
                 } finally {
-                    setLoading(false);
+                    setLoading(
+                        false
+                    );
                 }
             },
             []
@@ -128,14 +138,21 @@ function MyTrainingPage() {
                     return availableAssignments;
                 }
 
+
                 return availableAssignments.filter(
                     (
                         assignment
-                    ) =>
-                        getAssignmentProgramme(
-                            assignment
-                        )?.programmeType ===
-                        typeFilter
+                    ) => {
+                        const programme =
+                            getAssignmentProgramme(
+                                assignment
+                            );
+
+                        return (
+                            programme?.programmeType ===
+                            typeFilter
+                        );
+                    }
                 );
             },
             [
@@ -145,80 +162,24 @@ function MyTrainingPage() {
         );
 
 
-    const activeAssignments =
-        availableAssignments.filter(
-            (
-                assignment
-            ) => {
-                const programme =
-                    getAssignmentProgramme(
-                        assignment
-                    );
-
-                return (
-                    assignment.status !==
-                    "inactive" &&
-                    programme?.status !==
-                    "inactive"
-                );
-            }
-        ).length;
-
-
-    const manualHandlingCount =
-        availableAssignments.filter(
-            (
-                assignment
-            ) =>
-                getAssignmentProgramme(
-                    assignment
-                )?.programmeType ===
-                "manual-handling"
-        ).length;
-
-
-    const workingAtHeightCount =
-        availableAssignments.filter(
-            (
-                assignment
-            ) =>
-                getAssignmentProgramme(
-                    assignment
-                )?.programmeType ===
-                "working-at-height"
-        ).length;
-
-
-    const handleStartLearning = (
-        assignment
-    ) => {
-        const programme =
-            getAssignmentProgramme(
-                assignment
-            );
-
-        if (
-            !programme?._id
-        ) {
-            return;
-        }
-
-        navigate(
-            `/my-training/${programme._id}`
-        );
-    };
-
-
-    if (loading) {
+    if (
+        loading
+    ) {
         return (
             <DashboardLayout
                 role="trainee"
                 title="My Training"
-                subtitle="View your assigned workplace safety programmes."
+                subtitle="View workplace safety programmes assigned to your account."
             >
-                <LoadingCard
-                    message="Loading your training..."
-                />
+                <div
+                    className="
+                        app-page
+                    "
+                >
+                    <LoadingCard
+                        message="Loading your training..."
+                    />
+                </div>
             </DashboardLayout>
         );
     }
@@ -228,11 +189,12 @@ function MyTrainingPage() {
         <DashboardLayout
             role="trainee"
             title="My Training"
-            subtitle="View your assigned workplace safety programmes."
+            subtitle="View workplace safety programmes assigned to your account."
         >
             <div
                 className="
-                    space-y-4
+                    app-page
+                    space-y-5
                 "
             >
                 <FeedbackAlert
@@ -241,177 +203,183 @@ function MyTrainingPage() {
                         errorMessage
                     }
                     onClose={() =>
-                        setErrorMessage("")
+                        setErrorMessage(
+                            ""
+                        )
                     }
                 />
 
 
+                {/* SUMMARY */}
+
                 <section
                     className="
-                        grid
-                        gap-3
-                        sm:grid-cols-2
-                        xl:grid-cols-4
+                        rounded-xl
+                        border
+                        border-[#dbe4ef]
+                        bg-white
+                        p-5
+                        shadow-sm
                     "
                 >
-                    <TrainingStat
-                        label="Assigned"
-                        value={
-                            availableAssignments.length
-                        }
-                    />
-
-                    <TrainingStat
-                        label="Available"
-                        value={
-                            activeAssignments
-                        }
-                    />
-
-                    <TrainingStat
-                        label="Manual Handling"
-                        value={
-                            manualHandlingCount
-                        }
-                    />
-
-                    <TrainingStat
-                        label="Working at Height"
-                        value={
-                            workingAtHeightCount
-                        }
-                    />
-                </section>
-
-
-                {availableAssignments.length >
-                    0 && (
-                        <section
-                            className="
+                    <div
+                        className="
                             flex
                             flex-col
-                            gap-3
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-4
-                            shadow-sm
+                            gap-4
                             sm:flex-row
                             sm:items-center
                             sm:justify-between
-                            sm:p-5
                         "
-                        >
-                            <div>
-                                <h2
-                                    className="
-                                    text-[11px]
+                    >
+                        <div>
+                            <h2
+                                className="
+                                    text-[13px]
                                     font-bold
                                     text-[#172033]
                                 "
-                                >
-                                    Training Programmes
-                                </h2>
-
-                                <p
-                                    className="
-                                    mt-1
-                                    text-[8px]
-                                    font-medium
-                                    text-slate-500
-                                "
-                                >
-                                    Filter your assigned safety training.
-                                </p>
-                            </div>
-
-
-                            <select
-                                value={
-                                    typeFilter
-                                }
-                                onChange={(
-                                    event
-                                ) =>
-                                    setTypeFilter(
-                                        event.target.value
-                                    )
-                                }
-                                className="
-                                h-10
-                                w-full
-                                rounded-lg
-                                border
-                                border-slate-300
-                                bg-white
-                                px-3
-                                text-[9px]
-                                font-medium
-                                text-slate-800
-                                outline-none
-                                focus:border-blue-500
-                                sm:w-[220px]
-                            "
                             >
-                                <option value="all">
-                                    All Training
-                                </option>
+                                Assigned Programmes
+                            </h2>
 
-                                <option value="manual-handling">
-                                    Manual Handling
-                                </option>
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Complete the programmes assigned by your administrator.
+                            </p>
+                        </div>
 
-                                <option value="working-at-height">
-                                    Working at Height
-                                </option>
-                            </select>
-                        </section>
-                    )}
 
+                        <span
+                            className="
+                                self-start
+                                rounded-full
+                                bg-blue-50
+                                px-3
+                                py-1.5
+                                text-[9px]
+                                font-semibold
+                                text-blue-600
+                                sm:self-auto
+                            "
+                        >
+                            {availableAssignments.length} Assigned
+                        </span>
+                    </div>
+                </section>
+
+
+                {/* FILTER */}
+
+                <section
+                    className="
+                        flex
+                        flex-wrap
+                        gap-2
+                        rounded-xl
+                        border
+                        border-[#dbe4ef]
+                        bg-white
+                        p-4
+                        shadow-sm
+                    "
+                >
+                    <FilterButton
+                        active={
+                            typeFilter ===
+                            "all"
+                        }
+                        onClick={() =>
+                            setTypeFilter(
+                                "all"
+                            )
+                        }
+                    >
+                        All Training
+                    </FilterButton>
+
+
+                    <FilterButton
+                        active={
+                            typeFilter ===
+                            "manual-handling"
+                        }
+                        onClick={() =>
+                            setTypeFilter(
+                                "manual-handling"
+                            )
+                        }
+                    >
+                        Manual Handling
+                    </FilterButton>
+
+
+                    <FilterButton
+                        active={
+                            typeFilter ===
+                            "working-at-height"
+                        }
+                        onClick={() =>
+                            setTypeFilter(
+                                "working-at-height"
+                            )
+                        }
+                    >
+                        Working at Height
+                    </FilterButton>
+                </section>
+
+
+                {/* PROGRAMMES */}
 
                 {filteredAssignments.length ===
                     0 ? (
-                    <section
-                        className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            shadow-sm
-                        "
-                    >
-                        <EmptyState
-                            title="No assigned training found."
-                            description="There are no programmes matching the current filter."
-                            icon="training"
-                        />
-                    </section>
+                    <EmptyState
+                        title="No training programmes found"
+                        message="There are no assigned programmes matching this filter."
+                    />
                 ) : (
                     <section
                         className="
                             grid
                             gap-4
-                            md:grid-cols-2
-                            xl:grid-cols-3
+                            lg:grid-cols-2
                         "
                     >
                         {filteredAssignments.map(
                             (
                                 assignment
-                            ) => (
-                                <AssignedProgrammeCard
-                                    key={
-                                        assignment._id
-                                    }
-                                    assignment={
+                            ) => {
+                                const programme =
+                                    getAssignmentProgramme(
                                         assignment
-                                    }
-                                    onStart={
-                                        handleStartLearning
-                                    }
-                                />
-                            )
+                                    );
+
+
+                                return (
+                                    <AssignedProgrammeCard
+                                        key={
+                                            assignment._id
+                                        }
+                                        assignment={
+                                            assignment
+                                        }
+                                        programme={
+                                            programme
+                                        }
+                                        onOpen={() =>
+                                            navigate(
+                                                `/my-training/${programme._id}`
+                                            )
+                                        }
+                                    />
+                                );
+                            }
                         )}
                     </section>
                 )}
@@ -421,42 +389,34 @@ function MyTrainingPage() {
 }
 
 
-function TrainingStat({
-    label,
-    value,
+function FilterButton({
+    active,
+    onClick,
+    children,
 }) {
     return (
-        <article
-            className="
-                rounded-xl
+        <button
+            type="button"
+            onClick={
+                onClick
+            }
+            className={`
+                min-h-[36px]
+                rounded-lg
                 border
-                border-slate-200
-                bg-white
-                p-4
-                shadow-sm
-            "
-        >
-            <p
-                className="
-                    text-[8px]
-                    font-medium
-                    text-slate-500
-                "
-            >
-                {label}
-            </p>
+                px-4
+                text-[9px]
+                font-semibold
+                transition
 
-            <p
-                className="
-                    mt-2
-                    text-[22px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
-        </article>
+                ${active
+                    ? "border-[#1769e8] bg-[#1769e8] text-white"
+                    : "border-[#cbd5e1] bg-white text-[#52627a] hover:bg-[#f8fafc]"
+                }
+            `}
+        >
+            {children}
+        </button>
     );
 }
 

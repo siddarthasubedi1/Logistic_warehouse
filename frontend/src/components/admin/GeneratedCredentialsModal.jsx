@@ -1,4 +1,5 @@
 import {
+    useEffect,
     useState,
 } from "react";
 
@@ -15,6 +16,15 @@ function GeneratedCredentialsModal({
     ] = useState("");
 
 
+    useEffect(() => {
+        if (!open) {
+            setCopied("");
+        }
+    }, [
+        open,
+    ]);
+
+
     if (
         !open ||
         !credentials
@@ -27,11 +37,9 @@ function GeneratedCredentialsModal({
         credentials.username ||
         "";
 
-
     const password =
         credentials.password ||
         "";
-
 
     const fullName =
         [
@@ -42,11 +50,10 @@ function GeneratedCredentialsModal({
             .join(" ")
             .trim();
 
-
     const email =
         user?.email ||
+        credentials?.email ||
         "";
-
 
     const role =
         user?.role ||
@@ -58,38 +65,67 @@ function GeneratedCredentialsModal({
             type,
             value
         ) => {
-            if (
-                !value
-            ) {
+            if (!value) {
                 return;
             }
 
-
             try {
-                await navigator
-                    .clipboard
-                    .writeText(
-                        value
-                    );
-
+                await navigator.clipboard.writeText(
+                    value
+                );
 
                 setCopied(
                     type
                 );
 
-
                 window.setTimeout(
                     () => {
-                        setCopied(
-                            ""
-                        );
+                        setCopied("");
                     },
                     1500
                 );
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Copy credentials error:",
+                    error
+                );
+            }
+        };
+
+
+    const copyAll =
+        async () => {
+            if (
+                !username ||
+                !password
+            ) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(
+                    `Username: ${username}\nTemporary Password: ${password}`
+                );
+
+                setCopied(
+                    "all"
+                );
+
+                window.setTimeout(
+                    () => {
+                        setCopied("");
+                    },
+                    1500
+                );
+
+            } catch (
+            error
+            ) {
+                console.error(
+                    "Copy all credentials error:",
                     error
                 );
             }
@@ -119,7 +155,9 @@ Your UK LogiWare temporary login credentials are:
 Username: ${username}
 Temporary Password: ${password}
 
-Please sign in using these credentials. You will be required to create a new password before accessing your account.
+Please sign in using these credentials.
+
+For security, you will be required to create a new password after your first login before accessing your account.
 
 UK LogiWare Safety Training`;
 
@@ -147,186 +185,304 @@ UK LogiWare Safety Training`;
             className="
                 fixed
                 inset-0
-                z-[260]
+                z-[500]
                 flex
                 items-center
                 justify-center
                 overflow-y-auto
-                bg-slate-950/60
+                bg-slate-950/55
                 p-3
                 backdrop-blur-[2px]
-                sm:p-4
+                sm:p-5
             "
         >
             <section
                 role="dialog"
                 aria-modal="true"
+                aria-labelledby="credential-modal-title"
                 className="
                     my-auto
                     w-full
-                    max-w-[550px]
+                    max-w-[575px]
                     overflow-hidden
-                    rounded-xl
+                    rounded-2xl
                     border
-                    border-slate-200
+                    border-[#dbe4ef]
                     bg-white
-                    shadow-2xl
+                    shadow-[0_24px_70px_rgba(15,23,42,0.28)]
                 "
             >
-                {/* HEADER */}
+                {/* =============================================
+                    SUCCESS HEADER
+                ============================================== */}
 
                 <div
                     className="
-                        flex
-                        items-start
-                        justify-between
-                        gap-4
-                        border-b
-                        border-slate-200
+                        relative
+                        overflow-hidden
+                        bg-gradient-to-r
+                        from-[#073763]
+                        via-[#0b4f87]
+                        to-[#1769aa]
                         px-5
-                        py-4
+                        py-5
+                        text-white
+                        sm:px-6
                     "
                 >
-                    <div>
-                        <p
-                            className="
-                                text-[7px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.12em]
-                                text-emerald-600
-                            "
-                        >
-                            Account Created
-                        </p>
-
-
-                        <h2
-                            className="
-                                mt-1
-                                text-[15px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Credentials Generated Successfully
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            These temporary credentials are shown only once.
-                        </p>
-                    </div>
-
-
-                    <button
-                        type="button"
-                        onClick={
-                            onClose
-                        }
-                        aria-label="Close"
+                    <div
                         className="
+                            absolute
+                            -right-12
+                            -top-16
+                            h-40
+                            w-40
+                            rounded-full
+                            bg-white/10
+                        "
+                    />
+
+                    <div
+                        className="
+                            relative
+                            z-10
                             flex
-                            h-8
-                            w-8
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-md
-                            text-lg
-                            text-slate-400
-                            transition
-                            hover:bg-slate-100
-                            hover:text-slate-700
+                            items-start
+                            justify-between
+                            gap-4
                         "
                     >
-                        ×
-                    </button>
+                        <div
+                            className="
+                                flex
+                                items-start
+                                gap-3
+                            "
+                        >
+                            <div
+                                className="
+                                    flex
+                                    h-11
+                                    w-11
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-white/15
+                                    text-white
+                                "
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="
+                                        h-5
+                                        w-5
+                                    "
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="9"
+                                    />
+
+                                    <path d="m8 12 2.5 2.5L16 9" />
+                                </svg>
+                            </div>
+
+
+                            <div>
+                                <p
+                                    className="
+                                        text-[8px]
+                                        font-semibold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-blue-100
+                                    "
+                                >
+                                    Account Created
+                                </p>
+
+                                <h2
+                                    id="credential-modal-title"
+                                    className="
+                                        mt-1
+                                        text-[16px]
+                                        font-bold
+                                        text-white
+                                    "
+                                >
+                                    Credentials Generated Successfully
+                                </h2>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[8px]
+                                        leading-4
+                                        text-blue-100
+                                    "
+                                >
+                                    Save or send these credentials now.
+                                    The temporary password is displayed
+                                    only at this stage.
+                                </p>
+                            </div>
+                        </div>
+
+
+                        <button
+                            type="button"
+                            onClick={
+                                onClose
+                            }
+                            aria-label="Close credentials modal"
+                            className="
+                                flex
+                                h-8
+                                w-8
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/10
+                                text-[18px]
+                                text-white
+                                transition
+                                hover:bg-white/20
+                            "
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
 
 
-                {/* BODY */}
+                {/* =============================================
+                    BODY
+                ============================================== */}
 
                 <div
                     className="
-                        p-4
-                        sm:p-5
+                        p-5
+                        sm:p-6
                     "
                 >
-                    {user && (
+                    {/* ACCOUNT */}
+
+                    <div
+                        className="
+                            rounded-xl
+                            border
+                            border-[#dbe4ef]
+                            bg-[#f8fafc]
+                            p-4
+                        "
+                    >
                         <div
                             className="
-                                rounded-lg
-                                border
-                                border-slate-200
-                                bg-slate-50
-                                p-4
+                                flex
+                                flex-col
+                                gap-3
+                                sm:flex-row
+                                sm:items-center
+                                sm:justify-between
                             "
                         >
-                            <p
+                            <div
                                 className="
-                                    text-[7px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-500
+                                    flex
+                                    min-w-0
+                                    items-center
+                                    gap-3
                                 "
                             >
-                                Account
-                            </p>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[10px]
-                                    font-bold
-                                    text-slate-800
-                                "
-                            >
-                                {fullName ||
-                                    username}
-                            </p>
-
-
-                            {email && (
-                                <p
+                                <div
                                     className="
-                                        mt-1
-                                        break-all
-                                        text-[8px]
-                                        font-medium
-                                        text-slate-500
+                                        flex
+                                        h-10
+                                        w-10
+                                        shrink-0
+                                        items-center
+                                        justify-center
+                                        rounded-full
+                                        bg-[#1769e8]
+                                        text-[11px]
+                                        font-bold
+                                        text-white
                                     "
                                 >
-                                    {email}
-                                </p>
-                            )}
+                                    {(fullName ||
+                                        username)
+                                        .charAt(
+                                            0
+                                        )
+                                        .toUpperCase()}
+                                </div>
+
+
+                                <div
+                                    className="
+                                        min-w-0
+                                    "
+                                >
+                                    <p
+                                        className="
+                                            truncate
+                                            text-[11px]
+                                            font-bold
+                                            text-[#172033]
+                                        "
+                                    >
+                                        {fullName ||
+                                            username}
+                                    </p>
+
+
+                                    {email && (
+                                        <p
+                                            className="
+                                                mt-1
+                                                break-all
+                                                text-[8px]
+                                                text-[#64748b]
+                                            "
+                                        >
+                                            {email}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
 
 
                             {role && (
-                                <p
+                                <span
                                     className="
-                                        mt-1
+                                        self-start
+                                        rounded-full
+                                        bg-blue-50
+                                        px-3
+                                        py-1.5
                                         text-[8px]
-                                        font-medium
+                                        font-semibold
                                         capitalize
-                                        text-slate-500
+                                        text-blue-600
+                                        sm:self-auto
                                     "
                                 >
-                                    Role: {role}
-                                </p>
+                                    {role}
+                                </span>
                             )}
                         </div>
-                    )}
+                    </div>
 
+
+                    {/* CREDENTIALS */}
 
                     <div
                         className="
@@ -373,10 +529,70 @@ UK LogiWare Safety Training`;
                     </div>
 
 
+                    {/* COPY ALL */}
+
+                    <button
+                        type="button"
+                        onClick={
+                            copyAll
+                        }
+                        className="
+                            mt-3
+                            flex
+                            min-h-[38px]
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-lg
+                            border
+                            border-[#dbe4ef]
+                            bg-white
+                            px-4
+                            text-[9px]
+                            font-semibold
+                            text-[#52627a]
+                            transition
+                            hover:bg-[#f8fafc]
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="
+                                h-4
+                                w-4
+                            "
+                        >
+                            <rect
+                                x="8"
+                                y="8"
+                                width="11"
+                                height="11"
+                                rx="2"
+                            />
+
+                            <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+                        </svg>
+
+                        {copied ===
+                            "all"
+                            ? "Credentials Copied"
+                            : "Copy Both Credentials"}
+                    </button>
+
+
+                    {/* WARNING */}
+
                     <div
                         className="
                             mt-4
-                            rounded-lg
+                            flex
+                            items-start
+                            gap-3
+                            rounded-xl
                             border
                             border-amber-200
                             bg-amber-50
@@ -384,18 +600,54 @@ UK LogiWare Safety Training`;
                             py-3
                         "
                     >
-                        <p
+                        <div
                             className="
-                                text-[8px]
-                                font-medium
-                                leading-5
-                                text-amber-800
+                                flex
+                                h-7
+                                w-7
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-amber-100
+                                text-[11px]
+                                font-bold
+                                text-amber-700
                             "
                         >
-                            The Trainer or Trainee must change this temporary password after signing in before accessing the dashboard.
-                        </p>
+                            !
+                        </div>
+
+
+                        <div>
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-semibold
+                                    text-amber-800
+                                "
+                            >
+                                Temporary password
+                            </p>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[8px]
+                                    leading-4
+                                    text-amber-700
+                                "
+                            >
+                                The Trainer or Trainee must change this
+                                generated password after their first
+                                login. The Admin account is not affected
+                                by this requirement.
+                            </p>
+                        </div>
                     </div>
 
+
+                    {/* ACTIONS */}
 
                     <div
                         className="
@@ -403,7 +655,11 @@ UK LogiWare Safety Training`;
                             flex
                             flex-col
                             gap-2
+                            border-t
+                            border-[#e8eef5]
+                            pt-5
                             sm:flex-row
+                            sm:items-center
                             sm:justify-end
                         "
                     >
@@ -417,14 +673,16 @@ UK LogiWare Safety Training`;
                                     min-h-[40px]
                                     rounded-lg
                                     border
-                                    border-slate-300
+                                    border-[#cbd5e1]
                                     bg-white
                                     px-4
                                     text-[9px]
                                     font-semibold
-                                    text-slate-700
+                                    text-[#52627a]
                                     transition
-                                    hover:bg-slate-50
+                                    hover:border-blue-200
+                                    hover:bg-blue-50
+                                    hover:text-blue-600
                                 "
                             >
                                 Send Credentials by Gmail
@@ -440,13 +698,13 @@ UK LogiWare Safety Training`;
                             className="
                                 min-h-[40px]
                                 rounded-lg
-                                bg-blue-600
-                                px-5
+                                bg-[#1769e8]
+                                px-6
                                 text-[9px]
                                 font-semibold
                                 text-white
                                 transition
-                                hover:bg-blue-700
+                                hover:bg-[#0b5ed7]
                             "
                         >
                             Done
@@ -469,9 +727,9 @@ function CredentialItem({
         <div
             className="
                 min-w-0
-                rounded-lg
+                rounded-xl
                 border
-                border-slate-200
+                border-[#dbe4ef]
                 bg-white
                 p-4
             "
@@ -489,8 +747,8 @@ function CredentialItem({
                         text-[7px]
                         font-semibold
                         uppercase
-                        tracking-wide
-                        text-slate-500
+                        tracking-[0.08em]
+                        text-[#64748b]
                     "
                 >
                     {label}
@@ -503,37 +761,42 @@ function CredentialItem({
                         onCopy
                     }
                     className="
-                        shrink-0
                         text-[8px]
                         font-semibold
                         text-blue-600
+                        transition
                         hover:text-blue-700
                     "
                 >
                     {copied
-                        ? "Copied"
+                        ? "Copied ✓"
                         : "Copy"}
                 </button>
             </div>
 
 
-            <p
+            <div
                 className="
                     mt-3
-                    break-all
-                    rounded-md
-                    bg-slate-50
+                    rounded-lg
+                    bg-[#f8fafc]
                     px-3
-                    py-2.5
-                    font-mono
-                    text-[10px]
-                    font-bold
-                    text-slate-800
+                    py-3
                 "
             >
-                {value ||
-                    "—"}
-            </p>
+                <p
+                    className="
+                        break-all
+                        font-mono
+                        text-[10px]
+                        font-bold
+                        text-[#172033]
+                    "
+                >
+                    {value ||
+                        "—"}
+                </p>
+            </div>
         </div>
     );
 }

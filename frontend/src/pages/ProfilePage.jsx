@@ -1,19 +1,22 @@
-import {
-    useEffect,
-    useState,
-} from "react";
-
-import {
-    useNavigate,
-} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import ProfileDetails from "../components/account/ProfileDetails";
 import ChangePasswordForm from "../components/account/ChangePasswordForm";
-
 import FeedbackAlert from "../components/ui/FeedbackAlert";
+import LoadingCard from "../components/ui/LoadingCard";
 
 import api from "../services/api";
+
+import {
+    saveSessionUser,
+} from "../utils/session";
+
+
+const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL ||
+    "http://localhost:5000";
 
 
 function ProfilePage({
@@ -64,7 +67,9 @@ function ProfilePage({
                         );
 
 
-                    if (!mounted) {
+                    if (
+                        !mounted
+                    ) {
                         return;
                     }
 
@@ -82,15 +87,14 @@ function ProfilePage({
                     if (
                         currentUser
                     ) {
-                        sessionStorage.setItem(
-                            "user",
-                            JSON.stringify(
-                                currentUser
-                            )
+                        saveSessionUser(
+                            currentUser
                         );
                     }
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
                         "Profile loading error:",
                         error
@@ -128,94 +132,87 @@ function ProfilePage({
     }, []);
 
 
-    const dashboardPath =
-        role ===
-            "trainer"
-            ? "/trainer"
-            : "/trainee";
-
-
-    const handleProfileImageUpdated = (
-        updatedUser
-    ) => {
-        setUser(
-            (
-                currentUser
-            ) => ({
-                ...currentUser,
-                ...updatedUser,
-            })
+    if (
+        loading
+    ) {
+        return (
+            <DashboardLayout
+                role={role}
+                showHeader={false}
+            >
+                <div className="app-page">
+                    <LoadingCard
+                        message="Loading your profile..."
+                    />
+                </div>
+            </DashboardLayout>
         );
-    };
+    }
+
+
+    const name =
+        `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+        user?.username ||
+        "User";
+
+
+    const normalizedRole =
+        String(
+            user?.role ||
+            role ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const profileImageUrl =
+        user?.profileImage
+            ? user.profileImage.startsWith(
+                "http"
+            )
+                ? user.profileImage
+                : `${BACKEND_URL}${user.profileImage}`
+            : "";
 
 
     return (
         <DashboardLayout
-            role={
-                role
-            }
+            role={role}
             showHeader={false}
+            user={user}
         >
-            <div
-                className="
-                    mx-auto
-                    w-full
-                    max-w-[1200px]
-                    space-y-4
-                "
-            >
-                {/* HEADER */}
+            <div className="profile-figma-page">
 
-                <section
-                    className="
-                        flex
-                        flex-col
-                        gap-4
-                        bg-white
-                        px-4
-                        py-4
-                        sm:px-5
-                        md:flex-row
-                        md:items-center
-                        md:justify-between
-                    "
-                >
+                <FeedbackAlert
+                    type="error"
+                    message={error}
+                    onClose={() =>
+                        setError("")
+                    }
+                />
+
+
+                {/* TOP BAR */}
+
+                <div className="profile-topbar">
+
                     <div>
-                        <p
-                            className="
-                                text-[7px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.12em]
-                                text-blue-600
-                            "
-                        >
-                            Account Center
+
+                        <p className="profile-eyebrow">
+                            ● &nbsp; Account Center
                         </p>
 
 
-                        <h1
-                            className="
-                                mt-1
-                                text-[20px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
+                        <h1>
                             My Profile
                         </h1>
 
 
-                        <p
-                            className="
-                                mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-600
-                            "
-                        >
+                        <span>
                             Manage your personal details, profile image and account security.
-                        </p>
+                        </span>
+
                     </div>
 
 
@@ -223,160 +220,206 @@ function ProfilePage({
                         type="button"
                         onClick={() =>
                             navigate(
-                                dashboardPath
+                                normalizedRole ===
+                                    "trainer"
+                                    ? "/trainer"
+                                    : "/trainee"
                             )
                         }
-                        className="
-                            w-full
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            px-4
-                            py-2.5
-                            text-[8px]
-                            font-semibold
-                            text-slate-700
-                            transition
-                            hover:bg-slate-50
-                            sm:w-auto
-                        "
                     >
-                        ← Back to Dashboard
+                        ‹ &nbsp; Back to Dashboard
                     </button>
-                </section>
+
+                </div>
 
 
-                {/* BLUE BANNER */}
+                {/* SECURITY BANNER */}
 
-                <section
-                    className="
-                        rounded-xl
-                        bg-gradient-to-r
-                        from-[#073763]
-                        to-[#1f55c7]
-                        p-5
-                        text-white
-                        sm:p-6
-                    "
-                >
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
-                    >
-                        <div>
-                            <p
-                                className="
-                                    text-[7px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-[0.14em]
-                                    text-blue-100
-                                "
-                            >
-                                UK LogiWare Safety Training
-                            </p>
+                <section className="profile-security-banner">
+
+                    <div>
+
+                        <p>
+                            UK LOGIWARE SAFETY TRAINING
+                        </p>
 
 
-                            <h2
-                                className="
-                                    mt-2
-                                    text-[14px]
-                                    font-bold
-                                "
-                            >
-                                Keep your account secure and up to date
-                            </h2>
+                        <h2>
+                            Keep your account secure and up to date
+                        </h2>
 
 
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    text-blue-100
-                                "
-                            >
-                                Update your profile photo and manage your password from one secure place.
-                            </p>
-                        </div>
+                        <span>
+                            Update your profile photo and manage your password from one secure place.
+                        </span>
 
-
-                        <div
-                            className="
-                                rounded-lg
-                                bg-white/10
-                                px-4
-                                py-3
-                            "
-                        >
-                            <p
-                                className="
-                                    text-[7px]
-                                    text-blue-100
-                                "
-                            >
-                                Account Role
-                            </p>
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    font-semibold
-                                    capitalize
-                                "
-                            >
-                                {role}
-                            </p>
-                        </div>
                     </div>
+
+
+                    <div className="profile-role-pill">
+
+                        <span>
+                            ◈
+                        </span>
+
+
+                        <div>
+
+                            <small>
+                                Account Role
+                            </small>
+
+
+                            <strong>
+                                {normalizedRole ===
+                                    "trainer"
+                                    ? "Trainer"
+                                    : "Trainee"}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
                 </section>
 
 
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        error
-                    }
-                    onClose={() =>
-                        setError(
-                            ""
-                        )
-                    }
-                />
+                {/* MAIN */}
+
+                <div className="profile-main-grid">
+
+                    {/* PROFILE */}
+
+                    <section className="profile-details-card">
+
+                        <div className="profile-user-strip">
+
+                            <div className="profile-avatar-wrap">
+
+                                {profileImageUrl ? (
+                                    <img
+                                        src={profileImageUrl}
+                                        alt={`${name} profile`}
+                                    />
+                                ) : (
+                                    <div className="profile-avatar-fallback">
+                                        {name
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                    </div>
+                                )}
 
 
-                {/* TWO COLUMNS */}
+                                <span>
+                                    ✎
+                                </span>
 
-                <section
-                    className="
-                        grid
-                        gap-4
-                        lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.8fr)]
-                    "
-                >
-                    <ProfileDetails
-                        user={
-                            user
-                        }
-                        loading={
-                            loading
-                        }
-                        onProfileImageUpdated={
-                            handleProfileImageUpdated
-                        }
-                    />
+                            </div>
 
 
-                    <ChangePasswordForm />
-                </section>
+                            <div>
+
+                                <div className="profile-name-line">
+
+                                    <h2>
+                                        {name}
+                                    </h2>
+
+
+                                    <span>
+                                        ● &nbsp; Active Account
+                                    </span>
+
+                                </div>
+
+
+                                <p>
+                                    {normalizedRole ===
+                                        "trainer"
+                                        ? "Trainer Account"
+                                        : "Trainee Account"}
+                                </p>
+
+
+                                <small>
+                                    Click your profile image or the edit icon to choose a JPG, PNG or WebP image up to 2 MB.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="profile-details-heading">
+
+                            <div>
+
+                                <h3>
+                                    Personal Details
+                                </h3>
+
+
+                                <p>
+                                    Your account and personal information.
+                                </p>
+
+                            </div>
+
+
+                            <span>
+                                Read only
+                            </span>
+
+                        </div>
+
+
+                        <ProfileDetails
+                            user={user}
+                        />
+
+                    </section>
+
+
+                    {/* PASSWORD */}
+
+                    <section className="profile-password-card">
+
+                        <div className="profile-password-heading">
+
+                            <div className="profile-lock-icon">
+                                ♙
+                            </div>
+
+
+                            <div>
+
+                                <p>
+                                    SECURITY
+                                </p>
+
+
+                                <h2>
+                                    Change Password
+                                </h2>
+
+
+                                <span>
+                                    Create a strong password to keep your account protected.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <ChangePasswordForm />
+
+                    </section>
+
+                </div>
+
             </div>
+
         </DashboardLayout>
     );
 }

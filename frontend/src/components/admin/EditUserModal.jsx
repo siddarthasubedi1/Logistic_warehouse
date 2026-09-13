@@ -1,847 +1,836 @@
-import ActionButton from "../ui/ActionButton";
-import StatusBadge from "../ui/StatusBadge";
-
 import {
-    getUserDisplayName,
-} from "../../utils/training";
+    useEffect,
+    useState,
+} from "react";
 
 
-const TRAINING_SECTION_NAMES = {
-    "manual-handling":
-        "Manual Handling",
+function getInitialValues(
+    user
+) {
+    return {
+        firstName:
+            user?.firstName ||
+            "",
 
-    "working-at-height":
-        "Working at Height",
-};
+        lastName:
+            user?.lastName ||
+            "",
+
+        email:
+            user?.email ||
+            "",
+
+        phoneNumber:
+            user?.phoneNumber ||
+            "",
+
+        address:
+            user?.address ||
+            "",
+
+        age:
+            user?.age ||
+            "",
+
+        gender:
+            user?.gender ||
+            "",
+    };
+}
 
 
-function UserTable({
-    users = [],
-    pendingResetUserIds = [],
-    processingId = "",
-    selectedUserId = null,
-    onEdit,
-    onResetPassword,
-    onDeactivate,
-    onReactivate,
-    onDelete,
+function EditUserModal({
+    open = false,
+    user = null,
+    loading = false,
+    onSave,
+    onClose,
 }) {
+    const [
+        values,
+        setValues,
+    ] = useState(
+        getInitialValues(
+            user
+        )
+    );
+
+    const [
+        error,
+        setError,
+    ] = useState("");
+
+
+    /* =========================================================
+       RESET VALUES WHEN OPENING
+    ========================================================= */
+
+    useEffect(() => {
+        if (
+            open &&
+            user
+        ) {
+            setValues(
+                getInitialValues(
+                    user
+                )
+            );
+
+            setError(
+                ""
+            );
+        }
+    }, [
+        open,
+        user,
+    ]);
+
+
     if (
-        !Array.isArray(
-            users
-        ) ||
-        users.length ===
-        0
+        !open ||
+        !user
     ) {
-        return (
-            <div
-                className="
-                    py-12
-                    text-center
-                "
-            >
-                <div
-                    className="
-                        mx-auto
-                        flex
-                        h-11
-                        w-11
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-blue-50
-                        text-blue-600
-                    "
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-5 w-5"
-                    >
-                        <circle
-                            cx="9"
-                            cy="8"
-                            r="3"
-                        />
-
-                        <circle
-                            cx="17"
-                            cy="9"
-                            r="2"
-                        />
-
-                        <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-                    </svg>
-                </div>
-
-                <p
-                    className="
-                        mt-3
-                        text-[10px]
-                        font-bold
-                        text-slate-700
-                    "
-                >
-                    No users found
-                </p>
-
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        font-medium
-                        text-slate-500
-                    "
-                >
-                    Try changing your search or filters.
-                </p>
-            </div>
-        );
+        return null;
     }
 
 
-    const getTrainingSections = (
-        user
-    ) => {
-        const sections =
-            Array.isArray(
-                user.assignedTrainingSections
-            )
-                ? user.assignedTrainingSections
-                : [];
+    /* =========================================================
+       CHANGE
+    ========================================================= */
 
-        return sections.map(
+    const handleChange = (
+        event
+    ) => {
+        const {
+            name,
+            value,
+        } =
+            event.target;
+
+        setValues(
             (
-                section
-            ) =>
-                TRAINING_SECTION_NAMES[
-                section
-                ] ||
-                section
+                current
+            ) => ({
+                ...current,
+
+                [name]:
+                    value,
+            })
+        );
+
+        setError(
+            ""
         );
     };
 
 
-    return (
-        <>
-            {/* MOBILE */}
+    /* =========================================================
+       SUBMIT
+    ========================================================= */
 
-            <div
-                className="
-                    space-y-3
-                    lg:hidden
-                "
-            >
-                {users.map(
-                    (
-                        user
-                    ) => {
-                        const processing =
-                            processingId ===
-                            user._id;
-
-                        const inactive =
-                            [
-                                "inactive",
-                                "deactivated",
-                            ].includes(
-                                String(
-                                    user.status ||
-                                    ""
-                                ).toLowerCase()
-                            );
-
-                        const pendingReset =
-                            pendingResetUserIds.includes(
-                                String(
-                                    user._id
-                                )
-                            );
-
-                        const selected =
-                            String(
-                                selectedUserId ||
-                                ""
-                            ) ===
-                            String(
-                                user._id
-                            );
-
-                        const name =
-                            getUserDisplayName(
-                                user,
-                                user.username ||
-                                "User"
-                            );
-
-                        return (
-                            <article
-                                key={
-                                    user._id
-                                }
-                                id={
-                                    selected
-                                        ? "selected-admin-user"
-                                        : undefined
-                                }
-                                className={`
-                                    rounded-xl
-                                    border
-                                    bg-white
-                                    p-4
-
-                                    ${selected
-                                        ? "border-blue-400 ring-2 ring-blue-100"
-                                        : "border-slate-200"
-                                    }
-                                `}
-                            >
-                                <div
-                                    className="
-                                        flex
-                                        items-start
-                                        gap-3
-                                    "
-                                >
-                                    <Avatar
-                                        name={
-                                            name
-                                        }
-                                    />
-
-                                    <div
-                                        className="
-                                            min-w-0
-                                            flex-1
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                flex
-                                                flex-wrap
-                                                items-start
-                                                justify-between
-                                                gap-2
-                                            "
-                                        >
-                                            <div
-                                                className="
-                                                    min-w-0
-                                                "
-                                            >
-                                                <p
-                                                    className="
-                                                        truncate
-                                                        text-[10px]
-                                                        font-bold
-                                                        text-slate-800
-                                                    "
-                                                >
-                                                    {name}
-                                                </p>
-
-                                                <p
-                                                    className="
-                                                        mt-1
-                                                        truncate
-                                                        text-[8px]
-                                                        font-medium
-                                                        text-slate-500
-                                                    "
-                                                >
-                                                    {
-                                                        user.email
-                                                    }
-                                                </p>
-                                            </div>
-
-                                            <StatusBadge
-                                                status={
-                                                    user.status
-                                                }
-                                            />
-                                        </div>
+    const handleSubmit = (
+        event
+    ) => {
+        event.preventDefault();
 
 
-                                        <div
-                                            className="
-                                                mt-3
-                                                flex
-                                                flex-wrap
-                                                gap-2
-                                            "
-                                        >
-                                            <StatusBadge
-                                                status={
-                                                    user.role
-                                                }
-                                            />
+        if (
+            !values.firstName.trim() ||
+            !values.lastName.trim() ||
+            !values.email.trim() ||
+            !values.phoneNumber.trim() ||
+            !values.address.trim() ||
+            !values.age ||
+            !values.gender
+        ) {
+            setError(
+                "Please complete all required fields."
+            );
 
-                                            <span
-                                                className="
-                                                    rounded-full
-                                                    bg-slate-100
-                                                    px-2.5
-                                                    py-1
-                                                    text-[7px]
-                                                    font-semibold
-                                                    text-slate-600
-                                                "
-                                            >
-                                                @{user.username}
-                                            </span>
-                                        </div>
+            return;
+        }
 
 
-                                        <div
-                                            className="
-                                                mt-3
-                                                flex
-                                                flex-wrap
-                                                gap-1.5
-                                            "
-                                        >
-                                            {getTrainingSections(
-                                                user
-                                            ).map(
-                                                (
-                                                    section
-                                                ) => (
-                                                    <span
-                                                        key={
-                                                            section
-                                                        }
-                                                        className="
-                                                            rounded-full
-                                                            bg-blue-50
-                                                            px-2.5
-                                                            py-1
-                                                            text-[7px]
-                                                            font-semibold
-                                                            text-blue-600
-                                                        "
-                                                    >
-                                                        {section}
-                                                    </span>
-                                                )
-                                            )}
-                                        </div>
+        if (
+            Number(
+                values.age
+            ) < 16
+        ) {
+            setError(
+                "Age must be 16 or above."
+            );
+
+            return;
+        }
 
 
-                                        <div
-                                            className="
-                                                mt-4
-                                                grid
-                                                grid-cols-2
-                                                gap-2
-                                            "
-                                        >
-                                            <ActionButton
-                                                variant="secondary"
-                                                disabled={
-                                                    processing
-                                                }
-                                                onClick={() =>
-                                                    onEdit?.(
-                                                        user
-                                                    )
-                                                }
-                                            >
-                                                Edit
-                                            </ActionButton>
+        onSave?.({
+            firstName:
+                values.firstName.trim(),
+
+            lastName:
+                values.lastName.trim(),
+
+            email:
+                values.email.trim(),
+
+            phoneNumber:
+                values.phoneNumber.trim(),
+
+            address:
+                values.address.trim(),
+
+            age:
+                Number(
+                    values.age
+                ),
+
+            gender:
+                values.gender,
+        });
+    };
 
 
-                                            {pendingReset && (
-                                                <ActionButton
-                                                    variant="primary"
-                                                    disabled={
-                                                        processing
-                                                    }
-                                                    onClick={() =>
-                                                        onResetPassword?.(
-                                                            user
-                                                        )
-                                                    }
-                                                >
-                                                    Reset Password
-                                                </ActionButton>
-                                            )}
+    const name =
+        `${user.firstName || ""} ${user.lastName || ""}`
+            .trim() ||
+        user.username ||
+        "User";
 
 
-                                            {inactive ? (
-                                                <ActionButton
-                                                    variant="success"
-                                                    disabled={
-                                                        processing
-                                                    }
-                                                    onClick={() =>
-                                                        onReactivate?.(
-                                                            user
-                                                        )
-                                                    }
-                                                >
-                                                    Reactivate
-                                                </ActionButton>
-                                            ) : (
-                                                <ActionButton
-                                                    variant="warning"
-                                                    disabled={
-                                                        processing
-                                                    }
-                                                    onClick={() =>
-                                                        onDeactivate?.(
-                                                            user
-                                                        )
-                                                    }
-                                                >
-                                                    Deactivate
-                                                </ActionButton>
-                                            )}
-
-
-                                            <ActionButton
-                                                variant="danger"
-                                                disabled={
-                                                    processing
-                                                }
-                                                onClick={() =>
-                                                    onDelete?.(
-                                                        user
-                                                    )
-                                                }
-                                            >
-                                                Delete
-                                            </ActionButton>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        );
-                    }
-                )}
-            </div>
-
-
-            {/* DESKTOP */}
-
-            <div
-                className="
-                    hidden
-                    overflow-x-auto
-                    lg:block
-                "
-            >
-                <table
-                    className="
-                        min-w-[1050px]
-                        w-full
-                    "
-                >
-                    <thead
-                        className="
-                            border-y
-                            border-slate-200
-                            bg-slate-50
-                        "
-                    >
-                        <tr>
-                            <TableHead>
-                                User
-                            </TableHead>
-
-                            <TableHead>
-                                Role
-                            </TableHead>
-
-                            <TableHead>
-                                Training Access
-                            </TableHead>
-
-                            <TableHead>
-                                Status
-                            </TableHead>
-
-                            <TableHead right>
-                                Actions
-                            </TableHead>
-                        </tr>
-                    </thead>
-
-
-                    <tbody>
-                        {users.map(
-                            (
-                                user
-                            ) => {
-                                const processing =
-                                    processingId ===
-                                    user._id;
-
-                                const inactive =
-                                    [
-                                        "inactive",
-                                        "deactivated",
-                                    ].includes(
-                                        String(
-                                            user.status ||
-                                            ""
-                                        ).toLowerCase()
-                                    );
-
-                                const pendingReset =
-                                    pendingResetUserIds.includes(
-                                        String(
-                                            user._id
-                                        )
-                                    );
-
-                                const selected =
-                                    String(
-                                        selectedUserId ||
-                                        ""
-                                    ) ===
-                                    String(
-                                        user._id
-                                    );
-
-                                const name =
-                                    getUserDisplayName(
-                                        user,
-                                        user.username ||
-                                        "User"
-                                    );
-
-                                return (
-                                    <tr
-                                        key={
-                                            user._id
-                                        }
-                                        id={
-                                            selected
-                                                ? "selected-admin-user"
-                                                : undefined
-                                        }
-                                        className={`
-                                            border-b
-                                            border-slate-100
-                                            transition
-
-                                            ${selected
-                                                ? "bg-blue-50"
-                                                : "bg-white hover:bg-slate-50/60"
-                                            }
-                                        `}
-                                    >
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <div
-                                                className="
-                                                    flex
-                                                    items-center
-                                                    gap-3
-                                                "
-                                            >
-                                                <Avatar
-                                                    name={
-                                                        name
-                                                    }
-                                                />
-
-                                                <div
-                                                    className="
-                                                        min-w-0
-                                                    "
-                                                >
-                                                    <p
-                                                        className="
-                                                            max-w-[190px]
-                                                            truncate
-                                                            text-[9px]
-                                                            font-bold
-                                                            text-slate-800
-                                                        "
-                                                    >
-                                                        {name}
-                                                    </p>
-
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            max-w-[200px]
-                                                            truncate
-                                                            text-[7px]
-                                                            font-medium
-                                                            text-slate-500
-                                                        "
-                                                    >
-                                                        {
-                                                            user.email
-                                                        }
-                                                    </p>
-
-                                                    <p
-                                                        className="
-                                                            mt-1
-                                                            text-[7px]
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        @{user.username}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-
-
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <StatusBadge
-                                                status={
-                                                    user.role
-                                                }
-                                            />
-                                        </td>
-
-
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <div
-                                                className="
-                                                    flex
-                                                    max-w-[240px]
-                                                    flex-wrap
-                                                    gap-1.5
-                                                "
-                                            >
-                                                {getTrainingSections(
-                                                    user
-                                                ).length ===
-                                                    0 ? (
-                                                    <span
-                                                        className="
-                                                            text-[8px]
-                                                            text-slate-400
-                                                        "
-                                                    >
-                                                        —
-                                                    </span>
-                                                ) : (
-                                                    getTrainingSections(
-                                                        user
-                                                    ).map(
-                                                        (
-                                                            section
-                                                        ) => (
-                                                            <span
-                                                                key={
-                                                                    section
-                                                                }
-                                                                className="
-                                                                    rounded-full
-                                                                    bg-blue-50
-                                                                    px-2.5
-                                                                    py-1
-                                                                    text-[7px]
-                                                                    font-semibold
-                                                                    text-blue-600
-                                                                "
-                                                            >
-                                                                {section}
-                                                            </span>
-                                                        )
-                                                    )
-                                                )}
-                                            </div>
-                                        </td>
-
-
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <StatusBadge
-                                                status={
-                                                    user.status
-                                                }
-                                            />
-                                        </td>
-
-
-                                        <td
-                                            className="
-                                                px-5
-                                                py-4
-                                            "
-                                        >
-                                            <div
-                                                className="
-                                                    flex
-                                                    flex-wrap
-                                                    justify-end
-                                                    gap-2
-                                                "
-                                            >
-                                                <ActionButton
-                                                    variant="secondary"
-                                                    disabled={
-                                                        processing
-                                                    }
-                                                    onClick={() =>
-                                                        onEdit?.(
-                                                            user
-                                                        )
-                                                    }
-                                                >
-                                                    Edit
-                                                </ActionButton>
-
-
-                                                {pendingReset && (
-                                                    <ActionButton
-                                                        variant="primary"
-                                                        disabled={
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onResetPassword?.(
-                                                                user
-                                                            )
-                                                        }
-                                                    >
-                                                        Reset Password
-                                                    </ActionButton>
-                                                )}
-
-
-                                                {inactive ? (
-                                                    <ActionButton
-                                                        variant="success"
-                                                        disabled={
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onReactivate?.(
-                                                                user
-                                                            )
-                                                        }
-                                                    >
-                                                        Reactivate
-                                                    </ActionButton>
-                                                ) : (
-                                                    <ActionButton
-                                                        variant="warning"
-                                                        disabled={
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onDeactivate?.(
-                                                                user
-                                                            )
-                                                        }
-                                                    >
-                                                        Deactivate
-                                                    </ActionButton>
-                                                )}
-
-
-                                                <ActionButton
-                                                    variant="danger"
-                                                    disabled={
-                                                        processing
-                                                    }
-                                                    onClick={() =>
-                                                        onDelete?.(
-                                                            user
-                                                        )
-                                                    }
-                                                >
-                                                    Delete
-                                                </ActionButton>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            }
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </>
-    );
-}
-
-
-function Avatar({
-    name,
-}) {
     return (
         <div
             className="
+                fixed
+                inset-0
+                z-[500]
                 flex
-                h-9
-                w-9
-                shrink-0
                 items-center
                 justify-center
-                rounded-full
-                bg-blue-50
-                text-[10px]
-                font-bold
-                text-blue-600
+                overflow-y-auto
+                bg-slate-950/55
+                p-3
+                backdrop-blur-[2px]
+                sm:p-5
             "
         >
-            {String(
-                name ||
-                "U"
-            )
-                .charAt(0)
-                .toUpperCase()}
+            <section
+                role="dialog"
+                aria-modal="true"
+                className="
+                    my-auto
+                    w-full
+                    max-w-[650px]
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    border-[#dbe4ef]
+                    bg-white
+                    shadow-[0_24px_70px_rgba(15,23,42,0.28)]
+                "
+            >
+                {/* =================================================
+                    HEADER
+                ================================================= */}
+
+                <div
+                    className="
+                        flex
+                        items-start
+                        justify-between
+                        gap-4
+                        border-b
+                        border-[#e8eef5]
+                        bg-[#f8fafc]
+                        px-5
+                        py-4
+                        sm:px-6
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-3
+                        "
+                    >
+                        <div
+                            className="
+                                flex
+                                h-10
+                                w-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-[#1769e8]
+                                text-[11px]
+                                font-bold
+                                text-white
+                            "
+                        >
+                            {name
+                                .charAt(
+                                    0
+                                )
+                                .toUpperCase()}
+                        </div>
+
+
+                        <div>
+                            <h2
+                                className="
+                                    text-[14px]
+                                    font-bold
+                                    text-[#172033]
+                                "
+                            >
+                                Edit User
+                            </h2>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Update personal details for {name}.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onClick={
+                            onClose
+                        }
+                        disabled={
+                            loading
+                        }
+                        className="
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            text-[18px]
+                            text-[#64748b]
+                            transition
+                            hover:bg-slate-200
+                            disabled:opacity-40
+                        "
+                    >
+                        ×
+                    </button>
+                </div>
+
+
+                {/* =================================================
+                    ACCOUNT INFORMATION
+                ================================================= */}
+
+                <div
+                    className="
+                        border-b
+                        border-[#e8eef5]
+                        px-5
+                        py-4
+                        sm:px-6
+                    "
+                >
+                    <div
+                        className="
+                            grid
+                            gap-3
+                            sm:grid-cols-3
+                        "
+                    >
+                        <InfoBox
+                            label="Username"
+                            value={
+                                user.username ||
+                                "—"
+                            }
+                        />
+
+                        <InfoBox
+                            label="Role"
+                            value={
+                                user.role ||
+                                "—"
+                            }
+                        />
+
+                        <InfoBox
+                            label="Status"
+                            value={
+                                user.status ||
+                                "active"
+                            }
+                        />
+                    </div>
+                </div>
+
+
+                {/* =================================================
+                    FORM
+                ================================================= */}
+
+                <form
+                    onSubmit={
+                        handleSubmit
+                    }
+                    className="
+                        p-5
+                        sm:p-6
+                    "
+                >
+                    {error && (
+                        <div
+                            className="
+                                mb-4
+                                rounded-lg
+                                border
+                                border-red-200
+                                bg-red-50
+                                px-4
+                                py-3
+                                text-[9px]
+                                text-red-700
+                            "
+                        >
+                            {error}
+                        </div>
+                    )}
+
+
+                    <div
+                        className="
+                            grid
+                            gap-4
+                            md:grid-cols-2
+                        "
+                    >
+                        <InputField
+                            label="First Name"
+                            name="firstName"
+                            value={
+                                values.firstName
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            required
+                        />
+
+                        <InputField
+                            label="Last Name"
+                            name="lastName"
+                            value={
+                                values.lastName
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            required
+                        />
+
+                        <InputField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={
+                                values.email
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            required
+                        />
+
+                        <InputField
+                            label="Phone Number"
+                            name="phoneNumber"
+                            value={
+                                values.phoneNumber
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            required
+                        />
+
+                        <InputField
+                            label="Age"
+                            name="age"
+                            type="number"
+                            min="16"
+                            value={
+                                values.age
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            required
+                        />
+
+
+                        <label>
+                            <span
+                                className="
+                                    mb-2
+                                    block
+                                    text-[9px]
+                                    font-semibold
+                                    text-[#334155]
+                                "
+                            >
+                                Gender
+                                <span
+                                    className="
+                                        ml-1
+                                        text-red-500
+                                    "
+                                >
+                                    *
+                                </span>
+                            </span>
+
+                            <select
+                                name="gender"
+                                value={
+                                    values.gender
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                required
+                                className="
+                                    min-h-[42px]
+                                    w-full
+                                    rounded-lg
+                                    border
+                                    border-[#cbd5e1]
+                                    bg-white
+                                    px-3
+                                    text-[10px]
+                                    text-[#172033]
+                                    outline-none
+                                    transition
+                                    focus:border-blue-500
+                                    focus:ring-2
+                                    focus:ring-blue-100
+                                "
+                            >
+                                <option value="">
+                                    Select gender
+                                </option>
+
+                                <option value="male">
+                                    Male
+                                </option>
+
+                                <option value="female">
+                                    Female
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+
+                                <option value="prefer-not-to-say">
+                                    Prefer not to say
+                                </option>
+                            </select>
+                        </label>
+
+
+                        <div
+                            className="
+                                md:col-span-2
+                            "
+                        >
+                            <label>
+                                <span
+                                    className="
+                                        mb-2
+                                        block
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#334155]
+                                    "
+                                >
+                                    Address
+                                    <span
+                                        className="
+                                            ml-1
+                                            text-red-500
+                                        "
+                                    >
+                                        *
+                                    </span>
+                                </span>
+
+                                <textarea
+                                    name="address"
+                                    value={
+                                        values.address
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    required
+                                    rows="3"
+                                    className="
+                                        w-full
+                                        resize-none
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-3
+                                        py-3
+                                        text-[10px]
+                                        text-[#172033]
+                                        outline-none
+                                        transition
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                    "
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+
+                    {/* =================================================
+                        NOTE
+                    ================================================= */}
+
+                    <div
+                        className="
+                            mt-5
+                            rounded-lg
+                            border
+                            border-blue-100
+                            bg-blue-50
+                            px-4
+                            py-3
+                        "
+                    >
+                        <p
+                            className="
+                                text-[9px]
+                                font-semibold
+                                text-blue-700
+                            "
+                        >
+                            Account access information
+                        </p>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[8px]
+                                leading-4
+                                text-blue-600
+                            "
+                        >
+                            Username, role, password and training assignments
+                            are managed separately and are not changed by this form.
+                        </p>
+                    </div>
+
+
+                    {/* =================================================
+                        ACTIONS
+                    ================================================= */}
+
+                    <div
+                        className="
+                            mt-6
+                            flex
+                            flex-col-reverse
+                            gap-2
+                            border-t
+                            border-[#e8eef5]
+                            pt-5
+                            sm:flex-row
+                            sm:justify-end
+                        "
+                    >
+                        <button
+                            type="button"
+                            onClick={
+                                onClose
+                            }
+                            disabled={
+                                loading
+                            }
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                border
+                                border-[#cbd5e1]
+                                bg-white
+                                px-5
+                                text-[9px]
+                                font-semibold
+                                text-[#52627a]
+                                transition
+                                hover:bg-[#f8fafc]
+                                disabled:opacity-50
+                            "
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            disabled={
+                                loading
+                            }
+                            className="
+                                min-h-[40px]
+                                rounded-lg
+                                bg-[#1769e8]
+                                px-6
+                                text-[9px]
+                                font-semibold
+                                text-white
+                                transition
+                                hover:bg-[#0b5ed7]
+                                disabled:cursor-not-allowed
+                                disabled:opacity-50
+                            "
+                        >
+                            {loading
+                                ? "Saving..."
+                                : "Save Changes"}
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
     );
 }
 
 
-function TableHead({
-    children,
-    right = false,
+/* =========================================================
+   INPUT
+========================================================= */
+
+function InputField({
+    label,
+    required,
+    ...props
 }) {
     return (
-        <th
-            className={`
-                px-5
-                py-3
-                text-[7px]
-                font-bold
-                uppercase
-                tracking-wide
-                text-slate-500
+        <label>
+            <span
+                className="
+                    mb-2
+                    block
+                    text-[9px]
+                    font-semibold
+                    text-[#334155]
+                "
+            >
+                {label}
 
-                ${right
-                    ? "text-right"
-                    : "text-left"
+                {required && (
+                    <span
+                        className="
+                            ml-1
+                            text-red-500
+                        "
+                    >
+                        *
+                    </span>
+                )}
+            </span>
+
+
+            <input
+                {...props}
+                required={
+                    required
                 }
-            `}
-        >
-            {children}
-        </th>
+                className="
+                    min-h-[42px]
+                    w-full
+                    rounded-lg
+                    border
+                    border-[#cbd5e1]
+                    bg-white
+                    px-3
+                    text-[10px]
+                    text-[#172033]
+                    outline-none
+                    transition
+                    placeholder:text-[#94a3b8]
+                    focus:border-blue-500
+                    focus:ring-2
+                    focus:ring-blue-100
+                "
+            />
+        </label>
     );
 }
 
 
-export default UserTable;
+/* =========================================================
+   INFO
+========================================================= */
+
+function InfoBox({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                border
+                border-[#e1e8f0]
+                bg-[#f8fafc]
+                px-3
+                py-3
+            "
+        >
+            <p
+                className="
+                    text-[7px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-[#94a3b8]
+                "
+            >
+                {label}
+            </p>
+
+            <p
+                className="
+                    mt-1
+                    truncate
+                    text-[9px]
+                    font-semibold
+                    capitalize
+                    text-[#172033]
+                "
+            >
+                {value}
+            </p>
+        </div>
+    );
+}
+
+
+export default EditUserModal;

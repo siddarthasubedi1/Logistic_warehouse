@@ -6,7 +6,6 @@ import {
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
-import TrainingManagementShell from "../../components/training/TrainingManagementShell";
 import TrainingAssignmentForm from "../../components/training/TrainingAssignmentForm";
 import TrainingAssignmentTable from "../../components/training/TrainingAssignmentTable";
 
@@ -83,11 +82,16 @@ function TrainingAssignmentsPage() {
     ] = useState("");
 
 
-    const clearFeedback = () => {
-        setErrorMessage("");
-        setSuccessMessage("");
-    };
+    const clearFeedback =
+        () => {
+            setErrorMessage("");
+            setSuccessMessage("");
+        };
 
+
+    /* =====================================================
+       LOAD PROGRAMMES
+    ===================================================== */
 
     const loadProgrammes =
         async () => {
@@ -96,16 +100,23 @@ function TrainingAssignmentsPage() {
                     "/training-programmes"
                 );
 
+            const programmeList =
+                parseArrayResponse(
+                    response.data,
+                    "programmes"
+                );
+
             setProgrammes(
                 getActiveProgrammes(
-                    parseArrayResponse(
-                        response.data,
-                        "programmes"
-                    )
+                    programmeList
                 )
             );
         };
 
+
+    /* =====================================================
+       LOAD TRAINEES
+    ===================================================== */
 
     const loadTrainees =
         async () => {
@@ -114,16 +125,23 @@ function TrainingAssignmentsPage() {
                     "/admin/users"
                 );
 
+            const userList =
+                parseArrayResponse(
+                    response.data,
+                    "users"
+                );
+
             setTrainees(
                 getAssignableTrainees(
-                    parseArrayResponse(
-                        response.data,
-                        "users"
-                    )
+                    userList
                 )
             );
         };
 
+
+    /* =====================================================
+       LOAD ASSIGNMENTS
+    ===================================================== */
 
     const loadAssignments =
         async () => {
@@ -141,10 +159,15 @@ function TrainingAssignmentsPage() {
         };
 
 
+    /* =====================================================
+       PAGE LOAD
+    ===================================================== */
+
     const loadPageData =
         async () => {
             try {
                 setLoading(true);
+
                 clearFeedback();
 
                 await Promise.all([
@@ -155,7 +178,7 @@ function TrainingAssignmentsPage() {
 
             } catch (error) {
                 console.error(
-                    "Load assignments error:",
+                    "Load training assignments error:",
                     error
                 );
 
@@ -177,6 +200,10 @@ function TrainingAssignmentsPage() {
     }, []);
 
 
+    /* =====================================================
+       ASSIGN
+    ===================================================== */
+
     const handleAssign =
         async (
             event
@@ -184,6 +211,7 @@ function TrainingAssignmentsPage() {
             event.preventDefault();
 
             clearFeedback();
+
 
             if (
                 !programmeId ||
@@ -196,8 +224,10 @@ function TrainingAssignmentsPage() {
                 return;
             }
 
+
             try {
                 setSaving(true);
+
 
                 const response =
                     await api.post(
@@ -208,17 +238,25 @@ function TrainingAssignmentsPage() {
                         }
                     );
 
+
                 setSuccessMessage(
                     response.data?.message ||
                     "Training programme assigned successfully."
                 );
 
+
                 setProgrammeId("");
                 setTraineeId("");
+
 
                 await loadAssignments();
 
             } catch (error) {
+                console.error(
+                    "Create assignment error:",
+                    error
+                );
+
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
@@ -232,6 +270,10 @@ function TrainingAssignmentsPage() {
         };
 
 
+    /* =====================================================
+       DEACTIVATE
+    ===================================================== */
+
     const handleDeactivate =
         async (
             assignment
@@ -242,37 +284,52 @@ function TrainingAssignmentsPage() {
                 return;
             }
 
+
             const confirmed =
                 window.confirm(
                     "Deactivate this training assignment?"
                 );
 
-            if (!confirmed) {
+
+            if (
+                !confirmed
+            ) {
                 return;
             }
+
 
             try {
                 setActionLoadingId(
                     assignment._id
                 );
 
+                clearFeedback();
+
+
                 const response =
                     await api.patch(
                         `/training-assignments/${assignment._id}/deactivate`
                     );
 
+
                 setSuccessMessage(
                     response.data?.message ||
-                    "Training assignment deactivated."
+                    "Training assignment deactivated successfully."
                 );
+
 
                 await loadAssignments();
 
             } catch (error) {
+                console.error(
+                    "Deactivate assignment error:",
+                    error
+                );
+
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to deactivate assignment."
+                        "Unable to deactivate the training assignment."
                     )
                 );
 
@@ -281,6 +338,10 @@ function TrainingAssignmentsPage() {
             }
         };
 
+
+    /* =====================================================
+       REACTIVATE
+    ===================================================== */
 
     const handleReactivate =
         async (
@@ -292,28 +353,39 @@ function TrainingAssignmentsPage() {
                 return;
             }
 
+
             try {
                 setActionLoadingId(
                     assignment._id
                 );
+
+                clearFeedback();
+
 
                 const response =
                     await api.patch(
                         `/training-assignments/${assignment._id}/reactivate`
                     );
 
+
                 setSuccessMessage(
                     response.data?.message ||
-                    "Training assignment reactivated."
+                    "Training assignment reactivated successfully."
                 );
+
 
                 await loadAssignments();
 
             } catch (error) {
+                console.error(
+                    "Reactivate assignment error:",
+                    error
+                );
+
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to reactivate assignment."
+                        "Unable to reactivate the training assignment."
                     )
                 );
 
@@ -323,6 +395,10 @@ function TrainingAssignmentsPage() {
         };
 
 
+    /* =====================================================
+       FILTER
+    ===================================================== */
+
     const filteredAssignments =
         useMemo(
             () => {
@@ -331,9 +407,11 @@ function TrainingAssignmentsPage() {
                         .trim()
                         .toLowerCase();
 
+
                 if (!query) {
                     return assignments;
                 }
+
 
                 return assignments.filter(
                     (
@@ -344,25 +422,32 @@ function TrainingAssignmentsPage() {
                                 assignment
                             );
 
+
                         const trainee =
                             getAssignmentTrainee(
                                 assignment
                             );
+
 
                         const text =
                             [
                                 programme?.title,
                                 programme?.programmeType,
                                 trainee?.username,
+
                                 getUserDisplayName(
                                     trainee,
                                     ""
                                 ),
+
                                 assignment.status,
                             ]
-                                .filter(Boolean)
+                                .filter(
+                                    Boolean
+                                )
                                 .join(" ")
                                 .toLowerCase();
+
 
                         return text.includes(
                             query
@@ -382,20 +467,35 @@ function TrainingAssignmentsPage() {
             (
                 assignment
             ) =>
-                assignment.status !==
+                String(
+                    assignment.status ||
+                    ""
+                ).toLowerCase() !==
                 "inactive"
         ).length;
 
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
     if (loading) {
         return (
             <DashboardLayout
                 role="admin"
-                showHeader={false}
+                showHeader={
+                    false
+                }
             >
-                <LoadingCard
-                    message="Loading training assignments..."
-                />
+                <div
+                    className="
+                        app-page
+                    "
+                >
+                    <LoadingCard
+                        message="Loading training assignments..."
+                    />
+                </div>
             </DashboardLayout>
         );
     }
@@ -404,12 +504,143 @@ function TrainingAssignmentsPage() {
     return (
         <DashboardLayout
             role="admin"
-            showHeader={false}
+            showHeader={
+                false
+            }
         >
-            <TrainingManagementShell
-                title="Training Assignments"
-                description="Assign active safety training programmes to Trainee accounts."
+            <div
+                className="
+                    app-page
+                    space-y-5
+                "
             >
+                {/* =============================================
+                    HERO
+                ============================================== */}
+
+                <section
+                    className="
+                        training-hero
+                        relative
+                        overflow-hidden
+                        rounded-xl
+                        px-5
+                        py-6
+                        shadow-sm
+                        sm:px-6
+                        lg:px-7
+                    "
+                >
+                    <div
+                        className="
+                            pointer-events-none
+                            absolute
+                            -right-16
+                            -top-16
+                            h-48
+                            w-48
+                            rounded-full
+                            bg-white/10
+                        "
+                    />
+
+
+                    <div
+                        className="
+                            relative
+                            z-10
+                            flex
+                            items-start
+                            gap-4
+                        "
+                    >
+                        <div
+                            className="
+                                flex
+                                h-12
+                                w-12
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-xl
+                                border
+                                border-white/15
+                                bg-white/10
+                            "
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                className="
+                                    h-6
+                                    w-6
+                                "
+                            >
+                                <rect
+                                    x="5"
+                                    y="3"
+                                    width="14"
+                                    height="18"
+                                    rx="2"
+                                />
+
+                                <path d="M9 8h6" />
+                                <path d="M9 12h6" />
+                                <path d="M9 16h4" />
+                            </svg>
+                        </div>
+
+
+                        <div>
+                            <p
+                                className="
+                                    text-[8px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-[0.14em]
+                                    text-blue-100
+                                "
+                            >
+                                Training Management
+                            </p>
+
+
+                            <h1
+                                className="
+                                    mt-1
+                                    text-[20px]
+                                    font-bold
+                                    text-white
+                                "
+                            >
+                                Training Assignments
+                            </h1>
+
+
+                            <p
+                                className="
+                                    mt-2
+                                    max-w-[610px]
+                                    text-[9px]
+                                    leading-5
+                                    text-blue-100
+                                "
+                            >
+                                Assign active workplace safety programmes
+                                to Trainee accounts and manage existing
+                                assignments.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+
+                {/* =============================================
+                    FEEDBACK
+                ============================================== */}
+
                 <FeedbackAlert
                     type="success"
                     message={
@@ -419,6 +650,7 @@ function TrainingAssignmentsPage() {
                         setSuccessMessage("")
                     }
                 />
+
 
                 <FeedbackAlert
                     type="error"
@@ -431,28 +663,32 @@ function TrainingAssignmentsPage() {
                 />
 
 
+                {/* =============================================
+                    STATS
+                ============================================== */}
+
                 <section
                     className="
                         grid
-                        gap-3
+                        gap-4
                         sm:grid-cols-3
                     "
                 >
-                    <Stat
-                        label="Assignments"
+                    <StatCard
+                        label="Total Assignments"
                         value={
                             assignments.length
                         }
                     />
 
-                    <Stat
+                    <StatCard
                         label="Active"
                         value={
                             activeAssignments
                         }
                     />
 
-                    <Stat
+                    <StatCard
                         label="Assignable Trainees"
                         value={
                             trainees.length
@@ -461,40 +697,96 @@ function TrainingAssignmentsPage() {
                 </section>
 
 
-                <TrainingAssignmentForm
-                    programmes={
-                        programmes
-                    }
-                    trainees={
-                        trainees
-                    }
-                    programmeId={
-                        programmeId
-                    }
-                    traineeId={
-                        traineeId
-                    }
-                    saving={
-                        saving
-                    }
-                    onProgrammeChange={
-                        setProgrammeId
-                    }
-                    onTraineeChange={
-                        setTraineeId
-                    }
-                    onSubmit={
-                        handleAssign
-                    }
-                />
-
+                {/* =============================================
+                    ASSIGNMENT FORM
+                ============================================== */}
 
                 <section
                     className="
                         overflow-hidden
                         rounded-xl
                         border
-                        border-slate-200
+                        border-[#dbe4ef]
+                        bg-white
+                        shadow-sm
+                    "
+                >
+                    <div
+                        className="
+                            border-b
+                            border-[#e8eef5]
+                            px-5
+                            py-4
+                        "
+                    >
+                        <h2
+                            className="
+                                text-[13px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            Create Assignment
+                        </h2>
+
+                        <p
+                            className="
+                                mt-1
+                                text-[9px]
+                                text-[#64748b]
+                            "
+                        >
+                            Select an active programme and the Trainee who
+                            should receive it.
+                        </p>
+                    </div>
+
+
+                    <div
+                        className="
+                            p-5
+                        "
+                    >
+                        <TrainingAssignmentForm
+                            programmes={
+                                programmes
+                            }
+                            trainees={
+                                trainees
+                            }
+                            programmeId={
+                                programmeId
+                            }
+                            traineeId={
+                                traineeId
+                            }
+                            saving={
+                                saving
+                            }
+                            onProgrammeChange={
+                                setProgrammeId
+                            }
+                            onTraineeChange={
+                                setTraineeId
+                            }
+                            onSubmit={
+                                handleAssign
+                            }
+                        />
+                    </div>
+                </section>
+
+
+                {/* =============================================
+                    TABLE
+                ============================================== */}
+
+                <section
+                    className="
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        border-[#dbe4ef]
                         bg-white
                         shadow-sm
                     "
@@ -505,19 +797,18 @@ function TrainingAssignmentsPage() {
                             flex-col
                             gap-3
                             border-b
-                            border-slate-100
-                            px-4
+                            border-[#e8eef5]
+                            px-5
                             py-4
                             sm:flex-row
                             sm:items-center
                             sm:justify-between
-                            sm:px-5
                         "
                     >
                         <div>
                             <h2
                                 className="
-                                    text-[11px]
+                                    text-[13px]
                                     font-bold
                                     text-[#172033]
                                 "
@@ -528,45 +819,87 @@ function TrainingAssignmentsPage() {
                             <p
                                 className="
                                     mt-1
-                                    text-[8px]
-                                    font-medium
-                                    text-slate-500
+                                    text-[9px]
+                                    text-[#64748b]
                                 "
                             >
-                                Review or change current programme access.
+                                Manage currently assigned training programmes.
                             </p>
                         </div>
 
 
-                        <input
-                            type="search"
-                            value={
-                                searchTerm
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setSearchTerm(
-                                    event.target.value
-                                )
-                            }
-                            placeholder="Search assignments..."
+                        <div
                             className="
-                                h-10
+                                relative
                                 w-full
-                                rounded-lg
-                                border
-                                border-slate-300
-                                bg-white
-                                px-3
-                                text-[9px]
-                                font-medium
-                                text-slate-800
-                                outline-none
-                                focus:border-blue-500
-                                sm:max-w-[260px]
+                                sm:w-[260px]
                             "
-                        />
+                        >
+                            <span
+                                className="
+                                    pointer-events-none
+                                    absolute
+                                    inset-y-0
+                                    left-0
+                                    flex
+                                    items-center
+                                    pl-3
+                                    text-[#94a3b8]
+                                "
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    className="
+                                        h-4
+                                        w-4
+                                    "
+                                >
+                                    <circle
+                                        cx="11"
+                                        cy="11"
+                                        r="7"
+                                    />
+
+                                    <path d="m20 20-3.5-3.5" />
+                                </svg>
+                            </span>
+
+
+                            <input
+                                type="search"
+                                value={
+                                    searchTerm
+                                }
+                                onChange={(
+                                    event
+                                ) =>
+                                    setSearchTerm(
+                                        event.target.value
+                                    )
+                                }
+                                placeholder="Search assignments..."
+                                className="
+                                    min-h-[40px]
+                                    w-full
+                                    rounded-lg
+                                    border
+                                    border-[#cbd5e1]
+                                    bg-white
+                                    pl-9
+                                    pr-3
+                                    text-[10px]
+                                    text-[#172033]
+                                    outline-none
+                                    placeholder:text-[#94a3b8]
+                                    focus:border-blue-500
+                                    focus:ring-2
+                                    focus:ring-blue-100
+                                "
+                            />
+                        </div>
                     </div>
 
 
@@ -585,13 +918,13 @@ function TrainingAssignmentsPage() {
                         }
                     />
                 </section>
-            </TrainingManagementShell>
+            </div>
         </DashboardLayout>
     );
 }
 
 
-function Stat({
+function StatCard({
     label,
     value,
 }) {
@@ -600,32 +933,68 @@ function Stat({
             className="
                 rounded-xl
                 border
-                border-slate-200
+                border-[#dbe4ef]
                 bg-white
-                p-4
+                p-5
                 shadow-sm
             "
         >
-            <p
+            <div
                 className="
-                    text-[8px]
-                    font-medium
-                    text-slate-500
+                    flex
+                    items-center
+                    justify-between
                 "
             >
-                {label}
-            </p>
+                <div>
+                    <p
+                        className="
+                            text-[9px]
+                            text-[#64748b]
+                        "
+                    >
+                        {label}
+                    </p>
 
-            <p
-                className="
-                    mt-2
-                    text-[22px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
+                    <p
+                        className="
+                            mt-2
+                            text-[23px]
+                            font-bold
+                            text-[#172033]
+                        "
+                    >
+                        {value}
+                    </p>
+                </div>
+
+
+                <div
+                    className="
+                        flex
+                        h-10
+                        w-10
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-blue-50
+                        text-blue-600
+                    "
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="
+                            h-5
+                            w-5
+                        "
+                    >
+                        <path d="M5 12 10 17 19 8" />
+                    </svg>
+                </div>
+            </div>
         </article>
     );
 }

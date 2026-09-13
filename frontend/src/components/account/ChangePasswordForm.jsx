@@ -2,34 +2,34 @@ import {
     useState,
 } from "react";
 
-import {
-    useNavigate,
-} from "react-router-dom";
-
 import api from "../../services/api";
 
-import PasswordInput from "../auth/PasswordInput";
 import FeedbackAlert from "../ui/FeedbackAlert";
 
 
 function ChangePasswordForm() {
-    const navigate =
-        useNavigate();
+    const [
+        currentPassword,
+        setCurrentPassword,
+    ] = useState("");
 
 
     const [
-        formData,
-        setFormData,
-    ] = useState({
-        currentPassword:
-            "",
+        newPassword,
+        setNewPassword,
+    ] = useState("");
 
-        newPassword:
-            "",
 
-        confirmPassword:
-            "",
-    });
+    const [
+        confirmPassword,
+        setConfirmPassword,
+    ] = useState("");
+
+
+    const [
+        showPasswords,
+        setShowPasswords,
+    ] = useState(false);
 
 
     const [
@@ -50,36 +50,20 @@ function ChangePasswordForm() {
     ] = useState("");
 
 
-    const handleChange = (
-        event
-    ) => {
-        const {
-            name,
-            value,
-        } =
-            event.target;
+    const resetFields =
+        () => {
+            setCurrentPassword(
+                ""
+            );
 
+            setNewPassword(
+                ""
+            );
 
-        setFormData(
-            (
-                current
-            ) => ({
-                ...current,
-
-                [name]:
-                    value,
-            })
-        );
-
-
-        setError(
-            ""
-        );
-
-        setSuccess(
-            ""
-        );
-    };
+            setConfirmPassword(
+                ""
+            );
+        };
 
 
     const handleSubmit =
@@ -88,20 +72,14 @@ function ChangePasswordForm() {
         ) => {
             event.preventDefault();
 
-
-            setError(
-                ""
-            );
-
-            setSuccess(
-                ""
-            );
+            setError("");
+            setSuccess("");
 
 
             if (
-                !formData.currentPassword ||
-                !formData.newPassword ||
-                !formData.confirmPassword
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword
             ) {
                 setError(
                     "Please complete all password fields."
@@ -112,7 +90,7 @@ function ChangePasswordForm() {
 
 
             if (
-                formData.newPassword.length <
+                newPassword.length <
                 12
             ) {
                 setError(
@@ -124,8 +102,8 @@ function ChangePasswordForm() {
 
 
             if (
-                formData.newPassword !==
-                formData.confirmPassword
+                newPassword !==
+                confirmPassword
             ) {
                 setError(
                     "New password and confirmation do not match."
@@ -136,8 +114,8 @@ function ChangePasswordForm() {
 
 
             if (
-                formData.currentPassword ===
-                formData.newPassword
+                currentPassword ===
+                newPassword
             ) {
                 setError(
                     "New password must be different from your current password."
@@ -157,13 +135,28 @@ function ChangePasswordForm() {
                     await api.post(
                         "/auth/change-password",
                         {
-                            currentPassword:
-                                formData.currentPassword,
-
-                            newPassword:
-                                formData.newPassword,
+                            currentPassword,
+                            newPassword,
                         }
                     );
+
+
+                if (
+                    response.data
+                        ?.user
+                ) {
+                    sessionStorage.setItem(
+                        "user",
+                        JSON.stringify(
+                            response.data.user
+                        )
+                    );
+                }
+
+
+                sessionStorage.removeItem(
+                    "forcePasswordChange"
+                );
 
 
                 setSuccess(
@@ -173,42 +166,11 @@ function ChangePasswordForm() {
                 );
 
 
-                setFormData({
-                    currentPassword:
-                        "",
+                resetFields();
 
-                    newPassword:
-                        "",
-
-                    confirmPassword:
-                        "",
-                });
-
-
-                sessionStorage.removeItem(
-                    "accessToken"
-                );
-
-
-                sessionStorage.removeItem(
-                    "user"
-                );
-
-
-                window.setTimeout(
-                    () => {
-                        navigate(
-                            "/login",
-                            {
-                                replace:
-                                    true,
-                            }
-                        );
-                    },
-                    1500
-                );
-
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Change password error:",
                     error
@@ -219,7 +181,7 @@ function ChangePasswordForm() {
                     error.response
                         ?.data
                         ?.message ||
-                    "Unable to change password."
+                    "Unable to change your password."
                 );
 
             } finally {
@@ -231,338 +193,245 @@ function ChangePasswordForm() {
 
 
     return (
-        <section
+        <form
+            onSubmit={
+                handleSubmit
+            }
             className="
-                overflow-hidden
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                shadow-sm
+                p-5
             "
         >
-            {/* HEADER */}
-
             <div
                 className="
-                    border-b
-                    border-slate-100
-                    bg-slate-50/50
-                    px-4
-                    py-4
-                    sm:px-5
+                    max-w-[620px]
                 "
             >
+
                 <div
                     className="
-                        flex
-                        items-start
-                        gap-3
+                        space-y-3
                     "
                 >
-                    <div
-                        className="
-                            flex
-                            h-10
-                            w-10
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-lg
-                            bg-blue-600
-                            text-white
-                        "
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            className="h-5 w-5"
-                        >
-                            <rect
-                                x="5"
-                                y="10"
-                                width="14"
-                                height="10"
-                                rx="2"
-                            />
 
-                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                        </svg>
-                    </div>
+                    <FeedbackAlert
+                        type="success"
+                        message={
+                            success
+                        }
+                        onClose={() =>
+                            setSuccess("")
+                        }
+                    />
 
 
-                    <div>
-                        <p
-                            className="
-                                text-[7px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.12em]
-                                text-blue-600
-                            "
-                        >
-                            Security
-                        </p>
+                    <FeedbackAlert
+                        type="error"
+                        message={
+                            error
+                        }
+                        onClose={() =>
+                            setError("")
+                        }
+                    />
 
-
-                        <h2
-                            className="
-                                mt-1
-                                text-[12px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Change Password
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            Create a strong password to keep your account protected.
-                        </p>
-                    </div>
                 </div>
-            </div>
 
 
-            <form
-                onSubmit={
-                    handleSubmit
-                }
-                className="
-                    space-y-4
-                    p-4
-                    sm:p-5
-                "
-            >
-                <FeedbackAlert
-                    type="success"
-                    message={
-                        success
-                    }
-                />
-
-
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        error
-                    }
-                />
-
-
-                <FormField
-                    label="Current Password"
+                <div
+                    className="
+                        mt-4
+                        grid
+                        gap-4
+                    "
                 >
-                    <PasswordInput
-                        id="current-password"
-                        name="currentPassword"
+
+                    <PasswordField
+                        label="Current Password"
                         value={
-                            formData.currentPassword
+                            currentPassword
                         }
                         onChange={
-                            handleChange
+                            setCurrentPassword
                         }
-                        disabled={
-                            loading
+                        show={
+                            showPasswords
                         }
                         autoComplete="current-password"
-                        placeholder="Enter current password"
                     />
-                </FormField>
-
-
-                <FormField
-                    label="New Password"
-                >
-                    <PasswordInput
-                        id="new-password"
-                        name="newPassword"
-                        value={
-                            formData.newPassword
-                        }
-                        onChange={
-                            handleChange
-                        }
-                        disabled={
-                            loading
-                        }
-                        autoComplete="new-password"
-                        placeholder="Create new password"
-                    />
-                </FormField>
-
-
-                <FormField
-                    label="Confirm New Password"
-                >
-                    <PasswordInput
-                        id="confirm-password"
-                        name="confirmPassword"
-                        value={
-                            formData.confirmPassword
-                        }
-                        onChange={
-                            handleChange
-                        }
-                        disabled={
-                            loading
-                        }
-                        autoComplete="new-password"
-                        placeholder="Confirm new password"
-                    />
-                </FormField>
-
-
-                {/* REQUIREMENTS */}
-
-                <div
-                    className="
-                        rounded-lg
-                        border
-                        border-slate-200
-                        bg-slate-50
-                        p-3
-                    "
-                >
-                    <p
-                        className="
-                            text-[7px]
-                            font-semibold
-                            uppercase
-                            tracking-wide
-                            text-slate-600
-                        "
-                    >
-                        Password Requirements
-                    </p>
 
 
                     <div
                         className="
-                            mt-3
-                            space-y-2
+                            grid
+                            gap-4
+                            md:grid-cols-2
                         "
                     >
-                        <Requirement
-                            passed={
-                                formData.newPassword.length >=
-                                12
+
+                        <PasswordField
+                            label="New Password"
+                            value={
+                                newPassword
                             }
-                        >
-                            At least 12 characters
-                        </Requirement>
-
-
-                        <Requirement
-                            passed={
-                                Boolean(
-                                    formData.currentPassword &&
-                                    formData.newPassword &&
-                                    formData.currentPassword !==
-                                    formData.newPassword
-                                )
+                            onChange={
+                                setNewPassword
                             }
-                        >
-                            Different from current password
-                        </Requirement>
-
-
-                        <Requirement
-                            passed={
-                                Boolean(
-                                    formData.confirmPassword &&
-                                    formData.newPassword ===
-                                    formData.confirmPassword
-                                )
+                            show={
+                                showPasswords
                             }
-                        >
-                            New passwords match
-                        </Requirement>
+                            autoComplete="new-password"
+                        />
+
+
+                        <PasswordField
+                            label="Confirm New Password"
+                            value={
+                                confirmPassword
+                            }
+                            onChange={
+                                setConfirmPassword
+                            }
+                            show={
+                                showPasswords
+                            }
+                            autoComplete="new-password"
+                        />
+
                     </div>
+
                 </div>
-
-
-                <button
-                    type="submit"
-                    disabled={
-                        loading
-                    }
-                    className="
-                        flex
-                        min-h-[42px]
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        bg-blue-600
-                        px-5
-                        text-[9px]
-                        font-semibold
-                        text-white
-                        transition
-                        hover:bg-blue-700
-                        disabled:cursor-not-allowed
-                        disabled:opacity-50
-                    "
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="h-4 w-4"
-                    >
-                        <path d="M12 3 4 6v5c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
-
-                        <path d="m8.5 12 2 2 5-5" />
-                    </svg>
-
-
-                    {loading
-                        ? "Changing Password..."
-                        : "Change Password"}
-                </button>
 
 
                 <div
                     className="
-                        border-t
-                        border-slate-100
-                        pt-4
-                        text-center
+                        mt-4
+                        flex
+                        flex-col
+                        gap-4
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
                     "
                 >
-                    <p
+
+                    <label
                         className="
-                            text-[7px]
-                            font-medium
-                            leading-4
-                            text-slate-500
+                            flex
+                            cursor-pointer
+                            items-center
+                            gap-2
                         "
                     >
-                        For your security, you will be signed out after changing your password and must sign in again.
-                    </p>
+
+                        <input
+                            type="checkbox"
+                            checked={
+                                showPasswords
+                            }
+                            onChange={(
+                                event
+                            ) =>
+                                setShowPasswords(
+                                    event.target.checked
+                                )
+                            }
+                            className="
+                                h-4
+                                w-4
+                                accent-[#1769e8]
+                            "
+                        />
+
+
+                        <span
+                            className="
+                                text-[8px]
+                                font-medium
+                                text-[#64748b]
+                            "
+                        >
+                            Show passwords
+                        </span>
+
+                    </label>
+
+
+                    <button
+                        type="submit"
+                        disabled={
+                            loading
+                        }
+                        className="
+                            min-h-[40px]
+                            rounded-lg
+                            bg-[#1769e8]
+                            px-6
+                            text-[9px]
+                            font-semibold
+                            text-white
+                            transition
+                            hover:bg-[#0b5ed7]
+                            disabled:cursor-not-allowed
+                            disabled:opacity-60
+                        "
+                    >
+                        {loading
+                            ? "Updating..."
+                            : "Update Password"}
+                    </button>
+
                 </div>
-            </form>
-        </section>
+
+
+                <div
+                    className="
+                        mt-5
+                        rounded-lg
+                        border
+                        border-[#e2e8f0]
+                        bg-[#f8fafc]
+                        px-4
+                        py-3
+                    "
+                >
+
+                    <p
+                        className="
+                            text-[8px]
+                            font-semibold
+                            text-[#52627a]
+                        "
+                    >
+                        Password requirements
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-[8px]
+                            leading-4
+                            text-[#64748b]
+                        "
+                    >
+                        Use at least 12 characters and choose a password
+                        different from your current password.
+                    </p>
+
+                </div>
+
+            </div>
+        </form>
     );
 }
 
 
-function FormField({
+function PasswordField({
     label,
-    children,
+    value,
+    onChange,
+    show,
+    autoComplete,
 }) {
     return (
         <label
@@ -570,75 +439,58 @@ function FormField({
                 block
             "
         >
+
             <span
                 className="
                     mb-2
                     block
-                    text-[8px]
+                    text-[9px]
                     font-semibold
-                    text-slate-700
+                    text-[#334155]
                 "
             >
                 {label}
             </span>
 
 
-            {children}
+            <input
+                type={
+                    show
+                        ? "text"
+                        : "password"
+                }
+                value={
+                    value
+                }
+                onChange={(
+                    event
+                ) =>
+                    onChange(
+                        event.target.value
+                    )
+                }
+                autoComplete={
+                    autoComplete
+                }
+                className="
+                    min-h-[42px]
+                    w-full
+                    rounded-lg
+                    border
+                    border-[#cbd5e1]
+                    bg-white
+                    px-3
+                    text-[10px]
+                    text-[#172033]
+                    outline-none
+                    transition
+                    focus:border-[#3b82f6]
+                    focus:ring-2
+                    focus:ring-blue-100
+                "
+            />
+
         </label>
-    );
-}
-
-
-function Requirement({
-    passed,
-    children,
-}) {
-    return (
-        <div
-            className="
-                flex
-                items-center
-                gap-2
-            "
-        >
-            <span
-                className={`
-                    flex
-                    h-4
-                    w-4
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-full
-                    text-[7px]
-                    font-bold
-
-                    ${passed
-                        ? "bg-emerald-100 text-emerald-600"
-                        : "bg-slate-200 text-slate-500"
-                    }
-                `}
-            >
-                {passed
-                    ? "✓"
-                    : "•"}
-            </span>
-
-
-            <span
-                className={`
-                    text-[8px]
-                    font-medium
-
-                    ${passed
-                        ? "text-emerald-700"
-                        : "text-slate-600"
-                    }
-                `}
-            >
-                {children}
-            </span>
-        </div>
     );
 }
 

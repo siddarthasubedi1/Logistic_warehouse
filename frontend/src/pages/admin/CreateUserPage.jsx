@@ -9,7 +9,9 @@ function CreateUserPage() {
             title="Create User"
             subtitle="Add Trainer or Trainee information and generate secure login credentials."
         >
-            <CreateUserForm />
+            <div className="admin-create-user">
+                <CreateUserForm />
+            </div>
         </DashboardLayout>
     );
 }

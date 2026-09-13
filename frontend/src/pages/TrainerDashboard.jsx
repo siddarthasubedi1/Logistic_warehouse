@@ -11,42 +11,98 @@ import {
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import TrainerHeader from "../components/trainer/TrainerHeader";
 
-import ActionButton from "../components/ui/ActionButton";
-import FeedbackAlert from "../components/ui/FeedbackAlert";
 import LoadingCard from "../components/ui/LoadingCard";
-import StatusBadge from "../components/ui/StatusBadge";
+import FeedbackAlert from "../components/ui/FeedbackAlert";
 
 import api from "../services/api";
 
+import boxLift from "../images/box-lift.jpg";
+import heightImage from "../images/hight.jpg";
+
 import {
-    formatProgrammeType,
+    getSessionUser,
+    updateSessionUser,
+} from "../utils/session";
+
+import {
     getApiErrorMessage,
     parseArrayResponse,
 } from "../utils/training";
 
-import {
-    getSessionUser,
-} from "../utils/session";
 
+/* =========================================================
+   TRAINING AREA CONFIGURATION
+========================================================= */
+
+const TRAINING_AREAS = {
+    "manual-handling": {
+        title:
+            "Manual Handling",
+
+        description:
+            "Safe techniques for lifting, carrying, and moving loads in the workplace.",
+
+        image:
+            boxLift,
+    },
+
+    "working-at-height": {
+        title:
+            "Working at Height",
+
+        description:
+            "Safe working practices for elevated work and fall prevention.",
+
+        image:
+            heightImage,
+    },
+};
+
+
+/* =========================================================
+   NORMALISE TRAINING SECTION
+========================================================= */
+
+function normalizeTrainingSection(
+    value
+) {
+    return String(
+        value || ""
+    )
+        .trim()
+        .toLowerCase()
+        .replace(
+            /_/g,
+            "-"
+        )
+        .replace(
+            /\s+/g,
+            "-"
+        );
+}
+
+
+/* =========================================================
+   TRAINER DASHBOARD
+========================================================= */
 
 function TrainerDashboard() {
     const navigate =
         useNavigate();
 
 
-    const user =
-        getSessionUser();
+    const [
+        user,
+        setUser,
+    ] = useState(
+        () =>
+            getSessionUser()
+    );
 
 
     const [
         programmes,
         setProgrammes,
-    ] = useState([]);
-
-
-    const [
-        assignments,
-        setAssignments,
     ] = useState([]);
 
 
@@ -62,8 +118,12 @@ function TrainerDashboard() {
     ] = useState("");
 
 
+    /* =====================================================
+       LOAD DASHBOARD DATA
+    ===================================================== */
+
     useEffect(() => {
-        let active =
+        let mounted =
             true;
 
 
@@ -79,59 +139,92 @@ function TrainerDashboard() {
                     );
 
 
-                    const results =
+                    const [
+                        profileResult,
+                        programmeResult,
+                    ] =
                         await Promise.allSettled([
                             api.get(
-                                "/training-programmes"
+                                "/users/me"
                             ),
 
                             api.get(
-                                "/training-assignments"
+                                "/training-programmes"
                             ),
                         ]);
 
 
-                    if (!active) {
+                    if (
+                        !mounted
+                    ) {
                         return;
                     }
 
 
+                    /* =========================================
+                       USER PROFILE
+                    ========================================== */
+
                     if (
-                        results[0].status ===
+                        profileResult.status ===
+                        "fulfilled"
+                    ) {
+                        const currentUser =
+                            profileResult.value
+                                .data
+                                ?.user ||
+                            null;
+
+
+                        if (
+                            currentUser
+                        ) {
+                            setUser(
+                                currentUser
+                            );
+
+
+                            updateSessionUser(
+                                currentUser
+                            );
+                        }
+                    }
+
+
+                    /* =========================================
+                       TRAINING PROGRAMMES
+                    ========================================== */
+
+                    if (
+                        programmeResult.status ===
                         "fulfilled"
                     ) {
                         setProgrammes(
                             parseArrayResponse(
-                                results[0].value.data,
+                                programmeResult.value.data,
                                 "programmes"
                             )
                         );
                     }
 
 
-                    if (
-                        results[1].status ===
-                        "fulfilled"
-                    ) {
-                        setAssignments(
-                            parseArrayResponse(
-                                results[1].value.data,
-                                "assignments"
-                            )
-                        );
-                    }
-
+                    /*
+                     * Only show a full dashboard load error
+                     * when BOTH requests fail.
+                     */
 
                     if (
-                        results[0].status ===
+                        profileResult.status ===
                         "rejected" &&
-                        results[1].status ===
+                        programmeResult.status ===
                         "rejected"
                     ) {
-                        throw results[0].reason;
+                        throw profileResult.reason;
                     }
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
                         "Trainer dashboard error:",
                         error
@@ -139,19 +232,19 @@ function TrainerDashboard() {
 
 
                     if (
-                        active
+                        mounted
                     ) {
                         setErrorMessage(
                             getApiErrorMessage(
                                 error,
-                                "Unable to load Trainer dashboard data."
+                                "Unable to load Trainer dashboard."
                             )
                         );
                     }
 
                 } finally {
                     if (
-                        active
+                        mounted
                     ) {
                         setLoading(
                             false
@@ -165,52 +258,153 @@ function TrainerDashboard() {
 
 
         return () => {
-            active =
+            mounted =
                 false;
         };
+
     }, []);
 
 
+    /* =====================================================
+       ASSIGNED TRAINING SECTIONS
+    ===================================================== */
+
     const assignedSections =
-        Array.isArray(
-            user?.assignedTrainingSections
-        )
-            ? user.assignedTrainingSections
-            : [];
+        useMemo(
+            () => {
+                if (
+                    !Array.isArray(
+                        user?.assignedTrainingSections
+                    )
+                ) {
+                    return [];
+                }
 
 
-    const activeProgrammes =
-        programmes.filter(
-            (
-                programme
-            ) =>
-                programme.status ===
-                "active"
+                return user
+                    .assignedTrainingSections
+                    .map(
+                        normalizeTrainingSection
+                    )
+                    .filter(
+                        Boolean
+                    );
+            },
+            [
+                user,
+            ]
         );
 
 
-    const activeAssignments =
-        assignments.filter(
-            (
-                assignment
-            ) =>
-                assignment.status !==
-                "inactive"
-        );
+    /* =====================================================
+       ASSIGNED AREA INFORMATION
+    ===================================================== */
 
-
-    const displayedProgrammes =
+    const assignedAreas =
         useMemo(
             () =>
-                programmes.slice(
-                    0,
-                    4
-                ),
+                assignedSections
+                    .map(
+                        (
+                            id
+                        ) => {
+                            const area =
+                                TRAINING_AREAS[
+                                id
+                                ];
+
+
+                            if (
+                                !area
+                            ) {
+                                return null;
+                            }
+
+
+                            return {
+                                id,
+                                ...area,
+                            };
+                        }
+                    )
+                    .filter(
+                        Boolean
+                    ),
             [
+                assignedSections,
+            ]
+        );
+
+
+    /* =====================================================
+       PROGRAMMES BY TRAINING AREA
+    ===================================================== */
+
+    const programmesByArea =
+        useMemo(
+            () => {
+                const result =
+                    {};
+
+
+                assignedSections.forEach(
+                    (
+                        section
+                    ) => {
+                        result[
+                            section
+                        ] =
+                            programmes.filter(
+                                (
+                                    programme
+                                ) =>
+                                    normalizeTrainingSection(
+                                        programme.programmeType
+                                    ) ===
+                                    section
+                            );
+                    }
+                );
+
+
+                return result;
+            },
+            [
+                assignedSections,
                 programmes,
             ]
         );
 
+
+    /* =====================================================
+       TOTAL RELEVANT PROGRAMMES
+    ===================================================== */
+
+    const totalRelevantProgrammes =
+        useMemo(
+            () =>
+                Object
+                    .values(
+                        programmesByArea
+                    )
+                    .reduce(
+                        (
+                            total,
+                            list
+                        ) =>
+                            total +
+                            list.length,
+                        0
+                    ),
+            [
+                programmesByArea,
+            ]
+        );
+
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
     if (
         loading
@@ -218,21 +412,48 @@ function TrainerDashboard() {
         return (
             <DashboardLayout
                 role="trainer"
-                showHeader={false}
+                showHeader={
+                    false
+                }
             >
-                <LoadingCard
-                    message="Loading Trainer dashboard..."
-                />
+                <div
+                    className="
+                        app-page
+                    "
+                >
+                    <LoadingCard
+                        message="Loading Trainer dashboard..."
+                    />
+                </div>
             </DashboardLayout>
         );
     }
 
 
+    /* =====================================================
+       DISPLAY NAME
+    ===================================================== */
+
+    const displayName =
+        `${user?.firstName || ""} ${user?.lastName || ""}`
+            .trim() ||
+        user?.fullName ||
+        user?.username ||
+        "Trainer";
+
+
+    /* =====================================================
+       PAGE
+    ===================================================== */
+
     return (
         <DashboardLayout
             role="trainer"
-            showHeader={false}
+            showHeader={
+                false
+            }
         >
+
             <TrainerHeader
                 user={
                     user
@@ -242,11 +463,10 @@ function TrainerDashboard() {
 
             <div
                 className="
-                    space-y-4
-                    pt-4
-                    sm:pt-5
+                    trainer-dashboard-figma
                 "
             >
+
                 <FeedbackAlert
                     type="error"
                     message={
@@ -260,337 +480,666 @@ function TrainerDashboard() {
                 />
 
 
-                {/* MODULE + STATS */}
+                {/* ===========================================
+                    TRAINER ACCOUNT
+                ============================================ */}
 
                 <section
                     className="
-                        grid
-                        gap-3
-                        lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))]
+                        trainer-account-card
                     "
                 >
-                    <article
-                        className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-4
-                            shadow-sm
-                        "
-                    >
-                        <div
+
+                    <div>
+
+                        <p
                             className="
-                                flex
-                                items-start
-                                justify-between
-                                gap-3
+                                trainer-eyebrow
                             "
                         >
-                            <div>
-                                <p
-                                    className="
-                                        text-[8px]
-                                        font-semibold
-                                        text-slate-500
-                                    "
-                                >
-                                    My Training Area
-                                </p>
+                            Trainer Account
+                        </p>
 
 
-                                <h2
-                                    className="
-                                        mt-2
-                                        text-[14px]
-                                        font-bold
-                                        text-[#172033]
-                                    "
-                                >
-                                    {assignedSections.length >
-                                        0
-                                        ? assignedSections
-                                            .map(
-                                                formatProgrammeType
-                                            )
-                                            .join(", ")
-                                        : "No training area assigned"}
-                                </h2>
-                            </div>
+                        <h2>
+                            {displayName}
+                        </h2>
 
 
-                            <StatusBadge
-                                status={
-                                    assignedSections.length >
-                                        0
-                                        ? "active"
-                                        : "pending"
-                                }
-                            />
-                        </div>
+                        <p>
+                            Username:{" "}
 
+                            {user?.username ||
+                                "—"}
+                        </p>
 
-                        <ActionButton
-                            variant="secondary"
-                            onClick={() =>
-                                navigate(
-                                    "/training-programmes"
-                                )
-                            }
-                            className="
-                                mt-4
-                                w-full
-                                sm:w-auto
-                            "
-                        >
-                            View Programmes
-                        </ActionButton>
-                    </article>
-
-
-                    <StatCard
-                        label="Programmes"
-                        value={
-                            programmes.length
-                        }
-                    />
-
-
-                    <StatCard
-                        label="Active Programmes"
-                        value={
-                            activeProgrammes.length
-                        }
-                    />
-
-
-                    <StatCard
-                        label="Active Assignments"
-                        value={
-                            activeAssignments.length
-                        }
-                    />
-                </section>
-
-
-                {/* PROGRAMMES */}
-
-                <section
-                    className="
-                        overflow-hidden
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        shadow-sm
-                    "
-                >
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-3
-                            border-b
-                            border-slate-100
-                            px-4
-                            py-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                            sm:px-5
-                        "
-                    >
-                        <div>
-                            <h2
-                                className="
-                                    text-[11px]
-                                    font-bold
-                                    text-[#172033]
-                                "
-                            >
-                                Training Programmes
-                            </h2>
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    font-medium
-                                    text-slate-600
-                                "
-                            >
-                                Programmes available to your Trainer account.
-                            </p>
-                        </div>
-
-
-                        <ActionButton
-                            variant="secondary"
-                            onClick={() =>
-                                navigate(
-                                    "/training-programmes"
-                                )
-                            }
-                        >
-                            View All
-                        </ActionButton>
                     </div>
 
 
-                    {displayedProgrammes.length ===
-                        0 ? (
-                        <div
+                    <div
+                        className="
+                            trainer-account-badges
+                        "
+                    >
+
+                        <span>
+                            Trainer
+                        </span>
+
+
+                        <span
                             className="
-                                p-8
-                                text-center
+                                trainer-badge-active
                             "
                         >
-                            <p
+                            Active
+                        </span>
+
+
+                        <span
+                            className="
+                                trainer-badge-section
+                            "
+                        >
+                            {assignedAreas.length}{" "}
+                            Training Section
+                            {assignedAreas.length ===
+                                1
+                                ? ""
+                                : "s"}
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+                {/* ===========================================
+                    TRAINING SECTIONS
+                ============================================ */}
+
+                <section
+                    className="
+                        trainer-module-section
+                    "
+                >
+
+                    <div
+                        className="
+                            trainer-section-heading
+                        "
+                    >
+
+                        <div>
+
+                            <h3>
+                                My Training Sections
+                            </h3>
+
+
+                            <p>
+                                Training sections assigned by the Administrator.
+                            </p>
+
+                        </div>
+
+
+                        <span>
+                            {assignedAreas.length}{" "}
+                            Section
+                            {assignedAreas.length ===
+                                1
+                                ? ""
+                                : "s"}
+                        </span>
+
+                    </div>
+
+
+                    {assignedAreas.length ===
+                        0 ? (
+
+                        <div
+                            className="
+                                trainer-empty
+                            "
+                        >
+                            No training section has been assigned yet.
+                        </div>
+
+                    ) : (
+
+                        <div
+                            className="
+                                trainer-module-list
+                            "
+                        >
+
+                            {assignedAreas.map(
+                                (
+                                    area
+                                ) => {
+                                    const areaProgrammes =
+                                        programmesByArea[
+                                        area.id
+                                        ] ||
+                                        [];
+
+
+                                    return (
+                                        <article
+                                            key={
+                                                area.id
+                                            }
+                                            className="
+                                                trainer-module-row
+                                            "
+                                        >
+
+                                            <div
+                                                className="
+                                                    trainer-module-copy
+                                                "
+                                            >
+
+                                                <h4>
+                                                    {area.title}
+                                                </h4>
+
+
+                                                <div
+                                                    className="
+                                                        trainer-module-detail
+                                                    "
+                                                >
+
+                                                    <img
+                                                        src={
+                                                            area.image
+                                                        }
+                                                        alt={
+                                                            area.title
+                                                        }
+                                                    />
+
+
+                                                    <div>
+
+                                                        <p>
+                                                            {area.description}
+                                                        </p>
+
+
+                                                        <span>
+                                                            Assigned
+                                                        </span>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div
+                                                className="
+                                                    trainer-module-actions
+                                                "
+                                            >
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            "/training-programmes"
+                                                        )
+                                                    }
+                                                >
+                                                    View Module
+                                                </button>
+
+
+                                                <small>
+                                                    {
+                                                        areaProgrammes.length
+                                                    }{" "}
+                                                    Programme
+                                                    {areaProgrammes.length ===
+                                                        1
+                                                        ? ""
+                                                        : "s"}
+                                                </small>
+
+                                            </div>
+
+                                        </article>
+                                    );
+                                }
+                            )}
+
+                        </div>
+
+                    )}
+
+                </section>
+
+
+                {/* ===========================================
+                    OVERVIEW STATS
+                ============================================ */}
+
+                <section
+                    className="
+                        trainer-stat-grid
+                    "
+                >
+
+                    <TrainerStat
+                        title="Training Sections"
+                        value={
+                            assignedAreas.length
+                        }
+                        subtitle="Assigned to your account"
+                        type="users"
+                    />
+
+
+                    <TrainerStat
+                        title="Programmes"
+                        value={
+                            totalRelevantProgrammes
+                        }
+                        subtitle="Available in your sections"
+                        type="complete"
+                    />
+
+
+                    <TrainerStat
+                        title="Trainees"
+                        value="0"
+                        subtitle="No trainer trainee endpoint yet"
+                        type="progress"
+                    />
+
+
+                    <TrainerStat
+                        title="Pending Tasks"
+                        value="0"
+                        subtitle="No task data available yet"
+                        type="empty"
+                    />
+
+                </section>
+
+
+                {/* ===========================================
+                    TRAINEE TASKS + SCORES
+                ============================================ */}
+
+                <section
+                    className="
+                        trainer-two-column
+                    "
+                >
+
+                    <DashboardPanel
+                        title="Trainee Task Overview"
+                        subtitle="Trainee activity within your assigned training section."
+                    >
+
+                        <EmptyPanel
+                            message="No trainee task data is available yet."
+                        />
+
+                    </DashboardPanel>
+
+
+                    <DashboardPanel
+                        title="Trainee Scores"
+                        subtitle="Latest quiz scores in your assigned training section."
+                    >
+
+                        <EmptyPanel
+                            message="No trainee scores are available yet."
+                        />
+
+                    </DashboardPanel>
+
+                </section>
+
+
+                {/* ===========================================
+                    PROGRESS + ACTIVITY
+                ============================================ */}
+
+                <section
+                    className="
+                        trainer-two-column
+                        trainer-bottom-grid
+                    "
+                >
+
+                    <DashboardPanel
+                        title="Trainee Progress Overview"
+                        subtitle="Overall progress in your assigned training section."
+                    >
+
+                        <div
+                            className="
+                                trainer-progress-empty
+                            "
+                        >
+
+                            <div
                                 className="
-                                    text-[9px]
-                                    font-medium
-                                    text-slate-600
+                                    trainer-progress-ring
                                 "
                             >
-                                No training programmes available.
-                            </p>
-                        </div>
-                    ) : (
-                        <div
-                            className="
-                                grid
-                                gap-3
-                                p-4
-                                sm:grid-cols-2
-                                xl:grid-cols-4
-                                sm:p-5
-                            "
-                        >
-                            {displayedProgrammes.map(
-                                (
-                                    programme
-                                ) => (
-                                    <article
-                                        key={
-                                            programme._id
-                                        }
+                                0%
+                            </div>
+
+
+                            <div>
+
+                                <p>
+
+                                    <span
                                         className="
-                                            rounded-lg
-                                            border
-                                            border-slate-200
-                                            bg-[#fafbfd]
-                                            p-4
+                                            dot
+                                            complete
                                         "
-                                    >
-                                        <span
-                                            className="
-                                                rounded-full
-                                                bg-blue-50
-                                                px-2.5
-                                                py-1
-                                                text-[7px]
-                                                font-semibold
-                                                text-blue-600
-                                            "
-                                        >
-                                            {formatProgrammeType(
-                                                programme.programmeType
-                                            )}
-                                        </span>
+                                    />
+
+                                    Completed
+
+                                    <strong>
+                                        0
+                                    </strong>
+
+                                </p>
 
 
-                                        <h3
-                                            className="
-                                                mt-3
-                                                text-[10px]
-                                                font-bold
-                                                text-slate-800
-                                            "
-                                        >
-                                            {
-                                                programme.title
-                                            }
-                                        </h3>
+                                <p>
+
+                                    <span
+                                        className="
+                                            dot
+                                            progress
+                                        "
+                                    />
+
+                                    In Progress
+
+                                    <strong>
+                                        0
+                                    </strong>
+
+                                </p>
 
 
-                                        <div
-                                            className="
-                                                mt-3
-                                            "
-                                        >
-                                            <StatusBadge
-                                                status={
-                                                    programme.status
-                                                }
-                                            />
-                                        </div>
+                                <p>
 
+                                    <span
+                                        className="
+                                            dot
+                                            empty
+                                        "
+                                    />
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                navigate(
-                                                    `/training-programmes/${programme._id}/sections`
-                                                )
-                                            }
-                                            className="
-                                                mt-4
-                                                text-[8px]
-                                                font-semibold
-                                                text-blue-600
-                                            "
-                                        >
-                                            Manage Content →
-                                        </button>
-                                    </article>
-                                )
-                            )}
+                                    Not Started
+
+                                    <strong>
+                                        0
+                                    </strong>
+
+                                </p>
+
+                            </div>
+
                         </div>
-                    )}
+
+                    </DashboardPanel>
+
+
+                    <DashboardPanel
+                        title="Recent Activity"
+                        subtitle="Latest training activity."
+                    >
+
+                        <EmptyPanel
+                            message="No recent trainee activity is available yet."
+                        />
+
+                    </DashboardPanel>
+
                 </section>
+
             </div>
+
         </DashboardLayout>
     );
 }
 
 
-function StatCard({
-    label,
+/* =========================================================
+   STAT CARD
+========================================================= */
+
+function TrainerStat({
+    title,
     value,
+    subtitle,
+    type,
 }) {
     return (
         <article
             className="
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                p-4
-                shadow-sm
+                trainer-stat-card
             "
         >
-            <p
-                className="
-                    text-[8px]
-                    font-medium
-                    text-slate-600
-                "
+
+            <div
+                className={`
+                    trainer-stat-icon
+                    trainer-stat-icon--${type}
+                `}
             >
-                {label}
-            </p>
+                <StatIcon
+                    type={
+                        type
+                    }
+                />
+            </div>
 
 
-            <p
-                className="
-                    mt-2
-                    text-[24px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
+            <div>
+
+                <p>
+                    {title}
+                </p>
+
+
+                <strong>
+                    {value}
+                </strong>
+
+
+                <small>
+                    {subtitle}
+                </small>
+
+            </div>
+
         </article>
+    );
+}
+
+
+/* =========================================================
+   STAT ICON
+========================================================= */
+
+function StatIcon({
+    type,
+}) {
+    if (
+        type ===
+        "users"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+            >
+                <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                />
+
+                <path d="M3.5 19c.6-3.5 2.5-5.5 5.5-5.5s4.9 2 5.5 5.5" />
+
+                <circle
+                    cx="17"
+                    cy="9"
+                    r="2"
+                />
+            </svg>
+        );
+    }
+
+
+    if (
+        type ===
+        "complete"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                />
+
+                <path d="m8 12 2.5 2.5L16 9" />
+            </svg>
+        );
+    }
+
+
+    if (
+        type ===
+        "progress"
+    ) {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+            >
+                <path d="M5 19V9" />
+
+                <path d="M12 19V5" />
+
+                <path d="M19 19v-7" />
+            </svg>
+        );
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+        >
+            <circle
+                cx="12"
+                cy="12"
+                r="9"
+            />
+
+            <path d="M12 7v5" />
+
+            <path d="M12 16h.01" />
+        </svg>
+    );
+}
+
+
+/* =========================================================
+   DASHBOARD PANEL
+========================================================= */
+
+function DashboardPanel({
+    title,
+    subtitle,
+    children,
+}) {
+    return (
+        <section
+            className="
+                trainer-panel
+            "
+        >
+
+            <div
+                className="
+                    trainer-panel-heading
+                "
+            >
+
+                <div>
+
+                    <h3>
+                        {title}
+                    </h3>
+
+
+                    <p>
+                        {subtitle}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {children}
+
+        </section>
+    );
+}
+
+
+/* =========================================================
+   EMPTY PANEL
+========================================================= */
+
+function EmptyPanel({
+    message,
+}) {
+    return (
+        <div
+            className="
+                trainer-panel-empty
+            "
+        >
+
+            <p>
+                {message}
+            </p>
+
+        </div>
     );
 }
 

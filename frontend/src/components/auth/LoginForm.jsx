@@ -1,5 +1,4 @@
 import {
-    useEffect,
     useState,
 } from "react";
 
@@ -9,54 +8,49 @@ import {
 
 import api from "../../services/api";
 
-import PasswordInput from "./PasswordInput";
-
 import {
-    clearAuthSession,
     getDashboardPath,
-    normalizeRole,
     saveAuthSession,
 } from "../../utils/session";
 
+
 function LoginForm({
     onForgotPassword,
-    onPasswordChangeRequired,
+    onForcePasswordChange,
 }) {
     const navigate =
         useNavigate();
+
 
     const [
         username,
         setUsername,
     ] = useState("");
 
+
     const [
         password,
         setPassword,
     ] = useState("");
+
+
+    const [
+        showPassword,
+        setShowPassword,
+    ] = useState(false);
+
 
     const [
         loading,
         setLoading,
     ] = useState(false);
 
+
     const [
         error,
         setError,
     ] = useState("");
 
-    useEffect(() => {
-        const remembered =
-            localStorage.getItem(
-                "rememberUsername"
-            );
-
-        if (remembered) {
-            setUsername(
-                remembered
-            );
-        }
-    }, []);
 
     const handleSubmit =
         async (
@@ -64,11 +58,11 @@ function LoginForm({
         ) => {
             event.preventDefault();
 
-            const cleanUsername =
-                username.trim();
+            setError("");
+
 
             if (
-                !cleanUsername ||
+                !username.trim() ||
                 !password
             ) {
                 setError(
@@ -78,121 +72,129 @@ function LoginForm({
                 return;
             }
 
+
             try {
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
-                setError("");
-
-                clearAuthSession();
 
                 const response =
                     await api.post(
                         "/auth/login",
                         {
                             username:
-                                cleanUsername,
+                                username
+                                    .trim()
+                                    .toLowerCase(),
 
                             password,
                         }
                     );
 
+
                 const accessToken =
                     response.data
                         ?.accessToken;
+
 
                 const user =
                     response.data
                         ?.user;
 
+
                 if (
                     !accessToken ||
                     !user
                 ) {
-                    throw new Error(
-                        "Login response is incomplete."
+                    console.error(
+                        "Unexpected login response:",
+                        response.data
                     );
-                }
-
-                const role =
-                    normalizeRole(
-                        user.role
-                    );
-
-                if (
-                    ![
-                        "admin",
-                        "trainer",
-                        "trainee",
-                    ].includes(
-                        role
-                    )
-                ) {
-                    clearAuthSession();
 
                     setError(
-                        "Your account does not have a valid role."
+                        "Unable to complete login."
                     );
 
                     return;
                 }
 
-                const normalizedUser = {
-                    ...user,
-                    role,
-                };
 
                 saveAuthSession({
                     accessToken,
-
-                    user:
-                        normalizedUser,
+                    user,
                 });
 
-                localStorage.setItem(
-                    "rememberUsername",
-                    cleanUsername
+
+                const role =
+                    String(
+                        user.role ||
+                        ""
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                /*
+                 * Trainer/Trainee first login:
+                 * stay on login page and show
+                 * password-change modal.
+                 */
+                if (
+                    (
+                        role === "trainer" ||
+                        role === "trainee"
+                    ) &&
+                    user.mustChangePassword === true
+                ) {
+                    onForcePasswordChange?.({
+                        user,
+                        currentPassword:
+                            password,
+                    });
+
+                    return;
+                }
+
+
+                const dashboardPath =
+                    getDashboardPath(
+                        role
+                    );
+
+
+                navigate(
+                    dashboardPath,
+                    {
+                        replace: true,
+                    }
                 );
 
-                const mustChangePassword =
-                    [
-                        "trainer",
-                        "trainee",
-                    ].includes(
-                        role
-                    ) &&
-                    user.mustChangePassword ===
-                    true;
+            } catch (error) {
+                console.error(
+                    "Login error:",
+                    error
+                );
+
 
                 if (
-                    mustChangePassword
+                    !error.response
                 ) {
-                    onPasswordChangeRequired?.(
-                        normalizedUser
+                    setError(
+                        "Cannot connect to the server. Make sure the backend is running."
                     );
 
                     return;
                 }
 
-                navigate(
-                    getDashboardPath(
-                        role
-                    ),
-                    {
-                        replace:
-                            true,
-                    }
-                );
-            } catch (
-            requestError
-            ) {
-                clearAuthSession();
 
                 setError(
-                    requestError.response
+                    error.response
                         ?.data
                         ?.message ||
-                    "Login failed. Please check your username and password."
+                    "Invalid username or password."
                 );
+
             } finally {
                 setLoading(
                     false
@@ -200,74 +202,83 @@ function LoginForm({
             }
         };
 
+
     return (
-        <div className="auth-form-card">
-            <div className="auth-form-heading">
-                <span className="auth-kicker">
-                    SECURE LOGIN
-                </span>
+        <div className="figma-login-form">
+
+            <div className="figma-login-heading">
 
                 <h1>
                     Welcome Back
                 </h1>
 
                 <p>
-                    Sign in to continue to UK LogiWare Safety
-                    Training.
+                    Sign in to continue to UK LogiWare Safety Training.
                 </p>
+
             </div>
 
+
             {error && (
-                <div
-                    className="auth-alert auth-alert-error"
-                    role="alert"
-                >
-                    <span aria-hidden="true">
+                <div className="figma-login-error">
+
+                    <span>
                         !
                     </span>
 
                     <p>
                         {error}
                     </p>
+
                 </div>
             )}
+
 
             <form
                 onSubmit={
                     handleSubmit
                 }
-                className="auth-form"
-                noValidate
             >
-                <div className="auth-field">
-                    <label htmlFor="username">
+
+                <div className="figma-login-field">
+
+                    <label htmlFor="login-username">
                         Username
                     </label>
 
-                    <div className="auth-input-shell">
-                        <span
-                            className="auth-input-icon"
-                            aria-hidden="true"
-                        >
+
+                    <div
+                        className={
+                            username.trim()
+                                ? "figma-login-input figma-login-input-valid"
+                                : "figma-login-input"
+                        }
+                    >
+
+                        <span className="figma-login-input-icon">
+
                             <svg
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             >
                                 <circle
                                     cx="12"
                                     cy="8"
-                                    r="3.2"
+                                    r="3"
                                 />
 
-                                <path d="M5.5 19c.8-4 3-6 6.5-6s5.7 2 6.5 6" />
+                                <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
                             </svg>
+
                         </span>
 
+
                         <input
-                            id="username"
-                            name="username"
+                            id="login-username"
                             type="text"
                             value={
                                 username
@@ -276,69 +287,162 @@ function LoginForm({
                                 event
                             ) =>
                                 setUsername(
-                                    event.target
+                                    event
+                                        .target
                                         .value
                                 )
                             }
-                            placeholder="Enter your username"
                             autoComplete="username"
-                            className="auth-input auth-input-with-left-icon"
-                            disabled={
-                                loading
-                            }
                         />
 
+
                         {username.trim() && (
-                            <span
-                                className="auth-valid-mark"
-                                aria-hidden="true"
-                            >
+                            <span className="figma-login-check">
                                 ✓
                             </span>
                         )}
+
                     </div>
+
                 </div>
 
-                <div className="auth-field">
-                    <label htmlFor="password">
+
+                <div className="figma-login-field figma-password-field">
+
+                    <label htmlFor="login-password">
                         Password
                     </label>
 
-                    <PasswordInput
-                        id="password"
-                        value={
-                            password
-                        }
-                        onChange={(
-                            event
-                        ) =>
-                            setPassword(
-                                event.target
-                                    .value
-                            )
-                        }
-                        placeholder="Enter your password"
-                        disabled={
-                            loading
-                        }
-                    />
+
+                    <div className="figma-login-input">
+
+                        <span className="figma-login-input-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <rect
+                                    x="5"
+                                    y="10"
+                                    width="14"
+                                    height="10"
+                                    rx="2"
+                                />
+
+                                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                            </svg>
+
+                        </span>
+
+
+                        <input
+                            id="login-password"
+                            type={
+                                showPassword
+                                    ? "text"
+                                    : "password"
+                            }
+                            value={
+                                password
+                            }
+                            onChange={(
+                                event
+                            ) =>
+                                setPassword(
+                                    event
+                                        .target
+                                        .value
+                                )
+                            }
+                            autoComplete="current-password"
+                        />
+
+
+                        <button
+                            type="button"
+                            className="figma-login-eye"
+                            aria-label={
+                                showPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                            }
+                            onClick={() =>
+                                setShowPassword(
+                                    (
+                                        current
+                                    ) =>
+                                        !current
+                                )
+                            }
+                        >
+
+                            {showPassword ? (
+
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.7"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="2.5"
+                                    />
+                                </svg>
+
+                            ) : (
+
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.7"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M3 3l18 18" />
+
+                                    <path d="M10.6 6.2A9.6 9.6 0 0 1 12 6c6.5 0 10 6 10 6a16.9 16.9 0 0 1-3 3.7" />
+
+                                    <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 6 10 6c1.5 0 2.8-.3 4-.8" />
+                                </svg>
+
+                            )}
+
+                        </button>
+
+                    </div>
+
                 </div>
 
-                <div className="auth-forgot-row">
+
+                <div className="figma-forgot-row">
+
                     <button
                         type="button"
-                        className="auth-text-link"
                         onClick={
                             onForgotPassword
                         }
                     >
                         Forgot Password?
                     </button>
+
                 </div>
+
 
                 <button
                     type="submit"
-                    className="auth-primary-button"
+                    className="figma-login-button"
                     disabled={
                         loading
                     }
@@ -347,22 +451,28 @@ function LoginForm({
                         ? "Signing in..."
                         : "Login"}
                 </button>
+
             </form>
 
-            <div className="auth-help-block">
-                <span>
+
+            <div className="figma-login-divider" />
+
+
+            <div className="figma-login-help">
+
+                <p>
                     Having trouble signing in?
+                </p>
+
+                <span>
+                    Contact your Administrator
                 </span>
 
-                <button
-                    type="button"
-                    className="auth-text-link auth-help-link"
-                >
-                    Contact your Administrator
-                </button>
             </div>
+
         </div>
     );
 }
+
 
 export default LoginForm;

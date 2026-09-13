@@ -6,27 +6,19 @@ import {
 } from "react";
 
 import api from "../../services/api";
+import GeneratedCredentialsModal from "./GeneratedCredentialsModal";
 
 
 const TRAINING_SECTIONS = [
     {
-        id:
-            "manual-handling",
-
-        label:
-            "Manual Handling",
-
+        id: "manual-handling",
+        label: "Manual Handling",
         description:
             "Safe lifting, carrying and manual handling practices.",
     },
-
     {
-        id:
-            "working-at-height",
-
-        label:
-            "Working at Height",
-
+        id: "working-at-height",
+        label: "Working at Height",
         description:
             "Safety procedures for working at elevated locations.",
     },
@@ -35,32 +27,15 @@ const TRAINING_SECTIONS = [
 
 function initialForm() {
     return {
-        firstName:
-            "",
-
-        lastName:
-            "",
-
-        age:
-            "",
-
-        gender:
-            "",
-
-        email:
-            "",
-
-        phoneNumber:
-            "",
-
-        address:
-            "",
-
-        role:
-            "",
-
-        assignedTrainingSections:
-            [],
+        firstName: "",
+        lastName: "",
+        age: "",
+        gender: "",
+        email: "",
+        phoneNumber: "",
+        address: "",
+        role: "",
+        assignedTrainingSections: [],
     };
 }
 
@@ -71,7 +46,6 @@ function CreateUserForm() {
         setShowForm,
     ] = useState(false);
 
-
     const [
         formData,
         setFormData,
@@ -79,62 +53,58 @@ function CreateUserForm() {
         initialForm()
     );
 
-
     const [
         pendingUsers,
         setPendingUsers,
     ] = useState([]);
-
 
     const [
         selectedUserId,
         setSelectedUserId,
     ] = useState("");
 
-
     const [
         loadingPending,
         setLoadingPending,
     ] = useState(true);
-
 
     const [
         saving,
         setSaving,
     ] = useState(false);
 
-
     const [
         generating,
         setGenerating,
     ] = useState(false);
-
 
     const [
         error,
         setError,
     ] = useState("");
 
-
     const [
         success,
         setSuccess,
     ] = useState("");
-
 
     const [
         credentials,
         setCredentials,
     ] = useState(null);
 
+    const [
+        credentialUser,
+        setCredentialUser,
+    ] = useState(null);
 
-    const getId =
-        (
-            user
-        ) =>
-            user?._id ||
-            user?.id ||
-            "";
+
+    const getId = (
+        user
+    ) =>
+        user?._id ||
+        user?.id ||
+        "";
 
 
     const selectedPendingUser =
@@ -152,14 +122,17 @@ function CreateUserForm() {
                         String(
                             selectedUserId
                         )
-                ) ||
-                null,
+                ) || null,
             [
                 pendingUsers,
                 selectedUserId,
             ]
         );
 
+
+    /* =====================================================
+       LOAD PENDING USERS
+    ===================================================== */
 
     const loadPendingUsers =
         useCallback(
@@ -169,36 +142,41 @@ function CreateUserForm() {
                         true
                     );
 
+                    setError("");
 
                     const response =
                         await api.get(
                             "/admin/pending-users"
                         );
 
-
                     const data =
                         Array.isArray(
                             response.data
                         )
                             ? response.data
-                            : response.data?.users ||
-                            response.data?.pendingUsers ||
+                            : response.data
+                                ?.users ||
+                            response.data
+                                ?.pendingUsers ||
                             [];
-
 
                     setPendingUsers(
                         data
                     );
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
                         "Pending user loading error:",
                         error
                     );
 
-
                     setError(
-                        error.response?.data?.message ||
+                        error
+                            .response
+                            ?.data
+                            ?.message ||
                         "Unable to load pending users."
                     );
 
@@ -219,95 +197,89 @@ function CreateUserForm() {
     ]);
 
 
-    const handleChange =
-        (
-            event
-        ) => {
-            const {
-                name,
-                value,
-            } =
-                event.target;
+    /* =====================================================
+       FORM CHANGE
+    ===================================================== */
 
+    const handleChange = (
+        event
+    ) => {
+        const {
+            name,
+            value,
+        } =
+            event.target;
 
-            setError(
-                ""
-            );
+        setError("");
+        setSuccess("");
 
-
-            setSuccess(
-                ""
-            );
-
-
-            setFormData(
-                (
-                    current
-                ) => {
-                    if (
-                        name ===
-                        "role"
-                    ) {
-                        return {
-                            ...current,
-
-                            role:
-                                value,
-
-                            assignedTrainingSections:
-                                value ===
-                                    "trainee"
-                                    ? TRAINING_SECTIONS.map(
-                                        (
-                                            section
-                                        ) =>
-                                            section.id
-                                    )
-                                    : [],
-                        };
-                    }
-
-
+        setFormData(
+            (
+                current
+            ) => {
+                if (
+                    name ===
+                    "role"
+                ) {
                     return {
                         ...current,
 
-                        [name]:
+                        role:
                             value,
+
+                        assignedTrainingSections:
+                            value ===
+                                "trainee"
+                                ? TRAINING_SECTIONS.map(
+                                    (
+                                        item
+                                    ) =>
+                                        item.id
+                                )
+                                : [],
                     };
                 }
-            );
-        };
 
-
-    const chooseTraining =
-        (
-            sectionId
-        ) => {
-            if (
-                formData.role !==
-                "trainer"
-            ) {
-                return;
-            }
-
-
-            setFormData(
-                (
-                    current
-                ) => ({
+                return {
                     ...current,
 
-                    assignedTrainingSections: [
+                    [name]:
+                        value,
+                };
+            }
+        );
+    };
+
+
+    /* =====================================================
+       TRAINER MODULE
+    ===================================================== */
+
+    const chooseTraining = (
+        sectionId
+    ) => {
+        if (
+            formData.role !==
+            "trainer"
+        ) {
+            return;
+        }
+
+        setFormData(
+            (
+                current
+            ) => ({
+                ...current,
+
+                assignedTrainingSections:
+                    [
                         sectionId,
                     ],
-                })
-            );
+            })
+        );
 
-
-            setError(
-                ""
-            );
-        };
+        setError("");
+    };
 
 
     const resetForm =
@@ -316,15 +288,24 @@ function CreateUserForm() {
                 initialForm()
             );
 
-            setError(
-                ""
-            );
-
-            setSuccess(
-                ""
-            );
+            setError("");
+            setSuccess("");
         };
 
+
+    const closeForm =
+        () => {
+            setShowForm(
+                false
+            );
+
+            resetForm();
+        };
+
+
+    /* =====================================================
+       SAVE PENDING USER
+    ===================================================== */
 
     const savePendingUser =
         async (
@@ -332,15 +313,8 @@ function CreateUserForm() {
         ) => {
             event.preventDefault();
 
-
-            setError(
-                ""
-            );
-
-
-            setSuccess(
-                ""
-            );
+            setError("");
+            setSuccess("");
 
 
             if (
@@ -364,8 +338,7 @@ function CreateUserForm() {
             if (
                 Number(
                     formData.age
-                ) <
-                16
+                ) < 16
             ) {
                 setError(
                     "Age must be 16 or above."
@@ -395,7 +368,6 @@ function CreateUserForm() {
                 setSaving(
                     true
                 );
-
 
                 const response =
                     await api.post(
@@ -434,8 +406,8 @@ function CreateUserForm() {
 
 
                 const created =
-                    response.data?.user;
-
+                    response.data
+                        ?.user;
 
                 const createdId =
                     getId(
@@ -444,7 +416,8 @@ function CreateUserForm() {
 
 
                 setSuccess(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "User information saved successfully."
                 );
 
@@ -472,15 +445,19 @@ function CreateUserForm() {
                     );
                 }
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Create pending user error:",
                     error
                 );
 
-
                 setError(
-                    error.response?.data?.message ||
+                    error
+                        .response
+                        ?.data
+                        ?.message ||
                     "Unable to save user information."
                 );
 
@@ -491,6 +468,10 @@ function CreateUserForm() {
             }
         };
 
+
+    /* =====================================================
+       GENERATE CREDENTIALS
+    ===================================================== */
 
     const generateCredentials =
         async () => {
@@ -510,17 +491,8 @@ function CreateUserForm() {
                     true
                 );
 
-
-                setError(
-                    ""
-                );
-
-
-                setSuccess(
-                    ""
-                );
-
-
+                setError("");
+                setSuccess("");
                 setCredentials(
                     null
                 );
@@ -537,12 +509,15 @@ function CreateUserForm() {
 
 
                 const returnedCredentials =
-                    response.data?.credentials;
+                    response.data
+                        ?.credentials;
 
 
                 if (
-                    !returnedCredentials?.username ||
-                    !returnedCredentials?.password
+                    !returnedCredentials
+                        ?.username ||
+                    !returnedCredentials
+                        ?.password
                 ) {
                     setError(
                         "Credentials were generated but were not returned correctly."
@@ -552,26 +527,29 @@ function CreateUserForm() {
                 }
 
 
+                const user =
+                    response.data
+                        ?.user ||
+                    selectedPendingUser;
+
+
+                setCredentialUser(
+                    user
+                );
+
+
                 setCredentials({
                     username:
                         returnedCredentials.username,
 
                     password:
                         returnedCredentials.password,
-
-                    email:
-                        response.data?.user?.email ||
-                        selectedPendingUser?.email ||
-                        "",
-
-                    name:
-                        `${response.data?.user?.firstName || selectedPendingUser?.firstName || ""} ${response.data?.user?.lastName || selectedPendingUser?.lastName || ""}`
-                            .trim(),
                 });
 
 
                 setSuccess(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Account credentials generated successfully."
                 );
 
@@ -583,15 +561,19 @@ function CreateUserForm() {
 
                 await loadPendingUsers();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Credential generation error:",
                     error
                 );
 
-
                 setError(
-                    error.response?.data?.message ||
+                    error
+                        .response
+                        ?.data
+                        ?.message ||
                     "Unable to generate credentials."
                 );
 
@@ -603,115 +585,36 @@ function CreateUserForm() {
         };
 
 
-    const copyCredentials =
-        async () => {
-            if (
-                !credentials
-            ) {
-                return;
-            }
-
-
-            const text =
-                `Username: ${credentials.username}\nTemporary Password: ${credentials.password}`;
-
-
-            try {
-                await navigator.clipboard.writeText(
-                    text
-                );
-
-
-                setSuccess(
-                    "Credentials copied to clipboard."
-                );
-
-            } catch {
-                setError(
-                    "Unable to copy automatically. Please copy the credentials manually."
-                );
-            }
-        };
-
-
-    const sendEmail =
-        () => {
-            if (
-                !credentials?.email
-            ) {
-                setError(
-                    "No email address is available for this user."
-                );
-
-                return;
-            }
-
-
-            const subject =
-                encodeURIComponent(
-                    "UK LogiWare - Temporary Login Credentials"
-                );
-
-
-            const body =
-                encodeURIComponent(
-                    `Hello ${credentials.name || "User"},\n\nYour UK LogiWare temporary login credentials are:\n\nUsername: ${credentials.username}\nTemporary Password: ${credentials.password}\n\nYou will be required to change this temporary password after your first login.\n\nUK LogiWare Safety Training`
-                );
-
-
-            window.location.href =
-                `mailto:${credentials.email}?subject=${subject}&body=${body}`;
-        };
+    const formatName = (
+        user
+    ) =>
+        `${user?.firstName || ""} ${user?.lastName || ""}`
+            .trim() ||
+        user?.email ||
+        "Pending User";
 
 
     return (
-        <div
-            className="
-                space-y-4
-            "
-        >
-            <section
+        <>
+            <div
                 className="
-                    relative
-                    overflow-hidden
-                    rounded-xl
-                    bg-gradient-to-r
-                    from-[#1769e8]
-                    to-[#5236ff]
-                    px-5
-                    py-5
-                    text-white
-                    shadow-sm
-                    sm:px-6
+                    space-y-5
                 "
             >
-                <div
-                    className="
-                        absolute
-                        -right-10
-                        -top-16
-                        h-40
-                        w-40
-                        rounded-full
-                        bg-white/10
-                    "
-                />
 
+                {/* =================================================
+                    HERO
+                ================================================= */}
 
-                <div
+                <section
                     className="
-                        relative
-                        z-10
-                        flex
-                        flex-col
-                        gap-4
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
+                        create-user-banner
                     "
                 >
                     <div
                         className="
+                            relative
+                            z-10
                             flex
                             items-center
                             gap-4
@@ -727,6 +630,7 @@ function CreateUserForm() {
                                 justify-center
                                 rounded-xl
                                 bg-white/15
+                                text-white
                             "
                         >
                             <svg
@@ -734,6 +638,8 @@ function CreateUserForm() {
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                                 className="
                                     h-6
                                     w-6
@@ -745,7 +651,7 @@ function CreateUserForm() {
                                     r="3"
                                 />
 
-                                <path d="M3 20c.5-4 2.5-6 6-6" />
+                                <path d="M3 20c.6-4 2.6-6 6-6" />
 
                                 <path d="M18 13v8" />
 
@@ -760,13 +666,12 @@ function CreateUserForm() {
                                     text-[9px]
                                     font-semibold
                                     uppercase
-                                    tracking-[0.16em]
+                                    tracking-[0.08em]
                                     text-blue-100
                                 "
                             >
-                                User Accounts
+                                User Management
                             </p>
-
 
                             <h2
                                 className="
@@ -774,20 +679,24 @@ function CreateUserForm() {
                                     text-[18px]
                                     font-bold
                                     text-white
+                                    sm:text-[20px]
                                 "
                             >
-                                Create Trainer or Trainee
+                                Create a New User
                             </h2>
-
 
                             <p
                                 className="
                                     mt-1
-                                    text-[11px]
+                                    max-w-[520px]
+                                    text-[9px]
+                                    leading-4
                                     text-blue-100
                                 "
                             >
-                                Enter user information and assign their training.
+                                Add Trainer or Trainee information,
+                                assign training and generate secure
+                                temporary credentials.
                             </p>
                         </div>
                     </div>
@@ -796,72 +705,67 @@ function CreateUserForm() {
                     <button
                         type="button"
                         onClick={() => {
-                            if (
-                                showForm
-                            ) {
-                                resetForm();
-                            }
-
-
                             setShowForm(
-                                (
-                                    current
-                                ) =>
-                                    !current
+                                true
                             );
+
+                            setError("");
+                            setSuccess("");
                         }}
                         className="
-                            min-h-[42px]
+                            relative
+                            z-10
+                            min-h-[40px]
                             rounded-lg
                             bg-white
                             px-5
-                            text-[11px]
-                            font-medium
+                            text-[10px]
+                            font-semibold
                             text-[#1769e8]
                             shadow-sm
                             transition
                             hover:bg-blue-50
                         "
                     >
-                        {showForm
-                            ? "Close Form"
-                            : "+ Add New User"}
+                        + Create User
                     </button>
-                </div>
-            </section>
+                </section>
 
 
-            {error && (
-                <Alert
-                    type="error"
-                    text={
-                        error
-                    }
-                    onClose={() =>
-                        setError(
-                            ""
-                        )
-                    }
-                />
-            )}
+                {/* =================================================
+                    ALERTS
+                ================================================= */}
+
+                {error && (
+                    <Alert
+                        type="error"
+                        text={
+                            error
+                        }
+                        onClose={() =>
+                            setError("")
+                        }
+                    />
+                )}
 
 
-            {success && (
-                <Alert
-                    type="success"
-                    text={
-                        success
-                    }
-                    onClose={() =>
-                        setSuccess(
-                            ""
-                        )
-                    }
-                />
-            )}
+                {success && (
+                    <Alert
+                        type="success"
+                        text={
+                            success
+                        }
+                        onClose={() =>
+                            setSuccess("")
+                        }
+                    />
+                )}
 
 
-            {showForm && (
+                {/* =================================================
+                    STEP 1
+                ================================================= */}
+
                 <section
                     className="
                         overflow-hidden
@@ -869,72 +773,152 @@ function CreateUserForm() {
                         border
                         border-[#dbe4ef]
                         bg-white
-                        shadow-sm
+                        shadow-[0_1px_3px_rgba(15,23,42,0.06)]
                     "
                 >
                     <div
                         className="
+                            flex
+                            items-center
+                            gap-3
                             border-b
                             border-[#e8eef5]
                             px-5
                             py-4
                         "
                     >
-                        <h3
-                            className="
-                                text-[14px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            User Information
-                        </h3>
+                        <StepNumber>
+                            1
+                        </StepNumber>
 
+                        <div>
+                            <h3
+                                className="
+                                    text-[13px]
+                                    font-bold
+                                    text-[#172033]
+                                "
+                            >
+                                Add User Information
+                            </h3>
 
-                        <p
-                            className="
-                                mt-1
-                                text-[9px]
-                                text-[#7c8da6]
-                            "
-                        >
-                            Complete the details and select the correct user role.
-                        </p>
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Enter personal information before
+                                generating login credentials.
+                            </p>
+                        </div>
                     </div>
 
 
-                    <form
-                        onSubmit={
-                            savePendingUser
-                        }
-                        className="
-                            p-5
-                        "
-                    >
-                        <h4
-                            className="
-                                text-[12px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Personal Information
-                        </h4>
-
-
+                    {!showForm ? (
                         <div
                             className="
-                                mt-4
-                                grid
-                                gap-4
-                                md:grid-cols-2
+                                flex
+                                min-h-[145px]
+                                flex-col
+                                items-center
+                                justify-center
+                                px-5
+                                py-7
+                                text-center
                             "
                         >
-                            <Field
-                                label="First Name"
-                                required
+                            <div
+                                className="
+                                    flex
+                                    h-12
+                                    w-12
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-blue-50
+                                    text-blue-600
+                                "
                             >
-                                <input
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="
+                                        h-5
+                                        w-5
+                                    "
+                                >
+                                    <circle
+                                        cx="9"
+                                        cy="8"
+                                        r="3"
+                                    />
+
+                                    <path d="M3 20c.6-4 2.6-6 6-6" />
+
+                                    <path d="M18 13v8" />
+
+                                    <path d="M14 17h8" />
+                                </svg>
+                            </div>
+
+
+                            <p
+                                className="
+                                    mt-3
+                                    text-[11px]
+                                    font-semibold
+                                    text-[#172033]
+                                "
+                            >
+                                Start by adding a user
+                            </p>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Click Create User to enter Trainer or
+                                Trainee information.
+                            </p>
+                        </div>
+                    ) : (
+                        <form
+                            onSubmit={
+                                savePendingUser
+                            }
+                            className="
+                                p-5
+                                sm:p-6
+                            "
+                        >
+                            {/* PERSONAL */}
+
+                            <FormSectionTitle
+                                title="Personal Information"
+                                text="Basic personal details for the user."
+                            />
+
+
+                            <div
+                                className="
+                                    mt-4
+                                    grid
+                                    gap-4
+                                    md:grid-cols-2
+                                "
+                            >
+                                <InputField
+                                    label="First Name"
                                     name="firstName"
                                     value={
                                         formData.firstName
@@ -943,16 +927,12 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter first name"
-                                    className="app-input"
+                                    required
                                 />
-                            </Field>
 
 
-                            <Field
-                                label="Last Name"
-                                required
-                            >
-                                <input
+                                <InputField
+                                    label="Last Name"
                                     name="lastName"
                                     value={
                                         formData.lastName
@@ -961,19 +941,15 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter last name"
-                                    className="app-input"
+                                    required
                                 />
-                            </Field>
 
 
-                            <Field
-                                label="Age"
-                                required
-                            >
-                                <input
+                                <InputField
+                                    label="Age"
+                                    name="age"
                                     type="number"
                                     min="16"
-                                    name="age"
                                     value={
                                         formData.age
                                     }
@@ -981,16 +957,12 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter age"
-                                    className="app-input"
+                                    required
                                 />
-                            </Field>
 
 
-                            <Field
-                                label="Gender"
-                                required
-                            >
-                                <select
+                                <SelectField
+                                    label="Gender"
                                     name="gender"
                                     value={
                                         formData.gender
@@ -998,7 +970,7 @@ function CreateUserForm() {
                                     onChange={
                                         handleChange
                                     }
-                                    className="app-input"
+                                    required
                                 >
                                     <option value="">
                                         Select gender
@@ -1015,34 +987,56 @@ function CreateUserForm() {
                                     <option value="other">
                                         Other
                                     </option>
-                                </select>
-                            </Field>
+
+                                    <option value="prefer-not-to-say">
+                                        Prefer not to say
+                                    </option>
+                                </SelectField>
+                            </div>
 
 
-                            <Field
-                                label="Email"
-                                required
+                            <div
+                                className="
+                                    my-6
+                                    border-t
+                                    border-[#e8eef5]
+                                "
+                            />
+
+
+                            {/* CONTACT */}
+
+                            <FormSectionTitle
+                                title="Contact Information"
+                                text="Contact details used for account communication."
+                            />
+
+
+                            <div
+                                className="
+                                    mt-4
+                                    grid
+                                    gap-4
+                                    md:grid-cols-2
+                                "
                             >
-                                <input
-                                    type="email"
+                                <InputField
+                                    label="Personal Email"
                                     name="email"
+                                    type="email"
                                     value={
                                         formData.email
                                     }
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="example@email.com"
-                                    className="app-input"
+                                    placeholder="name@example.com"
+                                    required
                                 />
-                            </Field>
 
 
-                            <Field
-                                label="Phone Number"
-                                required
-                            >
-                                <input
+                                <InputField
+                                    label="Phone Number"
                                     name="phoneNumber"
                                     value={
                                         formData.phoneNumber
@@ -1051,607 +1045,489 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter phone number"
-                                    className="app-input"
+                                    required
                                 />
-                            </Field>
-                        </div>
 
 
-                        <div
-                            className="
-                                mt-4
-                            "
-                        >
-                            <Field
-                                label="Address"
-                                required
-                            >
-                                <input
-                                    name="address"
-                                    value={
-                                        formData.address
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter address"
-                                    className="app-input"
-                                />
-                            </Field>
-                        </div>
+                                <div
+                                    className="
+                                        md:col-span-2
+                                    "
+                                >
+                                    <InputField
+                                        label="Address"
+                                        name="address"
+                                        value={
+                                            formData.address
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        placeholder="Enter full address"
+                                        required
+                                    />
+                                </div>
+                            </div>
 
 
-                        <div
-                            className="
-                                my-5
-                                border-t
-                                border-[#e8eef5]
-                            "
-                        />
-
-
-                        <div>
-                            <h4
+                            <div
                                 className="
-                                    text-[12px]
-                                    font-bold
-                                    text-[#172033]
+                                    my-6
+                                    border-t
+                                    border-[#e8eef5]
                                 "
-                            >
-                                User Role
-                            </h4>
+                            />
 
 
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    text-[#7c8da6]
-                                "
-                            >
-                                Select whether this user is a Trainer or Trainee.
-                            </p>
+                            {/* ROLE */}
+
+                            <FormSectionTitle
+                                title="Role & Training Assignment"
+                                text="Choose the user's system role and training access."
+                            />
 
 
                             <div
                                 className="
                                     mt-4
-                                    grid
-                                    gap-3
-                                    md:grid-cols-2
                                 "
                             >
-                                <RoleCard
-                                    selected={
-                                        formData.role ===
-                                        "trainer"
-                                    }
-                                    title="Trainer"
-                                    description="Can manage one assigned training module and trainee activities."
-                                    onClick={() =>
-                                        handleChange({
-                                            target: {
-                                                name:
-                                                    "role",
-
-                                                value:
-                                                    "trainer",
-                                            },
-                                        })
-                                    }
-                                />
-
-
-                                <RoleCard
-                                    selected={
-                                        formData.role ===
-                                        "trainee"
-                                    }
-                                    title="Trainee"
-                                    description="Receives both training modules automatically."
-                                    onClick={() =>
-                                        handleChange({
-                                            target: {
-                                                name:
-                                                    "role",
-
-                                                value:
-                                                    "trainee",
-                                            },
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
+                                <label
+                                    className="
+                                        mb-2
+                                        block
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#334155]
+                                    "
+                                >
+                                    User Role
+                                    <span
+                                        className="
+                                            ml-1
+                                            text-red-500
+                                        "
+                                    >
+                                        *
+                                    </span>
+                                </label>
 
 
-                        {formData.role && (
-                            <>
                                 <div
                                     className="
-                                        my-5
-                                        border-t
-                                        border-[#e8eef5]
+                                        grid
+                                        gap-3
+                                        sm:grid-cols-2
                                     "
-                                />
-
-
-                                <div>
-                                    <h4
-                                        className="
-                                            text-[12px]
-                                            font-bold
-                                            text-[#172033]
-                                        "
-                                    >
-                                        Training Assignment
-                                    </h4>
-
-
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-[9px]
-                                            text-[#7c8da6]
-                                        "
-                                    >
-                                        {formData.role ===
+                                >
+                                    <RoleCard
+                                        title="Trainer"
+                                        description="Manages and monitors an assigned training module."
+                                        selected={
+                                            formData.role ===
                                             "trainer"
-                                            ? "Trainer must be assigned exactly one training module."
-                                            : "Trainee receives both training modules automatically."}
-                                    </p>
+                                        }
+                                        onClick={() =>
+                                            handleChange({
+                                                target: {
+                                                    name: "role",
+                                                    value: "trainer",
+                                                },
+                                            })
+                                        }
+                                    />
 
 
+                                    <RoleCard
+                                        title="Trainee"
+                                        description="Completes both available safety training modules."
+                                        selected={
+                                            formData.role ===
+                                            "trainee"
+                                        }
+                                        onClick={() =>
+                                            handleChange({
+                                                target: {
+                                                    name: "role",
+                                                    value: "trainee",
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+
+                            {/* TRAINER MODULE */}
+
+                            {formData.role ===
+                                "trainer" && (
                                     <div
                                         className="
-                                            mt-4
+                                        mt-5
+                                        rounded-xl
+                                        border
+                                        border-[#dbe4ef]
+                                        bg-[#f8fafc]
+                                        p-4
+                                    "
+                                    >
+                                        <p
+                                            className="
+                                            text-[10px]
+                                            font-semibold
+                                            text-[#172033]
+                                        "
+                                        >
+                                            Assign Training Module
+                                        </p>
+
+                                        <p
+                                            className="
+                                            mt-1
+                                            text-[8px]
+                                            leading-4
+                                            text-[#64748b]
+                                        "
+                                        >
+                                            A Trainer must be assigned exactly
+                                            one module.
+                                        </p>
+
+
+                                        <div
+                                            className="
+                                            mt-3
                                             grid
                                             gap-3
                                             md:grid-cols-2
                                         "
-                                    >
-                                        {TRAINING_SECTIONS.map(
-                                            (
-                                                section
-                                            ) => (
-                                                <TrainingCard
-                                                    key={
-                                                        section.id
-                                                    }
-                                                    section={
-                                                        section
-                                                    }
-                                                    selected={formData.assignedTrainingSections.includes(
-                                                        section.id
-                                                    )}
-                                                    locked={
-                                                        formData.role ===
-                                                        "trainee"
-                                                    }
-                                                    onClick={() =>
-                                                        chooseTraining(
+                                        >
+                                            {TRAINING_SECTIONS.map(
+                                                (
+                                                    section
+                                                ) => (
+                                                    <TrainingCard
+                                                        key={
                                                             section.id
-                                                        )
-                                                    }
-                                                />
-                                            )
-                                        )}
+                                                        }
+                                                        title={
+                                                            section.label
+                                                        }
+                                                        description={
+                                                            section.description
+                                                        }
+                                                        selected={formData.assignedTrainingSections.includes(
+                                                            section.id
+                                                        )}
+                                                        onClick={() =>
+                                                            chooseTraining(
+                                                                section.id
+                                                            )
+                                                        }
+                                                    />
+                                                )
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </>
-                        )}
+                                )}
 
 
-                        <div
-                            className="
-                                mt-6
-                                flex
-                                flex-col-reverse
-                                justify-end
-                                gap-3
-                                sm:flex-row
-                            "
-                        >
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    resetForm();
+                            {/* TRAINEE MODULE */}
 
-                                    setShowForm(
-                                        false
-                                    );
-                                }}
+                            {formData.role ===
+                                "trainee" && (
+                                    <div
+                                        className="
+                                        mt-5
+                                        rounded-xl
+                                        border
+                                        border-blue-100
+                                        bg-blue-50/60
+                                        p-4
+                                    "
+                                    >
+                                        <div
+                                            className="
+                                            flex
+                                            items-start
+                                            gap-3
+                                        "
+                                        >
+                                            <div
+                                                className="
+                                                flex
+                                                h-8
+                                                w-8
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-full
+                                                bg-white
+                                                text-blue-600
+                                            "
+                                            >
+                                                ✓
+                                            </div>
+
+
+                                            <div>
+                                                <p
+                                                    className="
+                                                    text-[10px]
+                                                    font-semibold
+                                                    text-[#172033]
+                                                "
+                                                >
+                                                    Both modules assigned
+                                                    automatically
+                                                </p>
+
+                                                <p
+                                                    className="
+                                                    mt-1
+                                                    text-[8px]
+                                                    leading-4
+                                                    text-[#64748b]
+                                                "
+                                                >
+                                                    Trainees receive Manual
+                                                    Handling and Working at
+                                                    Height training.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+
+                            {/* ACTIONS */}
+
+                            <div
                                 className="
-                                    min-h-[40px]
-                                    rounded-lg
-                                    border
-                                    border-[#dbe4ef]
-                                    bg-white
-                                    px-5
-                                    text-[10px]
-                                    font-medium
-                                    text-[#52627a]
+                                    mt-7
+                                    flex
+                                    flex-col-reverse
+                                    gap-2
+                                    border-t
+                                    border-[#e8eef5]
+                                    pt-5
+                                    sm:flex-row
+                                    sm:justify-end
                                 "
                             >
-                                Cancel
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={
+                                        closeForm
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-5
+                                        text-[10px]
+                                        font-semibold
+                                        text-[#52627a]
+                                        transition
+                                        hover:bg-[#f8fafc]
+                                        disabled:opacity-50
+                                    "
+                                >
+                                    Cancel
+                                </button>
 
 
-                            <button
-                                type="submit"
-                                disabled={
-                                    saving
-                                }
-                                className="
-                                    min-h-[40px]
-                                    rounded-lg
-                                    bg-[#1769e8]
-                                    px-5
-                                    text-[10px]
-                                    font-semibold
-                                    text-white
-                                    transition
-                                    hover:bg-[#0b5ed7]
-                                    disabled:opacity-50
-                                "
-                            >
-                                {saving
-                                    ? "Saving..."
-                                    : "Save User"}
-                            </button>
-                        </div>
-                    </form>
+                                <button
+                                    type="submit"
+                                    disabled={
+                                        saving
+                                    }
+                                    className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        bg-[#1769e8]
+                                        px-5
+                                        text-[10px]
+                                        font-semibold
+                                        text-white
+                                        transition
+                                        hover:bg-[#0b5ed7]
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-60
+                                    "
+                                >
+                                    {saving
+                                        ? "Saving..."
+                                        : "Save User Information"}
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </section>
-            )}
 
 
-            {credentials && (
+                {/* =================================================
+                    STEP 2
+                ================================================= */}
+
                 <section
                     className="
                         overflow-hidden
                         rounded-xl
                         border
-                        border-blue-200
-                        bg-[#eef6ff]
-                        p-5
+                        border-[#dbe4ef]
+                        bg-white
+                        shadow-[0_1px_3px_rgba(15,23,42,0.06)]
                     "
                 >
                     <div
                         className="
                             flex
-                            items-start
-                            justify-between
-                            gap-4
+                            items-center
+                            gap-3
+                            border-b
+                            border-[#e8eef5]
+                            px-5
+                            py-4
                         "
                     >
+                        <StepNumber>
+                            2
+                        </StepNumber>
+
+                        <div>
+                            <h3
+                                className="
+                                    text-[13px]
+                                    font-bold
+                                    text-[#172033]
+                                "
+                            >
+                                Generate Login Credentials
+                            </h3>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Select a pending user and generate their
+                                username and temporary password.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <div
+                        className="
+                            p-5
+                            sm:p-6
+                        "
+                    >
+                        <label
+                            className="
+                                mb-2
+                                block
+                                text-[9px]
+                                font-semibold
+                                text-[#334155]
+                            "
+                        >
+                            Pending User
+                        </label>
+
+
                         <div
                             className="
                                 flex
+                                flex-col
                                 gap-3
+                                md:flex-row
                             "
                         >
                             <div
                                 className="
-                                    flex
-                                    h-10
-                                    w-10
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    bg-[#1769e8]
-                                    text-white
+                                    relative
+                                    flex-1
                                 "
                             >
-                                🔑
-                            </div>
-
-
-                            <div>
-                                <h3
+                                <select
+                                    value={
+                                        selectedUserId
+                                    }
+                                    onChange={(
+                                        event
+                                    ) =>
+                                        setSelectedUserId(
+                                            event
+                                                .target
+                                                .value
+                                        )
+                                    }
+                                    disabled={
+                                        loadingPending ||
+                                        generating
+                                    }
                                     className="
-                                        text-[13px]
-                                        font-bold
+                                        min-h-[42px]
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-3
+                                        text-[10px]
                                         text-[#172033]
+                                        outline-none
+                                        transition
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                        disabled:bg-slate-50
+                                        disabled:text-slate-400
                                     "
                                 >
-                                    New Temporary Credentials
-                                </h3>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[9px]
-                                        text-[#64748b]
-                                    "
-                                >
-                                    {credentials.name ||
-                                        "New user"}
-                                </p>
-                            </div>
-                        </div>
-
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setCredentials(
-                                    null
-                                )
-                            }
-                            className="
-                                text-[10px]
-                                text-slate-500
-                            "
-                        >
-                            Close
-                        </button>
-                    </div>
-
-
-                    <p
-                        className="
-                            mt-4
-                            text-[9px]
-                            text-orange-600
-                        "
-                    >
-                        Save or send these credentials now. The temporary password is shown only once.
-                    </p>
-
-
-                    <div
-                        className="
-                            mt-4
-                            grid
-                            gap-3
-                            md:grid-cols-2
-                        "
-                    >
-                        <CredentialBox
-                            label="Username"
-                            value={
-                                credentials.username
-                            }
-                        />
-
-
-                        <CredentialBox
-                            label="Temporary Password"
-                            value={
-                                credentials.password
-                            }
-                        />
-                    </div>
-
-
-                    <div
-                        className="
-                            mt-4
-                            flex
-                            flex-wrap
-                            gap-3
-                        "
-                    >
-                        <button
-                            type="button"
-                            onClick={
-                                copyCredentials
-                            }
-                            className="
-                                min-h-[40px]
-                                rounded-lg
-                                bg-[#1769e8]
-                                px-5
-                                text-[10px]
-                                font-semibold
-                                text-white
-                            "
-                        >
-                            Copy Credentials
-                        </button>
-
-
-                        <button
-                            type="button"
-                            onClick={
-                                sendEmail
-                            }
-                            className="
-                                min-h-[40px]
-                                rounded-lg
-                                bg-[#1769e8]
-                                px-5
-                                text-[10px]
-                                font-semibold
-                                text-white
-                            "
-                        >
-                            Send Email
-                        </button>
-                    </div>
-                </section>
-            )}
-
-
-            <section
-                className="
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-[#dbe4ef]
-                    bg-white
-                    shadow-sm
-                "
-            >
-                <div
-                    className="
-                        flex
-                        items-center
-                        justify-between
-                        gap-4
-                        border-b
-                        border-[#e8eef5]
-                        px-5
-                        py-4
-                    "
-                >
-                    <div>
-                        <h3
-                            className="
-                                text-[13px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Pending Account Creation
-                        </h3>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[9px]
-                                text-[#7c8da6]
-                            "
-                        >
-                            Review the user and generate their login credentials.
-                        </p>
-                    </div>
-
-
-                    <span
-                        className="
-                            rounded-full
-                            bg-blue-50
-                            px-3
-                            py-1.5
-                            text-[9px]
-                            font-medium
-                            text-blue-600
-                        "
-                    >
-                        {pendingUsers.length} Pending
-                    </span>
-                </div>
-
-
-                <div
-                    className="
-                        p-5
-                    "
-                >
-                    <label
-                        className="
-                            block
-                        "
-                    >
-                        <span
-                            className="
-                                mb-2
-                                block
-                                text-[10px]
-                                font-medium
-                                text-[#172033]
-                            "
-                        >
-                            Select Pending User
-                        </span>
-
-
-                        <select
-                            value={
-                                selectedUserId
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setSelectedUserId(
-                                    event.target.value
-                                )
-                            }
-                            disabled={
-                                loadingPending
-                            }
-                            className="app-input"
-                        >
-                            <option value="">
-                                {loadingPending
-                                    ? "Loading pending users..."
-                                    : pendingUsers.length ===
-                                        0
-                                        ? "No pending users"
-                                        : "Select a pending user"}
-                            </option>
-
-
-                            {pendingUsers.map(
-                                (
-                                    user
-                                ) => (
-                                    <option
-                                        key={
-                                            getId(
-                                                user
-                                            )
-                                        }
-                                        value={
-                                            getId(
-                                                user
-                                            )
-                                        }
-                                    >
-                                        {`${user.firstName || ""} ${user.lastName || ""}`.trim()}{" "}
-                                        -{" "}
-                                        {user.role}
+                                    <option value="">
+                                        {loadingPending
+                                            ? "Loading pending users..."
+                                            : "Select pending user"}
                                     </option>
-                                )
-                            )}
-                        </select>
-                    </label>
 
 
-                    {selectedPendingUser && (
-                        <div
-                            className="
-                                mt-4
-                                flex
-                                flex-col
-                                gap-3
-                                rounded-lg
-                                border
-                                border-blue-100
-                                bg-blue-50/40
-                                p-4
-                                sm:flex-row
-                                sm:items-center
-                                sm:justify-between
-                            "
-                        >
-                            <div>
-                                <p
-                                    className="
-                                        text-[11px]
-                                        font-semibold
-                                        text-[#172033]
-                                    "
-                                >
-                                    {`${selectedPendingUser.firstName || ""} ${selectedPendingUser.lastName || ""}`.trim()}
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-[9px]
-                                        capitalize
-                                        text-[#64748b]
-                                    "
-                                >
-                                    {selectedPendingUser.role} ·{" "}
-                                    {selectedPendingUser.email}
-                                </p>
+                                    {pendingUsers.map(
+                                        (
+                                            user
+                                        ) => (
+                                            <option
+                                                key={
+                                                    getId(
+                                                        user
+                                                    )
+                                                }
+                                                value={
+                                                    getId(
+                                                        user
+                                                    )
+                                                }
+                                            >
+                                                {formatName(
+                                                    user
+                                                )}
+                                                {" — "}
+                                                {user.role ||
+                                                    "User"}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
                             </div>
 
 
@@ -1661,17 +1537,23 @@ function CreateUserForm() {
                                     generateCredentials
                                 }
                                 disabled={
-                                    generating
+                                    !selectedUserId ||
+                                    generating ||
+                                    loadingPending
                                 }
                                 className="
-                                    min-h-[40px]
+                                    min-h-[42px]
+                                    shrink-0
                                     rounded-lg
                                     bg-[#1769e8]
                                     px-5
                                     text-[10px]
                                     font-semibold
                                     text-white
-                                    disabled:opacity-50
+                                    transition
+                                    hover:bg-[#0b5ed7]
+                                    disabled:cursor-not-allowed
+                                    disabled:bg-[#94a3b8]
                                 "
                             >
                                 {generating
@@ -1679,18 +1561,247 @@ function CreateUserForm() {
                                     : "Generate Credentials"}
                             </button>
                         </div>
-                    )}
-                </div>
-            </section>
+
+
+                        {selectedPendingUser && (
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-lg
+                                    border
+                                    border-[#dbe4ef]
+                                    bg-[#f8fafc]
+                                    p-4
+                                "
+                            >
+                                <div
+                                    className="
+                                        flex
+                                        flex-col
+                                        gap-4
+                                        sm:flex-row
+                                        sm:items-center
+                                        sm:justify-between
+                                    "
+                                >
+                                    <div
+                                        className="
+                                            flex
+                                            items-center
+                                            gap-3
+                                        "
+                                    >
+                                        <div
+                                            className="
+                                                flex
+                                                h-10
+                                                w-10
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-full
+                                                bg-[#073763]
+                                                text-[11px]
+                                                font-bold
+                                                text-white
+                                            "
+                                        >
+                                            {formatName(
+                                                selectedPendingUser
+                                            )
+                                                .charAt(
+                                                    0
+                                                )
+                                                .toUpperCase()}
+                                        </div>
+
+
+                                        <div>
+                                            <p
+                                                className="
+                                                    text-[10px]
+                                                    font-semibold
+                                                    text-[#172033]
+                                                "
+                                            >
+                                                {formatName(
+                                                    selectedPendingUser
+                                                )}
+                                            </p>
+
+                                            <p
+                                                className="
+                                                    mt-1
+                                                    text-[8px]
+                                                    text-[#64748b]
+                                                "
+                                            >
+                                                {selectedPendingUser.email ||
+                                                    "No email address"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+
+                                    <span
+                                        className="
+                                            self-start
+                                            rounded-full
+                                            bg-blue-50
+                                            px-3
+                                            py-1.5
+                                            text-[8px]
+                                            font-semibold
+                                            capitalize
+                                            text-blue-600
+                                            sm:self-auto
+                                        "
+                                    >
+                                        {selectedPendingUser.role ||
+                                            "User"}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+
+                        {!loadingPending &&
+                            pendingUsers.length ===
+                            0 && (
+                                <div
+                                    className="
+                                        mt-4
+                                        rounded-lg
+                                        border
+                                        border-dashed
+                                        border-[#cbd5e1]
+                                        bg-[#f8fafc]
+                                        px-4
+                                        py-6
+                                        text-center
+                                    "
+                                >
+                                    <p
+                                        className="
+                                            text-[10px]
+                                            font-semibold
+                                            text-[#52627a]
+                                        "
+                                    >
+                                        No pending users
+                                    </p>
+
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-[8px]
+                                            text-[#94a3b8]
+                                        "
+                                    >
+                                        Add a Trainer or Trainee above
+                                        before generating credentials.
+                                    </p>
+                                </div>
+                            )}
+                    </div>
+                </section>
+            </div>
+
+
+            {/* =================================================
+                CREDENTIAL MODAL
+            ================================================= */}
+
+            <GeneratedCredentialsModal
+                open={
+                    Boolean(
+                        credentials
+                    )
+                }
+                credentials={
+                    credentials
+                }
+                user={
+                    credentialUser
+                }
+                onClose={() => {
+                    setCredentials(
+                        null
+                    );
+
+                    setCredentialUser(
+                        null
+                    );
+                }}
+            />
+        </>
+    );
+}
+
+
+/* =========================================================
+   COMPONENTS
+========================================================= */
+
+function StepNumber({
+    children,
+}) {
+    return (
+        <div
+            className="
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                bg-[#1769e8]
+                text-[10px]
+                font-bold
+                text-white
+            "
+        >
+            {children}
         </div>
     );
 }
 
 
-function Field({
+function FormSectionTitle({
+    title,
+    text,
+}) {
+    return (
+        <div>
+            <h4
+                className="
+                    text-[11px]
+                    font-bold
+                    text-[#172033]
+                "
+            >
+                {title}
+            </h4>
+
+            <p
+                className="
+                    mt-1
+                    text-[8px]
+                    text-[#64748b]
+                "
+            >
+                {text}
+            </p>
+        </div>
+    );
+}
+
+
+function InputField({
     label,
     required,
-    children,
+    ...props
 }) {
     return (
         <label
@@ -1702,9 +1813,9 @@ function Field({
                 className="
                     mb-2
                     block
-                    text-[10px]
-                    font-medium
-                    text-[#172033]
+                    text-[9px]
+                    font-semibold
+                    text-[#334155]
                 "
             >
                 {label}
@@ -1712,7 +1823,7 @@ function Field({
                 {required && (
                     <span
                         className="
-                            ml-0.5
+                            ml-1
                             text-red-500
                         "
                     >
@@ -1722,7 +1833,94 @@ function Field({
             </span>
 
 
-            {children}
+            <input
+                {...props}
+                required={
+                    required
+                }
+                className="
+                    min-h-[42px]
+                    w-full
+                    rounded-lg
+                    border
+                    border-[#cbd5e1]
+                    bg-white
+                    px-3
+                    text-[10px]
+                    text-[#172033]
+                    outline-none
+                    transition
+                    placeholder:text-[#a7b4c7]
+                    focus:border-blue-500
+                    focus:ring-2
+                    focus:ring-blue-100
+                "
+            />
+        </label>
+    );
+}
+
+
+function SelectField({
+    label,
+    required,
+    children,
+    ...props
+}) {
+    return (
+        <label
+            className="
+                block
+            "
+        >
+            <span
+                className="
+                    mb-2
+                    block
+                    text-[9px]
+                    font-semibold
+                    text-[#334155]
+                "
+            >
+                {label}
+
+                {required && (
+                    <span
+                        className="
+                            ml-1
+                            text-red-500
+                        "
+                    >
+                        *
+                    </span>
+                )}
+            </span>
+
+
+            <select
+                {...props}
+                required={
+                    required
+                }
+                className="
+                    min-h-[42px]
+                    w-full
+                    rounded-lg
+                    border
+                    border-[#cbd5e1]
+                    bg-white
+                    px-3
+                    text-[10px]
+                    text-[#172033]
+                    outline-none
+                    transition
+                    focus:border-blue-500
+                    focus:ring-2
+                    focus:ring-blue-100
+                "
+            >
+                {children}
+            </select>
         </label>
     );
 }
@@ -1742,50 +1940,25 @@ function RoleCard({
             }
             className={`
                 flex
-                min-h-[76px]
-                items-center
-                justify-between
-                gap-4
-                rounded-lg
+                min-h-[95px]
+                w-full
+                items-start
+                gap-3
+                rounded-xl
                 border
-                px-4
-                py-3
+                p-4
                 text-left
                 transition
 
                 ${selected
-                    ? "border-blue-400 bg-blue-50/50"
-                    : "border-[#dbe4ef] bg-white hover:border-blue-200"
+                    ? "border-blue-500 bg-blue-50/70 ring-1 ring-blue-100"
+                    : "border-[#dbe4ef] bg-white hover:border-blue-200 hover:bg-[#f8fafc]"
                 }
             `}
         >
-            <div>
-                <p
-                    className="
-                        text-[11px]
-                        font-bold
-                        text-[#172033]
-                    "
-                >
-                    {title}
-                </p>
-
-
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        leading-4
-                        text-[#7c8da6]
-                    "
-                >
-                    {description}
-                </p>
-            </div>
-
-
-            <div
+            <span
                 className={`
+                    mt-0.5
                     flex
                     h-5
                     w-5
@@ -1796,31 +1969,57 @@ function RoleCard({
                     border
 
                     ${selected
-                        ? "border-blue-500"
-                        : "border-slate-300"
+                        ? "border-blue-600 bg-blue-600"
+                        : "border-[#cbd5e1] bg-white"
                     }
                 `}
             >
                 {selected && (
                     <span
                         className="
-                            h-2.5
-                            w-2.5
+                            h-2
+                            w-2
                             rounded-full
-                            bg-blue-500
+                            bg-white
                         "
                     />
                 )}
-            </div>
+            </span>
+
+
+            <span>
+                <span
+                    className="
+                        block
+                        text-[10px]
+                        font-semibold
+                        text-[#172033]
+                    "
+                >
+                    {title}
+                </span>
+
+                <span
+                    className="
+                        mt-1
+                        block
+                        text-[8px]
+                        leading-4
+                        text-[#64748b]
+                    "
+                >
+                    {description}
+                </span>
+            </span>
         </button>
     );
 }
 
 
 function TrainingCard({
-    section,
+    title,
+    description,
     selected,
-    locked,
     onClick,
 }) {
     return (
@@ -1829,121 +2028,76 @@ function TrainingCard({
             onClick={
                 onClick
             }
-            disabled={
-                locked
-            }
             className={`
-                flex
-                min-h-[72px]
-                items-center
-                gap-3
+                w-full
                 rounded-lg
                 border
-                px-4
-                py-3
+                p-4
                 text-left
+                transition
 
                 ${selected
-                    ? "border-blue-300 bg-blue-50/40"
-                    : "border-[#dbe4ef] bg-white"
-                }
-
-                ${locked
-                    ? "cursor-default"
-                    : "hover:border-blue-300"
+                    ? "border-blue-500 bg-white ring-1 ring-blue-100"
+                    : "border-[#dbe4ef] bg-white hover:border-blue-200"
                 }
             `}
         >
-            <span
-                className={`
+            <div
+                className="
                     flex
-                    h-4
-                    w-4
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-sm
-                    border
-                    text-[10px]
-
-                    ${selected
-                        ? "border-blue-500 bg-blue-500 text-white"
-                        : "border-slate-300"
-                    }
-                `}
+                    items-start
+                    justify-between
+                    gap-3
+                "
             >
-                {selected
-                    ? "✓"
-                    : ""}
-            </span>
+                <div>
+                    <p
+                        className="
+                            text-[10px]
+                            font-semibold
+                            text-[#172033]
+                        "
+                    >
+                        {title}
+                    </p>
+
+                    <p
+                        className="
+                            mt-1
+                            text-[8px]
+                            leading-4
+                            text-[#64748b]
+                        "
+                    >
+                        {description}
+                    </p>
+                </div>
 
 
-            <div>
-                <p
-                    className="
-                        text-[10px]
-                        font-semibold
-                        text-[#172033]
-                    "
+                <span
+                    className={`
+                        flex
+                        h-5
+                        w-5
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        border
+                        text-[9px]
+
+                        ${selected
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-[#cbd5e1] bg-white"
+                        }
+                    `}
                 >
-                    {section.label}
-                </p>
-
-
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        leading-4
-                        text-[#7c8da6]
-                    "
-                >
-                    {section.description}
-                </p>
+                    {selected
+                        ? "✓"
+                        : ""}
+                </span>
             </div>
         </button>
-    );
-}
-
-
-function CredentialBox({
-    label,
-    value,
-}) {
-    return (
-        <div
-            className="
-                rounded-lg
-                border
-                border-blue-100
-                bg-white
-                p-4
-            "
-        >
-            <p
-                className="
-                    text-[8px]
-                    font-semibold
-                    uppercase
-                    text-[#8aa0bb]
-                "
-            >
-                {label}
-            </p>
-
-
-            <p
-                className="
-                    mt-2
-                    break-all
-                    text-[11px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
-        </div>
     );
 }
 
@@ -1956,7 +2110,6 @@ function Alert({
     const success =
         type ===
         "success";
-
 
     return (
         <div
@@ -1981,7 +2134,6 @@ function Alert({
                 {text}
             </span>
 
-
             <button
                 type="button"
                 onClick={
@@ -1989,6 +2141,7 @@ function Alert({
                 }
                 className="
                     shrink-0
+                    text-[15px]
                     font-bold
                 "
             >

@@ -16,7 +16,6 @@ import LearningProgrammeHeader from "../../components/training/LearningProgramme
 import LearningSectionList from "../../components/training/LearningSectionList";
 import LearningContentCard from "../../components/training/LearningContentCard";
 
-import ActionButton from "../../components/ui/ActionButton";
 import FeedbackAlert from "../../components/ui/FeedbackAlert";
 import LoadingCard from "../../components/ui/LoadingCard";
 import EmptyState from "../../components/ui/EmptyState";
@@ -38,7 +37,6 @@ function TraineeLearningPage() {
         programmeId,
     } =
         useParams();
-
 
     const [
         programme,
@@ -81,14 +79,23 @@ function TraineeLearningPage() {
                         "Training programme information is missing."
                     );
 
-                    setLoading(false);
+                    setLoading(
+                        false
+                    );
 
                     return;
                 }
 
+
                 try {
-                    setLoading(true);
-                    setErrorMessage("");
+                    setLoading(
+                        true
+                    );
+
+                    setErrorMessage(
+                        ""
+                    );
+
 
                     const [
                         programmeResponse,
@@ -125,43 +132,32 @@ function TraineeLearningPage() {
                     );
 
 
-                    const sectionList =
+                    const loadedSections =
                         parseArrayResponse(
                             sectionsResponse.data,
                             "sections"
                         );
 
 
-                    const activeSections =
-                        sectionList.filter(
-                            (
-                                section
-                            ) =>
-                                !section.status ||
-                                section.status ===
-                                "active"
-                        );
-
-
                     setSections(
                         sortLearningSections(
-                            activeSections
+                            loadedSections
                         )
                     );
+
 
                     setCurrentSectionIndex(
                         0
                     );
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
                         "Load trainee learning error:",
                         error
                     );
 
-                    setProgramme(null);
-                    setAssignment(null);
-                    setSections([]);
 
                     setErrorMessage(
                         getApiErrorMessage(
@@ -171,7 +167,9 @@ function TraineeLearningPage() {
                     );
 
                 } finally {
-                    setLoading(false);
+                    setLoading(
+                        false
+                    );
                 }
             },
             [
@@ -201,100 +199,36 @@ function TraineeLearningPage() {
         );
 
 
-    const learningProgress =
-        sections.length > 0
-            ? Math.round(
-                (
-                    (
-                        currentSectionIndex +
-                        1
-                    ) /
-                    sections.length
-                ) *
-                100
-            )
-            : 0;
+    const hasPrevious =
+        currentSectionIndex >
+        0;
 
 
-    const handleSelectSection = (
-        index
-    ) => {
-        if (
-            index < 0 ||
-            index >=
-            sections.length
-        ) {
-            return;
-        }
-
-        setCurrentSectionIndex(
-            index
-        );
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    };
+    const hasNext =
+        currentSectionIndex <
+        sections.length -
+        1;
 
 
-    const handlePrevious =
-        () => {
-            setCurrentSectionIndex(
-                (
-                    current
-                ) =>
-                    Math.max(
-                        0,
-                        current - 1
-                    )
-            );
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-        };
-
-
-    const handleNext =
-        () => {
-            setCurrentSectionIndex(
-                (
-                    current
-                ) =>
-                    Math.min(
-                        sections.length -
-                        1,
-                        current + 1
-                    )
-            );
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-        };
-
-
-    const handleFinish =
-        () => {
-            navigate(
-                "/my-training"
-            );
-        };
-
-
-    if (loading) {
+    if (
+        loading
+    ) {
         return (
             <DashboardLayout
                 role="trainee"
-                title="Learning"
-                subtitle="Loading your workplace safety training."
+                showHeader={
+                    false
+                }
             >
-                <LoadingCard
-                    message="Loading learning content..."
-                />
+                <div
+                    className="
+                        app-page
+                    "
+                >
+                    <LoadingCard
+                        message="Loading training content..."
+                    />
+                </div>
             </DashboardLayout>
         );
     }
@@ -303,259 +237,283 @@ function TraineeLearningPage() {
     return (
         <DashboardLayout
             role="trainee"
-            title="Learning"
-            subtitle="Complete your assigned workplace safety training."
+            showHeader={
+                false
+            }
         >
             <div
                 className="
-                    space-y-4
+                    app-page
+                    space-y-5
                 "
             >
-                {/* TOP ACTION */}
-
-                <section
-                    className="
-                        flex
-                        flex-col
-                        gap-3
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-4
-                        shadow-sm
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                    "
-                >
-                    <div>
-                        <p
-                            className="
-                                text-[8px]
-                                font-semibold
-                                text-slate-600
-                            "
-                        >
-                            Learning Progress
-                        </p>
-
-                        <p
-                            className="
-                                mt-1
-                                text-[18px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            {learningProgress}%
-                        </p>
-                    </div>
-
-
-                    <ActionButton
-                        variant="secondary"
-                        onClick={() =>
-                            navigate(
-                                "/my-training"
-                            )
-                        }
-                    >
-                        ← Back to My Training
-                    </ActionButton>
-                </section>
-
-
                 <FeedbackAlert
                     type="error"
                     message={
                         errorMessage
                     }
                     onClose={() =>
-                        setErrorMessage("")
+                        setErrorMessage(
+                            ""
+                        )
                     }
                 />
 
 
-                {!programme ? (
+                {/* BACK */}
+
+                <button
+                    type="button"
+                    onClick={() =>
+                        navigate(
+                            "/my-training"
+                        )
+                    }
+                    className="
+                        inline-flex
+                        min-h-[36px]
+                        items-center
+                        gap-2
+                        rounded-lg
+                        border
+                        border-[#cbd5e1]
+                        bg-white
+                        px-4
+                        text-[9px]
+                        font-semibold
+                        text-[#52627a]
+                        transition
+                        hover:bg-[#f8fafc]
+                    "
+                >
+                    ← Back to My Training
+                </button>
+
+
+                {/* PROGRAMME HEADER */}
+
+                {programme && (
+                    <LearningProgrammeHeader
+                        programme={
+                            programme
+                        }
+                        assignment={
+                            assignment
+                        }
+                    />
+                )}
+
+
+                {sections.length ===
+                    0 ? (
+                    <EmptyState
+                        title="No learning content"
+                        message="Learning sections have not been added to this programme yet."
+                    />
+                ) : (
                     <section
                         className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            shadow-sm
+                            grid
+                            gap-5
+                            lg:grid-cols-[260px_minmax(0,1fr)]
                         "
                     >
-                        <EmptyState
-                            title="Training programme unavailable."
-                            description="This programme is not assigned to you or is currently unavailable."
-                            action={
-                                <ActionButton
-                                    variant="primary"
-                                    onClick={() =>
-                                        navigate(
-                                            "/my-training"
-                                        )
-                                    }
-                                >
-                                    Return to My Training
-                                </ActionButton>
-                            }
-                        />
-                    </section>
-                ) : (
-                    <>
-                        <LearningProgrammeHeader
-                            programme={
-                                programme
-                            }
-                            currentSection={
-                                currentSectionIndex
-                            }
-                            totalSections={
-                                sections.length
-                            }
-                        />
+                        {/* LEFT NAV */}
 
-
-                        {assignment && (
-                            <section
+                        <div
+                            className="
+                                self-start
+                                overflow-hidden
+                                rounded-xl
+                                border
+                                border-[#dbe4ef]
+                                bg-white
+                                shadow-sm
+                                lg:sticky
+                                lg:top-5
+                            "
+                        >
+                            <div
                                 className="
-                                    flex
-                                    items-start
-                                    gap-3
-                                    rounded-xl
-                                    border
-                                    border-emerald-200
-                                    bg-emerald-50
-                                    p-4
+                                    border-b
+                                    border-[#e8eef5]
+                                    px-4
+                                    py-4
                                 "
                             >
-                                <div
+                                <h2
                                     className="
-                                        flex
-                                        h-8
-                                        w-8
-                                        shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-white
-                                        text-emerald-600
+                                        text-[11px]
+                                        font-bold
+                                        text-[#172033]
                                     "
                                 >
-                                    ✓
-                                </div>
+                                    Learning Sections
+                                </h2>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[8px]
+                                        text-[#64748b]
+                                    "
+                                >
+                                    {sections.length} sections available
+                                </p>
+                            </div>
 
 
-                                <div>
+                            <LearningSectionList
+                                sections={
+                                    sections
+                                }
+                                currentSectionIndex={
+                                    currentSectionIndex
+                                }
+                                onSelect={
+                                    setCurrentSectionIndex
+                                }
+                            />
+                        </div>
+
+
+                        {/* CONTENT */}
+
+                        <div
+                            className="
+                                min-w-0
+                                space-y-4
+                            "
+                        >
+                            {currentSection && (
+                                <LearningContentCard
+                                    section={
+                                        currentSection
+                                    }
+                                />
+                            )}
+
+
+                            <div
+                                className="
+                                    flex
+                                    flex-col
+                                    gap-2
+                                    rounded-xl
+                                    border
+                                    border-[#dbe4ef]
+                                    bg-white
+                                    p-4
+                                    shadow-sm
+                                    sm:flex-row
+                                    sm:items-center
+                                    sm:justify-between
+                                "
+                            >
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !hasPrevious
+                                    }
+                                    onClick={() =>
+                                        setCurrentSectionIndex(
+                                            (
+                                                current
+                                            ) =>
+                                                Math.max(
+                                                    0,
+                                                    current -
+                                                    1
+                                                )
+                                        )
+                                    }
+                                    className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-5
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#52627a]
+                                        transition
+                                        hover:bg-[#f8fafc]
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-40
+                                    "
+                                >
+                                    ← Previous
+                                </button>
+
+
+                                <div
+                                    className="
+                                        text-center
+                                    "
+                                >
                                     <p
                                         className="
-                                            text-[9px]
-                                            font-bold
-                                            text-emerald-800
+                                            text-[8px]
+                                            text-[#64748b]
                                         "
                                     >
-                                        Training Access Active
+                                        Section
                                     </p>
 
                                     <p
                                         className="
                                             mt-1
-                                            text-[8px]
-                                            font-medium
-                                            text-emerald-700
+                                            text-[10px]
+                                            font-bold
+                                            text-[#172033]
                                         "
                                     >
-                                        This programme is assigned to your Trainee account.
+                                        {currentSectionIndex +
+                                            1}{" "}
+                                        of{" "}
+                                        {sections.length}
                                     </p>
                                 </div>
-                            </section>
-                        )}
 
 
-                        {sections.length ===
-                            0 ? (
-                            <section
-                                className="
-                                    rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    shadow-sm
-                                "
-                            >
-                                <EmptyState
-                                    title="No learning content available."
-                                    description="This programme currently has no active learning sections."
-                                    icon="training"
-                                />
-                            </section>
-                        ) : (
-                            <section
-                                className="
-                                    grid
-                                    min-w-0
-                                    gap-4
-                                    lg:grid-cols-[270px_minmax(0,1fr)]
-                                "
-                            >
-                                <div
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !hasNext
+                                    }
+                                    onClick={() =>
+                                        setCurrentSectionIndex(
+                                            (
+                                                current
+                                            ) =>
+                                                Math.min(
+                                                    sections.length -
+                                                    1,
+                                                    current +
+                                                    1
+                                                )
+                                        )
+                                    }
                                     className="
-                                        min-w-0
+                                        min-h-[40px]
+                                        rounded-lg
+                                        bg-[#1769e8]
+                                        px-5
+                                        text-[9px]
+                                        font-semibold
+                                        text-white
+                                        transition
+                                        hover:bg-[#0b5ed7]
+                                        disabled:cursor-not-allowed
+                                        disabled:bg-[#94a3b8]
                                     "
                                 >
-                                    <div
-                                        className="
-                                            lg:sticky
-                                            lg:top-4
-                                        "
-                                    >
-                                        <LearningSectionList
-                                            sections={
-                                                sections
-                                            }
-                                            currentSectionIndex={
-                                                currentSectionIndex
-                                            }
-                                            onSelectSection={
-                                                handleSelectSection
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-
-                                <div
-                                    className="
-                                        min-w-0
-                                    "
-                                >
-                                    <LearningContentCard
-                                        section={
-                                            currentSection
-                                        }
-                                        currentIndex={
-                                            currentSectionIndex
-                                        }
-                                        totalSections={
-                                            sections.length
-                                        }
-                                        onPrevious={
-                                            handlePrevious
-                                        }
-                                        onNext={
-                                            handleNext
-                                        }
-                                        onFinish={
-                                            handleFinish
-                                        }
-                                    />
-                                </div>
-                            </section>
-                        )}
-                    </>
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    </section>
                 )}
             </div>
         </DashboardLayout>

@@ -20,131 +20,106 @@ import {
 } from "../../utils/training";
 
 
-const ROLE_DEFINITIONS = [
+const ROLES = [
     {
         id: "administrator",
         name: "Administrator",
         backendRole: "admin",
         description:
-            "Full administrative access to users, training and system records.",
+            "Full control over users, training programmes, assignments and system records.",
+        icon: "admin",
     },
     {
         id: "trainer",
         name: "Trainer",
         backendRole: "trainer",
         description:
-            "Manage assigned training programmes and learning content.",
+            "Manage authorised training programmes, learning content and trainee activity.",
+        icon: "trainer",
     },
     {
         id: "trainee",
         name: "Trainee",
         backendRole: "trainee",
         description:
-            "Access assigned training programmes and learning content.",
+            "Complete assigned workplace safety training and monitor personal progress.",
+        icon: "trainee",
     },
 ];
 
 
-const PERMISSION_MATRIX = [
+const PERMISSIONS = [
     {
-        permission:
-            "View Users",
-        administrator:
-            true,
-        trainer:
-            false,
-        trainee:
-            false,
+        name: "View Users",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "Create User",
-        administrator:
-            true,
-        trainer:
-            false,
-        trainee:
-            false,
+        name: "Create Users",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "Manage User Status",
-        administrator:
-            true,
-        trainer:
-            false,
-        trainee:
-            false,
+        name: "Edit User Accounts",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "Reset User Password",
-        administrator:
-            true,
-        trainer:
-            false,
-        trainee:
-            false,
+        name: "Deactivate / Reactivate Users",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "Manage Training Programmes",
-        administrator:
-            true,
-        trainer:
-            true,
-        trainee:
-            false,
+        name: "Reset User Passwords",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "Manage Learning Sections",
-        administrator:
-            true,
-        trainer:
-            true,
-        trainee:
-            false,
+        name: "Manage Training Programmes",
+        administrator: true,
+        trainer: true,
+        trainee: false,
     },
     {
-        permission:
-            "Assign Training",
-        administrator:
-            true,
-        trainer:
-            false,
-        trainee:
-            false,
+        name: "Manage Learning Content",
+        administrator: true,
+        trainer: true,
+        trainee: false,
     },
     {
-        permission:
-            "View Assigned Training",
-        administrator:
-            true,
-        trainer:
-            true,
-        trainee:
-            true,
+        name: "Assign Training",
+        administrator: true,
+        trainer: false,
+        trainee: false,
     },
     {
-        permission:
-            "View Own Profile",
-        administrator:
-            true,
-        trainer:
-            true,
-        trainee:
-            true,
+        name: "View Assigned Training",
+        administrator: true,
+        trainer: true,
+        trainee: true,
     },
     {
-        permission:
-            "Access Own Dashboard",
-        administrator:
-            true,
-        trainer:
-            true,
-        trainee:
-            true,
+        name: "Complete Training",
+        administrator: false,
+        trainer: false,
+        trainee: true,
+    },
+    {
+        name: "View Own Profile",
+        administrator: true,
+        trainer: true,
+        trainee: true,
+    },
+    {
+        name: "Access Dashboard",
+        administrator: true,
+        trainer: true,
+        trainee: true,
     },
 ];
 
@@ -190,7 +165,7 @@ function RolesPermissionsPage() {
 
                 } catch (error) {
                     console.error(
-                        "Load role users error:",
+                        "Roles users error:",
                         error
                     );
 
@@ -216,10 +191,10 @@ function RolesPermissionsPage() {
     ]);
 
 
-    const roleCounts =
+    const counts =
         useMemo(
             () => {
-                const counts = {
+                const result = {
                     admin: 0,
                     trainer: 0,
                     trainee: 0,
@@ -229,22 +204,26 @@ function RolesPermissionsPage() {
                     (
                         user
                     ) => {
+                        const role =
+                            String(
+                                user.role ||
+                                ""
+                            ).toLowerCase();
+
                         if (
-                            Object.prototype
-                                .hasOwnProperty
-                                .call(
-                                    counts,
-                                    user.role
-                                )
+                            Object.prototype.hasOwnProperty.call(
+                                result,
+                                role
+                            )
                         ) {
-                            counts[
-                                user.role
+                            result[
+                                role
                             ] += 1;
                         }
                     }
                 );
 
-                return counts;
+                return result;
             },
             [
                 users,
@@ -256,11 +235,12 @@ function RolesPermissionsPage() {
         <DashboardLayout
             role="admin"
             title="Roles & Permissions"
-            subtitle="Review role access and system permissions."
+            subtitle="View system roles and the permissions available to each role."
         >
             <div
                 className="
-                    space-y-4
+                    admin-page
+                    space-y-5
                 "
             >
                 <FeedbackAlert
@@ -274,7 +254,88 @@ function RolesPermissionsPage() {
                 />
 
 
-                {/* ROLE CARDS */}
+                {/* =============================================
+                    SUMMARY
+                ============================================== */}
+
+                <section
+                    className="
+                        rounded-xl
+                        border
+                        border-[#dbe4ef]
+                        bg-white
+                        p-5
+                        shadow-sm
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div>
+                            <h2
+                                className="
+                                    text-[14px]
+                                    font-bold
+                                    text-[#172033]
+                                "
+                            >
+                                System Roles
+                            </h2>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    text-[#64748b]
+                                "
+                            >
+                                UK LogiWare uses three access levels.
+                            </p>
+                        </div>
+
+
+                        <div
+                            className="
+                                flex
+                                flex-wrap
+                                gap-2
+                            "
+                        >
+                            <CountBadge
+                                label="Administrator"
+                                value={
+                                    counts.admin
+                                }
+                            />
+
+                            <CountBadge
+                                label="Trainer"
+                                value={
+                                    counts.trainer
+                                }
+                            />
+
+                            <CountBadge
+                                label="Trainee"
+                                value={
+                                    counts.trainee
+                                }
+                            />
+                        </div>
+                    </div>
+                </section>
+
+
+                {/* =============================================
+                    ROLE CARDS
+                ============================================== */}
 
                 <section
                     className="
@@ -283,7 +344,7 @@ function RolesPermissionsPage() {
                         md:grid-cols-3
                     "
                 >
-                    {ROLE_DEFINITIONS.map(
+                    {ROLES.map(
                         (
                             role
                         ) => (
@@ -292,9 +353,12 @@ function RolesPermissionsPage() {
                                     role.id
                                 }
                                 className="
+                                    flex
+                                    min-h-[235px]
+                                    flex-col
                                     rounded-xl
                                     border
-                                    border-slate-200
+                                    border-[#dbe4ef]
                                     bg-white
                                     p-5
                                     shadow-sm
@@ -308,22 +372,27 @@ function RolesPermissionsPage() {
                                         gap-3
                                     "
                                 >
-                                    <RoleIcon />
+                                    <RoleIcon
+                                        type={
+                                            role.icon
+                                        }
+                                    />
+
 
                                     <span
                                         className="
                                             rounded-full
                                             bg-blue-50
                                             px-3
-                                            py-1
+                                            py-1.5
                                             text-[8px]
-                                            font-bold
+                                            font-semibold
                                             text-blue-600
                                         "
                                     >
                                         {loading
                                             ? "..."
-                                            : roleCounts[
+                                            : counts[
                                             role.backendRole
                                             ]}{" "}
                                         Users
@@ -331,7 +400,7 @@ function RolesPermissionsPage() {
                                 </div>
 
 
-                                <h2
+                                <h3
                                     className="
                                         mt-4
                                         text-[13px]
@@ -340,61 +409,94 @@ function RolesPermissionsPage() {
                                     "
                                 >
                                     {role.name}
-                                </h2>
+                                </h3>
+
 
                                 <p
                                     className="
                                         mt-2
-                                        min-h-[40px]
-                                        text-[8px]
-                                        font-medium
+                                        text-[9px]
                                         leading-5
-                                        text-slate-600
+                                        text-[#64748b]
                                     "
                                 >
-                                    {
-                                        role.description
-                                    }
+                                    {role.description}
                                 </p>
 
 
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        navigate(
-                                            `/admin/roles/${role.id}`
-                                        )
-                                    }
+                                <div
                                     className="
-                                        mt-4
-                                        min-h-[38px]
-                                        w-full
-                                        rounded-lg
-                                        border
-                                        border-slate-300
-                                        bg-white
-                                        text-[9px]
-                                        font-semibold
-                                        text-blue-600
-                                        hover:bg-blue-50
+                                        mt-auto
+                                        flex
+                                        gap-2
+                                        pt-5
                                     "
                                 >
-                                    View Role
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate(
+                                                `/admin/roles/${role.id}`
+                                            )
+                                        }
+                                        className="
+                                            min-h-[38px]
+                                            flex-1
+                                            rounded-lg
+                                            border
+                                            border-[#cbd5e1]
+                                            bg-white
+                                            px-3
+                                            text-[9px]
+                                            font-semibold
+                                            text-[#52627a]
+                                            transition
+                                            hover:bg-[#f8fafc]
+                                        "
+                                    >
+                                        View Role
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate(
+                                                `/admin/roles/${role.id}/edit`
+                                            )
+                                        }
+                                        className="
+                                            min-h-[38px]
+                                            flex-1
+                                            rounded-lg
+                                            bg-[#1769e8]
+                                            px-3
+                                            text-[9px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b5ed7]
+                                        "
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
                             </article>
                         )
                     )}
                 </section>
 
 
-                {/* MATRIX */}
+                {/* =============================================
+                    PERMISSION MATRIX
+                ============================================== */}
 
                 <section
                     className="
                         overflow-hidden
                         rounded-xl
                         border
-                        border-slate-200
+                        border-[#dbe4ef]
                         bg-white
                         shadow-sm
                     "
@@ -402,15 +504,14 @@ function RolesPermissionsPage() {
                     <div
                         className="
                             border-b
-                            border-slate-100
-                            px-4
+                            border-[#e8eef5]
+                            px-5
                             py-4
-                            sm:px-5
                         "
                     >
                         <h2
                             className="
-                                text-[12px]
+                                text-[13px]
                                 font-bold
                                 text-[#172033]
                             "
@@ -421,154 +522,87 @@ function RolesPermissionsPage() {
                         <p
                             className="
                                 mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-500
+                                text-[9px]
+                                text-[#64748b]
                             "
                         >
-                            Current access available to each system role.
+                            Compare access available to Administrator,
+                            Trainer and Trainee roles.
                         </p>
                     </div>
 
 
-                    {/* MOBILE */}
-
                     <div
                         className="
-                            space-y-3
-                            p-4
-                            lg:hidden
-                        "
-                    >
-                        {PERMISSION_MATRIX.map(
-                            (
-                                permission
-                            ) => (
-                                <article
-                                    key={
-                                        permission.permission
-                                    }
-                                    className="
-                                        rounded-lg
-                                        border
-                                        border-slate-200
-                                        p-4
-                                    "
-                                >
-                                    <p
-                                        className="
-                                            text-[9px]
-                                            font-bold
-                                            text-slate-800
-                                        "
-                                    >
-                                        {
-                                            permission.permission
-                                        }
-                                    </p>
-
-
-                                    <div
-                                        className="
-                                            mt-3
-                                            grid
-                                            grid-cols-3
-                                            gap-2
-                                        "
-                                    >
-                                        <MobilePermission
-                                            label="Admin"
-                                            enabled={
-                                                permission.administrator
-                                            }
-                                        />
-
-                                        <MobilePermission
-                                            label="Trainer"
-                                            enabled={
-                                                permission.trainer
-                                            }
-                                        />
-
-                                        <MobilePermission
-                                            label="Trainee"
-                                            enabled={
-                                                permission.trainee
-                                            }
-                                        />
-                                    </div>
-                                </article>
-                            )
-                        )}
-                    </div>
-
-
-                    {/* DESKTOP */}
-
-                    <div
-                        className="
-                            hidden
                             overflow-x-auto
-                            lg:block
                         "
                     >
                         <table
                             className="
-                                min-w-[750px]
+                                min-w-[650px]
                                 w-full
                             "
                         >
                             <thead
                                 className="
-                                    bg-slate-50
+                                    bg-[#f8fafc]
                                 "
                             >
                                 <tr>
-                                    <TableHead>
+                                    <th
+                                        className="
+                                            px-5
+                                            py-3
+                                            text-left
+                                            text-[8px]
+                                            font-bold
+                                            uppercase
+                                            tracking-wide
+                                            text-[#64748b]
+                                        "
+                                    >
                                         Permission
-                                    </TableHead>
+                                    </th>
 
-                                    <TableHead center>
+                                    <PermissionHead>
                                         Administrator
-                                    </TableHead>
+                                    </PermissionHead>
 
-                                    <TableHead center>
+                                    <PermissionHead>
                                         Trainer
-                                    </TableHead>
+                                    </PermissionHead>
 
-                                    <TableHead center>
+                                    <PermissionHead>
                                         Trainee
-                                    </TableHead>
+                                    </PermissionHead>
                                 </tr>
                             </thead>
 
 
                             <tbody>
-                                {PERMISSION_MATRIX.map(
+                                {PERMISSIONS.map(
                                     (
                                         permission
                                     ) => (
                                         <tr
                                             key={
-                                                permission.permission
+                                                permission.name
                                             }
                                             className="
                                                 border-t
-                                                border-slate-100
+                                                border-[#edf1f6]
                                             "
                                         >
                                             <td
                                                 className="
                                                     px-5
-                                                    py-4
+                                                    py-3.5
                                                     text-[9px]
-                                                    font-semibold
-                                                    text-slate-700
+                                                    font-medium
+                                                    text-[#334155]
                                                 "
                                             >
-                                                {
-                                                    permission.permission
-                                                }
+                                                {permission.name}
                                             </td>
 
                                             <PermissionCell
@@ -601,26 +635,60 @@ function RolesPermissionsPage() {
 }
 
 
-function TableHead({
+function CountBadge({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                border
+                border-[#e1e8f0]
+                bg-[#f8fafc]
+                px-3
+                py-2
+            "
+        >
+            <span
+                className="
+                    text-[8px]
+                    text-[#64748b]
+                "
+            >
+                {label}
+            </span>
+
+            <span
+                className="
+                    ml-2
+                    text-[10px]
+                    font-bold
+                    text-[#172033]
+                "
+            >
+                {value}
+            </span>
+        </div>
+    );
+}
+
+
+function PermissionHead({
     children,
-    center = false,
 }) {
     return (
         <th
-            className={`
+            className="
                 px-5
                 py-3
-                text-[7px]
+                text-center
+                text-[8px]
                 font-bold
                 uppercase
                 tracking-wide
-                text-slate-500
-
-                ${center
-                    ? "text-center"
-                    : "text-left"
-                }
-            `}
+                text-[#64748b]
+            "
         >
             {children}
         </th>
@@ -635,112 +703,87 @@ function PermissionCell({
         <td
             className="
                 px-5
-                py-4
+                py-3
                 text-center
             "
         >
-            <PermissionMark
-                enabled={
-                    enabled
-                }
-            />
+            <span
+                className={`
+                    mx-auto
+                    flex
+                    h-6
+                    w-6
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-[9px]
+                    font-bold
+
+                    ${enabled
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-400"
+                    }
+                `}
+            >
+                {enabled
+                    ? "✓"
+                    : "—"}
+            </span>
         </td>
     );
 }
 
 
-function MobilePermission({
-    label,
-    enabled,
+function RoleIcon({
+    type,
 }) {
-    return (
-        <div
-            className="
-                rounded-lg
-                bg-slate-50
-                p-2
-                text-center
-            "
-        >
-            <PermissionMark
-                enabled={
-                    enabled
-                }
-            />
-
-            <p
-                className="
-                    mt-1
-                    text-[7px]
-                    font-medium
-                    text-slate-500
-                "
-            >
-                {label}
-            </p>
-        </div>
-    );
-}
-
-
-function PermissionMark({
-    enabled,
-}) {
-    return (
-        <span
-            className={`
-                inline-flex
-                h-6
-                w-6
-                items-center
-                justify-center
-                rounded-full
-                text-[9px]
-                font-bold
-
-                ${enabled
-                    ? "bg-emerald-100 text-emerald-600"
-                    : "bg-slate-100 text-slate-400"
-                }
-            `}
-        >
-            {enabled
-                ? "✓"
-                : "—"}
-        </span>
-    );
-}
-
-
-function RoleIcon() {
     return (
         <div
             className="
                 flex
-                h-10
-                w-10
+                h-11
+                w-11
                 items-center
                 justify-center
-                rounded-lg
-                bg-blue-50
+                rounded-xl
+                bg-[#eef6ff]
                 text-blue-600
             "
         >
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-            >
-                <circle
-                    cx="12"
-                    cy="8"
-                    r="3"
-                />
-
-                <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-            </svg>
+            {type ===
+                "admin" ? (
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="
+                        h-5
+                        w-5
+                    "
+                >
+                    <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z" />
+                    <path d="m9 12 2 2 4-4" />
+                </svg>
+            ) : (
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="
+                        h-5
+                        w-5
+                    "
+                >
+                    <circle
+                        cx="12"
+                        cy="8"
+                        r="3"
+                    />
+                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
+                </svg>
+            )}
         </div>
     );
 }

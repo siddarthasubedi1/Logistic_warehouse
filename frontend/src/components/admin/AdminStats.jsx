@@ -14,6 +14,12 @@ function StatIcon({
         strokeWidth:
             "1.8",
 
+        strokeLinecap:
+            "round",
+
+        strokeLinejoin:
+            "round",
+
         className:
             "h-5 w-5",
     };
@@ -197,45 +203,69 @@ function AdminStats({
             "
         >
             {cards.map(
-                (
-                    card
-                ) => (
+                (card) => (
                     <article
                         key={
                             card.label
                         }
                         className="
-                            min-h-[150px]
+                            relative
+                            min-h-[155px]
+                            overflow-hidden
                             rounded-xl
                             border
                             border-[#dbe4ef]
                             bg-white
                             p-5
-                            shadow-[0_1px_3px_rgba(15,23,42,0.08)]
+                            shadow-[0_1px_3px_rgba(15,23,42,0.07)]
                         "
                     >
                         <div
-                            className={`
+                            className="
                                 flex
-                                h-10
-                                w-10
-                                items-center
-                                justify-center
-                                rounded-full
-                                ${card.iconClass}
-                            `}
+                                items-start
+                                justify-between
+                                gap-3
+                            "
                         >
-                            <StatIcon
-                                type={
-                                    card.type
-                                }
-                            />
+                            <div
+                                className={`
+                                    flex
+                                    h-10
+                                    w-10
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    ${card.iconClass}
+                                `}
+                            >
+                                <StatIcon
+                                    type={
+                                        card.type
+                                    }
+                                />
+                            </div>
+
+
+                            <span
+                                className="
+                                    rounded-full
+                                    bg-[#f8fafc]
+                                    px-2.5
+                                    py-1
+                                    text-[8px]
+                                    font-medium
+                                    text-[#7c8da6]
+                                "
+                            >
+                                Sprint 1
+                            </span>
                         </div>
 
 
                         <p
                             className="
-                                mt-5
+                                mt-4
                                 text-[10px]
                                 font-medium
                                 text-[#52627a]
@@ -248,7 +278,7 @@ function AdminStats({
                         <p
                             className={`
                                 mt-1
-                                text-[26px]
+                                text-[25px]
                                 font-bold
                                 leading-none
                                 ${card.valueClass}
@@ -263,7 +293,7 @@ function AdminStats({
                         <p
                             className="
                                 mt-2
-                                text-[9px]
+                                text-[8px]
                                 text-[#7c8da6]
                             "
                         >

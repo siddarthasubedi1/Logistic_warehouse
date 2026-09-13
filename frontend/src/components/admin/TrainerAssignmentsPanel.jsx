@@ -7,24 +7,28 @@ import {
 
 import api from "../../services/api";
 
-import FeedbackAlert from "../ui/FeedbackAlert";
-import StatusBadge from "../ui/StatusBadge";
-
-import {
-    getApiErrorMessage,
-    getUserDisplayName,
-    parseArrayResponse,
-} from "../../utils/training";
-
 
 const TRAINING_SECTIONS = [
     {
-        id: "manual-handling",
-        name: "Manual Handling",
+        id:
+            "manual-handling",
+
+        name:
+            "Manual Handling",
+
+        description:
+            "Safe lifting, carrying and manual handling procedures.",
     },
+
     {
-        id: "working-at-height",
-        name: "Working at Height",
+        id:
+            "working-at-height",
+
+        name:
+            "Working at Height",
+
+        description:
+            "Safety procedures and hazards related to elevated work.",
     },
 ];
 
@@ -61,35 +65,50 @@ function TrainerAssignmentsPanel() {
     ] = useState(false);
 
     const [
-        errorMessage,
-        setErrorMessage,
+        error,
+        setError,
     ] = useState("");
 
     const [
-        successMessage,
-        setSuccessMessage,
+        success,
+        setSuccess,
     ] = useState("");
 
+
+    /* =========================================================
+       LOAD USERS
+    ========================================================= */
 
     const loadUsers =
         useCallback(
             async () => {
                 try {
-                    setLoading(true);
+                    setLoading(
+                        true
+                    );
+
+                    setError(
+                        ""
+                    );
+
 
                     const response =
                         await api.get(
                             "/admin/users"
                         );
 
-                    const responseUsers =
-                        parseArrayResponse(
-                            response.data,
-                            "users"
-                        );
 
-                    const manageableUsers =
-                        responseUsers.filter(
+                    const data =
+                        Array.isArray(
+                            response.data
+                        )
+                            ? response.data
+                            : response.data?.users ||
+                            [];
+
+
+                    const manageable =
+                        data.filter(
                             (
                                 user
                             ) =>
@@ -99,29 +118,32 @@ function TrainerAssignmentsPanel() {
                                 "trainee"
                         );
 
+
                     setUsers(
-                        manageableUsers
+                        manageable
                     );
 
-                    return manageableUsers;
+                    return manageable;
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
-                        "Load training access users error:",
+                        "Training assignment users error:",
                         error
                     );
 
-                    setErrorMessage(
-                        getApiErrorMessage(
-                            error,
-                            "Unable to load users."
-                        )
+                    setError(
+                        error.response?.data?.message ||
+                        "Unable to load users."
                     );
 
                     return [];
 
                 } finally {
-                    setLoading(false);
+                    setLoading(
+                        false
+                    );
                 }
             },
             []
@@ -134,6 +156,10 @@ function TrainerAssignmentsPanel() {
         loadUsers,
     ]);
 
+
+    /* =========================================================
+       FILTER
+    ========================================================= */
 
     const filteredUsers =
         useMemo(
@@ -155,6 +181,10 @@ function TrainerAssignmentsPanel() {
         );
 
 
+    /* =========================================================
+       SELECTED USER
+    ========================================================= */
+
     const selectedUser =
         useMemo(
             () =>
@@ -163,7 +193,8 @@ function TrainerAssignmentsPanel() {
                         user
                     ) =>
                         String(
-                            user._id
+                            user._id ||
+                            user.id
                         ) ===
                         String(
                             selectedUserId
@@ -177,7 +208,11 @@ function TrainerAssignmentsPanel() {
         );
 
 
-    const handleSelectUser = (
+    /* =========================================================
+       USER SELECTION
+    ========================================================= */
+
+    const selectUser = (
         event
     ) => {
         const userId =
@@ -187,8 +222,14 @@ function TrainerAssignmentsPanel() {
             userId
         );
 
-        setSuccessMessage("");
-        setErrorMessage("");
+        setError(
+            ""
+        );
+
+        setSuccess(
+            ""
+        );
+
 
         const user =
             users.find(
@@ -196,12 +237,14 @@ function TrainerAssignmentsPanel() {
                     item
                 ) =>
                     String(
-                        item._id
+                        item._id ||
+                        item.id
                     ) ===
                     String(
                         userId
                     )
             );
+
 
         if (
             !user
@@ -213,6 +256,7 @@ function TrainerAssignmentsPanel() {
             return;
         }
 
+
         if (
             user.role ===
             "trainee"
@@ -220,58 +264,71 @@ function TrainerAssignmentsPanel() {
             setSelectedSections(
                 TRAINING_SECTIONS.map(
                     (
-                        section
+                        item
                     ) =>
-                        section.id
+                        item.id
                 )
             );
 
             return;
         }
 
+
         setSelectedSections(
             Array.isArray(
                 user.assignedTrainingSections
             )
-                ? user
-                    .assignedTrainingSections
-                    .slice(
-                        0,
-                        1
-                    )
+                ? user.assignedTrainingSections.slice(
+                    0,
+                    1
+                )
                 : []
         );
     };
 
 
-    const selectSection = (
-        sectionId
-    ) => {
-        if (
-            !selectedUser ||
-            selectedUser.role ===
-            "trainee"
-        ) {
-            return;
-        }
+    /* =========================================================
+       SELECT TRAINER MODULE
+    ========================================================= */
 
-        setSelectedSections([
-            sectionId,
-        ]);
-    };
+    const selectTraining =
+        (
+            sectionId
+        ) => {
+            if (
+                !selectedUser ||
+                selectedUser.role !==
+                "trainer"
+            ) {
+                return;
+            }
+
+            setSelectedSections([
+                sectionId,
+            ]);
+
+            setError(
+                ""
+            );
+        };
 
 
-    const handleSave =
+    /* =========================================================
+       SAVE
+    ========================================================= */
+
+    const saveAssignment =
         async () => {
             if (
                 !selectedUser
             ) {
-                setErrorMessage(
-                    "Please select a user."
+                setError(
+                    "Please select a user first."
                 );
 
                 return;
             }
+
 
             const trainingSections =
                 selectedUser.role ===
@@ -284,39 +341,58 @@ function TrainerAssignmentsPanel() {
                     )
                     : selectedSections;
 
+
             if (
                 selectedUser.role ===
                 "trainer" &&
                 trainingSections.length !==
                 1
             ) {
-                setErrorMessage(
-                    "Trainer must have exactly one training area."
+                setError(
+                    "Trainer must have exactly one training module."
                 );
 
                 return;
             }
 
+
             try {
-                setSaving(true);
-                setErrorMessage("");
-                setSuccessMessage("");
+                setSaving(
+                    true
+                );
+
+                setError(
+                    ""
+                );
+
+                setSuccess(
+                    ""
+                );
+
+
+                const userId =
+                    selectedUser._id ||
+                    selectedUser.id;
+
 
                 const response =
                     await api.patch(
-                        `/admin/users/${selectedUser._id}/training-sections`,
+                        `/admin/users/${userId}/training-sections`,
                         {
                             trainingSections,
                         }
                     );
 
-                setSuccessMessage(
+
+                setSuccess(
                     response.data?.message ||
-                    "Training access updated successfully."
+                    "Training assignment updated successfully."
                 );
+
 
                 const refreshedUsers =
                     await loadUsers();
+
 
                 const refreshedUser =
                     refreshedUsers.find(
@@ -324,44 +400,73 @@ function TrainerAssignmentsPanel() {
                             user
                         ) =>
                             String(
-                                user._id
+                                user._id ||
+                                user.id
                             ) ===
                             String(
-                                selectedUser._id
+                                userId
                             )
                     );
 
+
                 if (
-                    refreshedUser
+                    refreshedUser?.role ===
+                    "trainee"
                 ) {
                     setSelectedSections(
-                        Array.isArray(
-                            refreshedUser
-                                .assignedTrainingSections
+                        TRAINING_SECTIONS.map(
+                            (
+                                section
+                            ) =>
+                                section.id
                         )
-                            ? refreshedUser
-                                .assignedTrainingSections
+                    );
+
+                } else {
+                    setSelectedSections(
+                        Array.isArray(
+                            refreshedUser?.assignedTrainingSections
+                        )
+                            ? refreshedUser.assignedTrainingSections.slice(
+                                0,
+                                1
+                            )
                             : []
                     );
                 }
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
-                    "Update training access error:",
+                    "Save training assignment error:",
                     error
                 );
 
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to update training access."
-                    )
+                setError(
+                    error.response?.data?.message ||
+                    "Unable to save training assignment."
                 );
 
             } finally {
-                setSaving(false);
+                setSaving(
+                    false
+                );
             }
         };
+
+
+    /* =========================================================
+       NAME
+    ========================================================= */
+
+    const getName = (
+        user
+    ) =>
+        `${user?.firstName || ""} ${user?.lastName || ""}`
+            .trim() ||
+        user?.username ||
+        "User";
 
 
     return (
@@ -370,355 +475,651 @@ function TrainerAssignmentsPanel() {
                 overflow-hidden
                 rounded-xl
                 border
-                border-slate-200
+                border-[#dbe4ef]
                 bg-white
-                shadow-sm
+                shadow-[0_1px_3px_rgba(15,23,42,0.06)]
             "
         >
+            {/* =================================================
+                HEADER
+            ================================================= */}
+
             <div
                 className="
+                    flex
+                    flex-col
+                    gap-3
                     border-b
-                    border-slate-100
-                    px-4
+                    border-[#e8eef5]
+                    px-5
                     py-4
-                    sm:px-5
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
                 "
             >
-                <h2
+                <div
                     className="
-                        text-[12px]
-                        font-bold
-                        text-[#172033]
+                        flex
+                        items-center
+                        gap-3
                     "
                 >
-                    Training Access
-                </h2>
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-blue-50
+                            text-blue-600
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="
+                                h-5
+                                w-5
+                            "
+                        >
+                            <rect
+                                x="4"
+                                y="4"
+                                width="6"
+                                height="16"
+                                rx="1"
+                            />
 
-                <p
-                    className="
-                        mt-1
-                        text-[8px]
-                        font-medium
-                        text-slate-500
-                    "
-                >
-                    Trainer receives one training area. Trainee receives both automatically.
-                </p>
-            </div>
+                            <rect
+                                x="14"
+                                y="4"
+                                width="6"
+                                height="16"
+                                rx="1"
+                            />
+                        </svg>
+                    </div>
 
 
-            <div
-                className="
-                    space-y-4
-                    p-4
-                    sm:p-5
-                "
-            >
-                <FeedbackAlert
-                    type="success"
-                    message={
-                        successMessage
-                    }
-                    onClose={() =>
-                        setSuccessMessage("")
-                    }
-                />
+                    <div>
+                        <h2
+                            className="
+                                text-[14px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            Training Assignments
+                        </h2>
 
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        errorMessage
-                    }
-                    onClose={() =>
-                        setErrorMessage("")
-                    }
-                />
+                        <p
+                            className="
+                                mt-1
+                                text-[9px]
+                                text-[#64748b]
+                            "
+                        >
+                            Manage Trainer and Trainee module access.
+                        </p>
+                    </div>
+                </div>
 
 
                 <div
                     className="
-                        grid
-                        gap-3
-                        md:grid-cols-2
+                        flex
+                        items-center
+                        gap-2
                     "
                 >
-                    <select
-                        value={
-                            roleFilter
-                        }
-                        onChange={(
-                            event
-                        ) =>
-                            setRoleFilter(
-                                event.target.value
-                            )
-                        }
-                        className={
-                            inputClass
-                        }
+                    <span
+                        className="
+                            rounded-full
+                            bg-blue-50
+                            px-3
+                            py-1.5
+                            text-[8px]
+                            font-semibold
+                            text-blue-600
+                        "
                     >
-                        <option value="all">
-                            All Roles
-                        </option>
+                        Trainer → 1 module
+                    </span>
 
-                        <option value="trainer">
-                            Trainer
-                        </option>
-
-                        <option value="trainee">
-                            Trainee
-                        </option>
-                    </select>
-
-
-                    <select
-                        value={
-                            selectedUserId
-                        }
-                        onChange={
-                            handleSelectUser
-                        }
-                        disabled={
-                            loading
-                        }
-                        className={
-                            inputClass
-                        }
+                    <span
+                        className="
+                            rounded-full
+                            bg-emerald-50
+                            px-3
+                            py-1.5
+                            text-[8px]
+                            font-semibold
+                            text-emerald-600
+                        "
                     >
-                        <option value="">
-                            {loading
-                                ? "Loading users..."
-                                : "Select user"}
-                        </option>
-
-                        {filteredUsers.map(
-                            (
-                                user
-                            ) => (
-                                <option
-                                    key={
-                                        user._id
-                                    }
-                                    value={
-                                        user._id
-                                    }
-                                >
-                                    {getUserDisplayName(
-                                        user,
-                                        user.username
-                                    )}{" "}
-                                    — {user.role}
-                                </option>
-                            )
-                        )}
-                    </select>
+                        Trainee → Both
+                    </span>
                 </div>
+            </div>
 
 
-                {selectedUser && (
-                    <>
+            {/* =================================================
+                ALERTS
+            ================================================= */}
+
+            {error && (
+                <div
+                    className="
+                        border-b
+                        border-red-100
+                        bg-red-50
+                        px-5
+                        py-3
+                        text-[9px]
+                        text-red-700
+                    "
+                >
+                    {error}
+                </div>
+            )}
+
+
+            {success && (
+                <div
+                    className="
+                        border-b
+                        border-emerald-100
+                        bg-emerald-50
+                        px-5
+                        py-3
+                        text-[9px]
+                        text-emerald-700
+                    "
+                >
+                    {success}
+                </div>
+            )}
+
+
+            {/* =================================================
+                BODY
+            ================================================= */}
+
+            <div
+                className="
+                    p-5
+                "
+            >
+                {loading ? (
+                    <div
+                        className="
+                            flex
+                            min-h-[160px]
+                            items-center
+                            justify-center
+                        "
+                    >
                         <div
                             className="
-                                flex
-                                flex-wrap
-                                items-center
-                                gap-2
-                                rounded-lg
-                                bg-slate-50
-                                p-3
+                                text-center
                             "
                         >
-                            <span
+                            <div
                                 className="
+                                    mx-auto
+                                    h-7
+                                    w-7
+                                    animate-spin
+                                    rounded-full
+                                    border-2
+                                    border-blue-100
+                                    border-t-blue-600
+                                "
+                            />
+
+                            <p
+                                className="
+                                    mt-3
                                     text-[9px]
-                                    font-bold
-                                    text-slate-800
+                                    text-[#64748b]
                                 "
                             >
-                                {getUserDisplayName(
-                                    selectedUser,
-                                    selectedUser.username
-                                )}
-                            </span>
-
-                            <StatusBadge
-                                status={
-                                    selectedUser.role
-                                }
-                            />
-
-                            <StatusBadge
-                                status={
-                                    selectedUser.status
-                                }
-                            />
+                                Loading users...
+                            </p>
                         </div>
-
+                    </div>
+                ) : (
+                    <>
+                        {/* SELECT USER */}
 
                         <div
                             className="
                                 grid
-                                gap-3
-                                md:grid-cols-2
+                                gap-4
+                                md:grid-cols-[220px_minmax(0,1fr)]
                             "
                         >
-                            {TRAINING_SECTIONS.map(
-                                (
-                                    section
-                                ) => {
-                                    const selected =
-                                        selectedSections.includes(
-                                            section.id
+                            <label>
+                                <span
+                                    className="
+                                        mb-2
+                                        block
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#334155]
+                                    "
+                                >
+                                    User Type
+                                </span>
+
+                                <select
+                                    value={
+                                        roleFilter
+                                    }
+                                    onChange={(
+                                        event
+                                    ) => {
+                                        setRoleFilter(
+                                            event.target.value
                                         );
 
-                                    return (
-                                        <label
-                                            key={
-                                                section.id
-                                            }
-                                            className={`
-                                                flex
-                                                items-center
-                                                gap-3
-                                                rounded-lg
-                                                border
-                                                p-4
+                                        setSelectedUserId(
+                                            ""
+                                        );
 
-                                                ${selected
-                                                    ? "border-blue-300 bg-blue-50"
-                                                    : "border-slate-200 bg-white"
-                                                }
+                                        setSelectedSections(
+                                            []
+                                        );
+                                    }}
+                                    className="
+                                        min-h-[42px]
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-3
+                                        text-[10px]
+                                        text-[#172033]
+                                        outline-none
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                    "
+                                >
+                                    <option value="all">
+                                        All Users
+                                    </option>
 
-                                                ${selectedUser.role ===
-                                                    "trainer"
-                                                    ? "cursor-pointer"
-                                                    : "cursor-default"
-                                                }
-                                            `}
-                                        >
-                                            <input
-                                                type={
-                                                    selectedUser.role ===
-                                                        "trainer"
-                                                        ? "radio"
-                                                        : "checkbox"
-                                                }
-                                                checked={
-                                                    selected
-                                                }
-                                                disabled={
-                                                    selectedUser.role ===
-                                                    "trainee"
-                                                }
-                                                onChange={() =>
-                                                    selectSection(
-                                                        section.id
-                                                    )
-                                                }
-                                                className="
-                                                    h-4
-                                                    w-4
-                                                    accent-blue-600
-                                                "
-                                            />
+                                    <option value="trainer">
+                                        Trainers
+                                    </option>
 
-                                            <span
-                                                className="
-                                                    text-[9px]
-                                                    font-bold
-                                                    text-slate-800
-                                                "
+                                    <option value="trainee">
+                                        Trainees
+                                    </option>
+                                </select>
+                            </label>
+
+
+                            <label>
+                                <span
+                                    className="
+                                        mb-2
+                                        block
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#334155]
+                                    "
+                                >
+                                    Select User
+                                </span>
+
+                                <select
+                                    value={
+                                        selectedUserId
+                                    }
+                                    onChange={
+                                        selectUser
+                                    }
+                                    className="
+                                        min-h-[42px]
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-3
+                                        text-[10px]
+                                        text-[#172033]
+                                        outline-none
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                    "
+                                >
+                                    <option value="">
+                                        Select Trainer or Trainee
+                                    </option>
+
+                                    {filteredUsers.map(
+                                        (
+                                            user
+                                        ) => (
+                                            <option
+                                                key={
+                                                    user._id ||
+                                                    user.id
+                                                }
+                                                value={
+                                                    user._id ||
+                                                    user.id
+                                                }
                                             >
-                                                {section.name}
-                                            </span>
-                                        </label>
-                                    );
-                                }
-                            )}
+                                                {getName(
+                                                    user
+                                                )}
+                                                {" — "}
+                                                {user.role}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </label>
                         </div>
 
 
-                        {selectedUser.role ===
-                            "trainee" && (
-                                <div
-                                    className="
-                                    rounded-lg
-                                    border
-                                    border-emerald-200
-                                    bg-emerald-50
-                                    p-3
-                                "
-                                >
-                                    <p
-                                        className="
-                                        text-[8px]
-                                        font-medium
-                                        text-emerald-700
-                                    "
-                                    >
-                                        Trainee training access is automatically fixed to both modules.
-                                    </p>
-                                </div>
-                            )}
+                        {/* SELECTED USER */}
 
-
-                        <div
-                            className="
-                                flex
-                                justify-end
-                            "
-                        >
-                            <button
-                                type="button"
-                                onClick={
-                                    handleSave
-                                }
-                                disabled={
-                                    saving
-                                }
+                        {selectedUser && (
+                            <div
                                 className="
-                                    min-h-[40px]
-                                    w-full
-                                    rounded-lg
-                                    bg-blue-600
-                                    px-5
-                                    text-[9px]
-                                    font-semibold
-                                    text-white
-                                    hover:bg-blue-700
-                                    disabled:opacity-50
-                                    sm:w-auto
+                                    mt-5
+                                    rounded-xl
+                                    border
+                                    border-[#dbe4ef]
+                                    bg-[#f8fafc]
+                                    p-4
                                 "
                             >
-                                {saving
-                                    ? "Saving..."
-                                    : "Save Training Access"}
-                            </button>
-                        </div>
+                                <div
+                                    className="
+                                        flex
+                                        flex-col
+                                        gap-3
+                                        sm:flex-row
+                                        sm:items-center
+                                        sm:justify-between
+                                    "
+                                >
+                                    <div
+                                        className="
+                                            flex
+                                            items-center
+                                            gap-3
+                                        "
+                                    >
+                                        <div
+                                            className="
+                                                flex
+                                                h-10
+                                                w-10
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-full
+                                                bg-[#073763]
+                                                text-[11px]
+                                                font-bold
+                                                text-white
+                                            "
+                                        >
+                                            {getName(
+                                                selectedUser
+                                            )
+                                                .charAt(
+                                                    0
+                                                )
+                                                .toUpperCase()}
+                                        </div>
+
+
+                                        <div>
+                                            <p
+                                                className="
+                                                    text-[10px]
+                                                    font-semibold
+                                                    text-[#172033]
+                                                "
+                                            >
+                                                {getName(
+                                                    selectedUser
+                                                )}
+                                            </p>
+
+                                            <p
+                                                className="
+                                                    mt-1
+                                                    text-[8px]
+                                                    text-[#64748b]
+                                                "
+                                            >
+                                                {selectedUser.username ||
+                                                    "No username"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+
+                                    <span
+                                        className="
+                                            self-start
+                                            rounded-full
+                                            bg-blue-50
+                                            px-3
+                                            py-1.5
+                                            text-[8px]
+                                            font-semibold
+                                            capitalize
+                                            text-blue-600
+                                            sm:self-auto
+                                        "
+                                    >
+                                        {selectedUser.role}
+                                    </span>
+                                </div>
+
+
+                                <div
+                                    className="
+                                        mt-5
+                                        grid
+                                        gap-3
+                                        md:grid-cols-2
+                                    "
+                                >
+                                    {TRAINING_SECTIONS.map(
+                                        (
+                                            section
+                                        ) => {
+                                            const trainee =
+                                                selectedUser.role ===
+                                                "trainee";
+
+
+                                            const selected =
+                                                trainee ||
+                                                selectedSections.includes(
+                                                    section.id
+                                                );
+
+
+                                            return (
+                                                <button
+                                                    key={
+                                                        section.id
+                                                    }
+                                                    type="button"
+                                                    disabled={
+                                                        trainee
+                                                    }
+                                                    onClick={() =>
+                                                        selectTraining(
+                                                            section.id
+                                                        )
+                                                    }
+                                                    className={`
+                                                        w-full
+                                                        rounded-xl
+                                                        border
+                                                        p-4
+                                                        text-left
+                                                        transition
+
+                                                        ${selected
+                                                            ? "border-blue-500 bg-white ring-1 ring-blue-100"
+                                                            : "border-[#dbe4ef] bg-white hover:border-blue-200"
+                                                        }
+
+                                                        ${trainee
+                                                            ? "cursor-default"
+                                                            : ""
+                                                        }
+                                                    `}
+                                                >
+                                                    <div
+                                                        className="
+                                                            flex
+                                                            items-start
+                                                            justify-between
+                                                            gap-4
+                                                        "
+                                                    >
+                                                        <div>
+                                                            <p
+                                                                className="
+                                                                    text-[10px]
+                                                                    font-semibold
+                                                                    text-[#172033]
+                                                                "
+                                                            >
+                                                                {section.name}
+                                                            </p>
+
+                                                            <p
+                                                                className="
+                                                                    mt-1
+                                                                    text-[8px]
+                                                                    leading-4
+                                                                    text-[#64748b]
+                                                                "
+                                                            >
+                                                                {section.description}
+                                                            </p>
+                                                        </div>
+
+
+                                                        <span
+                                                            className={`
+                                                                flex
+                                                                h-5
+                                                                w-5
+                                                                shrink-0
+                                                                items-center
+                                                                justify-center
+                                                                rounded-full
+                                                                border
+                                                                text-[9px]
+
+                                                                ${selected
+                                                                    ? "border-blue-600 bg-blue-600 text-white"
+                                                                    : "border-[#cbd5e1] bg-white"
+                                                                }
+                                                            `}
+                                                        >
+                                                            {selected
+                                                                ? "✓"
+                                                                : ""}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        }
+                                    )}
+                                </div>
+
+
+                                {selectedUser.role ===
+                                    "trainee" && (
+                                        <div
+                                            className="
+                                            mt-4
+                                            rounded-lg
+                                            border
+                                            border-emerald-200
+                                            bg-emerald-50
+                                            px-4
+                                            py-3
+                                            text-[9px]
+                                            text-emerald-700
+                                        "
+                                        >
+                                            Trainees automatically receive both
+                                            Manual Handling and Working at Height.
+                                        </div>
+                                    )}
+
+
+                                <div
+                                    className="
+                                        mt-5
+                                        flex
+                                        justify-end
+                                    "
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            saveAssignment
+                                        }
+                                        disabled={
+                                            saving
+                                        }
+                                        className="
+                                            min-h-[40px]
+                                            rounded-lg
+                                            bg-[#1769e8]
+                                            px-5
+                                            text-[9px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b5ed7]
+                                            disabled:cursor-not-allowed
+                                            disabled:opacity-50
+                                        "
+                                    >
+                                        {saving
+                                            ? "Saving..."
+                                            : "Save Assignment"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
         </section>
     );
 }
-
-
-const inputClass = `
-    min-h-[40px]
-    w-full
-    rounded-lg
-    border
-    border-slate-300
-    bg-white
-    px-3
-    text-[9px]
-    font-medium
-    text-slate-800
-    outline-none
-    focus:border-blue-500
-    focus:ring-1
-    focus:ring-blue-100
-`;
 
 
 export default TrainerAssignmentsPanel;

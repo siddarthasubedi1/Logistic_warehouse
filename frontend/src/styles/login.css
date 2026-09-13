@@ -1,0 +1,1034 @@
+/* =========================================================
+   UK LOGIWARE LOGIN PAGE
+   FIGMA MATCH
+========================================================= */
+
+.figma-login-page {
+    width: 100%;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 0;
+
+    background: #f5f7fb;
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: #172033;
+}
+
+
+/* =========================================================
+   DESKTOP 50 / 50 STRUCTURE
+========================================================= */
+
+.figma-login-layout {
+    width: 100%;
+    min-height: 100vh;
+
+    display: grid;
+
+    grid-template-columns:
+        50% 50%;
+
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   LEFT IMAGE PANEL
+========================================================= */
+
+.figma-login-brand {
+    position: relative;
+
+    min-width: 0;
+    min-height: 100vh;
+
+    overflow: hidden;
+
+    background: #031b38;
+
+    color: #ffffff;
+}
+
+
+.figma-login-brand-image {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: none;
+
+    object-fit: cover;
+
+    /*
+     * Keeps the worker in the same Figma position.
+     */
+    object-position: 50% center;
+}
+
+
+/*
+ * The actual blueimage.png already contains the
+ * major blue gradient, so this overlay must remain
+ * subtle.
+ */
+.figma-login-brand::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(90deg,
+            rgba(2, 24, 55, 0.08) 0%,
+            rgba(2, 24, 55, 0.02) 58%,
+            rgba(2, 24, 55, 0.08) 100%);
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.figma-login-logo {
+    position: absolute;
+
+    z-index: 3;
+
+    top: 5.8%;
+    left: 9%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+
+.figma-login-logo-icon {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #ffffff;
+}
+
+
+.figma-login-logo-icon svg {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+}
+
+
+.figma-login-logo-name {
+    color: #ffffff;
+
+    font-size: clamp(15px,
+            1.15vw,
+            21px);
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+}
+
+
+.figma-login-logo-name span {
+    color: #55a0ff;
+}
+
+
+.figma-login-logo-subtitle {
+    margin-top: 5px;
+
+    color: #ffffff;
+
+    font-size: clamp(5px,
+            0.42vw,
+            7px);
+
+    line-height: 1;
+
+    font-weight: 700;
+
+    letter-spacing: 0.06em;
+}
+
+
+/* =========================================================
+   LEFT HEADLINE
+========================================================= */
+
+.figma-login-brand-content {
+    position: absolute;
+
+    z-index: 3;
+
+    top: 18%;
+    left: 9%;
+
+    width: 67%;
+
+    max-width: 500px;
+}
+
+
+.figma-login-brand-content h1 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: clamp(28px,
+            2.15vw,
+            40px);
+
+    line-height: 1.08;
+
+    font-weight: 800;
+
+    letter-spacing: -0.025em;
+}
+
+
+.figma-login-brand-content h2 {
+    margin: 7px 0 0;
+
+    color: #2f7cff;
+
+    font-size: clamp(28px,
+            2.15vw,
+            40px);
+
+    line-height: 1.08;
+
+    font-weight: 800;
+
+    letter-spacing: -0.025em;
+}
+
+
+.figma-login-brand-content>p {
+    width: 78%;
+
+    max-width: 390px;
+
+    margin:
+        clamp(25px,
+            2vw,
+            34px) 0 0;
+
+    color: #ffffff;
+
+    font-size: clamp(10px,
+            0.72vw,
+            14px);
+
+    line-height: 1.55;
+
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   LEFT BOTTOM FEATURE PANEL
+========================================================= */
+
+.figma-login-features {
+    position: absolute;
+
+    z-index: 3;
+
+    left: 9%;
+    right: 5%;
+
+    bottom: 3.4%;
+
+    min-height: 122px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,
+            minmax(0,
+                1fr));
+
+    border-radius: 12px;
+
+    background:
+        rgba(5,
+            53,
+            94,
+            0.95);
+
+    box-shadow:
+        0 12px 30px rgba(0,
+            0,
+            0,
+            0.15);
+
+    backdrop-filter:
+        blur(4px);
+}
+
+
+.figma-login-feature {
+    min-width: 0;
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding:
+        20px clamp(15px,
+            1.65vw,
+            29px);
+
+    border-right:
+        1px solid rgba(255,
+            255,
+            255,
+            0.16);
+}
+
+
+.figma-login-feature-last {
+    border-right: 0;
+}
+
+
+.figma-login-feature-icon {
+    width: 28px;
+    height: 28px;
+
+    margin-bottom: 12px;
+
+    color: #2f82ff;
+}
+
+
+.figma-login-feature-icon svg {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+}
+
+
+.figma-login-feature h3 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: clamp(9px,
+            0.67vw,
+            12px);
+
+    line-height: 1.2;
+
+    font-weight: 700;
+}
+
+
+.figma-login-feature p {
+    margin: 6px 0 0;
+
+    color: rgba(255,
+            255,
+            255,
+            0.88);
+
+    font-size: clamp(6px,
+            0.43vw,
+            8px);
+
+    line-height: 1.45;
+
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   RIGHT WHITE PANEL
+========================================================= */
+
+.figma-login-right {
+    min-width: 0;
+    min-height: 100vh;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #ffffff;
+
+    padding:
+        40px 8%;
+}
+
+
+.figma-login-form-container {
+    width: 100%;
+
+    max-width: 425px;
+
+    /*
+     * Figma form sits slightly above vertical centre.
+     */
+    transform:
+        translateY(-3%);
+}
+
+
+/* =========================================================
+   NO CARD
+========================================================= */
+
+.figma-login-form {
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 0;
+
+    background: transparent;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   LOGIN TITLE
+========================================================= */
+
+.figma-login-heading {
+    margin-bottom: 38px;
+}
+
+
+.figma-login-heading h1 {
+    margin: 0;
+
+    color: #172033;
+
+    font-size: clamp(25px,
+            1.65vw,
+            31px);
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    letter-spacing: -0.025em;
+}
+
+
+.figma-login-heading p {
+    margin:
+        13px 0 0;
+
+    color: #6f819c;
+
+    font-size: clamp(10px,
+            0.67vw,
+            13px);
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   INPUT LABELS
+========================================================= */
+
+.figma-login-field {
+    width: 100%;
+
+    margin-bottom: 27px;
+}
+
+
+.figma-password-field {
+    margin-bottom: 0;
+}
+
+
+.figma-login-field label {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #172033;
+
+    font-size: clamp(9px,
+            0.58vw,
+            11px);
+
+    line-height: 1;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   INPUT BOX
+========================================================= */
+
+.figma-login-input {
+    position: relative;
+
+    width: 100%;
+
+    height: 50px;
+
+    display: flex;
+
+    align-items: center;
+
+    border:
+        1px solid #cbd5e1;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+
+.figma-login-input:focus-within {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59,
+            130,
+            246,
+            0.09);
+}
+
+
+/* Figma username valid appearance */
+
+.figma-login-input-valid {
+    border-color: #22c55e;
+
+    background: #edf4ff;
+}
+
+
+.figma-login-input-valid:focus-within {
+    border-color: #22c55e;
+
+    box-shadow:
+        0 0 0 2px rgba(34,
+            197,
+            94,
+            0.08);
+}
+
+
+.figma-login-input input {
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+
+    outline: 0;
+
+    background: transparent;
+
+    padding:
+        0 45px 0 46px;
+
+    color: #172033;
+
+    font-family: inherit;
+
+    font-size: clamp(12px,
+            0.82vw,
+            15px);
+
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   INPUT ICON
+========================================================= */
+
+.figma-login-input-icon {
+    position: absolute;
+
+    z-index: 2;
+
+    top: 50%;
+    left: 15px;
+
+    width: 18px;
+    height: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transform:
+        translateY(-50%);
+
+    color: #8ca0ba;
+
+    pointer-events: none;
+}
+
+
+.figma-login-input-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* =========================================================
+   GREEN CHECK
+========================================================= */
+
+.figma-login-check {
+    position: absolute;
+
+    right: 16px;
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    color: #22c55e;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   EYE BUTTON
+========================================================= */
+
+.figma-login-eye {
+    position: absolute;
+
+    z-index: 3;
+
+    right: 12px;
+
+    top: 50%;
+
+    width: 27px;
+    height: 27px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transform:
+        translateY(-50%);
+
+    padding: 4px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #91a3bb;
+
+    cursor: pointer;
+}
+
+
+.figma-login-eye:hover {
+    color: #1769e8;
+}
+
+
+.figma-login-eye svg {
+    width: 17px;
+    height: 17px;
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+.figma-forgot-row {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 16px;
+}
+
+
+.figma-forgot-row button {
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #1769e8;
+
+    font-family: inherit;
+
+    font-size: clamp(10px,
+            0.66vw,
+            12px);
+
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+
+.figma-forgot-row button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.figma-login-button {
+    width: 100%;
+
+    height: 50px;
+
+    margin-top: 31px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 0;
+
+    border-radius: 7px;
+
+    background: #1769e8;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: clamp(13px,
+            0.82vw,
+            15px);
+
+    line-height: 1;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        opacity 0.15s ease;
+}
+
+
+.figma-login-button:hover:not(:disabled) {
+    background: #0b5ed7;
+}
+
+
+.figma-login-button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.65;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.figma-login-divider {
+    width: 100%;
+    height: 1px;
+
+    margin:
+        34px 0 27px;
+
+    background: #eef1f5;
+}
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+.figma-login-help {
+    width: 100%;
+
+    text-align: center;
+}
+
+
+.figma-login-help p {
+    margin: 0;
+
+    color: #94a3b8;
+
+    font-size: clamp(8px,
+            0.56vw,
+            10px);
+
+    line-height: 1.5;
+}
+
+
+.figma-login-help button {
+    margin-top: 5px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #1769e8;
+
+    font-family: inherit;
+
+    font-size: clamp(9px,
+            0.59vw,
+            11px);
+
+    line-height: 1.4;
+
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+
+.figma-login-help button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.figma-login-error {
+    width: 100%;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    margin:
+        -19px 0 22px;
+
+    padding:
+        10px 12px;
+
+    border:
+        1px solid #fecaca;
+
+    border-radius: 7px;
+
+    background: #fef2f2;
+
+    color: #dc2626;
+}
+
+
+.figma-login-error span {
+    font-size: 10px;
+
+    font-weight: 800;
+}
+
+
+.figma-login-error p {
+    margin: 0;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .figma-login-layout {
+        grid-template-columns:
+            48% 52%;
+    }
+
+
+    .figma-login-logo {
+        left: 7%;
+    }
+
+
+    .figma-login-brand-content {
+        left: 7%;
+
+        width: 80%;
+    }
+
+
+    .figma-login-features {
+        left: 7%;
+        right: 4%;
+    }
+
+
+    .figma-login-feature {
+        padding:
+            16px 13px;
+    }
+
+
+    .figma-login-right {
+        padding:
+            35px 7%;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 820px) {
+
+    .figma-login-layout {
+        display: block;
+    }
+
+
+    .figma-login-brand {
+        display: none;
+    }
+
+
+    .figma-login-right {
+        width: 100%;
+
+        min-height: 100vh;
+
+        padding:
+            40px 24px;
+    }
+
+
+    .figma-login-form-container {
+        max-width: 430px;
+
+        transform: none;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .figma-login-right {
+        align-items: flex-start;
+
+        padding:
+            70px 20px 35px;
+    }
+
+
+    .figma-login-heading {
+        margin-bottom: 31px;
+    }
+
+
+    .figma-login-heading h1 {
+        font-size: 27px;
+    }
+
+
+    .figma-login-heading p {
+        font-size: 11px;
+    }
+
+
+    .figma-login-input {
+        height: 48px;
+    }
+
+
+    .figma-login-button {
+        height: 48px;
+    }
+
+}

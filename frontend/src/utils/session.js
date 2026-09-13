@@ -4,150 +4,58 @@ const ACCESS_TOKEN_KEY =
 const USER_KEY =
     "user";
 
+const FORCE_PASSWORD_CHANGE_KEY =
+    "forcePasswordChange";
 
-function canUseSessionStorage() {
-    return (
-        typeof window !==
-        "undefined" &&
-        typeof window.sessionStorage !==
-        "undefined"
-    );
-}
 
+/* =========================================================
+   NORMALIZE ROLE
+========================================================= */
 
 export function normalizeRole(
     role
 ) {
-    return String(
-        role ||
-        ""
-    )
-        .trim()
-        .toLowerCase();
-}
-
-
-export function getSessionUser() {
-    if (
-        !canUseSessionStorage()
-    ) {
-        return null;
-    }
-
-    try {
-        const stored =
-            window.sessionStorage.getItem(
-                USER_KEY
-            );
-
-        if (
-            !stored
-        ) {
-            return null;
-        }
-
-        const user =
-            JSON.parse(
-                stored
-            );
-
-        if (
-            !user ||
-            typeof user !==
-            "object" ||
-            Array.isArray(
-                user
-            )
-        ) {
-            return null;
-        }
-
-        return user;
-
-    } catch (
-    error
-    ) {
-        console.error(
-            "Unable to read session user:",
-            error
-        );
-
-        return null;
-    }
-}
-
-
-export function saveSessionUser(
-    user
-) {
-    if (
-        !canUseSessionStorage() ||
-        !user ||
-        typeof user !==
-        "object" ||
-        Array.isArray(
-            user
+    const value =
+        String(
+            role || ""
         )
-    ) {
-        return;
-    }
+            .trim()
+            .toLowerCase();
 
-    try {
-        window.sessionStorage.setItem(
-            USER_KEY,
-            JSON.stringify(
-                user
-            )
-        );
-
-    } catch (
-    error
-    ) {
-        console.error(
-            "Unable to save session user:",
-            error
-        );
-    }
-}
-
-
-export function updateSessionUser(
-    updates
-) {
-    const currentUser =
-        getSessionUser();
 
     if (
-        !currentUser ||
-        !updates ||
-        typeof updates !==
-        "object"
+        value === "administrator" ||
+        value === "admin"
     ) {
-        return null;
+        return "admin";
     }
 
-    const updatedUser = {
-        ...currentUser,
-        ...updates,
-    };
 
-    saveSessionUser(
-        updatedUser
-    );
+    if (
+        value === "trainer"
+    ) {
+        return "trainer";
+    }
 
-    return updatedUser;
+
+    if (
+        value === "trainee"
+    ) {
+        return "trainee";
+    }
+
+
+    return value;
 }
 
+
+/* =========================================================
+   ACCESS TOKEN
+========================================================= */
 
 export function getAccessToken() {
-    if (
-        !canUseSessionStorage()
-    ) {
-        return "";
-    }
-
     return (
-        window.sessionStorage.getItem(
+        sessionStorage.getItem(
             ACCESS_TOKEN_KEY
         ) ||
         ""
@@ -155,65 +63,294 @@ export function getAccessToken() {
 }
 
 
+/* =========================================================
+   SAVE ACCESS TOKEN
+
+   Required by:
+   frontend/src/services/api.js
+========================================================= */
+
 export function saveAccessToken(
-    token
+    accessToken
 ) {
     if (
-        !canUseSessionStorage() ||
-        !token ||
-        typeof token !==
-        "string"
+        !accessToken
     ) {
+        sessionStorage.removeItem(
+            ACCESS_TOKEN_KEY
+        );
+
         return;
     }
 
-    window.sessionStorage.setItem(
+
+    sessionStorage.setItem(
         ACCESS_TOKEN_KEY,
-        token
+        accessToken
     );
 }
 
+
+/* =========================================================
+   SESSION USER
+========================================================= */
+
+export function getSessionUser() {
+    const storedUser =
+        sessionStorage.getItem(
+            USER_KEY
+        );
+
+
+    if (
+        !storedUser
+    ) {
+        return null;
+    }
+
+
+    try {
+        return JSON.parse(
+            storedUser
+        );
+
+    } catch (
+    error
+    ) {
+        console.error(
+            "Unable to parse session user:",
+            error
+        );
+
+
+        sessionStorage.removeItem(
+            USER_KEY
+        );
+
+
+        return null;
+    }
+}
+
+
+/* =========================================================
+   USER INITIAL
+
+   Required by:
+   DashboardLayout.jsx
+========================================================= */
+
+export function getUserInitial(
+    user
+) {
+    if (
+        !user
+    ) {
+        return "U";
+    }
+
+
+    const firstName =
+        String(
+            user.firstName ||
+            ""
+        )
+            .trim();
+
+
+    const lastName =
+        String(
+            user.lastName ||
+            ""
+        )
+            .trim();
+
+
+    if (
+        firstName &&
+        lastName
+    ) {
+        return (
+            firstName
+                .charAt(0)
+                .toUpperCase() +
+            lastName
+                .charAt(0)
+                .toUpperCase()
+        );
+    }
+
+
+    if (
+        firstName
+    ) {
+        return firstName
+            .charAt(0)
+            .toUpperCase();
+    }
+
+
+    const username =
+        String(
+            user.username ||
+            ""
+        )
+            .trim();
+
+
+    if (
+        username
+    ) {
+        return username
+            .charAt(0)
+            .toUpperCase();
+    }
+
+
+    return "U";
+}
+
+
+/* =========================================================
+   SAVE COMPLETE AUTH SESSION
+========================================================= */
 
 export function saveAuthSession({
     accessToken,
     user,
 }) {
-    if (
+    saveAccessToken(
         accessToken
-    ) {
-        saveAccessToken(
-            accessToken
-        );
-    }
+    );
+
 
     if (
         user
     ) {
-        saveSessionUser(
-            user
+        sessionStorage.setItem(
+            USER_KEY,
+            JSON.stringify(
+                user
+            )
+        );
+    }
+
+
+    const role =
+        normalizeRole(
+            user?.role
+        );
+
+
+    if (
+        (
+            role === "trainer" ||
+            role === "trainee"
+        ) &&
+        user?.mustChangePassword === true
+    ) {
+        sessionStorage.setItem(
+            FORCE_PASSWORD_CHANGE_KEY,
+            "true"
+        );
+
+    } else {
+        sessionStorage.removeItem(
+            FORCE_PASSWORD_CHANGE_KEY
         );
     }
 }
 
 
-export function clearAuthSession() {
+/* =========================================================
+   UPDATE SESSION USER
+========================================================= */
+
+export function updateSessionUser(
+    user
+) {
     if (
-        !canUseSessionStorage()
+        !user
     ) {
         return;
     }
 
-    window.sessionStorage.removeItem(
-        ACCESS_TOKEN_KEY
+
+    sessionStorage.setItem(
+        USER_KEY,
+        JSON.stringify(
+            user
+        )
     );
 
-    window.sessionStorage.removeItem(
-        USER_KEY
+
+    const role =
+        normalizeRole(
+            user.role
+        );
+
+
+    if (
+        (
+            role === "trainer" ||
+            role === "trainee"
+        ) &&
+        user.mustChangePassword === true
+    ) {
+        sessionStorage.setItem(
+            FORCE_PASSWORD_CHANGE_KEY,
+            "true"
+        );
+
+    } else {
+        sessionStorage.removeItem(
+            FORCE_PASSWORD_CHANGE_KEY
+        );
+    }
+}
+
+
+/* =========================================================
+   BACKWARD COMPATIBILITY
+
+   Some current files still use saveSessionUser().
+========================================================= */
+
+export function saveSessionUser(
+    user
+) {
+    updateSessionUser(
+        user
     );
 }
 
 
-export function hasAuthSession() {
+/* =========================================================
+   CLEAR AUTH SESSION
+========================================================= */
+
+export function clearAuthSession() {
+    sessionStorage.removeItem(
+        ACCESS_TOKEN_KEY
+    );
+
+
+    sessionStorage.removeItem(
+        USER_KEY
+    );
+
+
+    sessionStorage.removeItem(
+        FORCE_PASSWORD_CHANGE_KEY
+    );
+}
+
+
+/* =========================================================
+   AUTHENTICATED?
+========================================================= */
+
+export function isAuthenticated() {
     return Boolean(
         getAccessToken() &&
         getSessionUser()
@@ -221,11 +358,14 @@ export function hasAuthSession() {
 }
 
 
-export function isUserRole(
-    role
-) {
+/* =========================================================
+   FORCED PASSWORD CHANGE?
+========================================================= */
+
+export function needsForcedPasswordChange() {
     const user =
         getSessionUser();
+
 
     if (
         !user
@@ -233,16 +373,59 @@ export function isUserRole(
         return false;
     }
 
-    return (
+
+    const role =
         normalizeRole(
             user.role
-        ) ===
-        normalizeRole(
-            role
-        )
+        );
+
+
+    if (
+        role === "admin"
+    ) {
+        return false;
+    }
+
+
+    return (
+        user.mustChangePassword === true ||
+        sessionStorage.getItem(
+            FORCE_PASSWORD_CHANGE_KEY
+        ) === "true"
     );
 }
 
+
+/* =========================================================
+   CLEAR FORCED PASSWORD CHANGE
+========================================================= */
+
+export function clearForcedPasswordChange() {
+    sessionStorage.removeItem(
+        FORCE_PASSWORD_CHANGE_KEY
+    );
+
+
+    const user =
+        getSessionUser();
+
+
+    if (
+        user
+    ) {
+        updateSessionUser({
+            ...user,
+
+            mustChangePassword:
+                false,
+        });
+    }
+}
+
+
+/* =========================================================
+   DASHBOARD PATH
+========================================================= */
 
 export function getDashboardPath(
     role
@@ -252,27 +435,42 @@ export function getDashboardPath(
             role
         );
 
-    switch (
-    normalizedRole
+
+    if (
+        normalizedRole === "admin"
     ) {
-        case "admin":
-            return "/admin";
-
-        case "trainer":
-            return "/trainer";
-
-        case "trainee":
-            return "/trainee";
-
-        default:
-            return "/login";
+        return "/admin";
     }
+
+
+    if (
+        normalizedRole === "trainer"
+    ) {
+        return "/trainer";
+    }
+
+
+    if (
+        normalizedRole === "trainee"
+    ) {
+        return "/trainee";
+    }
+
+
+    return "/login";
 }
 
 
-export function sessionRequiresPasswordChange() {
+/* =========================================================
+   ROLE CHECK
+========================================================= */
+
+export function isRoleAllowed(
+    allowedRoles = []
+) {
     const user =
         getSessionUser();
+
 
     if (
         !user
@@ -280,61 +478,46 @@ export function sessionRequiresPasswordChange() {
         return false;
     }
 
-    const role =
+
+    const currentRole =
         normalizeRole(
             user.role
         );
 
-    return (
-        [
-            "trainer",
-            "trainee",
-        ].includes(
-            role
-        ) &&
-        user.mustChangePassword ===
-        true
-    );
-}
+
+    const roles =
+        Array.isArray(
+            allowedRoles
+        )
+            ? allowedRoles
+            : [
+                allowedRoles,
+            ];
 
 
-export function getUserDisplayName(
-    user = null
-) {
-    const currentUser =
-        user ||
-        getSessionUser();
-
-    if (
-        !currentUser
-    ) {
-        return "User";
-    }
-
-    const fullName =
-        `${currentUser.firstName || ""} ${currentUser.lastName || ""}`
-            .trim();
-
-    return (
-        fullName ||
-        currentUser.username ||
-        "User"
-    );
-}
-
-
-export function getUserInitial(
-    user = null
-) {
-    const name =
-        getUserDisplayName(
-            user
+    const normalizedRoles =
+        roles.map(
+            (
+                role
+            ) =>
+                normalizeRole(
+                    role
+                )
         );
 
-    return (
-        name
-            .charAt(0)
-            .toUpperCase() ||
-        "U"
+
+    return normalizedRoles.includes(
+        currentRole
     );
 }
+
+
+/* =========================================================
+   STORAGE KEYS
+========================================================= */
+
+export {
+    ACCESS_TOKEN_KEY,
+    USER_KEY,
+    FORCE_PASSWORD_CHANGE_KEY,
+};

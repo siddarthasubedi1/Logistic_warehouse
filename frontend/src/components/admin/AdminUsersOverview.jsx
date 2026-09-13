@@ -33,7 +33,7 @@ function RoleBadge({
                 rounded-full
                 px-2.5
                 py-1
-                text-[9px]
+                text-[8px]
                 font-medium
 
                 ${trainer
@@ -70,7 +70,7 @@ function StatusBadge({
                 rounded-full
                 px-2.5
                 py-1
-                text-[9px]
+                text-[8px]
                 font-medium
 
                 ${active
@@ -122,19 +122,18 @@ function AdminUsersOverview({
                 border
                 border-[#dbe4ef]
                 bg-white
-                shadow-[0_1px_3px_rgba(15,23,42,0.08)]
+                shadow-[0_1px_3px_rgba(15,23,42,0.07)]
             "
         >
             <div
                 className="
                     flex
-                    items-center
+                    items-start
                     justify-between
                     gap-4
-                    border-b
-                    border-[#e8eef5]
                     px-5
-                    py-4
+                    pb-3
+                    pt-5
                 "
             >
                 <div>
@@ -182,7 +181,8 @@ function AdminUsersOverview({
 
             <div
                 className="
-                    p-5
+                    px-5
+                    pb-5
                 "
             >
                 <div
@@ -196,7 +196,9 @@ function AdminUsersOverview({
                         value={
                             trainees
                         }
+
                         label="Trainees"
+
                         color="blue"
                     />
 
@@ -205,7 +207,9 @@ function AdminUsersOverview({
                         value={
                             trainers
                         }
+
                         label="Trainers"
+
                         color="purple"
                     />
                 </div>
@@ -219,7 +223,7 @@ function AdminUsersOverview({
                 >
                     <table
                         className="
-                            min-w-[660px]
+                            min-w-[650px]
                             text-left
                         "
                     >
@@ -237,6 +241,7 @@ function AdminUsersOverview({
                                         text-[8px]
                                         font-semibold
                                         uppercase
+                                        tracking-wide
                                         text-[#8aa0bb]
                                     "
                                 >
@@ -251,6 +256,7 @@ function AdminUsersOverview({
                                         text-[8px]
                                         font-semibold
                                         uppercase
+                                        tracking-wide
                                         text-[#8aa0bb]
                                     "
                                 >
@@ -265,6 +271,7 @@ function AdminUsersOverview({
                                         text-[8px]
                                         font-semibold
                                         uppercase
+                                        tracking-wide
                                         text-[#8aa0bb]
                                     "
                                 >
@@ -279,6 +286,7 @@ function AdminUsersOverview({
                                         text-[8px]
                                         font-semibold
                                         uppercase
+                                        tracking-wide
                                         text-[#8aa0bb]
                                     "
                                 >
@@ -296,7 +304,7 @@ function AdminUsersOverview({
                                         className="
                                             py-12
                                             text-center
-                                            text-[11px]
+                                            text-[10px]
                                             text-slate-500
                                         "
                                     >
@@ -311,7 +319,7 @@ function AdminUsersOverview({
                                         className="
                                             py-12
                                             text-center
-                                            text-[11px]
+                                            text-[10px]
                                             text-slate-500
                                         "
                                     >
@@ -364,10 +372,10 @@ function AdminUsersOverview({
                                                                 items-center
                                                                 justify-center
                                                                 rounded-full
-                                                                bg-blue-50
-                                                                text-[10px]
+                                                                bg-[#f1f5f9]
+                                                                text-[9px]
                                                                 font-bold
-                                                                text-blue-600
+                                                                text-[#52627a]
                                                             "
                                                         >
                                                             {name
@@ -478,7 +486,7 @@ function Summary({
         <div
             className="
                 flex
-                min-h-[64px]
+                min-h-[65px]
                 items-center
                 gap-3
                 rounded-lg
@@ -506,6 +514,8 @@ function Summary({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className="
                         h-4
                         w-4

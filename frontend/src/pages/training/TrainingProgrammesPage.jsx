@@ -1,6 +1,5 @@
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
-import TrainingManagementShell from "../../components/training/TrainingManagementShell";
 import TrainingProgrammeManager from "../../components/training/TrainingProgrammeManager";
 
 import {
@@ -13,15 +12,21 @@ function TrainingProgrammesPage() {
         getSessionUser();
 
     const role =
-        user?.role ||
-        "";
+        String(
+            user?.role ||
+            ""
+        ).toLowerCase();
+
+
+    const isAdmin =
+        role ===
+        "admin";
 
 
     const description =
-        role ===
-            "admin"
+        isAdmin
             ? "Create, manage and control workplace safety training programmes."
-            : "Create and manage programmes available to your assigned training area.";
+            : "Manage programmes available to your assigned safety training area.";
 
 
     return (
@@ -33,65 +38,39 @@ function TrainingProgrammesPage() {
                 false
             }
         >
-
             <div
                 className="
+                    app-page
                     space-y-5
                 "
             >
-
-                {/* ================================================= */}
-                {/* HERO */}
-                {/* ================================================= */}
+                {/* =============================================
+                    HERO
+                ============================================== */}
 
                 <section
                     className="
+                        training-hero
                         relative
                         overflow-hidden
-                        rounded-2xl
-                        border
-                        border-blue-200
-                        bg-gradient-to-r
-                        from-[#073763]
-                        via-[#0b4f87]
-                        to-[#1769aa]
+                        rounded-xl
                         px-5
                         py-6
-                        text-white
                         shadow-sm
                         sm:px-6
                         lg:px-7
                     "
                 >
-
                     <div
                         className="
                             pointer-events-none
                             absolute
                             -right-16
-                            -top-16
-                            h-48
-                            w-48
+                            -top-20
+                            h-52
+                            w-52
                             rounded-full
                             bg-white/10
-                        "
-                    />
-
-
-                    <div
-                        className="
-                            pointer-events-none
-                            absolute
-                            right-20
-                            top-8
-                            hidden
-                            h-24
-                            w-24
-                            rotate-12
-                            rounded-2xl
-                            border
-                            border-white/10
-                            lg:block
                         "
                     />
 
@@ -108,7 +87,6 @@ function TrainingProgrammesPage() {
                             sm:justify-between
                         "
                     >
-
                         <div
                             className="
                                 flex
@@ -116,7 +94,6 @@ function TrainingProgrammesPage() {
                                 gap-4
                             "
                         >
-
                             <div
                                 className="
                                     flex
@@ -131,34 +108,42 @@ function TrainingProgrammesPage() {
                                     bg-white/10
                                 "
                             >
-
                                 <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="1.8"
-                                    className="h-6 w-6"
+                                    className="
+                                        h-6
+                                        w-6
+                                    "
                                 >
-                                    <path d="M4 5h6v14H4z" />
+                                    <rect
+                                        x="4"
+                                        y="4"
+                                        width="6"
+                                        height="16"
+                                        rx="1"
+                                    />
 
-                                    <path d="M14 5h6v14h-6z" />
-
-                                    <path d="M10 8h4" />
-
-                                    <path d="M10 16h4" />
+                                    <rect
+                                        x="14"
+                                        y="4"
+                                        width="6"
+                                        height="16"
+                                        rx="1"
+                                    />
                                 </svg>
-
                             </div>
 
 
                             <div>
-
                                 <p
                                     className="
-                                        text-[9px]
+                                        text-[8px]
                                         font-semibold
                                         uppercase
-                                        tracking-[0.18em]
+                                        tracking-[0.14em]
                                         text-blue-100
                                     "
                                 >
@@ -169,9 +154,9 @@ function TrainingProgrammesPage() {
                                 <h1
                                     className="
                                         mt-1
-                                        text-xl
+                                        text-[20px]
                                         font-bold
-                                        sm:text-2xl
+                                        text-white
                                     "
                                 >
                                     Training Programmes
@@ -181,239 +166,117 @@ function TrainingProgrammesPage() {
                                 <p
                                     className="
                                         mt-2
-                                        max-w-2xl
-                                        text-[11px]
+                                        max-w-[600px]
+                                        text-[9px]
                                         leading-5
                                         text-blue-100
-                                        sm:text-xs
                                     "
                                 >
                                     {description}
                                 </p>
-
                             </div>
-
                         </div>
 
 
                         <div
                             className="
-                                flex
-                                flex-wrap
-                                gap-2
+                                rounded-lg
+                                border
+                                border-white/15
+                                bg-white/10
+                                px-4
+                                py-3
                             "
                         >
-
-                            <span
-                                className="
-                                    rounded-full
-                                    border
-                                    border-white/15
-                                    bg-white/10
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                "
-                            >
-                                Manual Handling
-                            </span>
-
-
-                            <span
-                                className="
-                                    rounded-full
-                                    border
-                                    border-white/15
-                                    bg-white/10
-                                    px-3
-                                    py-1.5
-                                    text-[9px]
-                                    font-semibold
-                                "
-                            >
-                                Working at Height
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                {/* ================================================= */}
-                {/* INFORMATION CARDS */}
-                {/* ================================================= */}
-
-                <section
-                    className="
-                        grid
-                        gap-3
-                        sm:grid-cols-2
-                        lg:grid-cols-3
-                    "
-                >
-
-                    <TrainingInfoCard
-                        icon="programme"
-                        title="Programme Management"
-                        description="Create and maintain structured safety programmes."
-                    />
-
-
-                    <TrainingInfoCard
-                        icon="trainer"
-                        title="Trainer Ownership"
-                        description="Control ownership and authorised Trainer access."
-                    />
-
-
-                    <TrainingInfoCard
-                        icon="learning"
-                        title="Learning Content"
-                        description="Organise programmes into structured learning sections."
-                    />
-
-                </section>
-
-
-                {/* ================================================= */}
-                {/* EXISTING PROGRAMME MANAGEMENT */}
-                {/* ================================================= */}
-
-                <TrainingManagementShell
-                    title="Programme Management"
-                    description={
-                        description
-                    }
-                >
-
-                    <TrainingProgrammeManager
-                        role={
-                            role
-                        }
-                    />
-
-                </TrainingManagementShell>
-
-
-                {/* ================================================= */}
-                {/* FOOTER NOTE */}
-                {/* ================================================= */}
-
-                <section
-                    className="
-                        rounded-2xl
-                        border
-                        border-blue-100
-                        bg-gradient-to-r
-                        from-blue-50
-                        via-white
-                        to-amber-50
-                        p-5
-                    "
-                >
-
-                    <div
-                        className="
-                            flex
-                            items-start
-                            gap-3
-                        "
-                    >
-
-                        <div
-                            className="
-                                flex
-                                h-9
-                                w-9
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-white
-                                text-blue-600
-                                shadow-sm
-                            "
-                        >
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <path d="M12 3 5 6v5c0 5 2.7 8.2 7 10 4.3-1.8 7-5 7-10V6l-7-3Z" />
-
-                                <path d="m9 12 2 2 4-4" />
-                            </svg>
-
-                        </div>
-
-
-                        <div>
-
                             <p
                                 className="
-                                    text-xs
-                                    font-bold
-                                    text-slate-800
+                                    text-[7px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-blue-100
                                 "
                             >
-                                Programme Security
+                                Current Role
                             </p>
-
 
                             <p
                                 className="
                                     mt-1
-                                    max-w-4xl
                                     text-[10px]
-                                    leading-5
-                                    text-slate-500
+                                    font-bold
+                                    capitalize
+                                    text-white
                                 "
                             >
-                                Administrator access applies across all
-                                programmes, while Trainer access remains
-                                restricted by ownership and authorisation.
+                                {role ||
+                                    "User"}
                             </p>
-
                         </div>
-
                     </div>
-
                 </section>
 
-            </div>
 
+                {/* =============================================
+                    INFORMATION
+                ============================================== */}
+
+                <section
+                    className="
+                        grid
+                        gap-4
+                        md:grid-cols-2
+                    "
+                >
+                    <InfoCard
+                        title="Manual Handling"
+                        text="Create and manage safe lifting, carrying and handling training content."
+                    />
+
+                    <InfoCard
+                        title="Working at Height"
+                        text="Manage learning content covering elevated work and height-related hazards."
+                    />
+                </section>
+
+
+                {/* =============================================
+                    EXISTING MANAGER
+                ============================================== */}
+
+                <section
+                    className="
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        border-[#dbe4ef]
+                        bg-white
+                        shadow-sm
+                    "
+                >
+                    <TrainingProgrammeManager />
+                </section>
+            </div>
         </DashboardLayout>
     );
 }
 
 
-// ======================================================
-// INFORMATION CARD
-// ======================================================
-
-function TrainingInfoCard({
-    icon,
+function InfoCard({
     title,
-    description,
+    text,
 }) {
     return (
-        <div
+        <article
             className="
                 rounded-xl
                 border
-                border-slate-200
+                border-[#dbe4ef]
                 bg-white
-                p-4
+                p-5
                 shadow-sm
             "
         >
-
             <div
                 className="
                     flex
@@ -421,7 +284,6 @@ function TrainingInfoCard({
                     gap-3
                 "
             >
-
                 <div
                     className="
                         flex
@@ -430,132 +292,52 @@ function TrainingInfoCard({
                         shrink-0
                         items-center
                         justify-center
-                        rounded-xl
+                        rounded-lg
                         bg-blue-50
                         text-blue-600
                     "
                 >
-                    <TrainingInfoIcon
-                        type={
-                            icon
-                        }
-                    />
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="
+                            h-4
+                            w-4
+                        "
+                    >
+                        <path d="M4 5h16v14H4z" />
+                        <path d="M8 9h8" />
+                        <path d="M8 13h5" />
+                    </svg>
                 </div>
 
 
                 <div>
-
-                    <p
+                    <h2
                         className="
                             text-[11px]
                             font-bold
-                            text-slate-800
+                            text-[#172033]
                         "
                     >
                         {title}
-                    </p>
-
+                    </h2>
 
                     <p
                         className="
                             mt-1
-                            text-[9px]
+                            text-[8px]
                             leading-4
-                            text-slate-500
+                            text-[#64748b]
                         "
                     >
-                        {description}
+                        {text}
                     </p>
-
                 </div>
-
             </div>
-
-        </div>
-    );
-}
-
-
-// ======================================================
-// INFORMATION ICON
-// ======================================================
-
-function TrainingInfoIcon({
-    type,
-}) {
-
-    if (
-        type ===
-        "trainer"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-            >
-                <circle
-                    cx="9"
-                    cy="8"
-                    r="3"
-                />
-
-                <path d="M3 20c.5-4 2.5-6 6-6" />
-
-                <path d="M16 8l2 2 3-4" />
-            </svg>
-        );
-    }
-
-
-    if (
-        type ===
-        "learning"
-    ) {
-        return (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-            >
-                <path d="M4 5h7v14H4z" />
-
-                <path d="M13 5h7v14h-7z" />
-
-                <path d="M7 9h2" />
-
-                <path d="M16 9h2" />
-            </svg>
-        );
-    }
-
-
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-5 w-5"
-        >
-            <rect
-                x="4"
-                y="4"
-                width="16"
-                height="16"
-                rx="3"
-            />
-
-            <path d="M8 9h8" />
-
-            <path d="M8 13h8" />
-
-            <path d="M8 17h5" />
-        </svg>
+        </article>
     );
 }
 

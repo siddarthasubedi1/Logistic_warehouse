@@ -1,141 +1,110 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+    useState,
+} from "react";
+
+import {
+    useNavigate,
+} from "react-router-dom";
 
 import LoginBranding from "../components/auth/LoginBranding";
 import LoginForm from "../components/auth/LoginForm";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
 import ForcePasswordChangeModal from "../components/auth/ForcePasswordChangeModal";
 
-import {
-    getAccessToken,
-    getDashboardPath,
-    getSessionUser,
-    normalizeRole,
-} from "../utils/session";
+import "../styles/login.css";
 
-function getPasswordChangeUser() {
-    const user = getSessionUser();
-
-    if (!user) {
-        return null;
-    }
-
-    const role = normalizeRole(user.role);
-
-    const requiresPasswordChange =
-        ["trainer", "trainee"].includes(role) &&
-        user.mustChangePassword === true;
-
-    if (!requiresPasswordChange) {
-        return null;
-    }
-
-    return {
-        ...user,
-        role,
-    };
-}
 
 function Login() {
-    const navigate = useNavigate();
+    const navigate =
+        useNavigate();
 
-    const [showForgotPassword, setShowForgotPassword] =
-        useState(false);
 
-    const [forcedPasswordUser, setForcedPasswordUser] =
-        useState(() => getPasswordChangeUser());
+    const [
+        mode,
+        setMode,
+    ] = useState(
+        "login"
+    );
 
-    useEffect(() => {
-        const token = getAccessToken();
-        const user = getSessionUser();
 
-        if (!token || !user) {
-            return;
-        }
+    const [
+        forcedPasswordData,
+        setForcedPasswordData,
+    ] = useState(
+        null
+    );
 
-        const role = normalizeRole(user.role);
-
-        const requiresPasswordChange =
-            ["trainer", "trainee"].includes(role) &&
-            user.mustChangePassword === true;
-
-        if (requiresPasswordChange) {
-            setForcedPasswordUser({
-                ...user,
-                role,
-            });
-
-            return;
-        }
-
-        const destination =
-            getDashboardPath(role);
-
-        if (destination !== "/login") {
-            navigate(destination, {
-                replace: true,
-            });
-        }
-    }, [navigate]);
-
-    const handlePasswordChangeRequired = (user) => {
-        setShowForgotPassword(false);
-
-        setForcedPasswordUser({
-            ...user,
-            role: normalizeRole(user?.role),
-        });
-    };
-
-    const handlePasswordChangeCompleted = () => {
-        setForcedPasswordUser(null);
-        setShowForgotPassword(false);
-
-        navigate("/login", {
-            replace: true,
-        });
-    };
 
     return (
-        <main className="login-page">
-            <div className="login-shell">
+        <main className="figma-login-page">
+
+            <div className="figma-login-layout">
+
                 <LoginBranding />
 
-                <section
-                    className="login-panel"
-                    aria-label="Account login"
-                >
-                    <div className="login-panel-inner">
-                        {showForgotPassword ? (
-                            <ForgotPasswordForm
-                                onBackToLogin={() =>
-                                    setShowForgotPassword(false)
+
+                <section className="figma-login-right">
+
+                    <div className="figma-login-form-container">
+
+                        {mode ===
+                            "login" ? (
+                            <LoginForm
+                                onForgotPassword={() =>
+                                    setMode(
+                                        "forgot"
+                                    )
+                                }
+                                onForcePasswordChange={
+                                    setForcedPasswordData
                                 }
                             />
                         ) : (
-                            <LoginForm
-                                onForgotPassword={() =>
-                                    setShowForgotPassword(true)
-                                }
-                                onPasswordChangeRequired={
-                                    handlePasswordChangeRequired
+                            <ForgotPasswordForm
+                                onBack={() =>
+                                    setMode(
+                                        "login"
+                                    )
                                 }
                             />
                         )}
+
                     </div>
+
                 </section>
+
             </div>
 
-            {forcedPasswordUser && (
+
+            {forcedPasswordData && (
                 <ForcePasswordChangeModal
-                    user={forcedPasswordUser}
-                    onCompleted={
-                        handlePasswordChangeCompleted
+                    user={
+                        forcedPasswordData.user
                     }
+                    currentPassword={
+                        forcedPasswordData.currentPassword
+                    }
+                    onComplete={(
+                        path
+                    ) => {
+                        setForcedPasswordData(
+                            null
+                        );
+
+                        navigate(
+                            path,
+                            {
+                                replace:
+                                    true,
+                            }
+                        );
+                    }}
                 />
             )}
+
         </main>
     );
 }
+
 
 export default Login;

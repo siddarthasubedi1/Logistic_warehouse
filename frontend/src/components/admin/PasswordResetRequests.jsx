@@ -15,12 +15,10 @@ function PasswordResetRequests({
         setRequests,
     ] = useState([]);
 
-
     const [
         loading,
         setLoading,
     ] = useState(true);
-
 
     const [
         error,
@@ -39,7 +37,6 @@ function PasswordResetRequests({
                 return request.user;
             }
 
-
             return (
                 request?.user?._id ||
                 request?.user?.id ||
@@ -56,11 +53,9 @@ function PasswordResetRequests({
             const user =
                 request?.user;
 
-
             const name =
                 `${user?.firstName || ""} ${user?.lastName || ""}`
                     .trim();
-
 
             return (
                 name ||
@@ -75,20 +70,13 @@ function PasswordResetRequests({
         useCallback(
             async () => {
                 try {
-                    setLoading(
-                        true
-                    );
-
-                    setError(
-                        ""
-                    );
-
+                    setLoading(true);
+                    setError("");
 
                     const response =
                         await api.get(
                             "/admin/password-reset-requests"
                         );
-
 
                     const data =
                         Array.isArray(
@@ -97,7 +85,6 @@ function PasswordResetRequests({
                             ? response.data
                             : response.data?.requests ||
                             [];
-
 
                     setRequests(
                         data.filter(
@@ -116,16 +103,13 @@ function PasswordResetRequests({
                         error
                     );
 
-
                     setError(
                         error.response?.data?.message ||
                         "Unable to load password reset requests."
                     );
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
                 }
             },
             []
@@ -147,12 +131,10 @@ function PasswordResetRequests({
                 return "—";
             }
 
-
             const date =
                 new Date(
                     value
                 );
-
 
             if (
                 Number.isNaN(
@@ -162,12 +144,11 @@ function PasswordResetRequests({
                 return "—";
             }
 
-
             return date.toLocaleString(
                 [],
                 {
                     month:
-                        "numeric",
+                        "short",
 
                     day:
                         "numeric",
@@ -193,9 +174,11 @@ function PasswordResetRequests({
                 border
                 border-[#dbe4ef]
                 bg-white
-                shadow-[0_1px_3px_rgba(15,23,42,0.08)]
+                shadow-[0_1px_3px_rgba(15,23,42,0.07)]
             "
         >
+            {/* HEADER */}
+
             <div
                 className="
                     flex
@@ -235,6 +218,8 @@ function PasswordResetRequests({
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className="
                                 h-5
                                 w-5
@@ -266,7 +251,6 @@ function PasswordResetRequests({
                             Password Reset Requests
                         </h2>
 
-
                         <p
                             className="
                                 mt-1
@@ -283,8 +267,9 @@ function PasswordResetRequests({
                 <div
                     className="
                         flex
+                        flex-wrap
                         items-center
-                        gap-3
+                        gap-2
                     "
                 >
                     <span
@@ -294,7 +279,7 @@ function PasswordResetRequests({
                             px-3
                             py-1.5
                             text-[9px]
-                            font-medium
+                            font-semibold
                             text-amber-600
                         "
                     >
@@ -312,27 +297,55 @@ function PasswordResetRequests({
                         }
                         className="
                             inline-flex
-                            min-h-[38px]
+                            min-h-[36px]
                             items-center
                             gap-2
                             rounded-lg
                             border
                             border-[#dbe4ef]
                             bg-white
-                            px-4
-                            text-[11px]
+                            px-3
+                            text-[10px]
                             font-medium
                             text-[#52627a]
                             transition
-                            hover:bg-slate-50
+                            hover:bg-[#f8fafc]
+                            disabled:cursor-not-allowed
                             disabled:opacity-50
                         "
                     >
-                        ↻ Refresh
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`
+                                h-4
+                                w-4
+                                ${loading
+                                    ? "animate-spin"
+                                    : ""
+                                }
+                            `}
+                        >
+                            <path d="M20 7v5h-5" />
+
+                            <path d="M4 17v-5h5" />
+
+                            <path d="M6.1 8a7 7 0 0 1 11.8-2L20 8" />
+
+                            <path d="M17.9 16A7 7 0 0 1 6.1 18L4 16" />
+                        </svg>
+
+                        Refresh
                     </button>
                 </div>
             </div>
 
+
+            {/* ERROR */}
 
             {error && (
                 <div
@@ -342,7 +355,7 @@ function PasswordResetRequests({
                         bg-red-50
                         px-5
                         py-3
-                        text-[11px]
+                        text-[10px]
                         text-red-700
                     "
                 >
@@ -350,6 +363,8 @@ function PasswordResetRequests({
                 </div>
             )}
 
+
+            {/* CONTENT */}
 
             <div
                 className="
@@ -363,87 +378,150 @@ function PasswordResetRequests({
                             min-h-[180px]
                             items-center
                             justify-center
-                            text-[11px]
-                            text-slate-500
                         "
                     >
-                        Loading password reset requests...
+                        <div
+                            className="
+                                text-center
+                            "
+                        >
+                            <div
+                                className="
+                                    mx-auto
+                                    h-7
+                                    w-7
+                                    animate-spin
+                                    rounded-full
+                                    border-2
+                                    border-blue-100
+                                    border-t-blue-600
+                                "
+                            />
+
+                            <p
+                                className="
+                                    mt-3
+                                    text-[10px]
+                                    text-[#64748b]
+                                "
+                            >
+                                Loading reset requests...
+                            </p>
+                        </div>
                     </div>
                 ) : requests.length ===
                     0 ? (
                     <div
                         className="
                             flex
-                            min-h-[180px]
-                            flex-col
+                            min-h-[190px]
                             items-center
                             justify-center
                             px-5
-                            text-center
+                            py-8
                         "
                     >
                         <div
                             className="
-                                flex
-                                h-11
-                                w-11
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-emerald-50
-                                text-emerald-600
+                                max-w-[310px]
+                                text-center
                             "
                         >
-                            ✓
+                            <div
+                                className="
+                                    mx-auto
+                                    flex
+                                    h-12
+                                    w-12
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-emerald-50
+                                    text-emerald-600
+                                "
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="
+                                        h-6
+                                        w-6
+                                    "
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="9"
+                                    />
+
+                                    <path d="m8 12 2.5 2.5L16 9" />
+                                </svg>
+                            </div>
+
+                            <p
+                                className="
+                                    mt-3
+                                    text-[11px]
+                                    font-semibold
+                                    text-[#172033]
+                                "
+                            >
+                                No pending password resets
+                            </p>
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-[9px]
+                                    leading-4
+                                    text-[#64748b]
+                                "
+                            >
+                                Password reset requests from Trainers and Trainees will appear here.
+                            </p>
                         </div>
-
-
-                        <p
-                            className="
-                                mt-4
-                                text-[12px]
-                                font-semibold
-                                text-[#172033]
-                            "
-                        >
-                            No pending password reset requests
-                        </p>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[9px]
-                                text-[#94a3b8]
-                            "
-                        >
-                            New requests will appear here.
-                        </p>
                     </div>
                 ) : (
                     <div>
                         {requests.map(
                             (
-                                request
+                                request,
+                                index
                             ) => {
                                 const user =
-                                    request.user ||
+                                    request?.user ||
                                     {};
-
 
                                 const name =
                                     getUserName(
                                         request
                                     );
 
+                                const role =
+                                    user.role ||
+                                    request.role ||
+                                    "User";
+
+                                const username =
+                                    user.username ||
+                                    request.username ||
+                                    "—";
+
+                                const id =
+                                    request._id ||
+                                    getUserId(
+                                        request
+                                    ) ||
+                                    index;
 
                                 return (
                                     <div
                                         key={
-                                            request._id ||
-                                            getUserId(
-                                                request
-                                            )
+                                            id
                                         }
                                         className="
                                             flex
@@ -456,8 +534,11 @@ function PasswordResetRequests({
                                             last:border-0
                                             md:flex-row
                                             md:items-center
+                                            md:justify-between
                                         "
                                     >
+                                        {/* USER */}
+
                                         <div
                                             className="
                                                 flex
@@ -520,10 +601,8 @@ function PasswordResetRequests({
                                                 >
                                                     <span>
                                                         Username:{" "}
-                                                        {user.username ||
-                                                            "—"}
+                                                        {username}
                                                     </span>
-
 
                                                     <span
                                                         className="
@@ -531,13 +610,14 @@ function PasswordResetRequests({
                                                         "
                                                     >
                                                         Role:{" "}
-                                                        {user.role ||
-                                                            "—"}
+                                                        {role}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
+
+                                        {/* DETAILS / ACTION */}
 
                                         <div
                                             className="
@@ -548,7 +628,11 @@ function PasswordResetRequests({
                                                 md:justify-end
                                             "
                                         >
-                                            <div>
+                                            <div
+                                                className="
+                                                    min-w-[125px]
+                                                "
+                                            >
                                                 <p
                                                     className="
                                                         text-[7px]
@@ -560,7 +644,6 @@ function PasswordResetRequests({
                                                 >
                                                     Requested
                                                 </p>
-
 
                                                 <p
                                                     className="
@@ -609,7 +692,7 @@ function PasswordResetRequests({
                                                     rounded-lg
                                                     bg-[#1769e8]
                                                     px-4
-                                                    text-[11px]
+                                                    text-[10px]
                                                     font-semibold
                                                     text-white
                                                     transition

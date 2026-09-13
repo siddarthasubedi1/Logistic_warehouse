@@ -27,28 +27,23 @@ function AdminDashboard() {
     const navigate =
         useNavigate();
 
-
     const sessionUser =
         getSessionUser();
-
 
     const [
         users,
         setUsers,
     ] = useState([]);
 
-
     const [
         pendingUsers,
         setPendingUsers,
     ] = useState([]);
 
-
     const [
         loading,
         setLoading,
     ] = useState(true);
-
 
     const [
         error,
@@ -60,14 +55,8 @@ function AdminDashboard() {
         useCallback(
             async () => {
                 try {
-                    setLoading(
-                        true
-                    );
-
-                    setError(
-                        ""
-                    );
-
+                    setLoading(true);
+                    setError("");
 
                     const [
                         usersResponse,
@@ -107,7 +96,6 @@ function AdminDashboard() {
                         userList
                     );
 
-
                     setPendingUsers(
                         pendingList
                     );
@@ -118,16 +106,13 @@ function AdminDashboard() {
                         error
                     );
 
-
                     setError(
                         error.response?.data?.message ||
                         "Unable to load administrator dashboard."
                     );
 
                 } finally {
-                    setLoading(
-                        false
-                    );
+                    setLoading(false);
                 }
             },
             []
@@ -146,9 +131,7 @@ function AdminDashboard() {
             () => {
                 const active =
                     users.filter(
-                        (
-                            user
-                        ) =>
+                        (user) =>
                             String(
                                 user.status ||
                                 ""
@@ -159,9 +142,7 @@ function AdminDashboard() {
 
                 const deactivated =
                     users.filter(
-                        (
-                            user
-                        ) =>
+                        (user) =>
                             [
                                 "deactivated",
                                 "inactive",
@@ -176,9 +157,7 @@ function AdminDashboard() {
 
                 const trainers =
                     users.filter(
-                        (
-                            user
-                        ) =>
+                        (user) =>
                             String(
                                 user.role ||
                                 ""
@@ -189,9 +168,7 @@ function AdminDashboard() {
 
                 const trainees =
                     users.filter(
-                        (
-                            user
-                        ) =>
+                        (user) =>
                             String(
                                 user.role ||
                                 ""
@@ -257,9 +234,8 @@ function AdminDashboard() {
 
             <div
                 className="
+                    admin-dashboard
                     space-y-4
-                    pt-4
-                    sm:pt-5
                 "
             >
                 {error && (
@@ -275,7 +251,7 @@ function AdminDashboard() {
                             bg-red-50
                             px-4
                             py-3
-                            text-[12px]
+                            text-[11px]
                             text-red-700
                         "
                     >
@@ -287,12 +263,11 @@ function AdminDashboard() {
                         <button
                             type="button"
                             onClick={() =>
-                                setError(
-                                    ""
-                                )
+                                setError("")
                             }
                             className="
                                 shrink-0
+                                text-[16px]
                                 font-bold
                             "
                         >
@@ -306,15 +281,19 @@ function AdminDashboard() {
                     loading={
                         loading
                     }
+
                     totalUsers={
                         statistics.total
                     }
+
                     activeUsers={
                         statistics.active
                     }
+
                     pendingUsers={
                         statistics.pending
                     }
+
                     deactivatedUsers={
                         statistics.deactivated
                     }
@@ -332,15 +311,19 @@ function AdminDashboard() {
                         users={
                             users
                         }
+
                         trainees={
                             statistics.trainees
                         }
+
                         trainers={
                             statistics.trainers
                         }
+
                         loading={
                             loading
                         }
+
                         onViewAll={() =>
                             navigate(
                                 "/admin/users"

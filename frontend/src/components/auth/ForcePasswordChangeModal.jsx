@@ -4,87 +4,106 @@ import {
 
 import api from "../../services/api";
 
-import PasswordInput from "./PasswordInput";
-
 import {
-    clearAuthSession,
+    clearForcedPasswordChange,
+    getDashboardPath,
+    updateSessionUser,
 } from "../../utils/session";
 
-function Requirement({
-    passed,
-    children,
-}) {
-    return (
-        <li
-            className={
-                passed
-                    ? "password-rule password-rule-ok"
-                    : "password-rule"
-            }
-        >
-            <span>
-                {passed
-                    ? "✓"
-                    : "•"}
-            </span>
-
-            {children}
-        </li>
-    );
-}
 
 function ForcePasswordChangeModal({
     user,
-    onCompleted,
+    currentPassword: initialCurrentPassword = "",
+    onComplete,
 }) {
     const [
         currentPassword,
         setCurrentPassword,
-    ] = useState("");
+    ] = useState(
+        initialCurrentPassword
+    );
+
 
     const [
         newPassword,
         setNewPassword,
     ] = useState("");
 
+
     const [
         confirmPassword,
         setConfirmPassword,
     ] = useState("");
+
+
+    const [
+        showCurrentPassword,
+        setShowCurrentPassword,
+    ] = useState(false);
+
+
+    const [
+        showNewPassword,
+        setShowNewPassword,
+    ] = useState(false);
+
+
+    const [
+        showConfirmPassword,
+        setShowConfirmPassword,
+    ] = useState(false);
+
 
     const [
         loading,
         setLoading,
     ] = useState(false);
 
+
     const [
         error,
         setError,
     ] = useState("");
 
-    const [
-        completed,
-        setCompleted,
-    ] = useState(false);
 
-    const lengthValid =
-        newPassword.length >=
-        12;
+    const validate =
+        () => {
+            if (
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword
+            ) {
+                return "Please complete all password fields.";
+            }
 
-    const different =
-        Boolean(
-            currentPassword &&
-            newPassword &&
-            currentPassword !==
-            newPassword
-        );
 
-    const matches =
-        Boolean(
-            newPassword &&
-            newPassword ===
-            confirmPassword
-        );
+            if (
+                newPassword.length <
+                12
+            ) {
+                return "New password must contain at least 12 characters.";
+            }
+
+
+            if (
+                newPassword ===
+                currentPassword
+            ) {
+                return "New password must be different from the current password.";
+            }
+
+
+            if (
+                newPassword !==
+                confirmPassword
+            ) {
+                return "New passwords do not match.";
+            }
+
+
+            return "";
+        };
+
 
     const handleSubmit =
         async (
@@ -94,75 +113,83 @@ function ForcePasswordChangeModal({
 
             setError("");
 
+
+            const validationMessage =
+                validate();
+
+
             if (
-                !currentPassword ||
-                !newPassword ||
-                !confirmPassword
+                validationMessage
             ) {
                 setError(
-                    "Please complete all password fields."
+                    validationMessage
                 );
 
                 return;
             }
 
-            if (
-                !lengthValid
-            ) {
-                setError(
-                    "New password must contain at least 12 characters."
-                );
-
-                return;
-            }
-
-            if (
-                !different
-            ) {
-                setError(
-                    "The new password must be different from the temporary password."
-                );
-
-                return;
-            }
-
-            if (
-                !matches
-            ) {
-                setError(
-                    "New password and confirmation do not match."
-                );
-
-                return;
-            }
 
             try {
                 setLoading(
                     true
                 );
 
-                await api.post(
-                    "/auth/change-password",
+
+                const response =
+                    await api.post(
+                        "/auth/change-password",
+                        {
+                            currentPassword,
+                            newPassword,
+                        }
+                    );
+
+
+                const updatedUser =
+                    response.data
+                        ?.user ||
                     {
-                        currentPassword,
-                        newPassword,
-                    }
+                        ...user,
+                        mustChangePassword:
+                            false,
+                    };
+
+
+                updateSessionUser({
+                    ...updatedUser,
+                    mustChangePassword:
+                        false,
+                });
+
+
+                clearForcedPasswordChange();
+
+
+                const path =
+                    getDashboardPath(
+                        updatedUser.role ||
+                        user?.role
+                    );
+
+
+                onComplete?.(
+                    path
                 );
 
-                clearAuthSession();
-
-                setCompleted(
-                    true
+            } catch (error) {
+                console.error(
+                    "Forced password change error:",
+                    error
                 );
-            } catch (
-            requestError
-            ) {
+
+
                 setError(
-                    requestError.response
+                    error.response
                         ?.data
                         ?.message ||
-                    "Unable to change password."
+                    "Unable to change your password."
                 );
+
             } finally {
                 setLoading(
                     false
@@ -170,229 +197,317 @@ function ForcePasswordChangeModal({
             }
         };
 
-    return (
-        <div
-            className="password-modal-backdrop"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="password-change-title"
-        >
-            <div className="password-modal-card">
-                {completed ? (
-                    <div className="password-modal-success">
-                        <div className="password-success-icon">
-                            ✓
-                        </div>
 
-                        <h2 id="password-change-title">
-                            Password Changed Successfully
-                        </h2>
+    return (
+        <div className="forced-password-overlay">
+
+            <div className="forced-password-modal">
+
+                <div className="forced-password-header">
+
+                    <div className="forced-password-header-icon">
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <rect
+                                x="5"
+                                y="10"
+                                width="14"
+                                height="10"
+                                rx="2"
+                            />
+
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+
+                    </div>
+
+
+                    <div>
 
                         <p>
-                            Your temporary password is no longer
-                            valid. Sign in again using your new
-                            password.
+                            SECURITY
                         </p>
 
-                        <button
-                            type="button"
-                            className="auth-primary-button"
-                            onClick={
-                                onCompleted
-                            }
-                        >
-                            Back to Login
-                        </button>
+                        <h2>
+                            Password Change Required
+                        </h2>
+
+                        <span>
+                            Create a secure password before continuing.
+                        </span>
+
                     </div>
-                ) : (
-                    <>
-                        <div className="password-modal-header">
-                            <div className="auth-lock-badge">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                >
-                                    <rect
-                                        x="5.5"
-                                        y="10"
-                                        width="13"
-                                        height="10"
-                                        rx="2"
-                                    />
 
-                                    <path d="M8.5 10V7a3.5 3.5 0 0 1 7 0v3" />
-                                </svg>
-                            </div>
+                </div>
 
-                            <div>
-                                <span className="auth-kicker">
-                                    PASSWORD CHANGE REQUIRED
-                                </span>
 
-                                <h2 id="password-change-title">
-                                    Secure your account
-                                </h2>
+                <form
+                    onSubmit={
+                        handleSubmit
+                    }
+                    className="forced-password-body"
+                >
 
-                                <p>
-                                    {user?.username
-                                        ? `${user.username}, `
-                                        : ""}
-
-                                    your temporary password can only
-                                    be used once.
-                                </p>
-                            </div>
+                    {error && (
+                        <div className="forced-password-error">
+                            {error}
                         </div>
+                    )}
 
-                        {error && (
-                            <div
-                                className="auth-alert auth-alert-error"
-                                role="alert"
-                            >
-                                <span aria-hidden="true">
-                                    !
-                                </span>
 
-                                <p>
-                                    {error}
-                                </p>
-                            </div>
-                        )}
+                    <PasswordField
+                        label="Current Password"
+                        value={
+                            currentPassword
+                        }
+                        onChange={
+                            setCurrentPassword
+                        }
+                        visible={
+                            showCurrentPassword
+                        }
+                        onToggle={() =>
+                            setShowCurrentPassword(
+                                (
+                                    value
+                                ) =>
+                                    !value
+                            )
+                        }
+                    />
 
-                        <form
-                            className="auth-form"
-                            onSubmit={
-                                handleSubmit
+
+                    <PasswordField
+                        label="New Password"
+                        value={
+                            newPassword
+                        }
+                        onChange={
+                            setNewPassword
+                        }
+                        visible={
+                            showNewPassword
+                        }
+                        onToggle={() =>
+                            setShowNewPassword(
+                                (
+                                    value
+                                ) =>
+                                    !value
+                            )
+                        }
+                    />
+
+
+                    <PasswordField
+                        label="Confirm New Password"
+                        value={
+                            confirmPassword
+                        }
+                        onChange={
+                            setConfirmPassword
+                        }
+                        visible={
+                            showConfirmPassword
+                        }
+                        onToggle={() =>
+                            setShowConfirmPassword(
+                                (
+                                    value
+                                ) =>
+                                    !value
+                            )
+                        }
+                    />
+
+
+                    <div className="forced-password-requirements">
+
+                        <p>
+                            PASSWORD REQUIREMENTS
+                        </p>
+
+
+                        <Requirement
+                            passed={
+                                newPassword.length >=
+                                12
                             }
                         >
-                            <div className="auth-field">
-                                <label htmlFor="current-password">
-                                    Current Password
-                                </label>
+                            At least 12 characters
+                        </Requirement>
 
-                                <PasswordInput
-                                    id="current-password"
-                                    value={
-                                        currentPassword
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setCurrentPassword(
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                    placeholder="Enter temporary password"
-                                    disabled={
-                                        loading
-                                    }
-                                />
-                            </div>
 
-                            <div className="auth-field">
-                                <label htmlFor="new-password">
-                                    New Password
-                                </label>
+                        <Requirement
+                            passed={
+                                Boolean(
+                                    newPassword &&
+                                    currentPassword &&
+                                    newPassword !==
+                                    currentPassword
+                                )
+                            }
+                        >
+                            Different from current password
+                        </Requirement>
 
-                                <PasswordInput
-                                    id="new-password"
-                                    value={
-                                        newPassword
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setNewPassword(
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                    placeholder="Create new password"
-                                    autoComplete="new-password"
-                                    disabled={
-                                        loading
-                                    }
-                                />
-                            </div>
 
-                            <div className="auth-field">
-                                <label htmlFor="confirm-password">
-                                    Confirm New Password
-                                </label>
+                        <Requirement
+                            passed={
+                                Boolean(
+                                    newPassword &&
+                                    confirmPassword &&
+                                    newPassword ===
+                                    confirmPassword
+                                )
+                            }
+                        >
+                            New passwords match
+                        </Requirement>
 
-                                <PasswordInput
-                                    id="confirm-password"
-                                    value={
-                                        confirmPassword
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setConfirmPassword(
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                    placeholder="Confirm new password"
-                                    autoComplete="new-password"
-                                    disabled={
-                                        loading
-                                    }
-                                />
-                            </div>
+                    </div>
 
-                            <div className="password-rules-panel">
-                                <strong>
-                                    PASSWORD REQUIREMENTS
-                                </strong>
 
-                                <ul>
-                                    <Requirement
-                                        passed={
-                                            lengthValid
-                                        }
-                                    >
-                                        At least 12 characters
-                                    </Requirement>
+                    <button
+                        type="submit"
+                        className="forced-password-submit"
+                        disabled={
+                            loading
+                        }
+                    >
+                        {loading
+                            ? "Changing Password..."
+                            : "Change Password"}
+                    </button>
 
-                                    <Requirement
-                                        passed={
-                                            different
-                                        }
-                                    >
-                                        Different from temporary password
-                                    </Requirement>
+                </form>
 
-                                    <Requirement
-                                        passed={
-                                            matches
-                                        }
-                                    >
-                                        New passwords match
-                                    </Requirement>
-                                </ul>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="auth-primary-button"
-                                disabled={
-                                    loading
-                                }
-                            >
-                                {loading
-                                    ? "Changing Password..."
-                                    : "Change Password"}
-                            </button>
-                        </form>
-                    </>
-                )}
             </div>
+
         </div>
     );
 }
+
+
+function PasswordField({
+    label,
+    value,
+    onChange,
+    visible,
+    onToggle,
+}) {
+    return (
+        <label className="forced-password-field">
+
+            <span>
+                {label}
+            </span>
+
+
+            <div>
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="forced-password-lock"
+                >
+                    <rect
+                        x="5"
+                        y="10"
+                        width="14"
+                        height="10"
+                        rx="2"
+                    />
+
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+
+
+                <input
+                    type={
+                        visible
+                            ? "text"
+                            : "password"
+                    }
+                    value={
+                        value
+                    }
+                    onChange={(
+                        event
+                    ) =>
+                        onChange(
+                            event.target.value
+                        )
+                    }
+                />
+
+
+                <button
+                    type="button"
+                    onClick={
+                        onToggle
+                    }
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="2.5"
+                        />
+                    </svg>
+                </button>
+
+            </div>
+
+        </label>
+    );
+}
+
+
+function Requirement({
+    passed,
+    children,
+}) {
+    return (
+        <div
+            className={
+                passed
+                    ? "forced-requirement forced-requirement-passed"
+                    : "forced-requirement"
+            }
+        >
+
+            <span>
+                {passed
+                    ? "✓"
+                    : "•"}
+            </span>
+
+            {children}
+
+        </div>
+    );
+}
+
 
 export default ForcePasswordChangeModal;

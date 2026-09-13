@@ -6,7 +6,17 @@ function UserFilters({
     onRoleChange,
     onStatusChange,
 }) {
-    const handleClearFilters =
+    const hasFilters =
+        Boolean(
+            searchTerm.trim()
+        ) ||
+        roleFilter !==
+        "all" ||
+        statusFilter !==
+        "all";
+
+
+    const clearFilters =
         () => {
             onSearchChange?.(
                 ""
@@ -22,23 +32,13 @@ function UserFilters({
         };
 
 
-    const filtersActive =
-        Boolean(
-            searchTerm ||
-            roleFilter !==
-            "all" ||
-            statusFilter !==
-            "all"
-        );
-
-
     return (
         <div
             className="
-                rounded-lg
+                rounded-xl
                 border
-                border-slate-200
-                bg-slate-50
+                border-[#e1e8f0]
+                bg-[#f8fafc]
                 p-3
                 sm:p-4
             "
@@ -51,7 +51,9 @@ function UserFilters({
                     xl:grid-cols-[minmax(260px,2fr)_1fr_1fr_auto]
                 "
             >
-                {/* SEARCH */}
+                {/* =================================================
+                    SEARCH
+                ================================================= */}
 
                 <div
                     className="
@@ -60,7 +62,7 @@ function UserFilters({
                         xl:col-span-1
                     "
                 >
-                    <div
+                    <span
                         className="
                             pointer-events-none
                             absolute
@@ -69,7 +71,7 @@ function UserFilters({
                             flex
                             items-center
                             pl-3
-                            text-slate-400
+                            text-[#94a3b8]
                         "
                     >
                         <svg
@@ -77,7 +79,12 @@ function UserFilters({
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.8"
-                            className="h-4 w-4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="
+                                h-4
+                                w-4
+                            "
                         >
                             <circle
                                 cx="11"
@@ -87,7 +94,7 @@ function UserFilters({
 
                             <path d="m20 20-3.5-3.5" />
                         </svg>
-                    </div>
+                    </span>
 
 
                     <input
@@ -104,28 +111,30 @@ function UserFilters({
                         }
                         placeholder="Search name, username or email..."
                         className="
-                            h-10
+                            min-h-[40px]
                             w-full
                             rounded-lg
                             border
-                            border-slate-300
+                            border-[#cbd5e1]
                             bg-white
                             pl-9
                             pr-3
-                            text-[9px]
-                            font-medium
-                            text-slate-700
+                            text-[10px]
+                            text-[#172033]
                             outline-none
-                            placeholder:text-slate-400
+                            transition
+                            placeholder:text-[#94a3b8]
                             focus:border-blue-500
-                            focus:ring-1
+                            focus:ring-2
                             focus:ring-blue-100
                         "
                     />
                 </div>
 
 
-                {/* ROLE */}
+                {/* =================================================
+                    ROLE
+                ================================================= */}
 
                 <select
                     value={
@@ -139,19 +148,19 @@ function UserFilters({
                         )
                     }
                     className="
-                        h-10
+                        min-h-[40px]
                         w-full
                         rounded-lg
                         border
-                        border-slate-300
+                        border-[#cbd5e1]
                         bg-white
                         px-3
-                        text-[9px]
-                        font-medium
-                        text-slate-700
+                        text-[10px]
+                        text-[#172033]
                         outline-none
+                        transition
                         focus:border-blue-500
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-blue-100
                     "
                 >
@@ -169,7 +178,9 @@ function UserFilters({
                 </select>
 
 
-                {/* STATUS */}
+                {/* =================================================
+                    STATUS
+                ================================================= */}
 
                 <select
                     value={
@@ -183,19 +194,19 @@ function UserFilters({
                         )
                     }
                     className="
-                        h-10
+                        min-h-[40px]
                         w-full
                         rounded-lg
                         border
-                        border-slate-300
+                        border-[#cbd5e1]
                         bg-white
                         px-3
-                        text-[9px]
-                        font-medium
-                        text-slate-700
+                        text-[10px]
+                        text-[#172033]
                         outline-none
+                        transition
                         focus:border-blue-500
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-blue-100
                     "
                 >
@@ -217,35 +228,37 @@ function UserFilters({
                 </select>
 
 
-                {/* CLEAR */}
+                {/* =================================================
+                    CLEAR
+                ================================================= */}
 
                 <button
                     type="button"
                     onClick={
-                        handleClearFilters
+                        clearFilters
                     }
                     disabled={
-                        !filtersActive
+                        !hasFilters
                     }
                     className="
-                        h-10
+                        min-h-[40px]
                         rounded-lg
                         border
-                        border-slate-300
+                        border-[#cbd5e1]
                         bg-white
                         px-4
-                        text-[8px]
+                        text-[9px]
                         font-semibold
-                        text-slate-600
+                        text-[#52627a]
                         transition
-                        hover:bg-slate-100
+                        hover:bg-[#f1f5f9]
                         disabled:cursor-not-allowed
                         disabled:opacity-40
                         md:col-span-2
                         xl:col-span-1
                     "
                 >
-                    Clear
+                    Clear Filters
                 </button>
             </div>
         </div>

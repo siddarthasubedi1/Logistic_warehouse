@@ -1,148 +1,198 @@
-import blueImage from "../../images/blueimage.png";
+import heroImage from "../../images/blueimage.png";
 
-function CubeLogo() {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-        >
-            <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z" />
-            <path d="m4 7.5 8 4.5 8-4.5" />
-            <path d="M12 12v9" />
-        </svg>
-    );
-}
-
-const features = [
-    {
-        title: "Expert Content",
-        text: "Industry approved safety training",
-        icon: (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-            >
-                <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z" />
-                <path d="m9 12 2 2 4-4" />
-            </svg>
-        ),
-    },
-    {
-        title: "Track Progress",
-        text: "Monitor your learning and performance",
-        icon: (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-            >
-                <circle
-                    cx="12"
-                    cy="8"
-                    r="4"
-                />
-
-                <path d="m9.5 12-1 8 3.5-2 3.5 2-1-8" />
-            </svg>
-        ),
-    },
-    {
-        title: "Stay Compliant",
-        text: "Meet workplace safety standards",
-        icon: (
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-            >
-                <path d="M4 19V9M10 19V5M16 19v-7M22 19V3" />
-            </svg>
-        ),
-    },
-];
 
 function LoginBranding() {
     return (
-        <section
-            className="login-branding"
-            aria-label="UK LogiWare Safety Training"
-        >
+        <section className="figma-login-brand">
+
             <img
-                className="login-branding-image"
-                src={blueImage}
-                alt="Warehouse worker handling a package safely"
+                src={
+                    heroImage
+                }
+                alt="UK LogiWare warehouse worker"
+                className="figma-login-brand-image"
             />
 
-            <div className="login-branding-overlay" />
 
-            <div className="login-branding-content">
-                <div className="login-brand-logo">
-                    <div className="login-brand-logo-icon">
-                        <CubeLogo />
+            <div className="figma-login-logo">
+
+                <div className="figma-login-logo-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z" />
+
+                        <path d="m4 7.5 8 4.5 8-4.5" />
+
+                        <path d="M12 12v9" />
+                    </svg>
+
+                </div>
+
+
+                <div>
+
+                    <div className="figma-login-logo-name">
+                        UK Logi<span>Ware</span>
                     </div>
 
-                    <div>
-                        <div className="login-brand-logo-name">
-                            <span>UK Logi</span>
-
-                            <strong>
-                                Ware
-                            </strong>
-                        </div>
-
-                        <div className="login-brand-logo-subtitle">
-                            WAREHOUSING &amp; LOGISTICS
-                        </div>
+                    <div className="figma-login-logo-subtitle">
+                        WAREHOUSING &amp; LOGISTICS
                     </div>
+
                 </div>
 
-                <div className="login-brand-copy">
-                    <h2>
-                        Work Safe. Learn Safe
-
-                        <span>
-                            Every Step Matters
-                        </span>
-                    </h2>
-
-                    <p>
-                        Interactive health &amp; safety training
-                        for a safer workplace and a stronger team.
-                    </p>
-                </div>
-
-                <div className="login-brand-features">
-                    {features.map((feature) => (
-                        <div
-                            className="login-brand-feature"
-                            key={feature.title}
-                        >
-                            <span className="login-brand-feature-icon">
-                                {feature.icon}
-                            </span>
-
-                            <div>
-                                <strong>
-                                    {feature.title}
-                                </strong>
-
-                                <p>
-                                    {feature.text}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
             </div>
+
+
+            <div className="figma-login-brand-content">
+
+                <h1>
+                    Work Safe. Learn Safe
+                </h1>
+
+                <h2>
+                    Every Step Matters
+                </h2>
+
+                <p>
+                    Interactive health &amp; safety training for a safer
+                    workplace and a stronger team.
+                </p>
+
+            </div>
+
+
+            <div className="figma-login-features">
+
+                <Feature
+                    icon="shield"
+                    title="Expert Content"
+                    description="Industry approved safety training"
+                />
+
+
+                <Feature
+                    icon="award"
+                    title="Track Progress"
+                    description="Monitor your learning and performance"
+                />
+
+
+                <Feature
+                    icon="chart"
+                    title="Stay Compliant"
+                    description="Meet workplace safety standards"
+                    last
+                />
+
+            </div>
+
         </section>
     );
 }
+
+
+function Feature({
+    icon,
+    title,
+    description,
+    last = false,
+}) {
+    return (
+        <div
+            className={
+                last
+                    ? "figma-login-feature figma-login-feature-last"
+                    : "figma-login-feature"
+            }
+        >
+
+            <div className="figma-login-feature-icon">
+
+                {icon ===
+                    "shield" && (
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
+
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    )}
+
+
+                {icon ===
+                    "award" && (
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="4"
+                            />
+
+                            <path d="m9 12-1 9 4-2 4 2-1-9" />
+
+                            <path d="m10.5 8 1 1 2-2" />
+                        </svg>
+                    )}
+
+
+                {icon ===
+                    "chart" && (
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M4 20V10" />
+
+                            <path d="M10 20V5" />
+
+                            <path d="M16 20V8" />
+
+                            <path d="M22 20V3" />
+
+                            <path d="m4 10 6-5 6 3 6-5" />
+                        </svg>
+                    )}
+
+            </div>
+
+
+            <h3>
+                {title}
+            </h3>
+
+
+            <p>
+                {description}
+            </p>
+
+        </div>
+    );
+}
+
 
 export default LoginBranding;

@@ -8,138 +8,122 @@ import {
 
 import api from "../../services/api";
 
-
-const TRAINING_SECTIONS = [
-    {
-        value:
-            "manual-handling",
-
-        label:
-            "Manual Handling",
-    },
-
-    {
-        value:
-            "working-at-height",
-
-        label:
-            "Working at Height",
-    },
-];
+import UserFilters from "./UserFilters";
+import UserTable from "./UserTable";
+import EditUserModal from "./EditUserModal";
 
 
 function ManageUsersTable({
     selectedUserId = null,
+    passwordResetRequest = null,
 }) {
     const [
         users,
         setUsers,
     ] = useState([]);
 
-
     const [
         resetRequests,
         setResetRequests,
     ] = useState([]);
-
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
-
     const [
         error,
         setError,
     ] = useState("");
 
-
     const [
-        message,
-        setMessage,
+        success,
+        setSuccess,
     ] = useState("");
 
-
     const [
-        actionUserId,
-        setActionUserId,
+        processingId,
+        setProcessingId,
     ] = useState("");
 
+    const [
+        searchTerm,
+        setSearchTerm,
+    ] = useState("");
 
     const [
         roleFilter,
         setRoleFilter,
     ] = useState("all");
 
+    const [
+        statusFilter,
+        setStatusFilter,
+    ] = useState("all");
 
     const [
-        selectedAssignmentUserId,
-        setSelectedAssignmentUserId,
-    ] = useState("");
-
-
-    const [
-        assignmentSection,
-        setAssignmentSection,
-    ] = useState("");
-
+        editUser,
+        setEditUser,
+    ] = useState(null);
 
     const [
-        updatingAssignment,
-        setUpdatingAssignment,
+        savingEdit,
+        setSavingEdit,
     ] = useState(false);
-
 
     const [
         resetCredentials,
         setResetCredentials,
     ] = useState(null);
 
-
     const selectedRowRef =
         useRef(null);
 
 
-    const getUserId =
-        (
-            user
-        ) =>
-            user?._id ||
-            user?.id ||
-            "";
+    /* =========================================================
+       HELPERS
+    ========================================================= */
+
+    const getUserId = (
+        user
+    ) =>
+        user?._id ||
+        user?.id ||
+        "";
 
 
-    const getName =
-        (
-            user
-        ) =>
-            `${user?.firstName || ""} ${user?.lastName || ""}`
-                .trim() ||
-            user?.username ||
-            "User";
+    const getUserName = (
+        user
+    ) =>
+        `${user?.firstName || ""} ${user?.lastName || ""}`
+            .trim() ||
+        user?.username ||
+        "User";
 
 
-    const getRequestUserId =
-        (
-            request
-        ) => {
-            if (
-                typeof request?.user ===
-                "string"
-            ) {
-                return request.user;
-            }
+    const getRequestUserId = (
+        request
+    ) => {
+        if (
+            typeof request?.user ===
+            "string"
+        ) {
+            return request.user;
+        }
+
+        return (
+            request?.user?._id ||
+            request?.user?.id ||
+            request?.userId ||
+            ""
+        );
+    };
 
 
-            return (
-                request?.user?._id ||
-                request?.user?.id ||
-                request?.userId ||
-                ""
-            );
-        };
-
+    /* =========================================================
+       LOAD USERS
+    ========================================================= */
 
     const loadUsers =
         useCallback(
@@ -149,7 +133,6 @@ function ManageUsersTable({
                         "/admin/users"
                     );
 
-
                 const data =
                     Array.isArray(
                         response.data
@@ -158,14 +141,19 @@ function ManageUsersTable({
                         : response.data?.users ||
                         [];
 
-
                 setUsers(
                     data
                 );
+
+                return data;
             },
             []
         );
 
+
+    /* =========================================================
+       LOAD RESET REQUESTS
+    ========================================================= */
 
     const loadResetRequests =
         useCallback(
@@ -176,7 +164,6 @@ function ManageUsersTable({
                             "/admin/password-reset-requests"
                         );
 
-
                     const data =
                         Array.isArray(
                             response.data
@@ -185,8 +172,7 @@ function ManageUsersTable({
                             : response.data?.requests ||
                             [];
 
-
-                    setResetRequests(
+                    const pending =
                         data.filter(
                             (
                                 request
@@ -194,24 +180,36 @@ function ManageUsersTable({
                                 !request.status ||
                                 request.status ===
                                 "pending"
-                        )
+                        );
+
+                    setResetRequests(
+                        pending
                     );
 
-                } catch (error) {
+                    return pending;
+
+                } catch (
+                error
+                ) {
                     console.error(
-                        "Reset request loading error:",
+                        "Load reset requests error:",
                         error
                     );
-
 
                     setResetRequests(
                         []
                     );
+
+                    return [];
                 }
             },
             []
         );
 
+
+    /* =========================================================
+       LOAD PAGE
+    ========================================================= */
 
     const loadPage =
         useCallback(
@@ -221,23 +219,22 @@ function ManageUsersTable({
                         true
                     );
 
-
                     setError(
                         ""
                     );
-
 
                     await Promise.all([
                         loadUsers(),
                         loadResetRequests(),
                     ]);
 
-                } catch (error) {
+                } catch (
+                error
+                ) {
                     console.error(
-                        "Manage users error:",
+                        "Manage users load error:",
                         error
                     );
-
 
                     setError(
                         error.response?.data?.message ||
@@ -264,19 +261,28 @@ function ManageUsersTable({
     ]);
 
 
+    /* =========================================================
+       SCROLL TO SELECTED USER
+    ========================================================= */
+
     useEffect(() => {
         if (
             !loading &&
             selectedUserId &&
             selectedRowRef.current
         ) {
-            selectedRowRef.current.scrollIntoView({
-                behavior:
-                    "smooth",
+            window.setTimeout(
+                () => {
+                    selectedRowRef.current?.scrollIntoView({
+                        behavior:
+                            "smooth",
 
-                block:
-                    "center",
-            });
+                        block:
+                            "center",
+                    });
+                },
+                200
+            );
         }
     }, [
         loading,
@@ -284,300 +290,377 @@ function ManageUsersTable({
     ]);
 
 
+    /* =========================================================
+       FILTER USERS
+    ========================================================= */
+
     const filteredUsers =
         useMemo(
             () => {
-                if (
-                    roleFilter ===
-                    "all"
-                ) {
-                    return users;
-                }
-
+                const query =
+                    searchTerm
+                        .trim()
+                        .toLowerCase();
 
                 return users.filter(
                     (
                         user
-                    ) =>
-                        String(
-                            user.role ||
-                            ""
-                        ).toLowerCase() ===
-                        roleFilter
+                    ) => {
+                        const role =
+                            String(
+                                user.role ||
+                                ""
+                            ).toLowerCase();
+
+                        const status =
+                            String(
+                                user.status ||
+                                ""
+                            ).toLowerCase();
+
+                        const text =
+                            [
+                                user.firstName,
+                                user.lastName,
+                                user.username,
+                                user.email,
+                                user.phoneNumber,
+                            ]
+                                .filter(
+                                    Boolean
+                                )
+                                .join(" ")
+                                .toLowerCase();
+
+
+                        const matchesSearch =
+                            !query ||
+                            text.includes(
+                                query
+                            );
+
+
+                        const matchesRole =
+                            roleFilter ===
+                            "all" ||
+                            role ===
+                            roleFilter;
+
+
+                        const matchesStatus =
+                            statusFilter ===
+                            "all" ||
+                            status ===
+                            statusFilter;
+
+
+                        return (
+                            matchesSearch &&
+                            matchesRole &&
+                            matchesStatus
+                        );
+                    }
                 );
             },
             [
                 users,
+                searchTerm,
                 roleFilter,
+                statusFilter,
             ]
         );
 
 
-    const selectedAssignmentUser =
+    /* =========================================================
+       PENDING RESET IDS
+    ========================================================= */
+
+    const pendingResetUserIds =
         useMemo(
             () =>
-                users.find(
-                    (
-                        user
-                    ) =>
-                        String(
-                            getUserId(
-                                user
+                resetRequests
+                    .map(
+                        (
+                            request
+                        ) =>
+                            getRequestUserId(
+                                request
                             )
-                        ) ===
-                        String(
-                            selectedAssignmentUserId
-                        )
-                ) ||
-                null,
+                    )
+                    .filter(
+                        Boolean
+                    ),
             [
-                users,
-                selectedAssignmentUserId,
+                resetRequests,
             ]
         );
 
 
-    useEffect(() => {
-        if (
-            !selectedAssignmentUser
-        ) {
-            setAssignmentSection(
-                ""
-            );
+    /* =========================================================
+       EDIT USER
+    ========================================================= */
 
-            return;
-        }
-
-
-        if (
-            selectedAssignmentUser.role ===
-            "trainer"
-        ) {
-            setAssignmentSection(
-                selectedAssignmentUser
-                    .assignedTrainingSections?.[0] ||
-                ""
-            );
-        } else {
-            setAssignmentSection(
-                ""
-            );
-        }
-    }, [
-        selectedAssignmentUser,
-    ]);
-
-
-    const hasResetRequest =
-        (
-            user
-        ) =>
-            resetRequests.some(
-                (
-                    request
-                ) =>
-                    String(
-                        getRequestUserId(
-                            request
-                        )
-                    ) ===
-                    String(
-                        getUserId(
-                            user
-                        )
-                    )
-            );
-
-
-    const updateTrainerAssignment =
-        async () => {
+    const handleEditSave =
+        async (
+            values
+        ) => {
             if (
-                !selectedAssignmentUser ||
-                selectedAssignmentUser.role !==
-                "trainer"
+                !editUser
             ) {
                 return;
             }
 
-
-            if (
-                !assignmentSection
-            ) {
-                setError(
-                    "Please select one training module for the Trainer."
+            const userId =
+                getUserId(
+                    editUser
                 );
 
-                return;
-            }
-
-
             try {
-                setUpdatingAssignment(
+                setSavingEdit(
                     true
                 );
 
-
                 setError(
                     ""
                 );
 
-
-                setMessage(
+                setSuccess(
                     ""
                 );
 
 
-                await api.patch(
-                    `/admin/users/${getUserId(
-                        selectedAssignmentUser
-                    )}/training-sections`,
-                    {
-                        assignedTrainingSections: [
-                            assignmentSection,
-                        ],
-                    }
+                const response =
+                    await api.patch(
+                        `/admin/users/${userId}`,
+                        values
+                    );
+
+
+                setSuccess(
+                    response.data?.message ||
+                    "User updated successfully."
                 );
 
 
-                setMessage(
-                    "Trainer training assignment updated successfully."
+                setEditUser(
+                    null
                 );
 
 
                 await loadUsers();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
-                    "Training assignment update error:",
+                    "Edit user error:",
                     error
                 );
 
-
                 setError(
                     error.response?.data?.message ||
-                    "Unable to update training assignment."
+                    "Unable to update user."
                 );
 
             } finally {
-                setUpdatingAssignment(
+                setSavingEdit(
                     false
                 );
             }
         };
 
 
-    const toggleStatus =
+    /* =========================================================
+       DEACTIVATE
+    ========================================================= */
+
+    const deactivateUser =
         async (
             user
         ) => {
+            const name =
+                getUserName(
+                    user
+                );
+
+            const confirmed =
+                window.confirm(
+                    `Deactivate ${name}? The user will not be able to log in until reactivated.`
+                );
+
+            if (
+                !confirmed
+            ) {
+                return;
+            }
+
             const userId =
                 getUserId(
                     user
                 );
 
-
-            const active =
-                String(
-                    user.status ||
-                    ""
-                ).toLowerCase() ===
-                "active";
-
-
             try {
-                setActionUserId(
+                setProcessingId(
                     userId
                 );
-
 
                 setError(
                     ""
                 );
 
-
-                setMessage(
+                setSuccess(
                     ""
                 );
 
 
-                await api.patch(
-                    `/admin/users/${userId}/${active
-                        ? "deactivate"
-                        : "reactivate"
-                    }`
-                );
+                const response =
+                    await api.patch(
+                        `/admin/users/${userId}/deactivate`
+                    );
 
 
-                setMessage(
-                    active
-                        ? "User deactivated successfully."
-                        : "User reactivated successfully."
+                setSuccess(
+                    response.data?.message ||
+                    "User deactivated successfully."
                 );
 
 
                 await loadUsers();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
+                console.error(
+                    "Deactivate user error:",
+                    error
+                );
+
                 setError(
                     error.response?.data?.message ||
-                    "Unable to update user status."
+                    "Unable to deactivate user."
                 );
 
             } finally {
-                setActionUserId(
+                setProcessingId(
                     ""
                 );
             }
         };
 
 
+    /* =========================================================
+       REACTIVATE
+    ========================================================= */
+
+    const reactivateUser =
+        async (
+            user
+        ) => {
+            const userId =
+                getUserId(
+                    user
+                );
+
+            try {
+                setProcessingId(
+                    userId
+                );
+
+                setError(
+                    ""
+                );
+
+                setSuccess(
+                    ""
+                );
+
+
+                const response =
+                    await api.patch(
+                        `/admin/users/${userId}/reactivate`
+                    );
+
+
+                setSuccess(
+                    response.data?.message ||
+                    "User reactivated successfully."
+                );
+
+
+                await loadUsers();
+
+            } catch (
+            error
+            ) {
+                console.error(
+                    "Reactivate user error:",
+                    error
+                );
+
+                setError(
+                    error.response?.data?.message ||
+                    "Unable to reactivate user."
+                );
+
+            } finally {
+                setProcessingId(
+                    ""
+                );
+            }
+        };
+
+
+    /* =========================================================
+       DELETE USER
+    ========================================================= */
+
     const deleteUser =
         async (
             user
         ) => {
             const name =
-                getName(
+                getUserName(
                     user
                 );
 
+            const confirmed =
+                window.confirm(
+                    `Delete ${name}? This action cannot be undone.`
+                );
 
             if (
-                !window.confirm(
-                    `Delete ${name}? This action cannot be undone.`
-                )
+                !confirmed
             ) {
                 return;
             }
-
 
             const userId =
                 getUserId(
                     user
                 );
 
-
             try {
-                setActionUserId(
+                setProcessingId(
                     userId
                 );
-
 
                 setError(
                     ""
                 );
 
-
-                setMessage(
+                setSuccess(
                     ""
                 );
 
 
-                await api.delete(
-                    `/admin/users/${userId}`
-                );
+                const response =
+                    await api.delete(
+                        `/admin/users/${userId}`
+                    );
 
 
-                setMessage(
+                setSuccess(
+                    response.data?.message ||
                     "User deleted successfully."
                 );
 
@@ -587,28 +670,56 @@ function ManageUsersTable({
                     loadResetRequests(),
                 ]);
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
+                console.error(
+                    "Delete user error:",
+                    error
+                );
+
                 setError(
                     error.response?.data?.message ||
                     "Unable to delete user."
                 );
 
             } finally {
-                setActionUserId(
+                setProcessingId(
                     ""
                 );
             }
         };
 
 
+    /* =========================================================
+       RESET PASSWORD
+    ========================================================= */
+
     const resetPassword =
         async (
             user
         ) => {
-            if (
-                !hasResetRequest(
+            const userId =
+                getUserId(
                     user
-                )
+                );
+
+            const hasRequest =
+                pendingResetUserIds.some(
+                    (
+                        id
+                    ) =>
+                        String(
+                            id
+                        ) ===
+                        String(
+                            userId
+                        )
+                );
+
+
+            if (
+                !hasRequest
             ) {
                 setError(
                     "This user does not have a pending password reset request."
@@ -619,41 +730,36 @@ function ManageUsersTable({
 
 
             const name =
-                getName(
+                getUserName(
                     user
                 );
 
 
+            const confirmed =
+                window.confirm(
+                    `Generate a new temporary password for ${name}?`
+                );
+
+
             if (
-                !window.confirm(
-                    `Reset the password for ${name}? A new temporary password will be generated.`
-                )
+                !confirmed
             ) {
                 return;
             }
 
 
-            const userId =
-                getUserId(
-                    user
-                );
-
-
             try {
-                setActionUserId(
+                setProcessingId(
                     userId
                 );
-
 
                 setError(
                     ""
                 );
 
-
-                setMessage(
+                setSuccess(
                     ""
                 );
-
 
                 setResetCredentials(
                     null
@@ -666,16 +772,16 @@ function ManageUsersTable({
                     );
 
 
-                const returned =
+                const credentials =
                     response.data?.credentials;
 
 
                 if (
-                    !returned?.username ||
-                    !returned?.password
+                    !credentials?.username ||
+                    !credentials?.password
                 ) {
                     setError(
-                        "Password was reset but temporary credentials were not returned."
+                        "Password was reset but the temporary credentials were not returned."
                     );
 
                     return;
@@ -691,15 +797,16 @@ function ManageUsersTable({
                         "",
 
                     username:
-                        returned.username,
+                        credentials.username,
 
                     password:
-                        returned.password,
+                        credentials.password,
                 });
 
 
-                setMessage(
-                    "Password reset successfully. Copy or send the temporary credentials now because the password will not be shown again."
+                setSuccess(
+                    response.data?.message ||
+                    "Temporary password generated successfully."
                 );
 
 
@@ -708,27 +815,32 @@ function ManageUsersTable({
                     loadResetRequests(),
                 ]);
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Reset password error:",
                     error
                 );
 
-
                 setError(
                     error.response?.data?.message ||
-                    "Unable to reset the user's password."
+                    "Unable to reset password."
                 );
 
             } finally {
-                setActionUserId(
+                setProcessingId(
                     ""
                 );
             }
         };
 
 
-    const copyResetCredentials =
+    /* =========================================================
+       COPY RESET CREDENTIALS
+    ========================================================= */
+
+    const copyCredentials =
         async () => {
             if (
                 !resetCredentials
@@ -736,32 +848,34 @@ function ManageUsersTable({
                 return;
             }
 
-
             try {
                 await navigator.clipboard.writeText(
                     `Username: ${resetCredentials.username}\nTemporary Password: ${resetCredentials.password}`
                 );
 
-
-                setMessage(
-                    "Temporary credentials copied to clipboard."
+                setSuccess(
+                    "Credentials copied to clipboard."
                 );
 
             } catch {
                 setError(
-                    "Unable to copy automatically."
+                    "Unable to copy credentials automatically."
                 );
             }
         };
 
 
-    const emailResetCredentials =
+    /* =========================================================
+       EMAIL RESET CREDENTIALS
+    ========================================================= */
+
+    const sendCredentials =
         () => {
             if (
                 !resetCredentials?.email
             ) {
                 setError(
-                    "No email address is available for this user."
+                    "This user does not have an email address."
                 );
 
                 return;
@@ -769,407 +883,324 @@ function ManageUsersTable({
 
 
             const subject =
-                encodeURIComponent(
-                    "UK LogiWare - Password Reset Credentials"
-                );
+                "UK LogiWare - Password Reset Credentials";
 
 
             const body =
-                encodeURIComponent(
-                    `Hello ${resetCredentials.name},\n\nYour UK LogiWare password has been reset.\n\nUsername: ${resetCredentials.username}\nTemporary Password: ${resetCredentials.password}\n\nYou must change this temporary password when you next log in.\n\nUK LogiWare Safety Training`
-                );
+                `Hello ${resetCredentials.name},
+
+Your UK LogiWare password has been reset.
+
+Username: ${resetCredentials.username}
+Temporary Password: ${resetCredentials.password}
+
+Please use this temporary password to log in.
+
+You will be required to create a new password after login.
+
+UK LogiWare Safety Training`;
 
 
-            window.location.href =
-                `mailto:${resetCredentials.email}?subject=${subject}&body=${body}`;
+            const gmailUrl =
+                `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                    resetCredentials.email
+                )}&su=${encodeURIComponent(
+                    subject
+                )}&body=${encodeURIComponent(
+                    body
+                )}`;
+
+
+            window.open(
+                gmailUrl,
+                "_blank",
+                "noopener,noreferrer"
+            );
         };
 
 
     return (
-        <div
-            className="
-                space-y-4
-            "
-        >
-            {error && (
-                <Alert
-                    type="error"
-                    text={
-                        error
-                    }
-                    onClose={() =>
-                        setError(
-                            ""
-                        )
-                    }
-                />
-            )}
-
-
-            {message && (
-                <Alert
-                    type="success"
-                    text={
-                        message
-                    }
-                    onClose={() =>
-                        setMessage(
-                            ""
-                        )
-                    }
-                />
-            )}
-
-
-            <section
+        <>
+            <div
                 className="
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-[#dbe4ef]
-                    bg-white
-                    shadow-sm
+                    space-y-4
                 "
             >
-                <div
-                    className="
-                        flex
-                        items-center
-                        gap-3
-                        border-b
-                        border-[#e8eef5]
-                        px-5
-                        py-4
-                    "
-                >
-                    <div
+                {/* =============================================
+                    ALERTS
+                ============================================== */}
+
+                {error && (
+                    <Alert
+                        type="error"
+                        text={
+                            error
+                        }
+                        onClose={() =>
+                            setError("")
+                        }
+                    />
+                )}
+
+
+                {success && (
+                    <Alert
+                        type="success"
+                        text={
+                            success
+                        }
+                        onClose={() =>
+                            setSuccess("")
+                        }
+                    />
+                )}
+
+
+                {/* =============================================
+                    RESET CREDENTIALS
+                ============================================== */}
+
+                {resetCredentials && (
+                    <section
                         className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-lg
-                            bg-blue-50
-                            text-blue-600
+                            overflow-hidden
+                            rounded-xl
+                            border
+                            border-blue-200
+                            bg-white
+                            shadow-sm
                         "
                     >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
+                        <div
                             className="
-                                h-5
-                                w-5
+                                flex
+                                items-start
+                                justify-between
+                                gap-4
+                                border-b
+                                border-blue-100
+                                bg-blue-50
+                                px-5
+                                py-4
                             "
                         >
-                            <circle
-                                cx="9"
-                                cy="8"
-                                r="3"
-                            />
-
-                            <path d="M3 20c.5-4 2.5-6 6-6" />
-
-                            <path d="M18 13v8" />
-
-                            <path d="M14 17h8" />
-                        </svg>
-                    </div>
-
-
-                    <div>
-                        <h2
-                            className="
-                                text-[14px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Trainer & Trainee Training Assignments
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[10px]
-                                text-[#64748b]
-                            "
-                        >
-                            Trainer receives exactly one module. Trainee receives both automatically.
-                        </p>
-                    </div>
-                </div>
-
-
-                <div
-                    className="
-                        grid
-                        gap-4
-                        p-5
-                        md:grid-cols-[220px_minmax(0,1fr)]
-                    "
-                >
-                    <label>
-                        <span
-                            className="
-                                mb-2
-                                block
-                                text-[10px]
-                                font-medium
-                                text-[#172033]
-                            "
-                        >
-                            User Type
-                        </span>
-
-
-                        <select
-                            value={
-                                roleFilter
-                            }
-                            onChange={(
-                                event
-                            ) => {
-                                setRoleFilter(
-                                    event.target.value
-                                );
-
-                                setSelectedAssignmentUserId(
-                                    ""
-                                );
-                            }}
-                            className="app-input"
-                        >
-                            <option value="all">
-                                All Users
-                            </option>
-
-                            <option value="trainer">
-                                Trainers
-                            </option>
-
-                            <option value="trainee">
-                                Trainees
-                            </option>
-                        </select>
-                    </label>
-
-
-                    <label>
-                        <span
-                            className="
-                                mb-2
-                                block
-                                text-[10px]
-                                font-medium
-                                text-[#172033]
-                            "
-                        >
-                            Select Trainer or Trainee
-                        </span>
-
-
-                        <select
-                            value={
-                                selectedAssignmentUserId
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setSelectedAssignmentUserId(
-                                    event.target.value
-                                )
-                            }
-                            className="app-input"
-                        >
-                            <option value="">
-                                Select a user
-                            </option>
-
-
-                            {filteredUsers.map(
-                                (
-                                    user
-                                ) => (
-                                    <option
-                                        key={
-                                            getUserId(
-                                                user
-                                            )
-                                        }
-                                        value={
-                                            getUserId(
-                                                user
-                                            )
-                                        }
-                                    >
-                                        {getName(
-                                            user
-                                        )}{" "}
-                                        -{" "}
-                                        {user.role}
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-                </div>
-
-
-                {selectedAssignmentUser && (
-                    <div
-                        className="
-                            border-t
-                            border-[#e8eef5]
-                            px-5
-                            py-4
-                        "
-                    >
-                        {selectedAssignmentUser.role ===
-                            "trainer" ? (
-                            <div
-                                className="
-                                    flex
-                                    flex-col
-                                    gap-4
-                                    md:flex-row
-                                    md:items-end
-                                "
-                            >
-                                <label
+                            <div>
+                                <h3
                                     className="
-                                        min-w-0
-                                        flex-1
+                                        text-[13px]
+                                        font-bold
+                                        text-[#172033]
                                     "
                                 >
-                                    <span
-                                        className="
-                                            mb-2
-                                            block
-                                            text-[10px]
-                                            font-medium
-                                            text-[#172033]
-                                        "
-                                    >
-                                        Assigned Module
-                                    </span>
+                                    New Temporary Credentials
+                                </h3>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[9px]
+                                        text-[#64748b]
+                                    "
+                                >
+                                    {resetCredentials.name}
+                                </p>
+                            </div>
 
 
-                                    <select
-                                        value={
-                                            assignmentSection
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setAssignmentSection(
-                                                event.target.value
-                                            )
-                                        }
-                                        className="app-input"
-                                    >
-                                        <option value="">
-                                            Select one module
-                                        </option>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setResetCredentials(
+                                        null
+                                    )
+                                }
+                                className="
+                                    flex
+                                    h-8
+                                    w-8
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    text-[16px]
+                                    text-[#64748b]
+                                    transition
+                                    hover:bg-white
+                                "
+                            >
+                                ×
+                            </button>
+                        </div>
 
 
-                                        {TRAINING_SECTIONS.map(
-                                            (
-                                                section
-                                            ) => (
-                                                <option
-                                                    key={
-                                                        section.value
-                                                    }
-                                                    value={
-                                                        section.value
-                                                    }
-                                                >
-                                                    {section.label}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </label>
+                        <div
+                            className="
+                                p-5
+                            "
+                        >
+                            <div
+                                className="
+                                    grid
+                                    gap-3
+                                    md:grid-cols-2
+                                "
+                            >
+                                <CredentialBox
+                                    label="Username"
+                                    value={
+                                        resetCredentials.username
+                                    }
+                                />
+
+                                <CredentialBox
+                                    label="Temporary Password"
+                                    value={
+                                        resetCredentials.password
+                                    }
+                                />
+                            </div>
+
+
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-lg
+                                    border
+                                    border-amber-200
+                                    bg-amber-50
+                                    px-4
+                                    py-3
+                                    text-[9px]
+                                    leading-4
+                                    text-amber-700
+                                "
+                            >
+                                This temporary password is shown only now.
+                                The Trainer or Trainee must change it on
+                                their next login.
+                            </div>
+
+
+                            <div
+                                className="
+                                    mt-4
+                                    flex
+                                    flex-col
+                                    gap-2
+                                    sm:flex-row
+                                    sm:justify-end
+                                "
+                            >
+                                <button
+                                    type="button"
+                                    onClick={
+                                        copyCredentials
+                                    }
+                                    className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-4
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#52627a]
+                                        transition
+                                        hover:bg-[#f8fafc]
+                                    "
+                                >
+                                    Copy Credentials
+                                </button>
 
 
                                 <button
                                     type="button"
                                     onClick={
-                                        updateTrainerAssignment
-                                    }
-                                    disabled={
-                                        updatingAssignment
+                                        sendCredentials
                                     }
                                     className="
-                                        min-h-[44px]
+                                        min-h-[40px]
                                         rounded-lg
                                         bg-[#1769e8]
-                                        px-5
-                                        text-[10px]
+                                        px-4
+                                        text-[9px]
                                         font-semibold
                                         text-white
-                                        disabled:opacity-50
+                                        transition
+                                        hover:bg-[#0b5ed7]
                                     "
                                 >
-                                    {updatingAssignment
-                                        ? "Updating..."
-                                        : "Save Assignment"}
+                                    Send Credentials by Gmail
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setResetCredentials(
+                                            null
+                                        )
+                                    }
+                                    className="
+                                        min-h-[40px]
+                                        rounded-lg
+                                        bg-[#073763]
+                                        px-5
+                                        text-[9px]
+                                        font-semibold
+                                        text-white
+                                        transition
+                                        hover:bg-[#0b4f87]
+                                    "
+                                >
+                                    Done
                                 </button>
                             </div>
-                        ) : (
-                            <div
-                                className="
-                                    rounded-lg
-                                    border
-                                    border-emerald-100
-                                    bg-emerald-50
-                                    px-4
-                                    py-3
-                                    text-[10px]
-                                    text-emerald-700
-                                "
-                            >
-                                This Trainee automatically has access to Manual Handling and Working at Height.
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    </section>
                 )}
-            </section>
 
 
-            {resetCredentials && (
+                {/* =============================================
+                    USERS
+                ============================================== */}
+
                 <section
                     className="
+                        overflow-hidden
                         rounded-xl
                         border
-                        border-blue-200
-                        bg-[#eef6ff]
-                        p-5
+                        border-[#dbe4ef]
+                        bg-white
+                        shadow-[0_1px_3px_rgba(15,23,42,0.06)]
                     "
                 >
+                    {/* HEADER */}
+
                     <div
                         className="
                             flex
-                            items-start
-                            justify-between
-                            gap-4
+                            flex-col
+                            gap-3
+                            border-b
+                            border-[#e8eef5]
+                            px-5
+                            py-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
                         "
                     >
                         <div>
-                            <h3
+                            <h2
                                 className="
-                                    text-[13px]
+                                    text-[14px]
                                     font-bold
                                     text-[#172033]
                                 "
                             >
-                                New Temporary Credentials
-                            </h3>
-
+                                Manage Users
+                            </h2>
 
                             <p
                                 className="
@@ -1178,662 +1209,205 @@ function ManageUsersTable({
                                     text-[#64748b]
                                 "
                             >
-                                {resetCredentials.name}
+                                View, edit and manage Trainer and Trainee accounts.
                             </p>
                         </div>
 
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setResetCredentials(
-                                    null
-                                )
-                            }
+                        <div
                             className="
-                                text-[10px]
-                                text-slate-500
+                                flex
+                                items-center
+                                gap-2
                             "
                         >
-                            Close
-                        </button>
+                            <span
+                                className="
+                                    rounded-full
+                                    bg-blue-50
+                                    px-3
+                                    py-1.5
+                                    text-[9px]
+                                    font-semibold
+                                    text-blue-600
+                                "
+                            >
+                                {users.length} Users
+                            </span>
+
+
+                            <button
+                                type="button"
+                                onClick={
+                                    loadPage
+                                }
+                                disabled={
+                                    loading
+                                }
+                                className="
+                                    min-h-[36px]
+                                    rounded-lg
+                                    border
+                                    border-[#cbd5e1]
+                                    bg-white
+                                    px-3
+                                    text-[9px]
+                                    font-semibold
+                                    text-[#52627a]
+                                    transition
+                                    hover:bg-[#f8fafc]
+                                    disabled:opacity-50
+                                "
+                            >
+                                Refresh
+                            </button>
+                        </div>
                     </div>
 
 
-                    <p
-                        className="
-                            mt-4
-                            text-[9px]
-                            text-orange-600
-                        "
-                    >
-                        Save or send these credentials now. The temporary password is shown only once.
-                    </p>
-
+                    {/* FILTERS */}
 
                     <div
                         className="
-                            mt-4
-                            grid
-                            gap-3
-                            md:grid-cols-2
+                            border-b
+                            border-[#e8eef5]
+                            p-4
                         "
                     >
-                        <Credential
-                            label="Username"
-                            value={
-                                resetCredentials.username
+                        <UserFilters
+                            searchTerm={
+                                searchTerm
+                            }
+                            roleFilter={
+                                roleFilter
+                            }
+                            statusFilter={
+                                statusFilter
+                            }
+                            onSearchChange={
+                                setSearchTerm
+                            }
+                            onRoleChange={
+                                setRoleFilter
+                            }
+                            onStatusChange={
+                                setStatusFilter
                             }
                         />
-
-
-                        <Credential
-                            label="Temporary Password"
-                            value={
-                                resetCredentials.password
-                            }
-                        />
                     </div>
 
 
-                    <div
-                        className="
-                            mt-4
-                            flex
-                            flex-wrap
-                            gap-3
-                        "
-                    >
-                        <button
-                            type="button"
-                            onClick={
-                                copyResetCredentials
-                            }
+                    {/* TABLE */}
+
+                    {loading ? (
+                        <div
                             className="
-                                rounded-lg
-                                bg-[#1769e8]
-                                px-5
-                                py-2.5
-                                text-[10px]
-                                font-semibold
-                                text-white
+                                flex
+                                min-h-[260px]
+                                items-center
+                                justify-center
                             "
                         >
-                            Copy Credentials
-                        </button>
+                            <div
+                                className="
+                                    text-center
+                                "
+                            >
+                                <div
+                                    className="
+                                        mx-auto
+                                        h-8
+                                        w-8
+                                        animate-spin
+                                        rounded-full
+                                        border-2
+                                        border-blue-100
+                                        border-t-blue-600
+                                    "
+                                />
 
-
-                        <button
-                            type="button"
-                            onClick={
-                                emailResetCredentials
-                            }
-                            className="
-                                rounded-lg
-                                bg-[#1769e8]
-                                px-5
-                                py-2.5
-                                text-[10px]
-                                font-semibold
-                                text-white
-                            "
-                        >
-                            Send Email
-                        </button>
-                    </div>
-                </section>
-            )}
-
-
-            <section
-                className="
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-[#dbe4ef]
-                    bg-white
-                    shadow-sm
-                "
-            >
-                <div
-                    className="
-                        flex
-                        items-center
-                        justify-between
-                        gap-4
-                        border-b
-                        border-[#e8eef5]
-                        px-5
-                        py-4
-                    "
-                >
-                    <div>
-                        <h2
-                            className="
-                                text-[14px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Trainer & Trainee Accounts
-                        </h2>
-
-
-                        <p
-                            className="
-                                mt-1
-                                text-[10px]
-                                text-[#64748b]
-                            "
-                        >
-                            Manage system access status.
-                        </p>
-                    </div>
-
-
-                    <span
-                        className="
-                            rounded-lg
-                            bg-blue-50
-                            px-3
-                            py-2
-                            text-[10px]
-                            font-medium
-                            text-blue-600
-                        "
-                    >
-                        {users.length} Users
-                    </span>
-                </div>
-
-
-                <div
-                    className="
-                        overflow-x-auto
-                    "
-                >
-                    <table
-                        className="
-                            min-w-[850px]
-                        "
-                    >
-                        <thead
-                            className="
-                                bg-[#f8fafc]
-                            "
-                        >
-                            <tr>
-                                <TableHead>
-                                    User
-                                </TableHead>
-
-                                <TableHead>
-                                    Username
-                                </TableHead>
-
-                                <TableHead>
-                                    Role
-                                </TableHead>
-
-                                <TableHead>
-                                    Status
-                                </TableHead>
-
-                                <TableHead
-                                    align="right"
+                                <p
+                                    className="
+                                        mt-3
+                                        text-[10px]
+                                        text-[#64748b]
+                                    "
                                 >
-                                    Actions
-                                </TableHead>
-                            </tr>
-                        </thead>
+                                    Loading users...
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <UserTable
+                            users={
+                                filteredUsers
+                            }
+                            pendingResetUserIds={
+                                pendingResetUserIds
+                            }
+                            processingId={
+                                processingId
+                            }
+                            selectedUserId={
+                                selectedUserId
+                            }
+                            selectedRowRef={
+                                selectedRowRef
+                            }
+                            onEdit={
+                                setEditUser
+                            }
+                            onResetPassword={
+                                resetPassword
+                            }
+                            onDeactivate={
+                                deactivateUser
+                            }
+                            onReactivate={
+                                reactivateUser
+                            }
+                            onDelete={
+                                deleteUser
+                            }
+                        />
+                    )}
+                </section>
+            </div>
 
 
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td
-                                        colSpan="5"
-                                        className="
-                                            py-14
-                                            text-center
-                                            text-[11px]
-                                            text-slate-500
-                                        "
-                                    >
-                                        Loading users...
-                                    </td>
-                                </tr>
-                            ) : users.length ===
-                                0 ? (
-                                <tr>
-                                    <td
-                                        colSpan="5"
-                                        className="
-                                            py-14
-                                            text-center
-                                            text-[11px]
-                                            text-slate-500
-                                        "
-                                    >
-                                        No Trainer or Trainee accounts found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                users.map(
-                                    (
-                                        user
-                                    ) => {
-                                        const userId =
-                                            getUserId(
-                                                user
-                                            );
+            {/* =============================================
+                EDIT MODAL
+            ============================================== */}
 
-
-                                        const pendingReset =
-                                            hasResetRequest(
-                                                user
-                                            );
-
-
-                                        const active =
-                                            String(
-                                                user.status ||
-                                                ""
-                                            ).toLowerCase() ===
-                                            "active";
-
-
-                                        const busy =
-                                            String(
-                                                actionUserId
-                                            ) ===
-                                            String(
-                                                userId
-                                            );
-
-
-                                        const highlighted =
-                                            String(
-                                                selectedUserId ||
-                                                ""
-                                            ) ===
-                                            String(
-                                                userId
-                                            );
-
-
-                                        return (
-                                            <tr
-                                                key={
-                                                    userId
-                                                }
-                                                ref={
-                                                    highlighted
-                                                        ? selectedRowRef
-                                                        : null
-                                                }
-                                                className={`
-                                                    border-b
-                                                    border-[#edf1f6]
-                                                    last:border-0
-
-                                                    ${highlighted ||
-                                                        pendingReset
-                                                        ? "bg-blue-50/50"
-                                                        : "bg-white"
-                                                    }
-                                                `}
-                                            >
-                                                <td
-                                                    className="
-                                                        px-5
-                                                        py-4
-                                                    "
-                                                >
-                                                    <div>
-                                                        <div
-                                                            className="
-                                                                flex
-                                                                items-center
-                                                                gap-2
-                                                            "
-                                                        >
-                                                            <p
-                                                                className="
-                                                                    text-[10px]
-                                                                    font-semibold
-                                                                    text-[#172033]
-                                                                "
-                                                            >
-                                                                {getName(
-                                                                    user
-                                                                )}
-                                                            </p>
-
-
-                                                            {pendingReset && (
-                                                                <span
-                                                                    className="
-                                                                        rounded-full
-                                                                        bg-amber-100
-                                                                        px-2
-                                                                        py-1
-                                                                        text-[7px]
-                                                                        font-semibold
-                                                                        text-amber-700
-                                                                    "
-                                                                >
-                                                                    RESET REQUESTED
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-
-                                                        <p
-                                                            className="
-                                                                mt-1
-                                                                text-[9px]
-                                                                text-[#64748b]
-                                                            "
-                                                        >
-                                                            {user.email ||
-                                                                "—"}
-                                                        </p>
-                                                    </div>
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        px-5
-                                                        py-4
-                                                        text-[10px]
-                                                        text-[#52627a]
-                                                    "
-                                                >
-                                                    {user.username ||
-                                                        "—"}
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        px-5
-                                                        py-4
-                                                    "
-                                                >
-                                                    <span
-                                                        className="
-                                                            rounded-full
-                                                            bg-blue-50
-                                                            px-3
-                                                            py-1.5
-                                                            text-[9px]
-                                                            font-medium
-                                                            capitalize
-                                                            text-blue-600
-                                                        "
-                                                    >
-                                                        {user.role}
-                                                    </span>
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        px-5
-                                                        py-4
-                                                    "
-                                                >
-                                                    <span
-                                                        className={`
-                                                            inline-flex
-                                                            items-center
-                                                            gap-1.5
-                                                            rounded-full
-                                                            px-3
-                                                            py-1.5
-                                                            text-[9px]
-                                                            font-medium
-
-                                                            ${active
-                                                                ? "bg-emerald-50 text-emerald-600"
-                                                                : "bg-slate-100 text-slate-600"
-                                                            }
-                                                        `}
-                                                    >
-                                                        <span
-                                                            className={`
-                                                                h-1.5
-                                                                w-1.5
-                                                                rounded-full
-
-                                                                ${active
-                                                                    ? "bg-emerald-500"
-                                                                    : "bg-slate-400"
-                                                                }
-                                                            `}
-                                                        />
-
-                                                        {active
-                                                            ? "Active"
-                                                            : "Deactivated"}
-                                                    </span>
-                                                </td>
-
-
-                                                <td
-                                                    className="
-                                                        px-5
-                                                        py-4
-                                                    "
-                                                >
-                                                    <div
-                                                        className="
-                                                            flex
-                                                            justify-end
-                                                            gap-2
-                                                        "
-                                                    >
-                                                        {pendingReset &&
-                                                            active && (
-                                                                <ActionButton
-                                                                    disabled={
-                                                                        busy
-                                                                    }
-                                                                    onClick={() =>
-                                                                        resetPassword(
-                                                                            user
-                                                                        )
-                                                                    }
-                                                                    variant="blue"
-                                                                >
-                                                                    Reset Password
-                                                                </ActionButton>
-                                                            )}
-
-
-                                                        <ActionButton
-                                                            disabled={
-                                                                busy
-                                                            }
-                                                            onClick={() =>
-                                                                toggleStatus(
-                                                                    user
-                                                                )
-                                                            }
-                                                            variant="warning"
-                                                        >
-                                                            {active
-                                                                ? "Deactivate"
-                                                                : "Reactivate"}
-                                                        </ActionButton>
-
-
-                                                        <ActionButton
-                                                            disabled={
-                                                                busy
-                                                            }
-                                                            onClick={() =>
-                                                                deleteUser(
-                                                                    user
-                                                                )
-                                                            }
-                                                            variant="danger"
-                                                        >
-                                                            Delete
-                                                        </ActionButton>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
-                                )
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    );
-}
-
-
-function TableHead({
-    children,
-    align = "left",
-}) {
-    return (
-        <th
-            className={`
-                px-5
-                py-3
-                text-[9px]
-                font-semibold
-                uppercase
-                text-[#607089]
-
-                ${align ===
-                    "right"
-                    ? "text-right"
-                    : "text-left"
+            <EditUserModal
+                open={
+                    Boolean(
+                        editUser
+                    )
                 }
-            `}
-        >
-            {children}
-        </th>
+                user={
+                    editUser
+                }
+                loading={
+                    savingEdit
+                }
+                onSave={
+                    handleEditSave
+                }
+                onClose={() =>
+                    setEditUser(
+                        null
+                    )
+                }
+            />
+        </>
     );
 }
 
 
-function ActionButton({
-    children,
-    onClick,
-    disabled,
-    variant,
-}) {
-    let classes =
-        "border-[#dbe4ef] text-[#52627a]";
-
-
-    if (
-        variant ===
-        "blue"
-    ) {
-        classes =
-            "border-blue-300 text-blue-600 hover:bg-blue-50";
-    }
-
-
-    if (
-        variant ===
-        "warning"
-    ) {
-        classes =
-            "border-amber-300 text-amber-600 hover:bg-amber-50";
-    }
-
-
-    if (
-        variant ===
-        "danger"
-    ) {
-        classes =
-            "border-red-200 text-red-500 hover:bg-red-50";
-    }
-
-
-    return (
-        <button
-            type="button"
-            onClick={
-                onClick
-            }
-            disabled={
-                disabled
-            }
-            className={`
-                min-h-[34px]
-                whitespace-nowrap
-                rounded-lg
-                border
-                bg-white
-                px-3
-                text-[9px]
-                font-medium
-                transition
-                disabled:cursor-not-allowed
-                disabled:opacity-40
-                ${classes}
-            `}
-        >
-            {children}
-        </button>
-    );
-}
-
-
-function Credential({
-    label,
-    value,
-}) {
-    return (
-        <div
-            className="
-                rounded-lg
-                border
-                border-blue-100
-                bg-white
-                p-4
-            "
-        >
-            <p
-                className="
-                    text-[8px]
-                    font-semibold
-                    uppercase
-                    text-[#8aa0bb]
-                "
-            >
-                {label}
-            </p>
-
-
-            <p
-                className="
-                    mt-2
-                    break-all
-                    text-[11px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
-        </div>
-    );
-}
-
+/* =========================================================
+   ALERT
+========================================================= */
 
 function Alert({
     type,
@@ -1843,7 +1417,6 @@ function Alert({
     const success =
         type ===
         "success";
-
 
     return (
         <div
@@ -1876,11 +1449,59 @@ function Alert({
                 }
                 className="
                     shrink-0
+                    text-[16px]
                     font-bold
                 "
             >
                 ×
             </button>
+        </div>
+    );
+}
+
+
+/* =========================================================
+   CREDENTIAL BOX
+========================================================= */
+
+function CredentialBox({
+    label,
+    value,
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                border
+                border-[#dbe4ef]
+                bg-[#f8fafc]
+                p-4
+            "
+        >
+            <p
+                className="
+                    text-[7px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-[#64748b]
+                "
+            >
+                {label}
+            </p>
+
+            <p
+                className="
+                    mt-2
+                    break-all
+                    font-mono
+                    text-[10px]
+                    font-bold
+                    text-[#172033]
+                "
+            >
+                {value}
+            </p>
         </div>
     );
 }

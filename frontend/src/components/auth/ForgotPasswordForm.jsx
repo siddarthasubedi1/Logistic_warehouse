@@ -4,28 +4,35 @@ import {
 
 import api from "../../services/api";
 
+import FeedbackAlert from "../ui/FeedbackAlert";
+
+
 function ForgotPasswordForm({
-    onBackToLogin,
+    onBack,
 }) {
     const [
         username,
         setUsername,
     ] = useState("");
 
+
     const [
         loading,
         setLoading,
     ] = useState(false);
+
+
+    const [
+        success,
+        setSuccess,
+    ] = useState("");
+
 
     const [
         error,
         setError,
     ] = useState("");
 
-    const [
-        success,
-        setSuccess,
-    ] = useState("");
 
     const handleSubmit =
         async (
@@ -33,15 +40,12 @@ function ForgotPasswordForm({
         ) => {
             event.preventDefault();
 
-            const cleanUsername =
-                username.trim();
-
             setError("");
-
             setSuccess("");
 
+
             if (
-                !cleanUsername
+                !username.trim()
             ) {
                 setError(
                     "Please enter your username."
@@ -50,34 +54,50 @@ function ForgotPasswordForm({
                 return;
             }
 
+
             try {
                 setLoading(
                     true
                 );
 
+
+                /*
+                 * Use the password-reset request route already
+                 * provided by the backend. The Administrator
+                 * performs the actual account password reset.
+                 */
                 const response =
                     await api.post(
                         "/auth/forgot-password",
                         {
                             username:
-                                cleanUsername,
+                                username.trim(),
                         }
                     );
+
 
                 setSuccess(
                     response.data
                         ?.message ||
-                    "If this username belongs to an active Trainer or Trainee account, a password reset request has been sent to the administrator."
+                    "Your password reset request has been submitted."
                 );
+
             } catch (
-            requestError
+            error
             ) {
+                console.error(
+                    "Forgot password error:",
+                    error
+                );
+
+
                 setError(
-                    requestError.response
+                    error.response
                         ?.data
                         ?.message ||
-                    "Unable to submit the password reset request."
+                    "Unable to submit your password reset request."
                 );
+
             } finally {
                 setLoading(
                     false
@@ -85,168 +105,225 @@ function ForgotPasswordForm({
             }
         };
 
+
     return (
-        <div className="auth-form-card auth-recovery-card">
-            <div
-                className="auth-lock-badge"
-                aria-hidden="true"
+        <div
+            className="
+                rounded-2xl
+                border
+                border-[#dbe4ef]
+                bg-white
+                p-6
+                shadow-[0_12px_40px_rgba(15,23,42,0.08)]
+                sm:p-8
+            "
+        >
+            <button
+                type="button"
+                onClick={
+                    onBack
+                }
+                className="
+                    mb-5
+                    inline-flex
+                    items-center
+                    gap-2
+                    text-[9px]
+                    font-semibold
+                    text-[#52627a]
+                    transition
+                    hover:text-[#1769e8]
+                "
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
+                ← Back to login
+            </button>
+
+
+            <div>
+                <div
+                    className="
+                        flex
+                        h-11
+                        w-11
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-blue-50
+                        text-[#1769e8]
+                    "
                 >
-                    <rect
-                        x="5.5"
-                        y="10"
-                        width="13"
-                        height="10"
-                        rx="2"
-                    />
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="
+                            h-5
+                            w-5
+                        "
+                    >
+                        <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                        />
 
-                    <path d="M8.5 10V7a3.5 3.5 0 0 1 7 0v3" />
-                </svg>
-            </div>
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
 
-            <div className="auth-form-heading">
-                <span className="auth-kicker">
-                    ACCOUNT RECOVERY
-                </span>
+                        <path d="M12 14v2" />
+                    </svg>
+                </div>
 
-                <h1>
-                    Forgot Password?
-                </h1>
 
-                <p>
-                    Enter your username and we will send a
-                    password reset request to the administrator.
+                <h2
+                    className="
+                        mt-4
+                        text-[23px]
+                        font-bold
+                        tracking-[-0.03em]
+                        text-[#172033]
+                    "
+                >
+                    Forgot password?
+                </h2>
+
+
+                <p
+                    className="
+                        mt-2
+                        text-[9px]
+                        leading-5
+                        text-[#64748b]
+                    "
+                >
+                    Enter your username to request a password reset.
+                    Your Administrator can then issue new login
+                    credentials.
                 </p>
             </div>
 
-            <div className="auth-info-panel">
-                <span aria-hidden="true">
-                    i
-                </span>
 
-                <p>
-                    The administrator will generate a new
-                    temporary password. Your username will
-                    remain the same.
-                </p>
+            <div
+                className="
+                    mt-5
+                    space-y-3
+                "
+            >
+                <FeedbackAlert
+                    type="success"
+                    message={
+                        success
+                    }
+                    onClose={() =>
+                        setSuccess("")
+                    }
+                />
+
+
+                <FeedbackAlert
+                    type="error"
+                    message={
+                        error
+                    }
+                    onClose={() =>
+                        setError("")
+                    }
+                />
             </div>
 
-            {success && (
-                <div
-                    className="auth-alert auth-alert-success"
-                    role="status"
-                >
-                    <span aria-hidden="true">
-                        ✓
-                    </span>
-
-                    <p>
-                        {success}
-                    </p>
-                </div>
-            )}
-
-            {error && (
-                <div
-                    className="auth-alert auth-alert-error"
-                    role="alert"
-                >
-                    <span aria-hidden="true">
-                        !
-                    </span>
-
-                    <p>
-                        {error}
-                    </p>
-                </div>
-            )}
 
             <form
-                className="auth-form"
                 onSubmit={
                     handleSubmit
                 }
+                className="
+                    mt-5
+                "
             >
-                <div className="auth-field">
-                    <label htmlFor="recovery-username">
+                <label
+                    className="
+                        block
+                    "
+                >
+                    <span
+                        className="
+                            mb-2
+                            block
+                            text-[9px]
+                            font-semibold
+                            text-[#334155]
+                        "
+                    >
                         Username
-                    </label>
+                    </span>
 
-                    <div className="auth-input-shell">
-                        <span
-                            className="auth-input-icon"
-                            aria-hidden="true"
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                            >
-                                <circle
-                                    cx="12"
-                                    cy="8"
-                                    r="3.2"
-                                />
 
-                                <path d="M5.5 19c.8-4 3-6 6.5-6s5.7 2 6.5 6" />
-                            </svg>
-                        </span>
+                    <input
+                        type="text"
+                        value={
+                            username
+                        }
+                        onChange={(
+                            event
+                        ) =>
+                            setUsername(
+                                event.target.value
+                            )
+                        }
+                        placeholder="Enter your username"
+                        className="
+                            min-h-[44px]
+                            w-full
+                            rounded-lg
+                            border
+                            border-[#cbd5e1]
+                            bg-white
+                            px-3
+                            text-[10px]
+                            text-[#172033]
+                            outline-none
+                            placeholder:text-[#94a3b8]
+                            focus:border-[#3b82f6]
+                            focus:ring-2
+                            focus:ring-blue-100
+                        "
+                    />
+                </label>
 
-                        <input
-                            id="recovery-username"
-                            type="text"
-                            className="auth-input auth-input-with-left-icon"
-                            placeholder="Enter your username"
-                            value={
-                                username
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setUsername(
-                                    event.target
-                                        .value
-                                )
-                            }
-                            disabled={
-                                loading
-                            }
-                        />
-                    </div>
-                </div>
 
                 <button
                     type="submit"
-                    className="auth-primary-button"
                     disabled={
                         loading
                     }
+                    className="
+                        mt-4
+                        min-h-[44px]
+                        w-full
+                        rounded-lg
+                        bg-gradient-to-r
+                        from-[#073763]
+                        to-[#1769aa]
+                        px-5
+                        text-[10px]
+                        font-semibold
+                        text-white
+                        transition
+                        hover:opacity-95
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                    "
                 >
                     {loading
                         ? "Submitting..."
                         : "Request Password Reset"}
                 </button>
             </form>
-
-            <div className="auth-back-row">
-                <button
-                    type="button"
-                    className="auth-text-link"
-                    onClick={
-                        onBackToLogin
-                    }
-                >
-                    ← Back to Login
-                </button>
-            </div>
         </div>
     );
 }
+
 
 export default ForgotPasswordForm;

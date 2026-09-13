@@ -6,28 +6,38 @@ import {
 import {
     clearAuthSession,
     getAccessToken,
+    getDashboardPath,
     getSessionUser,
     normalizeRole,
 } from "../utils/session";
 
+
 function ProtectedRoute({
-    allowedRoles = [],
     children,
+    allowedRoles = [],
 }) {
     const location =
         useLocation();
 
-    const token =
+
+    const accessToken =
         getAccessToken();
+
 
     const user =
         getSessionUser();
 
+
+    /* =====================================================
+       NOT LOGGED IN
+    ===================================================== */
+
     if (
-        !token ||
+        !accessToken ||
         !user
     ) {
         clearAuthSession();
+
 
         return (
             <Navigate
@@ -41,23 +51,33 @@ function ProtectedRoute({
         );
     }
 
+
+    /* =====================================================
+       NORMALIZE ROLE
+    ===================================================== */
+
     const role =
         normalizeRole(
             user.role
         );
 
-    const normalizedAllowedRoles =
-        allowedRoles.map(
-            normalizeRole
-        );
+
+    /* =====================================================
+       INVALID ROLE
+    ===================================================== */
 
     if (
-        normalizedAllowedRoles.length >
-        0 &&
-        !normalizedAllowedRoles.includes(
+        ![
+            "admin",
+            "trainer",
+            "trainee",
+        ].includes(
             role
         )
     ) {
+        clearAuthSession();
+
+
         return (
             <Navigate
                 to="/login"
@@ -66,12 +86,22 @@ function ProtectedRoute({
         );
     }
 
+
+    /* =====================================================
+       FIRST LOGIN PASSWORD CHANGE
+
+       Trainer/Trainee should NOT access protected
+       dashboard pages until password has changed.
+
+       Admin is excluded.
+    ===================================================== */
+
     if (
-        [
-            "trainer",
-            "trainee",
-        ].includes(
-            role
+        (
+            role ===
+            "trainer" ||
+            role ===
+            "trainee"
         ) &&
         user.mustChangePassword ===
         true
@@ -84,7 +114,57 @@ function ProtectedRoute({
         );
     }
 
+
+    /* =====================================================
+       ROLE PERMISSION
+    ===================================================== */
+
+    const normalizedAllowedRoles =
+        (
+            Array.isArray(
+                allowedRoles
+            )
+                ? allowedRoles
+                : [
+                    allowedRoles,
+                ]
+        )
+            .map(
+                (
+                    allowedRole
+                ) =>
+                    normalizeRole(
+                        allowedRole
+                    )
+            );
+
+
+    if (
+        normalizedAllowedRoles.length >
+        0 &&
+        !normalizedAllowedRoles.includes(
+            role
+        )
+    ) {
+        return (
+            <Navigate
+                to={
+                    getDashboardPath(
+                        role
+                    )
+                }
+                replace
+            />
+        );
+    }
+
+
+    /* =====================================================
+       ACCESS ALLOWED
+    ===================================================== */
+
     return children;
 }
+
 
 export default ProtectedRoute;

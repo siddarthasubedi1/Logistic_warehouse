@@ -25,6 +25,7 @@ import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSec
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
 import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
+import TraineeUtilityPage from "./pages/trainee/TraineeUtilityPage";
 
 import {
   clearAuthSession,
@@ -438,6 +439,56 @@ function App() {
             ]}
           >
             <TraineeLearningPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ============================================
+              TRAINEE UTILITY PAGES
+          ============================================= */}
+
+      <Route
+        path="/trainee/progress"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeUtilityPage type="progress" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainee/scenarios"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeUtilityPage type="scenarios" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainee/quizzes"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeUtilityPage type="quizzes" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainee/notifications"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeUtilityPage type="notifications" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainee/help"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeUtilityPage type="help" />
           </ProtectedRoute>
         }
       />

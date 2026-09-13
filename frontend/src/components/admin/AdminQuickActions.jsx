@@ -16,8 +16,7 @@ function AdminQuickActions({
                 "Create User Account",
 
             description:
-                `${pendingUsers} pending ${pendingUsers ===
-                    1
+                `${pendingUsers} pending ${pendingUsers === 1
                     ? "user"
                     : "users"
                 }`,
@@ -37,7 +36,7 @@ function AdminQuickActions({
                 "Manage Users",
 
             description:
-                "Edit, activate, deactivate or remove accounts",
+                "Activate, deactivate or remove accounts",
 
             action:
                 () =>
@@ -47,23 +46,6 @@ function AdminQuickActions({
 
             icon:
                 "users",
-        },
-
-        {
-            title:
-                "View Audit Logs",
-
-            description:
-                "Review important account and system activity",
-
-            action:
-                () =>
-                    navigate(
-                        "/admin/audit-logs"
-                    ),
-
-            icon:
-                "audit",
         },
     ];
 
@@ -76,15 +58,14 @@ function AdminQuickActions({
                 border
                 border-[#dbe4ef]
                 bg-white
-                shadow-[0_1px_3px_rgba(15,23,42,0.08)]
+                shadow-[0_1px_3px_rgba(15,23,42,0.07)]
             "
         >
             <div
                 className="
-                    border-b
-                    border-[#e8eef5]
                     px-5
-                    py-4
+                    pb-2
+                    pt-5
                 "
             >
                 <h2
@@ -105,21 +86,20 @@ function AdminQuickActions({
                         text-[#7c8da6]
                     "
                 >
-                    Common administrator tasks.
+                    Common Sprint 1 administrator actions.
                 </p>
             </div>
 
 
             <div
                 className="
-                    space-y-2
+                    space-y-3
                     p-5
+                    pt-3
                 "
             >
                 {actions.map(
-                    (
-                        action
-                    ) => (
+                    (action) => (
                         <button
                             key={
                                 action.title
@@ -130,13 +110,13 @@ function AdminQuickActions({
                             }
                             className="
                                 flex
-                                min-h-[73px]
+                                min-h-[74px]
                                 w-full
                                 items-center
                                 gap-3
                                 rounded-lg
                                 border
-                                border-[#e2e8f0]
+                                border-[#dbe4ef]
                                 bg-white
                                 px-4
                                 py-3
@@ -155,7 +135,7 @@ function AdminQuickActions({
                                     items-center
                                     justify-center
                                     rounded-lg
-                                    bg-blue-50
+                                    bg-[#eef6ff]
                                     text-blue-600
                                 "
                             >
@@ -199,7 +179,7 @@ function AdminQuickActions({
 
                             <span
                                 className="
-                                    text-[20px]
+                                    text-[19px]
                                     font-light
                                     text-blue-600
                                 "
@@ -213,8 +193,8 @@ function AdminQuickActions({
 
                 <div
                     className="
-                        mt-3
                         flex
+                        min-h-[74px]
                         items-center
                         gap-3
                         rounded-lg
@@ -222,7 +202,7 @@ function AdminQuickActions({
                         border-blue-100
                         bg-[#eef6ff]
                         px-4
-                        py-4
+                        py-3
                     "
                 >
                     <div
@@ -244,6 +224,8 @@ function AdminQuickActions({
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className="
                                 h-5
                                 w-5
@@ -276,7 +258,7 @@ function AdminQuickActions({
                                 text-[#64748b]
                             "
                         >
-                            Administrative routes are protected by role-based access control.
+                            Admin routes are protected by role-based access control.
                         </p>
                     </div>
                 </div>
@@ -302,33 +284,15 @@ function ActionIcon({
         strokeWidth:
             "1.8",
 
+        strokeLinecap:
+            "round",
+
+        strokeLinejoin:
+            "round",
+
         className:
             "h-5 w-5",
     };
-
-
-    if (
-        type ===
-        "audit"
-    ) {
-        return (
-            <svg {...props}>
-                <rect
-                    x="6"
-                    y="3"
-                    width="12"
-                    height="18"
-                    rx="1"
-                />
-
-                <path d="M9 8h6" />
-
-                <path d="M9 12h6" />
-
-                <path d="M9 16h4" />
-            </svg>
-        );
-    }
 
 
     if (

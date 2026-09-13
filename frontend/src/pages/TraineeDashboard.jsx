@@ -1,197 +1,237 @@
-import {
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
-
-import {
-    useNavigate,
-} from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import TraineeHeader from "../components/trainee/TraineeHeader";
-
-import ActionButton from "../components/ui/ActionButton";
 import FeedbackAlert from "../components/ui/FeedbackAlert";
 import LoadingCard from "../components/ui/LoadingCard";
-import StatusBadge from "../components/ui/StatusBadge";
 
 import api from "../services/api";
-
-import {
-    formatProgrammeType,
-    getApiErrorMessage,
-    getAssignmentProgramme,
-    parseArrayResponse,
-} from "../utils/training";
+import boxLift from "../images/box-lift.jpg";
+import heightImage from "../images/hight.jpg";
+import warehouseImage from "../images/warehouse.jpg";
+import insideWarehouseImage from "../images/inside-warehouse.jpg";
+import loadingImage from "../images/loading.jpg";
 
 import {
     getSessionUser,
+    saveSessionUser,
 } from "../utils/session";
+
+import { getApiErrorMessage } from "../utils/training";
+
+
+const MODULES = {
+    "manual-handling": {
+        title: "Manual Handling",
+        description: "Learn safe manual handling techniques and reduce injury risks.",
+        image: boxLift,
+    },
+    "working-at-height": {
+        title: "Working at Height",
+        description: "Learn how to work safely at elevated heights and prevent falls.",
+        image: heightImage,
+    },
+};
+
+
+const SCENARIOS = [
+    {
+        title: "Warehouse - Receiving Area",
+        text: "Identify hazards in the receiving area.",
+        image: warehouseImage,
+    },
+    {
+        title: "Storage Area - High Risk",
+        text: "Spot the hazards in the storage area.",
+        image: insideWarehouseImage,
+    },
+    {
+        title: "Loading Dock",
+        text: "Find and report the safety hazards.",
+        image: loadingImage,
+    },
+];
 
 
 function TraineeDashboard() {
-    const navigate =
-        useNavigate();
+    const navigate = useNavigate();
 
-
-    const user =
-        getSessionUser();
-
-
-    const [
-        assignments,
-        setAssignments,
-    ] = useState([]);
-
-
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
-
-    const [
-        errorMessage,
-        setErrorMessage,
-    ] = useState("");
+    const [user, setUser] = useState(() => getSessionUser());
+    const [progress, setProgress] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
 
 
     useEffect(() => {
-        let active =
-            true;
+        let mounted = true;
 
+        const loadDashboard = async () => {
+            try {
+                setLoading(true);
+                setErrorMessage("");
 
-        const loadDashboard =
-            async () => {
-                try {
-                    setLoading(
-                        true
-                    );
+                const [profileResult, progressResult] = await Promise.allSettled([
+                    api.get("/users/me"),
+                    api.get("/users/me/training-progress"),
+                ]);
 
-                    setErrorMessage(
-                        ""
-                    );
+                if (!mounted) {
+                    return;
+                }
 
+                if (profileResult.status === "fulfilled") {
+                    const currentUser = profileResult.value.data?.user || null;
 
-                    const response =
-                        await api.get(
-                            "/my-training"
-                        );
-
-
-                    if (!active) {
-                        return;
-                    }
-
-
-                    setAssignments(
-                        parseArrayResponse(
-                            response.data,
-                            "assignments"
-                        )
-                    );
-
-                } catch (error) {
-                    console.error(
-                        "Trainee dashboard error:",
-                        error
-                    );
-
-
-                    if (
-                        active
-                    ) {
-                        setErrorMessage(
-                            getApiErrorMessage(
-                                error,
-                                "Unable to load your training dashboard."
-                            )
-                        );
-                    }
-
-                } finally {
-                    if (
-                        active
-                    ) {
-                        setLoading(
-                            false
-                        );
+                    if (currentUser) {
+                        setUser(currentUser);
+                        saveSessionUser(currentUser);
                     }
                 }
-            };
+
+                if (progressResult.status === "fulfilled") {
+                    setProgress(
+                        Array.isArray(progressResult.value.data?.progress)
+                            ? progressResult.value.data.progress
+                            : []
+                    );
+                }
+
+                if (
+                    profileResult.status === "rejected" &&
+                    progressResult.status === "rejected"
+                ) {
+                    throw profileResult.reason;
+                }
+
+            } catch (error) {
+                console.error("Trainee dashboard error:", error);
+
+                if (mounted) {
+                    setErrorMessage(
+                        getApiErrorMessage(
+                            error,
+                            "Unable to load your trainee dashboard."
+                        )
+                    );
+                }
+
+            } finally {
+                if (mounted) {
+                    setLoading(false);
+                }
+            }
+        };
 
 
         loadDashboard();
 
 
         return () => {
-            active =
-                false;
+            mounted = false;
         };
     }, []);
 
 
-    const validAssignments =
-        useMemo(
-            () =>
-                assignments.filter(
-                    (
-                        assignment
-                    ) =>
-                        Boolean(
-                            getAssignmentProgramme(
-                                assignment
-                            )
-                        )
-                ),
-            [
-                assignments,
-            ]
-        );
+    const assignedSections = useMemo(() => {
+        const fromUser = Array.isArray(user?.assignedTrainingSections)
+            ? user.assignedTrainingSections
+            : [];
+
+        if (fromUser.length > 0) {
+            return fromUser;
+        }
+
+        return progress
+            .map((item) => item.trainingSection)
+            .filter(Boolean);
+    }, [user, progress]);
 
 
-    const activeAssignments =
-        useMemo(
-            () =>
-                validAssignments.filter(
-                    (
-                        assignment
-                    ) => {
-                        const programme =
-                            getAssignmentProgramme(
-                                assignment
-                            );
+    const moduleRows = useMemo(
+        () =>
+            assignedSections
+                .map((id) => {
+                    const module = MODULES[id];
 
-
-                        return (
-                            assignment.status !==
-                            "inactive" &&
-                            programme?.status !==
-                            "inactive"
-                        );
+                    if (!module) {
+                        return null;
                     }
-                ),
-            [
-                validAssignments,
-            ]
-        );
+
+                    const progressRecord = progress.find(
+                        (item) => item.trainingSection === id
+                    );
+
+                    return {
+                        id,
+                        ...module,
+                        progress: Number(progressRecord?.progress || 0),
+                        status: progressRecord?.status || "not-started",
+                    };
+                })
+                .filter(Boolean),
+        [assignedSections, progress]
+    );
 
 
-    if (
-        loading
-    ) {
+    const completedModules =
+        moduleRows.filter(
+            (item) => item.progress >= 100
+        ).length;
+
+
+    const averageProgress =
+        moduleRows.length
+            ? Math.round(
+                moduleRows.reduce(
+                    (sum, item) =>
+                        sum + item.progress,
+                    0
+                ) /
+                moduleRows.length
+            )
+            : 0;
+
+
+    const startModule = async (moduleId) => {
+        try {
+            await api.post(
+                `/users/me/training-progress/${moduleId}/start`
+            );
+
+            navigate("/my-training");
+
+        } catch (error) {
+            setErrorMessage(
+                getApiErrorMessage(
+                    error,
+                    "Unable to start this training module."
+                )
+            );
+        }
+    };
+
+
+    if (loading) {
         return (
             <DashboardLayout
                 role="trainee"
                 showHeader={false}
             >
-                <LoadingCard
-                    message="Loading your training..."
-                />
+                <div className="app-page">
+                    <LoadingCard
+                        message="Loading your training dashboard..."
+                    />
+                </div>
             </DashboardLayout>
         );
     }
+
+
+    const displayName =
+        `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+        user?.username ||
+        "Trainee";
 
 
     return (
@@ -200,340 +240,577 @@ function TraineeDashboard() {
             showHeader={false}
         >
             <TraineeHeader
-                user={
-                    user
-                }
+                user={user}
             />
 
 
-            <div
-                className="
-                    space-y-4
-                    pt-4
-                    sm:pt-5
-                "
-            >
+            <div className="trainee-dashboard-figma">
+
                 <FeedbackAlert
                     type="error"
-                    message={
-                        errorMessage
-                    }
+                    message={errorMessage}
                     onClose={() =>
-                        setErrorMessage(
-                            ""
-                        )
+                        setErrorMessage("")
                     }
                 />
 
 
-                {/* TRAINING SUMMARY */}
+                <div className="trainee-dashboard-grid">
 
-                <section
-                    className="
-                        flex
-                        flex-col
-                        gap-3
-                        rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-4
-                        shadow-sm
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        sm:p-5
-                    "
-                >
-                    <div>
-                        <h2
-                            className="
-                                text-[12px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            My Training Modules
-                        </h2>
+                    <div className="trainee-dashboard-main">
 
-                        <p
-                            className="
-                                mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-600
-                            "
-                        >
-                            Training programmes assigned to your account.
-                        </p>
-                    </div>
+                        {/* ACCOUNT */}
+
+                        <section className="trainee-account-card">
+
+                            <div>
+
+                                <p className="trainee-eyebrow">
+                                    Trainee Account
+                                </p>
+
+                                <h2>
+                                    {displayName}
+                                </h2>
+
+                                <p>
+                                    Username:{" "}
+                                    {user?.username || "—"}
+                                </p>
+
+                            </div>
 
 
-                    <div
-                        className="
-                            flex
-                            items-center
-                            gap-2
-                        "
-                    >
-                        <span
-                            className="
-                                text-[8px]
-                                font-medium
-                                text-slate-600
-                            "
-                        >
-                            {
-                                activeAssignments.length
-                            } available
-                        </span>
+                            <div className="trainee-account-badges">
+
+                                <span>
+                                    Trainee
+                                </span>
+
+                                <span className="active">
+                                    Active
+                                </span>
+
+                            </div>
+
+                        </section>
 
 
-                        <ActionButton
-                            variant="secondary"
-                            onClick={() =>
-                                navigate(
-                                    "/my-training"
-                                )
-                            }
-                        >
-                            View All
-                        </ActionButton>
-                    </div>
-                </section>
+                        {/* TRAINING MODULES */}
+
+                        <section className="trainee-card-shell">
+
+                            <div className="trainee-section-heading">
+
+                                <div>
+
+                                    <h3>
+                                        My Training Modules
+                                    </h3>
+
+                                    <p>
+                                        Training assigned to you by the Administrator.
+                                    </p>
+
+                                </div>
 
 
-                {/* MODULES */}
+                                <span>
+                                    {moduleRows.length} Assigned
+                                </span>
 
-                {activeAssignments.length ===
-                    0 ? (
-                    <section
-                        className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-8
-                            text-center
-                            shadow-sm
-                        "
-                    >
-                        <p
-                            className="
-                                text-[10px]
-                                font-semibold
-                                text-slate-700
-                            "
-                        >
-                            No training has been assigned yet.
-                        </p>
-                    </section>
-                ) : (
-                    <section
-                        className="
-                            grid
-                            gap-4
-                            md:grid-cols-2
-                        "
-                    >
-                        {activeAssignments.map(
-                            (
-                                assignment
-                            ) => {
-                                const programme =
-                                    getAssignmentProgramme(
-                                        assignment
-                                    );
+                            </div>
 
 
-                                return (
-                                    <article
-                                        key={
-                                            assignment._id
-                                        }
-                                        className="
-                                            overflow-hidden
-                                            rounded-xl
-                                            border
-                                            border-slate-200
-                                            bg-white
-                                            shadow-sm
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                border-b
-                                                border-slate-100
-                                                p-4
-                                                sm:p-5
-                                            "
+                            <div className="trainee-module-grid">
+
+                                {moduleRows.map(
+                                    (module) => (
+                                        <article
+                                            key={module.id}
+                                            className="trainee-module-card"
                                         >
-                                            <div
-                                                className="
-                                                    flex
-                                                    items-start
-                                                    justify-between
-                                                    gap-3
-                                                "
-                                            >
-                                                <span
-                                                    className="
-                                                        rounded-full
-                                                        bg-blue-50
-                                                        px-2.5
-                                                        py-1
-                                                        text-[7px]
-                                                        font-semibold
-                                                        text-blue-600
-                                                    "
-                                                >
-                                                    {formatProgrammeType(
-                                                        programme?.programmeType
-                                                    )}
+
+                                            <div className="trainee-module-copy">
+
+                                                <span className="module-status">
+                                                    {module.progress >= 100
+                                                        ? "COMPLETED"
+                                                        : "IN PROGRESS"}
                                                 </span>
 
 
-                                                <StatusBadge
-                                                    status={
-                                                        programme?.status ||
-                                                        "active"
+                                                <h4>
+                                                    {module.title}
+                                                </h4>
+
+
+                                                <p>
+                                                    {module.description}
+                                                </p>
+
+
+                                                <div className="module-progress-label">
+
+                                                    <span>
+                                                        {module.progress}% Complete
+                                                    </span>
+
+                                                </div>
+
+
+                                                <div className="module-progress-track">
+
+                                                    <div
+                                                        style={{
+                                                            width: `${module.progress}%`,
+                                                        }}
+                                                    />
+
+                                                </div>
+
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        startModule(
+                                                            module.id
+                                                        )
                                                     }
-                                                />
+                                                >
+                                                    Continue Learning{" "}
+                                                    <span>
+                                                        ›
+                                                    </span>
+                                                </button>
+
                                             </div>
 
 
-                                            <h3
-                                                className="
-                                                    mt-4
-                                                    text-[15px]
-                                                    font-bold
-                                                    text-[#172033]
-                                                "
-                                            >
-                                                {
-                                                    programme?.title
-                                                }
-                                            </h3>
+                                            <img
+                                                src={module.image}
+                                                alt={module.title}
+                                            />
+
+                                        </article>
+                                    )
+                                )}
+
+                            </div>
+
+                        </section>
 
 
-                                            {programme?.description && (
-                                                <p
-                                                    className="
-                                                        mt-2
-                                                        line-clamp-3
-                                                        text-[9px]
-                                                        font-medium
-                                                        leading-5
-                                                        text-slate-600
-                                                    "
-                                                >
-                                                    {
-                                                        programme.description
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
+                        {/* PANORAMIC SCENARIOS */}
+
+                        <section className="trainee-card-shell">
+
+                            <div className="trainee-section-heading">
+
+                                <h3>
+                                    Panoramic Scenarios
+                                </h3>
 
 
-                                        <div
-                                            className="
-                                                p-4
-                                                sm:p-5
-                                            "
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        navigate(
+                                            "/trainee/scenarios"
+                                        )
+                                    }
+                                >
+                                    View All
+                                </button>
+
+                            </div>
+
+
+                            <div className="trainee-scenario-grid">
+
+                                {SCENARIOS.map(
+                                    (scenario) => (
+                                        <article
+                                            key={scenario.title}
+                                            className="scenario-card"
                                         >
-                                            <ActionButton
-                                                variant="primary"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/my-training/${programme._id}`
-                                                    )
-                                                }
-                                                className="
-                                                    w-full
-                                                "
-                                            >
-                                                Start Learning
-                                            </ActionButton>
+
+                                            <div className="scenario-image-wrap">
+
+                                                <img
+                                                    src={scenario.image}
+                                                    alt={scenario.title}
+                                                />
+
+                                                <span>
+                                                    ◎
+                                                </span>
+
+                                            </div>
+
+
+                                            <div className="scenario-copy">
+
+                                                <h4>
+                                                    {scenario.title}
+                                                </h4>
+
+
+                                                <p>
+                                                    {scenario.text}
+                                                </p>
+
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            "/trainee/scenarios"
+                                                        )
+                                                    }
+                                                >
+                                                    ▣ Start Scenario
+                                                </button>
+
+                                            </div>
+
+                                        </article>
+                                    )
+                                )}
+
+                            </div>
+
+                        </section>
+
+
+                        {/* QUIZ RESULTS */}
+
+                        <section className="trainee-card-shell trainee-quiz-results">
+
+                            <div className="trainee-section-heading trainee-quiz-heading">
+
+                                <div>
+
+                                    <h3>
+                                        Recent Quiz Results
+                                    </h3>
+
+                                    <p>
+                                        Your completed quiz attempts will appear here.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <div className="trainee-quiz-table">
+
+                                <div className="quiz-table-head">
+
+                                    <span>
+                                        Quiz Title
+                                    </span>
+
+                                    <span>
+                                        Module
+                                    </span>
+
+                                    <span>
+                                        Score
+                                    </span>
+
+                                    <span>
+                                        Date
+                                    </span>
+
+                                    <span>
+                                        Result
+                                    </span>
+
+                                </div>
+
+
+                                <div className="quiz-table-empty">
+                                    No quiz attempts yet.
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                    </div>
+
+
+                    {/* RIGHT COLUMN */}
+
+                    <aside className="trainee-dashboard-rail">
+
+                        {/* PROGRESS */}
+
+                        <section className="rail-card progress-card">
+
+                            <h3>
+                                My Progress
+                            </h3>
+
+
+                            <div className="progress-card-body">
+
+                                <div className="progress-circle">
+
+                                    <span>
+                                        {averageProgress}%
+                                    </span>
+
+                                </div>
+
+
+                                <div className="progress-numbers">
+
+                                    <p>
+
+                                        <strong className="green">
+                                            {completedModules}
+                                        </strong>
+
+                                        <span>
+                                            Modules Completed
+                                        </span>
+
+                                    </p>
+
+
+                                    <p>
+
+                                        <strong>
+                                            0
+                                        </strong>
+
+                                        <span>
+                                            Quizzes Taken
+                                        </span>
+
+                                    </p>
+
+
+                                    <p>
+
+                                        <strong className="orange">
+                                            0%
+                                        </strong>
+
+                                        <span>
+                                            Average Score
+                                        </span>
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    navigate(
+                                        "/trainee/progress"
+                                    )
+                                }
+                            >
+                                ▥ View Detailed Progress
+                            </button>
+
+                        </section>
+
+
+                        {/* TRAINING STATUS */}
+
+                        <section className="rail-card">
+
+                            <h3>
+                                My Training Status
+                            </h3>
+
+
+                            <div className="training-status-list">
+
+                                {moduleRows.map(
+                                    (module) => (
+                                        <div
+                                            key={module.id}
+                                            className="training-status-item"
+                                        >
+
+                                            <div>
+
+                                                <strong>
+                                                    {module.title}
+                                                </strong>
+
+
+                                                <span>
+                                                    {module.progress >= 100
+                                                        ? "COMPLETED"
+                                                        : "IN PROGRESS"}
+                                                </span>
+
+                                            </div>
+
+
+                                            <div className="module-progress-track small">
+
+                                                <div
+                                                    style={{
+                                                        width: `${module.progress}%`,
+                                                    }}
+                                                />
+
+                                            </div>
+
+
+                                            <p>
+                                                {module.progress}% Complete
+                                            </p>
+
                                         </div>
-                                    </article>
-                                );
+                                    )
+                                )}
+
+                            </div>
+
+                        </section>
+
+
+                        {/* NOTIFICATIONS */}
+
+                        <section className="rail-card">
+
+                            <div className="rail-card-heading">
+
+                                <h3>
+                                    Notifications
+                                </h3>
+
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        navigate(
+                                            "/trainee/notifications"
+                                        )
+                                    }
+                                >
+                                    View All
+                                </button>
+
+                            </div>
+
+
+                            <div className="notification-row">
+
+                                <div className="notification-icon">
+                                    🎁
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Training available
+                                    </strong>
+
+
+                                    <p>
+                                        {moduleRows.length} assigned training modules are available.
+                                    </p>
+
+
+                                    <span>
+                                        Available now
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                        {/* ACHIEVEMENTS */}
+
+                        <section className="rail-card achievement-card">
+
+                            <h3>
+                                My Achievements
+                            </h3>
+
+
+                            <div className="achievement-empty">
+
+                                <div>
+                                    ☆
+                                </div>
+
+
+                                <strong>
+                                    No achievements yet
+                                </strong>
+
+
+                                <p>
+                                    Complete training to earn achievements.
+                                </p>
+
+                            </div>
+
+                        </section>
+
+
+                        {/* SUPPORT */}
+
+                        <button
+                            type="button"
+                            className="support-card"
+                            onClick={() =>
+                                navigate(
+                                    "/trainee/help"
+                                )
                             }
-                        )}
-                    </section>
-                )}
+                        >
+
+                            <span>
+                                ◉
+                            </span>
 
 
-                {/* SMALL STATS */}
+                            <div>
 
-                <section
-                    className="
-                        grid
-                        gap-3
-                        sm:grid-cols-3
-                    "
-                >
-                    <SmallStat
-                        label="Assigned"
-                        value={
-                            validAssignments.length
-                        }
-                    />
+                                <small>
+                                    Need Help?
+                                </small>
 
-                    <SmallStat
-                        label="Available"
-                        value={
-                            activeAssignments.length
-                        }
-                    />
+                                <strong>
+                                    Contact Support
+                                </strong>
 
-                    <SmallStat
-                        label="Account"
-                        value="Active"
-                    />
-                </section>
+                            </div>
+
+
+                            <b>
+                                ›
+                            </b>
+
+                        </button>
+
+                    </aside>
+
+                </div>
+
             </div>
+
         </DashboardLayout>
-    );
-}
-
-
-function SmallStat({
-    label,
-    value,
-}) {
-    return (
-        <article
-            className="
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                p-4
-                shadow-sm
-            "
-        >
-            <p
-                className="
-                    text-[8px]
-                    font-medium
-                    text-slate-600
-                "
-            >
-                {label}
-            </p>
-
-
-            <p
-                className="
-                    mt-2
-                    text-[18px]
-                    font-bold
-                    text-[#172033]
-                "
-            >
-                {value}
-            </p>
-        </article>
     );
 }
 
