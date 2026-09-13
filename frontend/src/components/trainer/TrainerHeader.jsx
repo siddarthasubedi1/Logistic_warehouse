@@ -15,10 +15,11 @@ function TrainerHeader({
         <header
             className="
                 flex
+                min-h-[86px]
                 flex-col
                 gap-4
-                border
-                border-slate-200
+                border-b
+                border-[#dbe4ef]
                 bg-white
                 px-4
                 py-4
@@ -26,12 +27,13 @@ function TrainerHeader({
                 md:flex-row
                 md:items-center
                 md:justify-between
-                lg:px-6
+                lg:px-7
             "
         >
             <div>
                 <h1
                     className="
+                        m-0
                         text-[20px]
                         font-bold
                         text-[#172033]
@@ -44,10 +46,10 @@ function TrainerHeader({
 
                 <p
                     className="
+                        m-0
                         mt-1
-                        text-[9px]
-                        font-medium
-                        text-slate-600
+                        text-[10px]
+                        text-slate-500
                     "
                 >
                     Welcome back,{" "}
@@ -58,9 +60,8 @@ function TrainerHeader({
                             text-blue-600
                         "
                     >
-                        {name}
+                        {name}!
                     </span>
-                    !
                 </p>
             </div>
 

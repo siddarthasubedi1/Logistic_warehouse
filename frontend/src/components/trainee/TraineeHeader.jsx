@@ -4,9 +4,8 @@ import ProfileHeaderButton from "../account/ProfileHeaderButton";
 function TraineeHeader({
     user,
 }) {
-    const name =
-        `${user?.firstName || ""} ${user?.lastName || ""}`
-            .trim() ||
+    const firstName =
+        user?.firstName ||
         user?.username ||
         "Trainee";
 
@@ -15,10 +14,11 @@ function TraineeHeader({
         <header
             className="
                 flex
+                min-h-[86px]
                 flex-col
                 gap-4
-                border
-                border-slate-200
+                border-b
+                border-[#dbe4ef]
                 bg-white
                 px-4
                 py-4
@@ -26,31 +26,41 @@ function TraineeHeader({
                 md:flex-row
                 md:items-center
                 md:justify-between
-                lg:px-6
+                lg:px-7
             "
         >
             <div>
                 <h1
                     className="
+                        m-0
                         text-[20px]
                         font-bold
                         text-[#172033]
                         sm:text-[22px]
                     "
                 >
-                    Welcome back, {name}!
+                    Trainee Dashboard
                 </h1>
 
 
                 <p
                     className="
+                        m-0
                         mt-1
-                        text-[9px]
-                        font-medium
-                        text-slate-600
+                        text-[10px]
+                        text-slate-500
                     "
                 >
-                    Continue your safety training journey.
+                    Welcome back,{" "}
+
+                    <span
+                        className="
+                            font-semibold
+                            text-blue-600
+                        "
+                    >
+                        {firstName}!
+                    </span>
                 </p>
             </div>
 

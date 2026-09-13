@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 
 import {
     getSessionUser,
+    getUserInitial,
 } from "../../utils/session";
 
 
@@ -19,20 +20,17 @@ function DashboardLayout({
     user = null,
 }) {
     const [
-        mobileSidebarOpen,
-        setMobileSidebarOpen,
+        sidebarOpen,
+        setSidebarOpen,
     ] = useState(false);
-
 
     const sessionUser =
         getSessionUser();
-
 
     const currentUser =
         user ||
         sessionUser ||
         null;
-
 
     const displayRole =
         String(
@@ -43,22 +41,10 @@ function DashboardLayout({
             .trim()
             .toLowerCase();
 
-
-    const fullName =
-        `${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`
-            .trim();
-
-
-    const displayName =
-        fullName ||
-        currentUser?.username ||
-        "User";
-
-
     const initial =
-        displayName
-            .charAt(0)
-            .toUpperCase();
+        getUserInitial(
+            currentUser
+        );
 
 
     useEffect(() => {
@@ -68,18 +54,16 @@ function DashboardLayout({
                     window.innerWidth >=
                     1024
                 ) {
-                    setMobileSidebarOpen(
+                    setSidebarOpen(
                         false
                     );
                 }
             };
 
-
         window.addEventListener(
             "resize",
             handleResize
         );
-
 
         return () => {
             window.removeEventListener(
@@ -92,7 +76,7 @@ function DashboardLayout({
 
     useEffect(() => {
         if (
-            mobileSidebarOpen
+            sidebarOpen
         ) {
             document.body.style.overflow =
                 "hidden";
@@ -101,13 +85,12 @@ function DashboardLayout({
                 "";
         }
 
-
         return () => {
             document.body.style.overflow =
                 "";
         };
     }, [
-        mobileSidebarOpen,
+        sidebarOpen,
     ]);
 
 
@@ -130,7 +113,7 @@ function DashboardLayout({
                 <aside
                     className="
                         hidden
-                        w-[230px]
+                        w-[194px]
                         shrink-0
                         lg:block
                     "
@@ -141,7 +124,7 @@ function DashboardLayout({
                             inset-y-0
                             left-0
                             z-50
-                            w-[230px]
+                            w-[194px]
                         "
                     >
                         <Sidebar
@@ -155,12 +138,12 @@ function DashboardLayout({
 
                 {/* MOBILE SIDEBAR */}
 
-                {mobileSidebarOpen && (
+                {sidebarOpen && (
                     <div
                         className="
                             fixed
                             inset-0
-                            z-[120]
+                            z-[200]
                             lg:hidden
                         "
                     >
@@ -168,23 +151,22 @@ function DashboardLayout({
                             type="button"
                             aria-label="Close navigation"
                             onClick={() =>
-                                setMobileSidebarOpen(
+                                setSidebarOpen(
                                     false
                                 )
                             }
                             className="
                                 absolute
                                 inset-0
-                                bg-slate-950/55
+                                bg-slate-950/45
                             "
                         />
-
 
                         <div
                             className="
                                 relative
                                 h-full
-                                w-[260px]
+                                w-[250px]
                                 max-w-[86vw]
                                 shadow-2xl
                             "
@@ -194,7 +176,7 @@ function DashboardLayout({
                                     displayRole
                                 }
                                 onNavigate={() =>
-                                    setMobileSidebarOpen(
+                                    setSidebarOpen(
                                         false
                                     )
                                 }
@@ -212,13 +194,13 @@ function DashboardLayout({
                         flex-1
                     "
                 >
-                    {/* MOBILE HEADER */}
+                    {/* MOBILE TOP BAR */}
 
                     <header
                         className="
                             sticky
                             top-0
-                            z-40
+                            z-[100]
                             flex
                             h-[62px]
                             items-center
@@ -227,6 +209,7 @@ function DashboardLayout({
                             border-[#dbe4ef]
                             bg-white
                             px-4
+                            shadow-[0_1px_2px_rgba(15,23,42,0.03)]
                             lg:hidden
                         "
                     >
@@ -234,7 +217,7 @@ function DashboardLayout({
                             type="button"
                             aria-label="Open navigation"
                             onClick={() =>
-                                setMobileSidebarOpen(
+                                setSidebarOpen(
                                     true
                                 )
                             }
@@ -254,10 +237,7 @@ function DashboardLayout({
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.8"
-                                className="
-                                    h-5
-                                    w-5
-                                "
+                                className="h-5 w-5"
                             >
                                 <path d="M4 7h16" />
 
@@ -277,6 +257,7 @@ function DashboardLayout({
                         >
                             <p
                                 className="
+                                    m-0
                                     truncate
                                     text-[14px]
                                     font-bold
@@ -287,12 +268,13 @@ function DashboardLayout({
                                     "UK LogiWare"}
                             </p>
 
-
                             {subtitle && (
                                 <p
                                     className="
+                                        m-0
+                                        mt-0.5
                                         truncate
-                                        text-[10px]
+                                        text-[9px]
                                         text-slate-500
                                     "
                                 >
@@ -322,189 +304,64 @@ function DashboardLayout({
                     </header>
 
 
-                    {/* PAGE HEADER */}
+                    {/* OPTIONAL PAGE HEADER */}
 
-                    {showHeader && (
-                        <header
-                            className="
-                                hidden
-                                min-h-[80px]
-                                items-center
-                                justify-between
-                                gap-6
-                                border-b
-                                border-[#dbe4ef]
-                                bg-white
-                                px-7
-                                py-4
-                                lg:flex
-                            "
-                        >
+                    {showHeader &&
+                        (
+                            title ||
+                            subtitle
+                        ) && (
                             <div
                                 className="
-                                    min-w-0
-                                "
-                            >
-                                {title && (
-                                    <h1
-                                        className="
-                                            truncate
-                                            text-[22px]
-                                            font-bold
-                                            tracking-[-0.02em]
-                                            text-[#111827]
-                                        "
-                                    >
-                                        {title}
-                                    </h1>
-                                )}
-
-
-                                {subtitle && (
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-[11px]
-                                            font-medium
-                                            text-[#64748b]
-                                        "
-                                    >
-                                        {subtitle}
-                                    </p>
-                                )}
-                            </div>
-
-
-                            <div
-                                className="
-                                    flex
-                                    shrink-0
+                                    hidden
+                                    min-h-[82px]
                                     items-center
-                                    gap-4
+                                    border-b
+                                    border-[#dbe4ef]
+                                    bg-white
+                                    px-6
+                                    lg:flex
                                 "
                             >
-                                <button
-                                    type="button"
-                                    aria-label="Notifications"
-                                    className="
-                                        relative
-                                        flex
-                                        h-10
-                                        w-10
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        border
-                                        border-slate-200
-                                        bg-white
-                                        text-slate-600
-                                        transition
-                                        hover:bg-slate-50
-                                    "
-                                >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="1.8"
-                                        className="
-                                            h-5
-                                            w-5
-                                        "
-                                    >
-                                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-
-                                        <path d="M10 21h4" />
-                                    </svg>
-                                </button>
-
-
-                                <div
-                                    className="
-                                        h-8
-                                        w-px
-                                        bg-slate-200
-                                    "
-                                />
-
-
-                                <div
-                                    className="
-                                        flex
-                                        items-center
-                                        gap-3
-                                    "
-                                >
-                                    <div
-                                        className="
-                                            flex
-                                            h-10
-                                            w-10
-                                            items-center
-                                            justify-center
-                                            rounded-full
-                                            bg-blue-50
-                                            text-[12px]
-                                            font-bold
-                                            text-blue-600
-                                        "
-                                    >
-                                        {initial}
-                                    </div>
-
-
-                                    <div>
-                                        <p
+                                <div>
+                                    {title && (
+                                        <h1
                                             className="
-                                                text-[11px]
-                                                font-semibold
+                                                m-0
+                                                text-[21px]
+                                                font-bold
                                                 text-[#172033]
                                             "
                                         >
-                                            {displayName}
-                                        </p>
+                                            {title}
+                                        </h1>
+                                    )}
 
-
+                                    {subtitle && (
                                         <p
                                             className="
-                                                mt-0.5
-                                                text-[9px]
-                                                capitalize
+                                                m-0
+                                                mt-1
+                                                text-[10px]
                                                 text-slate-500
                                             "
                                         >
-                                            {displayRole ||
-                                                "User"}
+                                            {subtitle}
                                         </p>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
-                        </header>
-                    )}
+                        )}
 
 
-                    {/* PAGE CONTENT */}
+                    {/* CONTENT */}
 
                     <main
                         className="
-                            min-h-[calc(100vh-62px)]
-                            bg-[#f5f7fb]
-                            p-3
-                            sm:p-4
-                            md:p-5
-                            lg:min-h-[calc(100vh-80px)]
-                            lg:p-6
+                            min-w-0
                         "
                     >
-                        <div
-                            className="
-                                mx-auto
-                                w-full
-                                max-w-[1700px]
-                            "
-                        >
-                            {children}
-                        </div>
+                        {children}
                     </main>
                 </div>
             </div>
