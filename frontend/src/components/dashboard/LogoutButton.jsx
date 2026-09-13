@@ -17,16 +17,11 @@ function LogoutButton() {
     const navigate =
         useNavigate();
 
-
     const [
         loggingOut,
         setLoggingOut,
     ] = useState(false);
 
-
-    // ======================================================
-    // LOGOUT
-    // ======================================================
 
     const handleLogout =
         async () => {
@@ -36,40 +31,25 @@ function LogoutButton() {
                 return;
             }
 
-
             try {
                 setLoggingOut(
                     true
                 );
 
-
-                // Existing backend logout endpoint.
                 await api.post(
                     "/auth/logout"
                 );
 
-            } catch (error) {
-                /*
-                    Even if the backend request fails,
-                    the frontend session is still cleared.
-                */
-
+            } catch (
+            error
+            ) {
                 console.error(
                     "Logout request failed:",
                     error
                 );
 
             } finally {
-                // ===========================================
-                // CLEAR AUTH SESSION
-                // ===========================================
-
                 clearAuthSession();
-
-
-                // ===========================================
-                // RETURN TO LOGIN
-                // ===========================================
 
                 navigate(
                     "/login",
@@ -79,17 +59,12 @@ function LogoutButton() {
                     }
                 );
 
-
                 setLoggingOut(
                     false
                 );
             }
         };
 
-
-    // ======================================================
-    // UI
-    // ======================================================
 
     return (
         <button
@@ -101,9 +76,8 @@ function LogoutButton() {
                 loggingOut
             }
             className="
-                group
                 flex
-                min-h-[40px]
+                min-h-[42px]
                 w-full
                 items-center
                 gap-3
@@ -111,23 +85,17 @@ function LogoutButton() {
                 px-3
                 py-2
                 text-left
-                text-[10px]
+                text-[11px]
                 font-medium
-                text-slate-100
+                text-white
                 transition
                 hover:bg-white/10
-                hover:text-white
                 focus:outline-none
                 focus:ring-2
                 focus:ring-white/20
-                disabled:cursor-not-allowed
-                disabled:opacity-50
+                disabled:opacity-60
             "
         >
-            {/* ================================================= */}
-            {/* ICON */}
-            {/* ================================================= */}
-
             <span
                 className="
                     flex
@@ -136,7 +104,6 @@ function LogoutButton() {
                     shrink-0
                     items-center
                     justify-center
-                    text-slate-200
                 "
             >
                 {loggingOut ? (
@@ -157,11 +124,11 @@ function LogoutButton() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="1.8"
-                        className="h-[16px] w-[16px]"
+                        className="h-[17px] w-[17px]"
                     >
                         <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
 
-                        <path d="M14 8l4 4-4 4" />
+                        <path d="m14 8 4 4-4 4" />
 
                         <path d="M18 12H8" />
                     </svg>
@@ -169,15 +136,7 @@ function LogoutButton() {
             </span>
 
 
-            {/* ================================================= */}
-            {/* LABEL */}
-            {/* ================================================= */}
-
-            <span
-                className="
-                    truncate
-                "
-            >
+            <span>
                 {loggingOut
                     ? "Signing Out..."
                     : "Logout"}

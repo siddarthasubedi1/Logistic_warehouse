@@ -11,7 +11,6 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import TraineeDashboard from "./pages/TraineeDashboard";
-
 import ProfilePage from "./pages/ProfilePage";
 
 import CreateUserPage from "./pages/admin/CreateUserPage";
@@ -30,54 +29,15 @@ import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 import {
   clearAuthSession,
   getAccessToken,
+  getDashboardPath,
   getSessionUser,
+  normalizeRole,
 } from "./utils/session";
-
-
-function getRoleDashboardPath(
-  role
-) {
-  const normalizedRole =
-    String(
-      role ||
-      ""
-    )
-      .trim()
-      .toLowerCase();
-
-
-  if (
-    normalizedRole ===
-    "admin"
-  ) {
-    return "/admin";
-  }
-
-
-  if (
-    normalizedRole ===
-    "trainer"
-  ) {
-    return "/trainer";
-  }
-
-
-  if (
-    normalizedRole ===
-    "trainee"
-  ) {
-    return "/trainee";
-  }
-
-
-  return "/login";
-}
 
 
 function HomeRedirect() {
   const accessToken =
     getAccessToken();
-
 
   const user =
     getSessionUser();
@@ -98,25 +58,56 @@ function HomeRedirect() {
   }
 
 
-  const destination =
-    getRoleDashboardPath(
+  const role =
+    normalizeRole(
       user.role
     );
 
 
   if (
-    destination ===
-    "/login"
+    ![
+      "admin",
+      "trainer",
+      "trainee",
+    ].includes(role)
   ) {
     clearAuthSession();
+
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
+  }
+
+
+  /*
+   * Trainer and Trainee must change the generated
+   * temporary password before accessing the system.
+   *
+   * Admin is NOT affected by this rule.
+   */
+
+  if (
+    [
+      "trainer",
+      "trainee",
+    ].includes(role) &&
+    user.mustChangePassword === true
+  ) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
   }
 
 
   return (
     <Navigate
-      to={
-        destination
-      }
+      to={getDashboardPath(role)}
       replace
     />
   );
@@ -126,9 +117,10 @@ function HomeRedirect() {
 function App() {
   return (
     <Routes>
-      {/* ================================================= */}
-      {/* PUBLIC */}
-      {/* ================================================= */}
+
+      {/* ============================================
+              PUBLIC
+          ============================================= */}
 
       <Route
         path="/login"
@@ -137,15 +129,6 @@ function App() {
         }
       />
 
-
-      {/* ================================================= */}
-      {/* OLD UNAUTHORIZED URL */}
-      {/* ================================================= */}
-      {/*
-              IMPORTANT:
-              Do not show Access Denied page anymore.
-              Any visit to /unauthorized goes straight to login.
-          */}
 
       <Route
         path="/unauthorized"
@@ -158,9 +141,9 @@ function App() {
       />
 
 
-      {/* ================================================= */}
-      {/* ADMIN */}
-      {/* ================================================= */}
+      {/* ============================================
+              ADMIN DASHBOARD
+          ============================================= */}
 
       <Route
         path="/admin"
@@ -176,6 +159,10 @@ function App() {
       />
 
 
+      {/* ============================================
+              ADMIN - CREATE USER
+          ============================================= */}
+
       <Route
         path="/admin/create-user"
         element={
@@ -189,6 +176,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              ADMIN - MANAGE USERS
+          ============================================= */}
 
       <Route
         path="/admin/users"
@@ -204,6 +195,10 @@ function App() {
       />
 
 
+      {/* ============================================
+              ADMIN - ROLES & PERMISSIONS
+          ============================================= */}
+
       <Route
         path="/admin/roles"
         element={
@@ -217,6 +212,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              ADMIN - ROLE DETAILS
+          ============================================= */}
 
       <Route
         path="/admin/roles/:roleName"
@@ -232,6 +231,10 @@ function App() {
       />
 
 
+      {/* ============================================
+              ADMIN - EDIT ROLE
+          ============================================= */}
+
       <Route
         path="/admin/roles/:roleName/edit"
         element={
@@ -245,6 +248,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              ADMIN - AUDIT LOGS
+          ============================================= */}
 
       <Route
         path="/admin/audit-logs"
@@ -260,9 +267,73 @@ function App() {
       />
 
 
-      {/* ================================================= */}
-      {/* TRAINER */}
-      {/* ================================================= */}
+      {/* ============================================
+              TRAINING PROGRAMMES
+
+              Admin:
+              create/manage programmes.
+
+              Trainer:
+              access programmes allowed by their role.
+          ============================================= */}
+
+      <Route
+        path="/training-programmes"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+              "trainer",
+            ]}
+          >
+            <TrainingProgrammesPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ============================================
+              LEARNING SECTIONS
+          ============================================= */}
+
+      <Route
+        path="/training-programmes/:programmeId/sections"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+              "trainer",
+            ]}
+          >
+            <TrainingProgrammeSectionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ============================================
+              TRAINING ASSIGNMENTS
+
+              Admin only.
+          ============================================= */}
+
+      <Route
+        path="/training-assignments"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+            ]}
+          >
+            <TrainingAssignmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ============================================
+              TRAINER DASHBOARD
+          ============================================= */}
 
       <Route
         path="/trainer"
@@ -277,6 +348,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              TRAINER PROFILE
+          ============================================= */}
 
       <Route
         path="/trainer/profile"
@@ -294,61 +369,9 @@ function App() {
       />
 
 
-      {/* ================================================= */}
-      {/* ADMIN + TRAINER */}
-      {/* ================================================= */}
-
-      <Route
-        path="/training-programmes"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "admin",
-              "trainer",
-            ]}
-          >
-            <TrainingProgrammesPage />
-          </ProtectedRoute>
-        }
-      />
-
-
-      <Route
-        path="/training-programmes/:programmeId/sections"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "admin",
-              "trainer",
-            ]}
-          >
-            <TrainingProgrammeSectionsPage />
-          </ProtectedRoute>
-        }
-      />
-
-
-      {/* ================================================= */}
-      {/* ADMIN ASSIGNMENTS */}
-      {/* ================================================= */}
-
-      <Route
-        path="/training-assignments"
-        element={
-          <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
-          >
-            <TrainingAssignmentsPage />
-          </ProtectedRoute>
-        }
-      />
-
-
-      {/* ================================================= */}
-      {/* TRAINEE */}
-      {/* ================================================= */}
+      {/* ============================================
+              TRAINEE DASHBOARD
+          ============================================= */}
 
       <Route
         path="/trainee"
@@ -363,6 +386,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              TRAINEE PROFILE
+          ============================================= */}
 
       <Route
         path="/trainee/profile"
@@ -380,6 +407,10 @@ function App() {
       />
 
 
+      {/* ============================================
+              TRAINEE - MY TRAINING
+          ============================================= */}
+
       <Route
         path="/my-training"
         element={
@@ -393,6 +424,10 @@ function App() {
         }
       />
 
+
+      {/* ============================================
+              TRAINEE LEARNING PAGE
+          ============================================= */}
 
       <Route
         path="/my-training/:programmeId"
@@ -408,9 +443,9 @@ function App() {
       />
 
 
-      {/* ================================================= */}
-      {/* ROOT */}
-      {/* ================================================= */}
+      {/* ============================================
+              HOME
+          ============================================= */}
 
       <Route
         path="/"
@@ -420,9 +455,9 @@ function App() {
       />
 
 
-      {/* ================================================= */}
-      {/* UNKNOWN ROUTE */}
-      {/* ================================================= */}
+      {/* ============================================
+              UNKNOWN URL
+          ============================================= */}
 
       <Route
         path="*"
@@ -433,6 +468,7 @@ function App() {
           />
         }
       />
+
     </Routes>
   );
 }

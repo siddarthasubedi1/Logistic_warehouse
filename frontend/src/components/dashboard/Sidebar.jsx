@@ -1,220 +1,97 @@
-import {
-    NavLink,
-} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import Logo from "../layout/Logo";
 import LogoutButton from "./LogoutButton";
 
 
-function SidebarIcon({
-    type,
-}) {
+function Icon({ type }) {
     const props = {
-        viewBox:
-            "0 0 24 24",
-
-        fill:
-            "none",
-
-        stroke:
-            "currentColor",
-
-        strokeWidth:
-            "1.8",
-
-        strokeLinecap:
-            "round",
-
-        strokeLinejoin:
-            "round",
-
-        className:
-            "h-[18px] w-[18px] shrink-0",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "1.8",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className: "h-[18px] w-[18px] shrink-0",
     };
 
-
-    switch (
-    type
-    ) {
+    switch (type) {
         case "dashboard":
             return (
                 <svg {...props}>
                     <path d="M3 11.5 12 4l9 7.5" />
-
                     <path d="M5.5 10v10h13V10" />
                 </svg>
             );
 
-
-        case "create":
+        case "user-add":
             return (
                 <svg {...props}>
-                    <circle
-                        cx="9"
-                        cy="8"
-                        r="3"
-                    />
-
-                    <path d="M3 20c.6-4 2.6-6 6-6" />
-
-                    <path d="M18 13v8" />
-
-                    <path d="M14 17h8" />
+                    <circle cx="9" cy="8" r="3" />
+                    <path d="M3.5 19c.6-3.5 2.5-5.5 5.5-5.5" />
+                    <path d="M17 8v6" />
+                    <path d="M14 11h6" />
                 </svg>
             );
-
 
         case "users":
             return (
                 <svg {...props}>
-                    <circle
-                        cx="9"
-                        cy="8"
-                        r="3"
-                    />
-
-                    <circle
-                        cx="17"
-                        cy="9"
-                        r="2"
-                    />
-
-                    <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
-
-                    <path d="M15 15c3 0 5 1.5 6 5" />
+                    <circle cx="9" cy="8" r="3" />
+                    <circle cx="17" cy="9" r="2" />
+                    <path d="M3.5 19c.6-3.5 2.5-5.5 5.5-5.5s4.9 2 5.5 5.5" />
+                    <path d="M15 14c2.8.2 4.5 1.8 5 5" />
                 </svg>
             );
-
 
         case "roles":
             return (
                 <svg {...props}>
-                    <circle
-                        cx="8"
-                        cy="7"
-                        r="3"
-                    />
-
-                    <path d="M3 20c.5-4 2.3-6 5-6" />
-
-                    <path d="m15 8 2 2 4-5" />
-
-                    <path d="M14 16h7" />
+                    <circle cx="8" cy="8" r="3" />
+                    <path d="M3.5 19c.5-3.5 2-5.5 4.5-5.5" />
+                    <path d="m15 6 2 2 4-4" />
+                    <path d="M15 14h6" />
+                    <path d="M18 11v6" />
                 </svg>
             );
-
 
         case "training":
             return (
                 <svg {...props}>
                     <rect
                         x="4"
-                        y="5"
+                        y="4"
                         width="6"
-                        height="14"
+                        height="16"
                         rx="1"
                     />
 
                     <rect
                         x="14"
-                        y="5"
+                        y="4"
                         width="6"
-                        height="14"
+                        height="16"
                         rx="1"
                     />
                 </svg>
             );
 
-
-        case "progress":
+        case "assignment":
             return (
                 <svg {...props}>
-                    <path d="M5 20V11" />
-
-                    <path d="M12 20V4" />
-
-                    <path d="M19 20v-7" />
-                </svg>
-            );
-
-
-        case "scenario":
-            return (
-                <svg {...props}>
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="7"
+                    <rect
+                        x="5"
+                        y="3"
+                        width="14"
+                        height="18"
+                        rx="2"
                     />
 
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="2"
-                    />
-
-                    <path d="M12 3v2" />
-
-                    <path d="M12 19v2" />
-
-                    <path d="M3 12h2" />
-
-                    <path d="M19 12h2" />
+                    <path d="M9 8h6" />
+                    <path d="M9 12h6" />
+                    <path d="M9 16h4" />
                 </svg>
             );
-
-
-        case "quiz":
-            return (
-                <svg {...props}>
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="9"
-                    />
-
-                    <path d="M9.8 9.5a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1.2.9-1.2 1.8" />
-
-                    <path d="M12 17h.01" />
-                </svg>
-            );
-
-
-        case "notification":
-            return (
-                <svg {...props}>
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-
-                    <path d="M10 21h4" />
-                </svg>
-            );
-
-
-        case "profile":
-            return (
-                <svg {...props}>
-                    <circle
-                        cx="12"
-                        cy="8"
-                        r="3"
-                    />
-
-                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-                </svg>
-            );
-
-
-        case "help":
-            return (
-                <svg {...props}>
-                    <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-
-                    <path d="M4 14v4h3v-6H4" />
-
-                    <path d="M20 14v4h-3v-6h3" />
-                </svg>
-            );
-
 
         case "audit":
             return (
@@ -224,29 +101,115 @@ function SidebarIcon({
                         y="3"
                         width="12"
                         height="18"
-                        rx="1"
+                        rx="2"
                     />
 
                     <path d="M9 8h6" />
-
                     <path d="M9 12h6" />
-
-                    <path d="M9 16h4" />
+                    <path d="M9 16h6" />
                 </svg>
             );
 
-
-        default:
+        case "progress":
             return (
                 <svg {...props}>
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="9"
-                    />
+                    <path d="M5 19V9" />
+                    <path d="M12 19V5" />
+                    <path d="M19 19v-7" />
                 </svg>
             );
+
+        case "scenario":
+            return (
+                <svg {...props}>
+                    <circle cx="12" cy="12" r="8" />
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 2v3" />
+                    <path d="M12 19v3" />
+                </svg>
+            );
+
+        case "quiz":
+            return (
+                <svg {...props}>
+                    <circle cx="12" cy="12" r="9" />
+
+                    <path d="M9.8 9a2.3 2.3 0 1 1 3.9 1.7c-1 .8-1.7 1.2-1.7 2.3" />
+
+                    <path d="M12 17h.01" />
+                </svg>
+            );
+
+        case "bell":
+            return (
+                <svg {...props}>
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
+                    <path d="M10 19h4" />
+                </svg>
+            );
+
+        case "profile":
+            return (
+                <svg {...props}>
+                    <circle cx="12" cy="8" r="3" />
+
+                    <path d="M5.5 20c.8-4 3-6 6.5-6s5.7 2 6.5 6" />
+                </svg>
+            );
+
+        case "support":
+            return (
+                <svg {...props}>
+                    <path d="M5 13v-2a7 7 0 0 1 14 0v2" />
+                    <path d="M5 13H3v5h4v-5z" />
+                    <path d="M19 13h2v5h-4v-5z" />
+                </svg>
+            );
+
+        default:
+            return null;
     }
+}
+
+
+function SidebarLink({
+    to,
+    label,
+    icon,
+    end = false,
+    onNavigate,
+}) {
+    return (
+        <NavLink
+            to={to}
+            end={end}
+            onClick={onNavigate}
+            className={({ isActive }) =>
+                `
+                flex
+                min-h-[40px]
+                items-center
+                gap-3
+                rounded-md
+                px-3
+                py-2
+                text-[11px]
+                font-medium
+                transition
+                ${isActive
+                    ? "bg-[#1f7be5] text-white"
+                    : "text-slate-100 hover:bg-white/10 hover:text-white"
+                }
+                `
+            }
+        >
+            <Icon type={icon} />
+
+            <span>
+                {label}
+            </span>
+        </NavLink>
+    );
 }
 
 
@@ -255,203 +218,170 @@ function Sidebar({
     onNavigate,
 }) {
     const normalizedRole =
-        String(
-            role ||
-            ""
-        )
+        String(role || "")
             .trim()
             .toLowerCase();
 
 
+    /*
+     * IMPORTANT:
+     * Keep ALL Admin navigation items.
+     *
+     * These match the existing working pages:
+     *
+     * Dashboard
+     * Create User
+     * Manage Users
+     * Roles & Permissions
+     * Training Programmes
+     * Training Assignments
+     * Audit Logs
+     */
+
     const adminLinks = [
         {
-            to:
-                "/admin",
-
-            label:
-                "Dashboard",
-
-            icon:
-                "dashboard",
-
-            end:
-                true,
+            to: "/admin",
+            label: "Dashboard",
+            icon: "dashboard",
+            end: true,
         },
 
         {
-            to:
-                "/admin/create-user",
-
-            label:
-                "Create User",
-
-            icon:
-                "create",
+            to: "/admin/create-user",
+            label: "Create User",
+            icon: "user-add",
         },
 
         {
-            to:
-                "/admin/users",
-
-            label:
-                "Manage Users",
-
-            icon:
-                "users",
+            to: "/admin/users",
+            label: "Manage Users",
+            icon: "users",
         },
 
         {
-            to:
-                "/admin/roles",
-
-            label:
-                "Roles & Permissions",
-
-            icon:
-                "roles",
+            to: "/admin/roles",
+            label: "Roles & Permissions",
+            icon: "roles",
         },
 
         {
-            to:
-                "/training-programmes",
-
-            label:
-                "Training Programmes",
-
-            icon:
-                "training",
+            to: "/training-programmes",
+            label: "Training Programmes",
+            icon: "training",
         },
 
         {
-            to:
-                "/training-assignments",
-
-            label:
-                "Training Assignments",
-
-            icon:
-                "training",
+            to: "/training-assignments",
+            label: "Training Assignments",
+            icon: "assignment",
         },
 
         {
-            to:
-                "/admin/audit-logs",
-
-            label:
-                "Audit Logs",
-
-            icon:
-                "audit",
+            to: "/admin/audit-logs",
+            label: "Audit Logs",
+            icon: "audit",
         },
     ];
 
+
+    /*
+     * Trainer sidebar.
+     *
+     * Keep this minimal because your trainer screenshot
+     * currently uses Dashboard + Logout.
+     */
 
     const trainerLinks = [
         {
-            to:
-                "/trainer",
-
-            label:
-                "Dashboard",
-
-            icon:
-                "dashboard",
-
-            end:
-                true,
-        },
-
-        {
-            to:
-                "/training-programmes",
-
-            label:
-                "Training Programme",
-
-            icon:
-                "training",
-        },
-
-        {
-            to:
-                "/trainer/profile",
-
-            label:
-                "Profile",
-
-            icon:
-                "profile",
+            to: "/trainer",
+            label: "Dashboard",
+            icon: "dashboard",
+            end: true,
         },
     ];
 
+
+    /*
+     * Trainee sidebar.
+     */
 
     const traineeLinks = [
         {
-            to:
-                "/trainee",
-
-            label:
-                "Dashboard",
-
-            icon:
-                "dashboard",
-
-            end:
-                true,
+            to: "/trainee",
+            label: "Dashboard",
+            icon: "dashboard",
+            end: true,
         },
 
         {
-            to:
-                "/my-training",
-
-            label:
-                "My Training",
-
-            icon:
-                "training",
+            to: "/my-training",
+            label: "My Training",
+            icon: "training",
         },
 
         {
-            to:
-                "/trainee/profile",
+            to: "/trainee/progress",
+            label: "My Progress",
+            icon: "progress",
+        },
 
-            label:
-                "Profile",
+        {
+            to: "/trainee/scenarios",
+            label: "Panoramic Scenarios",
+            icon: "scenario",
+        },
 
-            icon:
-                "profile",
+        {
+            to: "/trainee/quizzes",
+            label: "Quizzes",
+            icon: "quiz",
+        },
+
+        {
+            to: "/trainee/notifications",
+            label: "Notifications",
+            icon: "bell",
+        },
+
+        {
+            to: "/trainee/profile",
+            label: "Profile",
+            icon: "profile",
+        },
+
+        {
+            to: "/trainee/help",
+            label: "Help Support",
+            icon: "support",
         },
     ];
 
 
-    const links =
-        normalizedRole ===
-            "admin"
-            ? adminLinks
-            : normalizedRole ===
-                "trainer"
-                ? trainerLinks
-                : traineeLinks;
+    let links = traineeLinks;
+
+    if (normalizedRole === "admin") {
+        links = adminLinks;
+    }
+
+    if (normalizedRole === "trainer") {
+        links = trainerLinks;
+    }
 
 
-    const footerTitle =
-        normalizedRole ===
-            "admin"
+    const roleTitle =
+        normalizedRole === "admin"
             ? "Administrator"
-            : normalizedRole ===
-                "trainer"
+            : normalizedRole === "trainer"
                 ? "Trainer"
                 : "Trainee";
 
 
-    const footerText =
-        normalizedRole ===
-            "admin"
+    const roleDescription =
+        normalizedRole === "admin"
             ? "User account and access management."
-            : normalizedRole ===
-                "trainer"
+            : normalizedRole === "trainer"
                 ? "Training and trainee management."
-                : "Workplace safety training access.";
+                : "Safety training and learning.";
 
 
     return (
@@ -460,104 +390,57 @@ function Sidebar({
                 flex
                 h-full
                 min-h-screen
+                w-full
                 flex-col
+                overflow-y-auto
                 bg-[#073763]
                 text-white
             "
         >
-            {/* LOGO */}
+            {/* =============================================
+                LOGO
+            ============================================== */}
 
             <div
                 className="
                     border-b
                     border-white/10
                     px-5
-                    py-5
+                    py-6
                 "
             >
-                <Logo
-                    light
-                />
+                <Logo light />
             </div>
 
 
-            {/* NAVIGATION */}
+            {/* =============================================
+                NAVIGATION
+            ============================================== */}
 
             <nav
                 className="
+                    flex
+                    min-h-0
                     flex-1
-                    overflow-y-auto
+                    flex-col
                     px-3
                     py-5
                 "
             >
-                <div
-                    className="
-                        space-y-1
-                    "
-                >
-                    {links.map(
-                        (
-                            item
-                        ) => (
-                            <NavLink
-                                key={
-                                    item.to
-                                }
-                                to={
-                                    item.to
-                                }
-                                end={
-                                    item.end
-                                }
-                                onClick={
-                                    onNavigate
-                                }
-                                className={({
-                                    isActive,
-                                }) => `
-                                    group
-                                    flex
-                                    min-h-[46px]
-                                    items-center
-                                    gap-3
-                                    rounded-md
-                                    px-3
-                                    py-2.5
-                                    text-[13px]
-                                    font-medium
-                                    transition-all
-                                    duration-150
-
-                                    ${isActive
-                                        ? "bg-[#1677df] text-white shadow-sm"
-                                        : "text-slate-100 hover:bg-white/10 hover:text-white"
-                                    }
-                                `}
-                            >
-                                <SidebarIcon
-                                    type={
-                                        item.icon
-                                    }
-                                />
-
-                                <span
-                                    className="
-                                        min-w-0
-                                        flex-1
-                                    "
-                                >
-                                    {item.label}
-                                </span>
-                            </NavLink>
-                        )
-                    )}
+                <div className="space-y-1.5">
+                    {links.map((link) => (
+                        <SidebarLink
+                            key={link.to}
+                            {...link}
+                            onNavigate={onNavigate}
+                        />
+                    ))}
                 </div>
 
 
                 <div
                     className="
-                        my-5
+                        my-4
                         border-t
                         border-white/10
                     "
@@ -568,7 +451,9 @@ function Sidebar({
             </nav>
 
 
-            {/* BOTTOM ROLE CARD */}
+            {/* =============================================
+                ROLE CARD
+            ============================================== */}
 
             <div
                 className="
@@ -580,8 +465,8 @@ function Sidebar({
                     className="
                         rounded-lg
                         border
-                        border-[#2c6b9e]
-                        bg-[#0b4f87]
+                        border-white/10
+                        bg-white/[0.06]
                         p-4
                     "
                 >
@@ -592,17 +477,18 @@ function Sidebar({
                             w-9
                             items-center
                             justify-center
-                            rounded-lg
+                            rounded-full
                             bg-[#1769aa]
-                            text-[#9fd2ff]
+                            text-[#8fc5ff]
                         "
                     >
-                        <SidebarIcon
+                        <Icon
                             type={
-                                normalizedRole ===
-                                    "admin"
+                                normalizedRole === "admin"
                                     ? "users"
-                                    : "profile"
+                                    : normalizedRole === "trainer"
+                                        ? "profile"
+                                        : "training"
                             }
                         />
                     </div>
@@ -610,25 +496,27 @@ function Sidebar({
 
                     <p
                         className="
+                            m-0
                             mt-3
-                            text-[12px]
+                            text-[10px]
                             font-bold
                             text-white
                         "
                     >
-                        {footerTitle}
+                        {roleTitle}
                     </p>
 
 
                     <p
                         className="
+                            m-0
                             mt-1
-                            text-[10px]
+                            text-[8px]
                             leading-4
-                            text-slate-200
+                            text-blue-100
                         "
                     >
-                        {footerText}
+                        {roleDescription}
                     </p>
                 </div>
             </div>

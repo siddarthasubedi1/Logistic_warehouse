@@ -4,6 +4,8 @@ import {
 
 
 const BACKEND_URL =
+    import.meta.env
+        .VITE_BACKEND_URL ||
     "http://localhost:5000";
 
 
@@ -15,13 +17,26 @@ function ProfileHeaderButton({
         useNavigate();
 
 
+    const normalizedRole =
+        String(
+            role ||
+            user?.role ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
     const firstName =
         user?.firstName ||
         (
-            role ===
+            normalizedRole ===
                 "trainer"
                 ? "Trainer"
-                : "Trainee"
+                : normalizedRole ===
+                    "trainee"
+                    ? "Trainee"
+                    : "User"
         );
 
 
@@ -36,43 +51,43 @@ function ProfileHeaderButton({
 
 
     const initial =
-        firstName
+        fullName
             .charAt(0)
             .toUpperCase();
 
 
     const profilePath =
-        role ===
+        normalizedRole ===
             "trainer"
             ? "/trainer/profile"
-            : "/trainee/profile";
+            : normalizedRole ===
+                "trainee"
+                ? "/trainee/profile"
+                : "/";
 
 
     const profileImageUrl =
         user?.profileImage
-            ? `${BACKEND_URL}${user.profileImage}`
+            ? user.profileImage.startsWith(
+                "http"
+            )
+                ? user.profileImage
+                : `${BACKEND_URL}${user.profileImage}`
             : "";
-
-
-    const handleOpenProfile =
-        () => {
-            navigate(
-                profilePath
-            );
-        };
 
 
     return (
         <button
             type="button"
-            onClick={
-                handleOpenProfile
+            onClick={() =>
+                navigate(
+                    profilePath
+                )
             }
             title="View profile"
             className="
                 group
                 flex
-                min-w-0
                 max-w-full
                 items-center
                 gap-2.5
@@ -98,9 +113,7 @@ function ProfileHeaderButton({
                         src={
                             profileImageUrl
                         }
-                        alt={
-                            `${fullName} profile`
-                        }
+                        alt={`${fullName} profile`}
                         className="
                             h-9
                             w-9
@@ -120,7 +133,7 @@ function ProfileHeaderButton({
                             justify-center
                             rounded-full
                             bg-blue-50
-                            text-[10px]
+                            text-[11px]
                             font-bold
                             text-blue-600
                         "
@@ -155,27 +168,27 @@ function ProfileHeaderButton({
             >
                 <p
                     className="
+                        m-0
                         max-w-[150px]
                         truncate
-                        text-[9px]
+                        text-[10px]
                         font-bold
-                        text-slate-800
+                        text-[#172033]
                     "
                 >
                     {fullName}
                 </p>
 
-
                 <p
                     className="
+                        m-0
                         mt-0.5
-                        text-[7px]
-                        font-medium
+                        text-[8px]
                         capitalize
                         text-slate-500
                     "
                 >
-                    {role}
+                    {normalizedRole}
                 </p>
             </div>
 
@@ -189,7 +202,6 @@ function ProfileHeaderButton({
                     hidden
                     h-3.5
                     w-3.5
-                    shrink-0
                     text-slate-400
                     transition
                     group-hover:text-blue-600

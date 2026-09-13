@@ -1,11 +1,5 @@
-import {
-    useEffect,
-    useState,
-} from "react";
-
-import {
-    useNavigate,
-} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import LoginBranding from "../components/auth/LoginBranding";
 import LoginForm from "../components/auth/LoginForm";
@@ -19,247 +13,109 @@ import {
     normalizeRole,
 } from "../utils/session";
 
+function getPasswordChangeUser() {
+    const user = getSessionUser();
 
-function getForcedPasswordUser() {
-    const user =
-        getSessionUser();
-
-
-    if (
-        !user
-    ) {
+    if (!user) {
         return null;
     }
 
+    const role = normalizeRole(user.role);
 
-    const role =
-        normalizeRole(
-            user.role
-        );
+    const requiresPasswordChange =
+        ["trainer", "trainee"].includes(role) &&
+        user.mustChangePassword === true;
 
-
-    if (
-        [
-            "trainer",
-            "trainee",
-        ].includes(
-            role
-        ) &&
-        user.mustChangePassword ===
-        true
-    ) {
-        return user;
+    if (!requiresPasswordChange) {
+        return null;
     }
 
-
-    return null;
+    return {
+        ...user,
+        role,
+    };
 }
 
-
 function Login() {
-    const navigate =
-        useNavigate();
+    const navigate = useNavigate();
 
+    const [showForgotPassword, setShowForgotPassword] =
+        useState(false);
 
-    const [
-        showForgotPassword,
-        setShowForgotPassword,
-    ] = useState(false);
-
-
-    const [
-        forcedPasswordUser,
-        setForcedPasswordUser,
-    ] = useState(
-        getForcedPasswordUser
-    );
-
-
-    // ======================================================
-    // ALREADY LOGGED IN
-    // ======================================================
+    const [forcedPasswordUser, setForcedPasswordUser] =
+        useState(() => getPasswordChangeUser());
 
     useEffect(() => {
-        const token =
-            getAccessToken();
+        const token = getAccessToken();
+        const user = getSessionUser();
 
-
-        const user =
-            getSessionUser();
-
-
-        if (
-            !token ||
-            !user
-        ) {
+        if (!token || !user) {
             return;
         }
 
-
-        const role =
-            normalizeRole(
-                user.role
-            );
-
+        const role = normalizeRole(user.role);
 
         const requiresPasswordChange =
-            [
-                "trainer",
-                "trainee",
-            ].includes(
-                role
-            ) &&
-            user.mustChangePassword ===
-            true;
+            ["trainer", "trainee"].includes(role) &&
+            user.mustChangePassword === true;
 
-
-        if (
-            requiresPasswordChange
-        ) {
-            setForcedPasswordUser(
-                user
-            );
+        if (requiresPasswordChange) {
+            setForcedPasswordUser({
+                ...user,
+                role,
+            });
 
             return;
         }
 
+        const destination =
+            getDashboardPath(role);
 
-        const dashboardPath =
-            getDashboardPath(
-                role
-            );
-
-
-        if (
-            dashboardPath !==
-            "/login"
-        ) {
-            navigate(
-                dashboardPath,
-                {
-                    replace:
-                        true,
-                }
-            );
+        if (destination !== "/login") {
+            navigate(destination, {
+                replace: true,
+            });
         }
+    }, [navigate]);
 
-    }, [
-        navigate,
-    ]);
+    const handlePasswordChangeRequired = (user) => {
+        setShowForgotPassword(false);
 
+        setForcedPasswordUser({
+            ...user,
+            role: normalizeRole(user?.role),
+        });
+    };
 
-    const handleForgotPassword =
-        () => {
-            setShowForgotPassword(
-                true
-            );
-        };
+    const handlePasswordChangeCompleted = () => {
+        setForcedPasswordUser(null);
+        setShowForgotPassword(false);
 
-
-    const handleBackToLogin =
-        () => {
-            setShowForgotPassword(
-                false
-            );
-        };
-
-
-    const handlePasswordChangeRequired =
-        (
-            user
-        ) => {
-            setShowForgotPassword(
-                false
-            );
-
-
-            setForcedPasswordUser(
-                user
-            );
-        };
-
-
-    const handlePasswordChangeCompleted =
-        () => {
-            setForcedPasswordUser(
-                null
-            );
-
-
-            setShowForgotPassword(
-                false
-            );
-
-
-            navigate(
-                "/login",
-                {
-                    replace:
-                        true,
-                }
-            );
-        };
-
+        navigate("/login", {
+            replace: true,
+        });
+    };
 
     return (
-        <main
-            className="
-                min-h-screen
-                bg-[#f5f7fb]
-                px-3
-                py-3
-                sm:px-5
-                lg:flex
-                lg:items-center
-                lg:justify-center
-                lg:px-8
-            "
-        >
-            <div
-                className="
-                    mx-auto
-                    grid
-                    w-full
-                    max-w-[1500px]
-                    overflow-hidden
-                    bg-white
-                    lg:min-h-[820px]
-                    lg:grid-cols-2
-                "
-            >
+        <main className="login-page">
+            <div className="login-shell">
                 <LoginBranding />
 
-
                 <section
-                    className="
-                        flex
-                        min-h-[650px]
-                        items-center
-                        justify-center
-                        bg-white
-                        px-5
-                        py-10
-                        sm:px-10
-                        lg:min-h-[820px]
-                        lg:px-14
-                    "
+                    className="login-panel"
+                    aria-label="Account login"
                 >
-                    <div
-                        className="
-                            w-full
-                            max-w-[430px]
-                        "
-                    >
+                    <div className="login-panel-inner">
                         {showForgotPassword ? (
                             <ForgotPasswordForm
-                                onBackToLogin={
-                                    handleBackToLogin
+                                onBackToLogin={() =>
+                                    setShowForgotPassword(false)
                                 }
                             />
                         ) : (
                             <LoginForm
-                                onForgotPassword={
-                                    handleForgotPassword
+                                onForgotPassword={() =>
+                                    setShowForgotPassword(true)
                                 }
                                 onPasswordChangeRequired={
                                     handlePasswordChangeRequired
@@ -270,12 +126,9 @@ function Login() {
                 </section>
             </div>
 
-
             {forcedPasswordUser && (
                 <ForcePasswordChangeModal
-                    user={
-                        forcedPasswordUser
-                    }
+                    user={forcedPasswordUser}
                     onCompleted={
                         handlePasswordChangeCompleted
                     }
@@ -284,6 +137,5 @@ function Login() {
         </main>
     );
 }
-
 
 export default Login;

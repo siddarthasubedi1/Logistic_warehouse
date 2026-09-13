@@ -1,7 +1,6 @@
 const ACCESS_TOKEN_KEY =
     "accessToken";
 
-
 const USER_KEY =
     "user";
 
@@ -35,13 +34,11 @@ export function getSessionUser() {
         return null;
     }
 
-
     try {
         const stored =
             window.sessionStorage.getItem(
                 USER_KEY
             );
-
 
         if (
             !stored
@@ -49,12 +46,10 @@ export function getSessionUser() {
             return null;
         }
 
-
         const user =
             JSON.parse(
                 stored
             );
-
 
         if (
             !user ||
@@ -67,17 +62,15 @@ export function getSessionUser() {
             return null;
         }
 
-
         return user;
 
     } catch (
     error
     ) {
         console.error(
-            "Unable to read user session:",
+            "Unable to read session user:",
             error
         );
-
 
         return null;
     }
@@ -98,7 +91,6 @@ export function saveSessionUser(
     ) {
         return;
     }
-
 
     try {
         window.sessionStorage.setItem(
@@ -125,7 +117,6 @@ export function updateSessionUser(
     const currentUser =
         getSessionUser();
 
-
     if (
         !currentUser ||
         !updates ||
@@ -135,17 +126,14 @@ export function updateSessionUser(
         return null;
     }
 
-
     const updatedUser = {
         ...currentUser,
         ...updates,
     };
 
-
     saveSessionUser(
         updatedUser
     );
-
 
     return updatedUser;
 }
@@ -158,7 +146,6 @@ export function getAccessToken() {
         return "";
     }
 
-
     return (
         window.sessionStorage.getItem(
             ACCESS_TOKEN_KEY
@@ -169,21 +156,20 @@ export function getAccessToken() {
 
 
 export function saveAccessToken(
-    accessToken
+    token
 ) {
     if (
         !canUseSessionStorage() ||
-        !accessToken ||
-        typeof accessToken !==
+        !token ||
+        typeof token !==
         "string"
     ) {
         return;
     }
 
-
     window.sessionStorage.setItem(
         ACCESS_TOKEN_KEY,
-        accessToken
+        token
     );
 }
 
@@ -199,7 +185,6 @@ export function saveAuthSession({
             accessToken
         );
     }
-
 
     if (
         user
@@ -218,11 +203,9 @@ export function clearAuthSession() {
         return;
     }
 
-
     window.sessionStorage.removeItem(
         ACCESS_TOKEN_KEY
     );
-
 
     window.sessionStorage.removeItem(
         USER_KEY
@@ -244,11 +227,13 @@ export function isUserRole(
     const user =
         getSessionUser();
 
+    if (
+        !user
+    ) {
+        return false;
+    }
 
     return (
-        Boolean(
-            user
-        ) &&
         normalizeRole(
             user.role
         ) ===
@@ -267,32 +252,21 @@ export function getDashboardPath(
             role
         );
 
-
-    if (
-        normalizedRole ===
-        "admin"
+    switch (
+    normalizedRole
     ) {
-        return "/admin";
+        case "admin":
+            return "/admin";
+
+        case "trainer":
+            return "/trainer";
+
+        case "trainee":
+            return "/trainee";
+
+        default:
+            return "/login";
     }
-
-
-    if (
-        normalizedRole ===
-        "trainer"
-    ) {
-        return "/trainer";
-    }
-
-
-    if (
-        normalizedRole ===
-        "trainee"
-    ) {
-        return "/trainee";
-    }
-
-
-    return "/login";
 }
 
 
@@ -300,19 +274,16 @@ export function sessionRequiresPasswordChange() {
     const user =
         getSessionUser();
 
-
     if (
         !user
     ) {
         return false;
     }
 
-
     const role =
         normalizeRole(
             user.role
         );
-
 
     return (
         [
@@ -323,5 +294,47 @@ export function sessionRequiresPasswordChange() {
         ) &&
         user.mustChangePassword ===
         true
+    );
+}
+
+
+export function getUserDisplayName(
+    user = null
+) {
+    const currentUser =
+        user ||
+        getSessionUser();
+
+    if (
+        !currentUser
+    ) {
+        return "User";
+    }
+
+    const fullName =
+        `${currentUser.firstName || ""} ${currentUser.lastName || ""}`
+            .trim();
+
+    return (
+        fullName ||
+        currentUser.username ||
+        "User"
+    );
+}
+
+
+export function getUserInitial(
+    user = null
+) {
+    const name =
+        getUserDisplayName(
+            user
+        );
+
+    return (
+        name
+            .charAt(0)
+            .toUpperCase() ||
+        "U"
     );
 }

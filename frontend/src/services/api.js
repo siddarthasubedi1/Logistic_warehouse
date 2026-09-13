@@ -8,6 +8,8 @@ import {
 
 
 export const API_BASE_URL =
+    import.meta.env
+        .VITE_API_URL ||
     "http://localhost:5000/api";
 
 
@@ -18,6 +20,9 @@ const api =
 
         withCredentials:
             true,
+
+        timeout:
+            15000,
     });
 
 
@@ -28,6 +33,9 @@ const refreshClient =
 
         withCredentials:
             true,
+
+        timeout:
+            15000,
     });
 
 
@@ -38,7 +46,6 @@ function redirectToLogin() {
     ) {
         return;
     }
-
 
     if (
         window.location.pathname !==
@@ -62,7 +69,6 @@ async function refreshAccessToken() {
         return refreshPromise;
     }
 
-
     refreshPromise =
         refreshClient
             .post(
@@ -72,26 +78,23 @@ async function refreshAccessToken() {
                 (
                     response
                 ) => {
-                    const accessToken =
+                    const token =
                         response.data
                             ?.accessToken;
 
-
                     if (
-                        !accessToken
+                        !token
                     ) {
                         throw new Error(
-                            "Refresh response did not contain an access token."
+                            "No access token returned."
                         );
                     }
 
-
                     saveAccessToken(
-                        accessToken
+                        token
                     );
 
-
-                    return accessToken;
+                    return token;
                 }
             )
             .finally(
@@ -101,47 +104,43 @@ async function refreshAccessToken() {
                 }
             );
 
-
     return refreshPromise;
 }
 
+
+/* =========================================================
+   REQUEST INTERCEPTOR
+========================================================= */
 
 api.interceptors.request.use(
     (
         config
     ) => {
-        const accessToken =
+        const token =
             getAccessToken();
 
-
         if (
-            accessToken
+            token
         ) {
             config.headers =
                 config.headers ||
                 {};
 
-
             config.headers.Authorization =
-                `Bearer ${accessToken}`;
+                `Bearer ${token}`;
         }
-
 
         if (
             typeof FormData !==
             "undefined" &&
             config.data instanceof
-            FormData
+            FormData &&
+            config.headers
         ) {
-            if (
-                config.headers
-            ) {
-                delete config.headers[
-                    "Content-Type"
-                ];
-            }
+            delete config.headers[
+                "Content-Type"
+            ];
         }
-
 
         return config;
     },
@@ -155,6 +154,10 @@ api.interceptors.request.use(
 );
 
 
+/* =========================================================
+   RESPONSE INTERCEPTOR
+========================================================= */
+
 api.interceptors.response.use(
     (
         response
@@ -164,14 +167,15 @@ api.interceptors.response.use(
     async (
         error
     ) => {
-        const status =
-            error.response
-                ?.status;
+        const response =
+            error.response;
 
+        const status =
+            response?.status;
 
         const code =
             String(
-                error.response
+                response
                     ?.data
                     ?.code ||
                 ""
@@ -179,21 +183,19 @@ api.interceptors.response.use(
                 .trim()
                 .toUpperCase();
 
-
         const originalRequest =
             error.config;
-
 
         const requestUrl =
             originalRequest
                 ?.url ||
             "";
 
-
-        const isPublicAuthRequest =
+        const publicAuthRequest =
             [
                 "/auth/login",
                 "/auth/forgot-password",
+                "/auth/refresh",
             ].some(
                 (
                     endpoint
@@ -204,9 +206,7 @@ api.interceptors.response.use(
             );
 
 
-        // ==================================================
-        // ACCOUNT DEACTIVATED
-        // ==================================================
+        /* ACCOUNT DISABLED */
 
         if (
             status ===
@@ -224,12 +224,7 @@ api.interceptors.response.use(
         }
 
 
-        // ==================================================
-        // FIRST LOGIN PASSWORD CHANGE
-        // Do NOT clear session.
-        // The temporary authenticated session is required
-        // to call /auth/change-password.
-        // ==================================================
+        /* FORCE PASSWORD CHANGE */
 
         if (
             status ===
@@ -237,36 +232,6 @@ api.interceptors.response.use(
             code ===
             "PASSWORD_CHANGE_REQUIRED"
         ) {
-            if (
-                typeof window !==
-                "undefined" &&
-                window.location.pathname !==
-                "/login"
-            ) {
-                window.location.replace(
-                    "/login"
-                );
-            }
-
-
-            return Promise.reject(
-                error
-            );
-        }
-
-
-        // ==================================================
-        // SESSION REVOKED
-        // ==================================================
-
-        if (
-            status ===
-            401 &&
-            code ===
-            "SESSION_REVOKED"
-        ) {
-            clearAuthSession();
-
             redirectToLogin();
 
             return Promise.reject(
@@ -275,65 +240,28 @@ api.interceptors.response.use(
         }
 
 
-        // ==================================================
-        // INVALID ACCESS TOKEN
-        // ==================================================
+        /* UNAUTHORIZED */
 
         if (
             status ===
             401 &&
-            [
-                "INVALID_ACCESS_TOKEN",
-                "AUTHENTICATION_REQUIRED",
-                "TOKEN_INVALID",
-            ].includes(
-                code
-            )
-        ) {
-            if (
-                !isPublicAuthRequest
-            ) {
-                clearAuthSession();
-
-                redirectToLogin();
-            }
-
-
-            return Promise.reject(
-                error
-            );
-        }
-
-
-        // ==================================================
-        // ACCESS TOKEN EXPIRED
-        // ==================================================
-
-        if (
-            status ===
-            401 &&
-            code ===
-            "ACCESS_TOKEN_EXPIRED" &&
-            originalRequest &&
-            !originalRequest._retry
+            !publicAuthRequest &&
+            !originalRequest
+                ?._retry
         ) {
             originalRequest._retry =
                 true;
 
-
             try {
-                const newAccessToken =
+                const newToken =
                     await refreshAccessToken();
-
 
                 originalRequest.headers =
                     originalRequest.headers ||
                     {};
 
-
                 originalRequest.headers.Authorization =
-                    `Bearer ${newAccessToken}`;
-
+                    `Bearer ${newToken}`;
 
                 return api(
                     originalRequest
@@ -353,54 +281,16 @@ api.interceptors.response.use(
         }
 
 
-        // ==================================================
-        // ROLE / AUTHORIZATION DENIED
-        //
-        // THIS IS THE IMPORTANT FIX FOR YOUR SCREENSHOT.
-        // Instead of showing /unauthorized,
-        // clear session and return to login.
-        // ==================================================
-
-        if (
-            status ===
-            403 &&
-            [
-                "FORBIDDEN",
-                "ACCESS_DENIED",
-                "UNAUTHORIZED",
-                "ROLE_NOT_ALLOWED",
-                "INSUFFICIENT_PERMISSION",
-                "INSUFFICIENT_PERMISSIONS",
-            ].includes(
-                code
-            )
-        ) {
-            clearAuthSession();
-
-            redirectToLogin();
-
-            return Promise.reject(
-                error
-            );
-        }
-
-
-        // ==================================================
-        // OTHER 401
-        // ==================================================
+        /* EXPIRED/INVALID SESSION */
 
         if (
             status ===
             401 &&
-            !isPublicAuthRequest
+            !publicAuthRequest
         ) {
             clearAuthSession();
 
             redirectToLogin();
-
-            return Promise.reject(
-                error
-            );
         }
 
 
