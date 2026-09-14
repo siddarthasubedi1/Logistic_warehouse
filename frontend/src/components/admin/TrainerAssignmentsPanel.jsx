@@ -218,13 +218,16 @@ function TrainerAssignmentsPanel() {
         const userId =
             event.target.value;
 
+
         setSelectedUserId(
             userId
         );
 
+
         setError(
             ""
         );
+
 
         setSuccess(
             ""
@@ -257,6 +260,12 @@ function TrainerAssignmentsPanel() {
         }
 
 
+        /* =====================================================
+           TRAINEE
+    
+           Trainee always receives both modules.
+        ===================================================== */
+
         if (
             user.role ===
             "trainee"
@@ -274,14 +283,23 @@ function TrainerAssignmentsPanel() {
         }
 
 
+        /* =====================================================
+           TRAINER
+    
+           Keep ALL currently assigned modules.
+    
+           Do NOT use:
+           .slice(0, 1)
+        ===================================================== */
+
         setSelectedSections(
             Array.isArray(
                 user.assignedTrainingSections
             )
-                ? user.assignedTrainingSections.slice(
-                    0,
-                    1
-                )
+                ? [
+                    ...user
+                        .assignedTrainingSections,
+                ]
                 : []
         );
     };
@@ -303,11 +321,39 @@ function TrainerAssignmentsPanel() {
                 return;
             }
 
-            setSelectedSections([
-                sectionId,
-            ]);
+            setSelectedSections(
+                (
+                    current
+                ) => {
+                    const alreadySelected =
+                        current.includes(
+                            sectionId
+                        );
+
+                    if (
+                        alreadySelected
+                    ) {
+                        return current.filter(
+                            (
+                                item
+                            ) =>
+                                item !==
+                                sectionId
+                        );
+                    }
+
+                    return [
+                        ...current,
+                        sectionId,
+                    ];
+                }
+            );
 
             setError(
+                ""
+            );
+
+            setSuccess(
                 ""
             );
         };
@@ -345,11 +391,11 @@ function TrainerAssignmentsPanel() {
             if (
                 selectedUser.role ===
                 "trainer" &&
-                trainingSections.length !==
+                trainingSections.length <
                 1
             ) {
                 setError(
-                    "Trainer must have exactly one training module."
+                    "Trainer must have at least one training module."
                 );
 
                 return;
@@ -427,10 +473,10 @@ function TrainerAssignmentsPanel() {
                         Array.isArray(
                             refreshedUser?.assignedTrainingSections
                         )
-                            ? refreshedUser.assignedTrainingSections.slice(
-                                0,
-                                1
-                            )
+                            ? [
+                                ...refreshedUser
+                                    .assignedTrainingSections,
+                            ]
                             : []
                     );
                 }
@@ -591,7 +637,7 @@ function TrainerAssignmentsPanel() {
                             text-blue-600
                         "
                     >
-                        Trainer → 1 module
+                        Trainer → 1 or both modules
                     </span>
 
                     <span
