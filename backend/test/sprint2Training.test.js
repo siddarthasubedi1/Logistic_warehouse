@@ -1,9 +1,58 @@
-const request = require("supertest");
-const bcrypt = require("bcrypt");
+const request =
+    require("supertest");
 
-const app = require("../app");
-const User = require("../src/models/User");
+const bcrypt =
+    require("bcrypt");
 
+const sharp =
+    require("sharp");
+
+const app =
+    require("../app");
+
+const User =
+    require("../src/models/User");
+
+
+/* =========================================================
+   GENERATE REAL TEST PNG
+
+   Sharp creates a valid PNG buffer so the test image
+   passes the same validation used by the real application.
+========================================================= */
+
+async function createTestImageBuffer() {
+    return sharp({
+        create: {
+            width:
+                20,
+
+            height:
+                20,
+
+            channels:
+                3,
+
+            background: {
+                r:
+                    255,
+
+                g:
+                    255,
+
+                b:
+                    255,
+            },
+        },
+    })
+        .png()
+        .toBuffer();
+}
+
+
+/* =========================================================
+   CREATE TEST USER
+========================================================= */
 
 async function createUser({
     firstName,
@@ -20,6 +69,7 @@ async function createUser({
             12
         );
 
+
     return User.create({
         firstName,
         lastName,
@@ -29,19 +79,36 @@ async function createUser({
         role,
         assignedTrainingSections,
 
-        ...(role !== "admin" && {
-            age: 25,
-            phoneNumber: "9800000000",
-            address: "Kathmandu, Nepal",
-            gender: "female",
+        ...(role !==
+            "admin" && {
+            age:
+                25,
+
+            phoneNumber:
+                "9800000000",
+
+            address:
+                "Kathmandu, Nepal",
+
+            gender:
+                "female",
         }),
 
-        accountStatus: "created",
-        status: "active",
-        mustChangePassword: false,
+        accountStatus:
+            "created",
+
+        status:
+            "active",
+
+        mustChangePassword:
+            false,
     });
 }
 
+
+/* =========================================================
+   LOGIN TEST USER
+========================================================= */
 
 async function login(
     username,
@@ -49,25 +116,40 @@ async function login(
 ) {
     const response =
         await request(app)
-            .post("/api/auth/login")
+            .post(
+                "/api/auth/login"
+            )
             .send({
                 username,
                 password,
             });
 
+
     expect(
         response.statusCode
-    ).toBe(200);
+    ).toBe(
+        200
+    );
+
 
     expect(
-        response.body.accessToken
+        response.body
+            .accessToken
     ).toBeDefined();
 
-    return response.body.accessToken;
+
+    return response.body
+        .accessToken;
 }
 
 
-function auth(token) {
+/* =========================================================
+   AUTH HEADER
+========================================================= */
+
+function auth(
+    token
+) {
     return {
         Authorization:
             `Bearer ${token}`,
@@ -75,12 +157,30 @@ function auth(token) {
 }
 
 
+/* =========================================================
+   SPRINT 2 INTEGRATION TEST
+========================================================= */
+
 describe(
     "Sprint 2 - Training Programme, Learning Section and Assignment",
+
     () => {
         test(
             "Trainer ownership, Admin override, section ordering, assignment and Trainee access work together",
+
             async () => {
+                /* ==========================================
+                   VALID TEST IMAGE
+                =========================================== */
+
+                const TEST_IMAGE_BUFFER =
+                    await createTestImageBuffer();
+
+
+                /* ==========================================
+                   PASSWORDS
+                =========================================== */
+
                 const adminPassword =
                     "AdminPassword123!";
 
@@ -91,53 +191,127 @@ describe(
                     "TraineePassword123!";
 
 
+                /* ==========================================
+                   CREATE ADMIN
+                =========================================== */
+
                 await createUser({
-                    firstName: "Sprint",
-                    lastName: "Admin",
-                    email: "sprint2.admin@test.com",
-                    username: "sprint2admin",
-                    password: adminPassword,
-                    role: "admin",
+                    firstName:
+                        "Sprint",
+
+                    lastName:
+                        "Admin",
+
+                    email:
+                        "sprint2.admin@test.com",
+
+                    username:
+                        "sprint2admin",
+
+                    password:
+                        adminPassword,
+
+                    role:
+                        "admin",
                 });
 
 
+                /* ==========================================
+                   CREATE TRAINER A
+                =========================================== */
+
                 const trainerA =
                     await createUser({
-                        firstName: "Trainer",
-                        lastName: "Alpha",
-                        email: "trainer.alpha@test.com",
-                        username: "traineralpha",
-                        password: trainerPassword,
-                        role: "trainer",
+                        firstName:
+                            "Trainer",
+
+                        lastName:
+                            "Alpha",
+
+                        email:
+                            "trainer.alpha@test.com",
+
+                        username:
+                            "traineralpha",
+
+                        password:
+                            trainerPassword,
+
+                        role:
+                            "trainer",
+
                         assignedTrainingSections: [
                             "manual-handling",
                         ],
                     });
 
 
+                /* ==========================================
+                   CREATE TRAINER B
+                =========================================== */
+
                 await createUser({
-                    firstName: "Trainer",
-                    lastName: "Beta",
-                    email: "trainer.beta@test.com",
-                    username: "trainerbeta",
-                    password: trainerPassword,
-                    role: "trainer",
+                    firstName:
+                        "Trainer",
+
+                    lastName:
+                        "Beta",
+
+                    email:
+                        "trainer.beta@test.com",
+
+                    username:
+                        "trainerbeta",
+
+                    password:
+                        trainerPassword,
+
+                    role:
+                        "trainer",
+
                     assignedTrainingSections: [
                         "manual-handling",
                     ],
                 });
 
 
+                /* ==========================================
+                   CREATE TRAINEE
+
+                   Trainee is eligible for BOTH Sprint 2
+                   programme types.
+                =========================================== */
+
                 const trainee =
                     await createUser({
-                        firstName: "Sprint",
-                        lastName: "Trainee",
-                        email: "sprint2.trainee@test.com",
-                        username: "sprint2trainee",
-                        password: traineePassword,
-                        role: "trainee",
+                        firstName:
+                            "Sprint",
+
+                        lastName:
+                            "Trainee",
+
+                        email:
+                            "sprint2.trainee@test.com",
+
+                        username:
+                            "sprint2trainee",
+
+                        password:
+                            traineePassword,
+
+                        role:
+                            "trainee",
+
+                        assignedTrainingSections: [
+                            "manual-handling",
+                            "working-at-height",
+                        ],
                     });
 
+
+                /* ==========================================
+                   LOGIN USERS
+                =========================================== */
 
                 const adminToken =
                     await login(
@@ -145,11 +319,13 @@ describe(
                         adminPassword
                     );
 
+
                 const trainerAToken =
                     await login(
                         "traineralpha",
                         trainerPassword
                     );
+
 
                 const trainerBToken =
                     await login(
@@ -157,12 +333,17 @@ describe(
                         trainerPassword
                     );
 
+
                 const traineeToken =
                     await login(
                         "sprint2trainee",
                         traineePassword
                     );
 
+
+                /* ==========================================
+                   TRAINER A CREATES PROGRAMME
+                =========================================== */
 
                 const createProgrammeResponse =
                     await request(app)
@@ -193,24 +374,39 @@ describe(
 
 
                 expect(
-                    createProgrammeResponse.statusCode
-                ).toBe(201);
+                    createProgrammeResponse
+                        .statusCode
+                ).toBe(
+                    201
+                );
 
 
                 const programme =
-                    createProgrammeResponse.body
+                    createProgrammeResponse
+                        .body
                         .programme;
 
 
+                /* ==========================================
+                   VERIFY OWNER
+                =========================================== */
+
                 expect(
                     String(
-                        programme.owner?._id ||
+                        programme
+                            .owner?._id ||
                         programme.owner
                     )
                 ).toBe(
-                    trainerA._id.toString()
+                    trainerA
+                        ._id
+                        .toString()
                 );
 
+
+                /* ==========================================
+                   TRAINER B CANNOT EDIT TRAINER A PROGRAMME
+                =========================================== */
 
                 const deniedUpdate =
                     await request(app)
@@ -229,11 +425,19 @@ describe(
 
 
                 expect(
-                    [403, 404]
+                    [
+                        403,
+                        404,
+                    ]
                 ).toContain(
-                    deniedUpdate.statusCode
+                    deniedUpdate
+                        .statusCode
                 );
 
+
+                /* ==========================================
+                   ADMIN CAN VIEW PROGRAMME
+                =========================================== */
 
                 const adminProgrammeResponse =
                     await request(app)
@@ -248,9 +452,65 @@ describe(
 
 
                 expect(
-                    adminProgrammeResponse.statusCode
-                ).toBe(200);
+                    adminProgrammeResponse
+                        .statusCode
+                ).toBe(
+                    200
+                );
 
+
+                /* ==========================================
+                   IMAGE REQUIRED VALIDATION
+                =========================================== */
+
+                const sectionWithoutImage =
+                    await request(app)
+                        .post(
+                            `/api/training-programmes/${programme._id}/sections`
+                        )
+                        .set(
+                            auth(
+                                trainerAToken
+                            )
+                        )
+                        .field(
+                            "title",
+                            "Section Without Image"
+                        )
+                        .field(
+                            "content",
+                            "This learning section intentionally does not include an image."
+                        )
+                        .field(
+                            "imageAltText",
+                            "Test image description"
+                        )
+                        .field(
+                            "status",
+                            "active"
+                        );
+
+
+                expect(
+                    sectionWithoutImage
+                        .statusCode
+                ).toBe(
+                    400
+                );
+
+
+                expect(
+                    sectionWithoutImage
+                        .body
+                        .code
+                ).toBe(
+                    "TRAINING_IMAGE_REQUIRED"
+                );
+
+
+                /* ==========================================
+                   CREATE SECTION ONE
+                =========================================== */
 
                 const sectionOneResponse =
                     await request(app)
@@ -262,23 +522,38 @@ describe(
                                 trainerAToken
                             )
                         )
-                        .send({
-                            title:
-                                "Introduction to Manual Handling",
+                        .field(
+                            "title",
+                            "Introduction to Manual Handling"
+                        )
+                        .field(
+                            "content",
+                            "Understand why correct manual handling reduces workplace injury risk."
+                        )
+                        .field(
+                            "imageAltText",
+                            "Worker demonstrating safe manual handling technique"
+                        )
+                        .field(
+                            "status",
+                            "active"
+                        )
+                        .attach(
+                            "image",
+                            TEST_IMAGE_BUFFER,
+                            {
+                                filename:
+                                    "manual-handling-introduction.png",
 
-                            content:
-                                "Understand why correct manual handling reduces workplace injury risk.",
+                                contentType:
+                                    "image/png",
+                            }
+                        );
 
-                            imageUrl:
-                                "",
 
-                            imageAltText:
-                                "",
-
-                            status:
-                                "active",
-                        });
-
+                /* ==========================================
+                   CREATE SECTION TWO
+                =========================================== */
 
                 const sectionTwoResponse =
                     await request(app)
@@ -290,50 +565,154 @@ describe(
                                 trainerAToken
                             )
                         )
-                        .send({
-                            title:
-                                "Safe Lifting Technique",
+                        .field(
+                            "title",
+                            "Safe Lifting Technique"
+                        )
+                        .field(
+                            "content",
+                            "Plan the lift, keep the load close and avoid twisting while lifting."
+                        )
+                        .field(
+                            "imageAltText",
+                            "Worker lifting a box using safe lifting posture"
+                        )
+                        .field(
+                            "status",
+                            "active"
+                        )
+                        .attach(
+                            "image",
+                            TEST_IMAGE_BUFFER,
+                            {
+                                filename:
+                                    "safe-lifting-technique.png",
 
-                            content:
-                                "Plan the lift, keep the load close and avoid twisting while lifting.",
+                                contentType:
+                                    "image/png",
+                            }
+                        );
 
-                            imageUrl:
-                                "",
 
-                            imageAltText:
-                                "",
+                /* ==========================================
+                   DEBUG SECTION ERRORS IF THEY OCCUR
+                =========================================== */
 
-                            status:
-                                "active",
-                        });
+                if (
+                    sectionOneResponse
+                        .statusCode !==
+                    201
+                ) {
+                    console.log(
+                        "SECTION ONE ERROR:",
+                        sectionOneResponse
+                            .statusCode,
+                        sectionOneResponse
+                            .body
+                    );
+                }
+
+
+                if (
+                    sectionTwoResponse
+                        .statusCode !==
+                    201
+                ) {
+                    console.log(
+                        "SECTION TWO ERROR:",
+                        sectionTwoResponse
+                            .statusCode,
+                        sectionTwoResponse
+                            .body
+                    );
+                }
+
+
+                /* ==========================================
+                   VERIFY SECTION CREATION
+                =========================================== */
+
+                expect(
+                    sectionOneResponse
+                        .statusCode
+                ).toBe(
+                    201
+                );
 
 
                 expect(
-                    sectionOneResponse.statusCode
-                ).toBe(201);
-
-                expect(
-                    sectionTwoResponse.statusCode
-                ).toBe(201);
+                    sectionTwoResponse
+                        .statusCode
+                ).toBe(
+                    201
+                );
 
 
                 const sectionOne =
-                    sectionOneResponse.body
+                    sectionOneResponse
+                        .body
                         .section;
+
 
                 const sectionTwo =
-                    sectionTwoResponse.body
+                    sectionTwoResponse
+                        .body
                         .section;
 
+
+                /* ==========================================
+                   VERIFY IMAGE PATH
+                =========================================== */
+
+                expect(
+                    sectionOne
+                        .imageUrl
+                ).toBeDefined();
+
+
+                expect(
+                    sectionOne
+                        .imageUrl
+                ).toContain(
+                    "/uploads/training/"
+                );
+
+
+                expect(
+                    sectionTwo
+                        .imageUrl
+                ).toBeDefined();
+
+
+                expect(
+                    sectionTwo
+                        .imageUrl
+                ).toContain(
+                    "/uploads/training/"
+                );
+
+
+                /* ==========================================
+                   VERIFY AUTOMATIC ORDER
+                =========================================== */
 
                 expect(
                     sectionOne.order
-                ).toBe(1);
+                ).toBe(
+                    1
+                );
+
 
                 expect(
                     sectionTwo.order
-                ).toBe(2);
+                ).toBe(
+                    2
+                );
 
+
+                /* ==========================================
+                   TRAINER B CANNOT EDIT SECTION
+                =========================================== */
 
                 const deniedSectionEdit =
                     await request(app)
@@ -352,11 +731,19 @@ describe(
 
 
                 expect(
-                    [403, 404]
+                    [
+                        403,
+                        404,
+                    ]
                 ).toContain(
-                    deniedSectionEdit.statusCode
+                    deniedSectionEdit
+                        .statusCode
                 );
 
+
+                /* ==========================================
+                   REORDER LEARNING SECTIONS
+                =========================================== */
 
                 const reorderResponse =
                     await request(app)
@@ -377,9 +764,16 @@ describe(
 
 
                 expect(
-                    reorderResponse.statusCode
-                ).toBe(200);
+                    reorderResponse
+                        .statusCode
+                ).toBe(
+                    200
+                );
 
+
+                /* ==========================================
+                   ADMIN ASSIGNS PROGRAMME TO TRAINEE
+                =========================================== */
 
                 const assignmentResponse =
                     await request(app)
@@ -400,10 +794,36 @@ describe(
                         });
 
 
-                expect(
-                    assignmentResponse.statusCode
-                ).toBe(201);
+                /* ==========================================
+                   DEBUG ASSIGNMENT ERROR
+                =========================================== */
 
+                if (
+                    assignmentResponse
+                        .statusCode !==
+                    201
+                ) {
+                    console.log(
+                        "ASSIGNMENT ERROR:",
+                        assignmentResponse
+                            .statusCode,
+                        assignmentResponse
+                            .body
+                    );
+                }
+
+
+                expect(
+                    assignmentResponse
+                        .statusCode
+                ).toBe(
+                    201
+                );
+
+
+                /* ==========================================
+                   DUPLICATE ASSIGNMENT MUST FAIL
+                =========================================== */
 
                 const duplicateAssignment =
                     await request(app)
@@ -425,11 +845,19 @@ describe(
 
 
                 expect(
-                    [400, 409]
+                    [
+                        400,
+                        409,
+                    ]
                 ).toContain(
-                    duplicateAssignment.statusCode
+                    duplicateAssignment
+                        .statusCode
                 );
 
+
+                /* ==========================================
+                   TRAINEE SEES ASSIGNED TRAINING
+                =========================================== */
 
                 const myTrainingResponse =
                     await request(app)
@@ -444,15 +872,50 @@ describe(
 
 
                 expect(
-                    myTrainingResponse.statusCode
-                ).toBe(200);
+                    myTrainingResponse
+                        .statusCode
+                ).toBe(
+                    200
+                );
+
 
                 expect(
-                    myTrainingResponse.body
+                    myTrainingResponse
+                        .body
                         .assignments
                         .length
-                ).toBe(1);
+                ).toBe(
+                    1
+                );
 
+
+                /* ==========================================
+                   TRAINEE LOADS PROGRAMME DETAILS
+                =========================================== */
+
+                const myProgrammeResponse =
+                    await request(app)
+                        .get(
+                            `/api/my-training/${programme._id}`
+                        )
+                        .set(
+                            auth(
+                                traineeToken
+                            )
+                        );
+
+
+                expect(
+                    myProgrammeResponse
+                        .statusCode
+                ).toBe(
+                    200
+                );
+
+
+                /* ==========================================
+                   TRAINEE LOADS LEARNING SECTIONS
+                =========================================== */
 
                 const mySectionsResponse =
                     await request(app)
@@ -466,16 +929,41 @@ describe(
                         );
 
 
-                expect(
-                    mySectionsResponse.statusCode
-                ).toBe(200);
+                if (
+                    mySectionsResponse
+                        .statusCode !==
+                    200
+                ) {
+                    console.log(
+                        "MY TRAINING SECTIONS ERROR:",
+                        mySectionsResponse
+                            .statusCode,
+                        mySectionsResponse
+                            .body
+                    );
+                }
 
 
                 expect(
-                    mySectionsResponse.body
+                    mySectionsResponse
+                        .statusCode
+                ).toBe(
+                    200
+                );
+
+
+                /* ==========================================
+                   VERIFY REORDERED SECTION SEQUENCE
+                =========================================== */
+
+                expect(
+                    mySectionsResponse
+                        .body
                         .sections
                         .map(
-                            (section) =>
+                            (
+                                section
+                            ) =>
                                 section.title
                         )
                 ).toEqual([
@@ -483,6 +971,58 @@ describe(
                     "Introduction to Manual Handling",
                 ]);
 
+
+                /* ==========================================
+                   VERIFY TRAINEE RECEIVES IMAGE PATHS
+                =========================================== */
+
+                expect(
+                    mySectionsResponse
+                        .body
+                        .sections[0]
+                        .imageUrl
+                ).toContain(
+                    "/uploads/training/"
+                );
+
+
+                expect(
+                    mySectionsResponse
+                        .body
+                        .sections[1]
+                        .imageUrl
+                ).toContain(
+                    "/uploads/training/"
+                );
+
+
+                /* ==========================================
+                   VERIFY IMAGE ALT TEXT
+                =========================================== */
+
+                expect(
+                    mySectionsResponse
+                        .body
+                        .sections[0]
+                        .imageAltText
+                ).toBe(
+                    "Worker lifting a box using safe lifting posture"
+                );
+
+
+                expect(
+                    mySectionsResponse
+                        .body
+                        .sections[1]
+                        .imageAltText
+                ).toBe(
+                    "Worker demonstrating safe manual handling technique"
+                );
+
+
+                /* ==========================================
+                   TRAINEE CANNOT CREATE PROGRAMME
+                =========================================== */
 
                 const traineeManagementAttempt =
                     await request(app)
@@ -513,8 +1053,11 @@ describe(
 
 
                 expect(
-                    traineeManagementAttempt.statusCode
-                ).toBe(403);
+                    traineeManagementAttempt
+                        .statusCode
+                ).toBe(
+                    403
+                );
             }
         );
     }
