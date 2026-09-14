@@ -1,1861 +1,1410 @@
 # UK LogiWare – Workplace Safety Training System
 
-## Project Overview
+## Enterprise Project
 
-**UK LogiWare Workplace Safety Training System** is a web-based workplace safety training platform developed for a logistics and warehousing environment.
-
-The purpose of the system is to provide structured safety training for employees while allowing administrators and trainers to manage users, training assignments, accounts, and training activities securely.
-
-The application is developed using the **MERN Stack**:
-
-* MongoDB
-* Express.js
-* React
-* Node.js
-
-The system currently supports three user roles:
-
-* Administrator
-* Trainer
-* Trainee
-
-The current implementation includes authentication, role-based access control, user management, training assignment, password security, password recovery, audit logging, profile management, and trainee training progress.
+**Team Name:** Bug Busters  
+**Project:** Workplace Safety Training System  
+**Technology:** MERN Stack  
+**Development:** Sprint 1 + Sprint 2
 
 ---
 
-# Team Information
+# 1. Project Overview
 
-**Team Name:** Bug Busters
+UK LogiWare is a responsive workplace safety training web application designed for a logistics and warehousing environment.
 
-**Programme:** Enterprise Project
+The system provides secure account management, role-based dashboards and structured workplace safety training.
 
-## Team Members
+The application supports three main users:
 
-* Sakar Gurung
-* Sujan Shrestha
-* Siddhartha Raj Subedi
-* Anisha Khatri
+- Administrator
+- Trainer
+- Trainee
 
----
+The project is developed using the MERN stack:
 
-# Project Objectives
+- MongoDB
+- Express.js
+- React
+- Node.js
 
-The main objectives of the system are to:
+The application currently combines the functionality completed in Sprint 1 and Sprint 2.
 
-* Provide secure access for Admin, Trainer, and Trainee users.
-* Allow administrators to create and manage Trainer and Trainee accounts.
-* Provide workplace safety training modules.
-* Assign Trainers to appropriate training sections.
-* Automatically assign required training modules to Trainees.
-* Track trainee training progress.
-* Protect user accounts using secure authentication.
-* Require Trainer and Trainee users to change temporary passwords.
-* Provide secure password reset functionality.
-* Maintain audit logs of important system and administrative activities.
-* Provide separate dashboards based on user role.
-* Support future quiz, scenario, reporting, and immersive training features.
+Sprint 1 established the system foundation including authentication, account management, RBAC and dashboards.
+
+Sprint 2 extends the same system with Training Programme Management, Learning Content Management, programme assignment and Trainee learning navigation.
 
 ---
 
-# Technology Stack
+# 2. Project Goal
+
+The overall goal of the system is to provide a secure and easy-to-use workplace safety training platform where:
+
+- Administrators manage users, roles and training.
+- Trainers manage authorised workplace safety programmes.
+- Trainees access assigned learning programmes.
+- Workplace safety content is organised into structured sections.
+- Training images and learning information are displayed clearly.
+- Access is controlled using secure authentication and role permissions.
+
+---
+
+# 3. Team Members
+
+## Sakar Gurung – Team Leader
+
+Responsibilities:
+
+- Project planning
+- Team coordination
+- Monitoring progress
+- Requirements analysis
+- Decision making
+- Content coordination
+- Sprint review
+
+## Siddhartha Raj Subedi – Backend Developer
+
+Responsibilities:
+
+- Backend development
+- MongoDB database
+- REST APIs
+- Authentication integration
+- Training Programme backend
+- Learning Section backend
+- Training Assignment backend
+- Role and ownership validation
+- Backend testing
+
+## Anisha Khatri – Frontend / UI Developer
+
+Responsibilities:
+
+- UI/UX design
+- React frontend
+- Responsive interface
+- Dashboard UI
+- Training Programme screens
+- Learning Section interface
+- Training Assignment interface
+- Trainee training interface
+- Frontend validation
+
+## Sujan Shrestha – Documentation & QA
+
+Responsibilities:
+
+- Testing
+- Bug reporting
+- Retesting
+- Documentation
+- Test cases
+- User guides
+- Defect logs
+- Final reports
+
+---
+
+# 4. Technology Stack
 
 ## Frontend
 
-The frontend is developed using:
-
-* React 19
-* Vite
-* React Router
-* Axios
-* Tailwind CSS
-* JavaScript
-* HTML
-* CSS
-
----
+- React
+- Vite
+- React Router
+- Axios
+- JavaScript
+- HTML
+- CSS
+- Tailwind CSS
 
 ## Backend
 
-The backend is developed using:
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JSON Web Token (JWT)
-* bcrypt
-* Cookie Parser
-* CORS
-* Express Rate Limit
-* Multer
-* Sharp
-
----
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JSON Web Token
+- bcrypt
+- Cookie Parser
+- CORS
+- Multer
+- Sharp
 
 ## Testing
 
-The backend testing environment uses:
-
-* Jest
-* Supertest
-* MongoDB Memory Server
+- Jest
+- Supertest
+- MongoDB Memory Server
 
 ---
 
-# Main System Roles
+# 5. System Roles
 
-## 1. Administrator
+The system contains three main roles.
 
-The Administrator is responsible for managing the users and administrative operations of the platform.
+## Administrator
 
-The Administrator can:
+Administrator has the highest level of management access.
 
-* Log in to the Admin Dashboard.
-* Create Trainer accounts.
-* Create Trainee accounts.
-* Select training assignments for Trainers.
-* View pending users.
-* Generate usernames and temporary passwords.
-* View created users.
-* Edit user information.
-* Deactivate users.
-* Reactivate users.
-* Delete users.
-* View password reset requests.
-* Reset Trainer and Trainee passwords.
-* View audit logs.
-* View administrative statistics.
-* Manage role-related pages.
+Administrator can:
 
-The Administrator is not required to use the temporary-password first-login flow used by Trainer and Trainee accounts.
-
----
-
-## 2. Trainer
-
-The Trainer receives login credentials generated by the Administrator.
-
-A Trainer can be assigned to:
-
-* Manual Handling
-* Working at Height
-* Both training sections
-
-At least one training section must be assigned when a Trainer account is created.
-
-Trainer functionality currently includes:
-
-* Secure login.
-* Mandatory temporary password change on first login.
-* Trainer Dashboard.
-* Access to assigned training sections.
-* Training section pages.
-* Task pages.
-* User profile.
-* Profile image management.
-* Password management.
-
-The system prevents a Trainer from accessing training sections that are not assigned to them.
+- Login securely.
+- Manage users.
+- Create Trainer accounts.
+- Create Trainee accounts.
+- Edit users.
+- Deactivate users.
+- Delete users where supported.
+- Assign roles.
+- View user status.
+- Manage Training Programmes.
+- Manage Learning Sections.
+- Assign programmes to Trainees.
+- View audit information.
+- Manage programme ownership.
+- Override Trainer programme restrictions.
 
 ---
 
-## 3. Trainee
+## Trainer
 
-The Trainee receives login credentials generated by the Administrator.
+Trainer manages authorised workplace safety training content.
 
-Every Trainee is automatically assigned to:
+Trainer can:
 
-* Manual Handling
-* Working at Height
+- Login securely.
+- Change temporary password on first login.
+- Access Trainer Dashboard.
+- View assigned training areas.
+- Create Training Programmes.
+- Manage owned programmes.
+- Manage explicitly authorised programmes.
+- Add Learning Sections.
+- Edit Learning Sections.
+- Reorder Learning Sections.
+- Upload training images.
+- Preview learning content.
 
-The administrator does not manually remove these required modules from Trainee accounts.
-
-Trainee functionality currently includes:
-
-* Secure login.
-* Mandatory temporary password change on first login.
-* Trainee Dashboard.
-* User profile.
-* Profile image management.
-* Password management.
-* View assigned training.
-* Start a training module.
-* Continue an existing training module.
-* View training progress.
+Trainer cannot manage another Trainer's restricted programme.
 
 ---
 
-# Training Modules
+## Trainee
 
-The current workplace safety training system contains two main training sections:
+Trainee is the learner.
+
+Trainee can:
+
+- Login securely.
+- Change temporary password on first login.
+- Access Trainee Dashboard.
+- View assigned training.
+- Open Training Programmes.
+- Read Learning Sections.
+- View training images.
+- Navigate between sections.
+- View profile information.
+
+Trainees cannot create or modify Training Programmes.
+
+---
+
+# 6. Sprint 1 – System Foundation
+
+Sprint 1 established the main security and user-management foundation of the application.
+
+Main Sprint 1 functionality includes:
+
+- Authentication
+- Login
+- Logout
+- JWT security
+- Role-Based Access Control
+- Protected frontend routes
+- Protected backend routes
+- Administrator Dashboard
+- Trainer Dashboard
+- Trainee Dashboard
+- User Management
+- Role Management
+- Generated usernames
+- Generated temporary passwords
+- First-login password change
+- Profile Management
+- Password Reset Requests
+- Active/inactive account validation
+- Audit Logging
+
+---
+
+# 7. Authentication Workflow
+
+```text
+User
+  ↓
+Login Page
+  ↓
+Enter Username + Password
+  ↓
+Frontend sends login request
+  ↓
+Backend validates credentials
+  ↓
+Password verified using bcrypt
+  ↓
+JWT Access Token generated
+  ↓
+User role returned
+  ↓
+Frontend stores authenticated session
+  ↓
+Role checked
+  ↓
+Correct Dashboard opened
+```
+
+---
+
+# 8. Role-Based Login
+
+After successful authentication:
+
+```text
+Authenticated User
+       ↓
+Check Role
+       ↓
+ ┌─────┼──────────┐
+ ↓     ↓          ↓
+Admin Trainer   Trainee
+ ↓     ↓          ↓
+Admin Trainer  Trainee
+Dash   Dash      Dash
+```
+
+Protected routes prevent users from accessing pages outside their role.
+
+---
+
+# 9. User Creation Workflow
+
+Administrator creates users.
+
+```text
+Administrator
+      ↓
+User Management
+      ↓
+Create User
+      ↓
+Enter User Information
+      ↓
+Select Role
+      ↓
+Backend validates information
+      ↓
+Generate Username
+      ↓
+Generate Temporary Password
+      ↓
+Hash Password
+      ↓
+Save User in MongoDB
+      ↓
+Display Generated Credentials
+```
+
+---
+
+# 10. First Login Password Change
+
+Generated passwords are temporary for Trainer and Trainee accounts.
+
+```text
+Admin Creates User
+       ↓
+Temporary Password Generated
+       ↓
+Trainer / Trainee Login
+       ↓
+Backend detects first login
+       ↓
+Password Change Required
+       ↓
+User enters new password
+       ↓
+Password validated
+       ↓
+Password hashed
+       ↓
+MongoDB updated
+       ↓
+Normal Login Access
+```
+
+Administrator accounts are excluded from this generated-password rule.
+
+---
+
+# 11. Dashboard System
+
+The application contains separate dashboards.
+
+## Administrator Dashboard
+
+Provides access to:
+
+- User Management
+- Roles and Permissions
+- Training Programmes
+- Training Assignments
+- Audit Logs
+- Profile
+
+## Trainer Dashboard
+
+Provides access to:
+
+- Assigned training sections
+- Training Programmes
+- Learning content
+- Profile
+
+## Trainee Dashboard
+
+Provides access to:
+
+- My Training
+- Training content
+- Profile
+- Other future training functionality
+
+---
+
+# 12. Audit Logging
+
+The system records important administrative and security actions.
+
+Examples include:
+
+- User creation
+- User editing
+- User deletion/deactivation
+- Password changes
+- First login
+- Training Programme creation
+- Learning Section creation
+- Learning Section modification
+
+Audit records help identify:
+
+- Who performed an action
+- What action occurred
+- When the action occurred
+- Which record was affected
+
+---
+
+# 13. Sprint 2 – Training Programme & Learning Content Management
+
+Sprint 2 extends the Sprint 1 security foundation.
+
+Main Sprint 2 functionality includes:
+
+- Training Programme creation
+- Programme viewing
+- Programme editing
+- Programme deactivation
+- Trainer programme ownership
+- Trainer authorisation
+- Learning Section creation
+- Learning Section editing
+- Learning Section ordering
+- Training image upload
+- Programme assignment
+- Trainee Assigned Training
+- Trainee Learning Page
+- Previous / Next navigation
+
+Sprint 2 specifically requires Administrators and Trainers to manage programmes and learning sections while allowing Trainees to access and navigate assigned programmes. :contentReference[oaicite:1]{index=1}
+
+---
+
+# 14. Training Programme Types
+
+The system currently supports two workplace safety training areas.
 
 ## Manual Handling
 
-The Manual Handling section is intended to teach users safe methods for lifting, carrying, moving, and handling loads in a logistics and warehouse environment.
-
-Internal training section identifier:
+Internal value:
 
 ```text
 manual-handling
 ```
 
----
+Example topics:
+
+- Safe lifting
+- Carrying loads
+- Correct posture
+- Moving workplace objects
+- Manual handling hazards
 
 ## Working at Height
 
-The Working at Height section is intended to teach users workplace safety practices related to performing tasks at height.
-
-Internal training section identifier:
+Internal value:
 
 ```text
 working-at-height
 ```
 
+Example topics:
+
+- Fall prevention
+- Ladder safety
+- Fall protection equipment
+- Working-at-height hazards
+- Equipment inspection
+
 ---
 
-# Training Assignment Rules
+# 15. Training Programme Structure
 
-The system applies different training assignment rules depending on the user's role.
-
-## Trainer Assignment
-
-A Trainer can be assigned:
+A Training Programme contains information such as:
 
 ```text
-Manual Handling
+Programme ID
+Programme Type
+Title
+Description
+Owner / Trainer
+Authorised Trainers
+Pass Mark
+Status
+Created By
+Updated By
+Created Date
+Updated Date
 ```
 
-or:
+Programme statuses include:
 
 ```text
-Working at Height
-```
-
-or:
-
-```text
-Manual Handling + Working at Height
-```
-
-A Trainer must have at least one training section.
-
----
-
-## Trainee Assignment
-
-A Trainee is automatically assigned:
-
-```text
-Manual Handling
-+
-Working at Height
-```
-
-The backend also applies this rule so that the training requirements cannot be bypassed by directly sending an invalid API request.
-
----
-
-# Authentication System
-
-The system uses secure JWT-based authentication.
-
-Users authenticate using:
-
-* Username
-* Password
-
-After successful authentication, the backend generates authentication tokens used to access protected resources.
-
-The system uses:
-
-* Access Token
-* Refresh Token
-
-Access tokens are used for protected API requests.
-
-Refresh tokens are stored more securely using an HTTP-only cookie.
-
----
-
-# Password Security
-
-Passwords are never stored as plain text in MongoDB.
-
-The application uses **bcrypt** to hash passwords before storing them in the database.
-
-Current password security features include:
-
-* bcrypt password hashing.
-* Temporary generated passwords.
-* Mandatory password change.
-* Minimum password requirements.
-* Password reuse prevention.
-* Session invalidation after password changes.
-* Session invalidation after password reset.
-* Refresh token protection.
-
----
-
-# Temporary Password and First Login
-
-When the Administrator creates login credentials for a Trainer or Trainee, the generated password is treated as a **temporary password**.
-
-The temporary-password workflow is:
-
-```text
-Administrator
-      ↓
-Creates Trainer/Trainee
-      ↓
-Generates Username + Temporary Password
-      ↓
-Trainer/Trainee receives credentials
-      ↓
-User logs in
-      ↓
-Password Change Required
-      ↓
-User enters temporary password
-      ↓
-User creates a new password
-      ↓
-Temporary password becomes invalid
-      ↓
-Existing session is removed
-      ↓
-User returns to Login
-      ↓
-User logs in with Username + New Password
-      ↓
-Dashboard Access
-```
-
-This mandatory first-login password change applies only to:
-
-* Trainer
-* Trainee
-
-It does not apply to the Administrator account.
-
-While a Trainer or Trainee still has a temporary password, protected API functionality is restricted until the password has been changed.
-
----
-
-# Forced Password Change Protection
-
-If a Trainer or Trainee attempts to access protected system functionality before changing the temporary password, the backend can return:
-
-```json
-{
-  "code": "PASSWORD_CHANGE_REQUIRED",
-  "message": "You must change your temporary password before continuing."
-}
-```
-
-The frontend then directs the user back to the required password-change process.
-
----
-
-# User Creation Workflow
-
-Trainer and Trainee accounts are created by the Administrator.
-
-The workflow is:
-
-```text
-Administrator
-      ↓
-Create User
-      ↓
-Enter Personal Information
-      ↓
-Choose User Role
-      ↓
-Trainer?
-   ↙       ↘
- Yes       No
-  ↓         ↓
-Select     Trainee automatically
-Training   receives both modules
-Section
-      ↓
-Save Pending User
-      ↓
-Generate Credentials
-      ↓
-Unique Username Generated
-      ↓
-Temporary Password Generated
-      ↓
-Password Hashed
-      ↓
-Account Created
-```
-
----
-
-# User Information
-
-Trainer and Trainee records can contain information such as:
-
-* First Name
-* Last Name
-* Username
-* Email
-* Age
-* Phone Number
-* Address
-* Gender
-* Role
-* Profile Image
-* Training Assignment
-* Account Status
-* User Status
-
----
-
-# User Account Status
-
-The project uses account status information to distinguish between users whose information has been entered and users whose full login account has been generated.
-
-Account status values include:
-
-```text
-pending
-created
-```
-
----
-
-# User Status
-
-Users can also have an operational status:
-
-```text
+draft
 active
-deactivated
+inactive
 ```
-
-An active user can use the system normally according to their permissions.
-
-A deactivated user is prevented from accessing protected system functionality.
 
 ---
 
-# Username Generation
-
-When the Administrator generates credentials, the backend automatically generates a username.
-
-The username-generation logic is located in:
+# 16. Training Programme Workflow
 
 ```text
-backend/src/utils/generateUsername.js
+Administrator / Trainer
+          ↓
+Training Programmes
+          ↓
+Create Programme
+          ↓
+Select Programme Type
+          ↓
+Enter Programme Title
+          ↓
+Enter Description
+          ↓
+Select / Determine Owner
+          ↓
+Set Pass Mark
+          ↓
+Set Status
+          ↓
+Backend validates data
+          ↓
+Programme saved to MongoDB
 ```
-
-The application ensures that generated usernames remain unique.
 
 ---
 
-# Temporary Password Generation
+# 17. Trainer Programme Ownership
 
-Temporary passwords are automatically generated by the system.
-
-Password-generation logic is located in:
+Trainer ownership is enforced by the backend.
 
 ```text
-backend/src/utils/generatePassword.js
+Trainer Creates Programme
+        ↓
+Authenticated Trainer ID
+        ↓
+Stored as Programme Owner
 ```
 
-The generated password is:
-
-1. Returned to the Administrator when credentials are generated.
-2. Hashed before being stored in MongoDB.
-3. Never stored as plaintext.
-4. Not stored inside audit logs.
-5. Required to be changed by the Trainer or Trainee.
-
----
-
-# User Management
-
-The Administrator can manage Trainer and Trainee accounts.
-
-Current administrative user operations include:
-
-* Create user.
-* Generate credentials.
-* View users.
-* Edit user.
-* Change Trainer training assignment.
-* Deactivate user.
-* Reactivate user.
-* Reset password.
-* Delete user.
-
-Administrator accounts are protected from normal Trainer/Trainee user-management operations.
-
----
-
-# Edit User
-
-The Administrator can edit existing Trainer and Trainee information.
-
-Editable information can include:
-
-* First Name
-* Last Name
-* Age
-* Email
-* Phone Number
-* Address
-* Gender
-
-The system validates updated information before saving it.
-
-Email addresses must remain unique.
-
-Important changes are recorded through the audit logging system.
-
----
-
-# Deactivate User
-
-An Administrator can deactivate an existing Trainer or Trainee account.
-
-When an account is deactivated:
-
-* The account status becomes deactivated.
-* Existing refresh sessions are removed.
-* Authentication version is incremented.
-* Previous sessions can become invalid.
-* Protected application access is blocked.
-
-The operation is recorded in the audit log.
-
----
-
-# Reactivate User
-
-An Administrator can reactivate a previously deactivated Trainer or Trainee.
-
-After reactivation, the account can log in again using valid credentials.
-
-The reactivation operation is recorded in the audit log.
-
----
-
-# Delete User
-
-The Administrator can permanently delete Trainer and Trainee users.
-
-Administrator accounts cannot be deleted through the normal user-management endpoint.
-
-Before a user is deleted, important user information is captured for the audit log so that a record remains of which account was removed.
-
----
-
-# Password Reset System
-
-Trainer and Trainee users can request a password reset from the login interface.
-
-## Password Reset Workflow
+When modifying a programme:
 
 ```text
-Trainer/Trainee
-      ↓
-Forgot Password
-      ↓
-Enter Username
-      ↓
-Send Reset Request
-      ↓
-Request Stored in MongoDB
-      ↓
-Administrator Views Request
-      ↓
-Administrator Resets Password
-      ↓
-New Temporary Password Generated
-      ↓
-Existing Sessions Revoked
-      ↓
-User Logs In
-      ↓
-Mandatory Password Change
-      ↓
-User Creates Own Password
+Trainer Request
+       ↓
+Backend retrieves programme
+       ↓
+Check Owner / Authorised Trainers
+       ↓
+ ┌─────┴─────┐
+ Yes         No
+ ↓           ↓
+Allow      Deny
 ```
 
----
+Administrators can manage all programmes.
 
-# Password Reset Security
-
-Password reset includes several security controls.
-
-The application:
-
-* Does not expose unnecessary information about whether a username exists.
-* Restricts reset functionality to Trainer and Trainee users.
-* Uses temporary generated passwords.
-* Hashes temporary passwords.
-* Revokes previous sessions.
-* Requires users to replace temporary passwords.
-* Uses rate limiting on password reset requests.
-* Does not store temporary passwords in audit logs.
+A Trainer cannot modify another Trainer's restricted programme.
 
 ---
 
-# Login Rate Limiting
+# 18. Learning Section Management
 
-The login endpoint is protected using Express Rate Limit.
-
-The current login protection limits repeated authentication attempts within a configured time period.
-
-This helps reduce brute-force login attempts.
-
----
-
-# Forgot Password Rate Limiting
-
-The password reset request endpoint also uses rate limiting.
-
-This prevents excessive password reset requests from being submitted repeatedly.
-
----
-
-# Role-Based Access Control
-
-The application implements Role-Based Access Control (**RBAC**).
-
-The backend validates:
-
-1. Authentication
-2. Account status
-3. User role
-4. Password-change requirements
-5. Session validity
-
-Example access structure:
-
-```text
-Administrator
-      ↓
-Admin Routes
-      ↓
-Admin Dashboard
-
-Trainer
-      ↓
-Trainer Routes
-      ↓
-Trainer Dashboard
-
-Trainee
-      ↓
-Trainee Routes
-      ↓
-Trainee Dashboard
-```
-
-Users cannot simply change a frontend URL to gain access to another role because permissions are also checked by the backend.
-
----
-
-# Protected Routes
-
-Frontend routes use the `ProtectedRoute` component.
-
-The component checks:
-
-* Access token
-* User information
-* User role
-* Temporary password status
-* Account access requirements
-
-Examples include:
-
-```text
-/admin
-/admin/create-user
-/admin/users
-/admin/roles
-
-/trainer
-/trainer/training/:sectionId
-/trainer/training/:sectionId/tasks
-/trainer/profile
-
-/trainee
-/trainee/profile
-```
-
----
-
-# Backend Security Middleware
-
-The backend contains security middleware including:
-
-## authenticate.js
-
-Validates JWT authentication and session state.
-
-Location:
-
-```text
-backend/src/middleware/authenticate.js
-```
-
----
-
-## authorize.js
-
-Checks whether the authenticated user's role has permission to use an endpoint.
-
-Location:
-
-```text
-backend/src/middleware/authorize.js
-```
-
----
-
-## checkActiveStatus.js
-
-Checks whether the user's account is active.
-
-Location:
-
-```text
-backend/src/middleware/checkActiveStatus.js
-```
-
----
-
-# Session Security
-
-The application includes session security using:
-
-* JWT access tokens.
-* Refresh tokens.
-* HTTP-only refresh-token cookies.
-* Authentication version numbers.
-* Refresh token hashes.
-* Session revocation.
-
-The `authVersion` field allows the backend to invalidate older sessions after security-sensitive operations.
-
-For example, sessions can be revoked when:
-
-* A password is changed.
-* A password is reset.
-* A user is deactivated.
-
----
-
-# Audit Logging
-
-The project contains an audit logging system for important account and security operations.
-
-Audit records are stored in MongoDB using:
-
-```text
-backend/src/models/AuditLog.js
-```
-
-Audit logging utilities are located in:
-
-```text
-backend/src/utils/auditLogger.js
-```
-
----
-
-# Administrator Audit Operations
-
-Administrative actions currently recorded can include:
-
-```text
-ADMIN_CREATED_USER
-ADMIN_GENERATED_CREDENTIALS
-ADMIN_EDITED_USER
-ADMIN_CHANGED_TRAINING_ASSIGNMENT
-ADMIN_DEACTIVATED_USER
-ADMIN_REACTIVATED_USER
-ADMIN_RESET_USER_PASSWORD
-ADMIN_DELETED_USER
-```
-
----
-
-# Authentication Audit Operations
-
-Security-related audit actions can include:
-
-```text
-TEMPORARY_PASSWORD_LOGIN
-LOGIN_SUCCESS
-LOGIN_FAILED
-FORCED_PASSWORD_CHANGE_COMPLETED
-FORCED_PASSWORD_CHANGE_FAILED
-PASSWORD_CHANGED
-PASSWORD_CHANGE_FAILED
-LOGOUT
-```
-
----
-
-# Audit Log Information
-
-An audit record can contain information such as:
-
-* User who performed the action.
-* Username.
-* Role.
-* Action.
-* Success or failure status.
-* Target user.
-* Target username.
-* Target role.
-* Target email.
-* IP address.
-* User agent.
-* Action details.
-* Date and time.
-
-Sensitive information such as passwords and password hashes is not stored inside the audit log.
-
----
-
-# Example Audit Record
-
-An Admin editing a Trainer may produce audit information similar to:
-
-```json
-{
-  "username": "admin.manager",
-  "role": "admin",
-  "action": "ADMIN_EDITED_USER",
-  "status": "success",
-  "details": {
-    "targetUser": {
-      "firstName": "John",
-      "lastName": "Smith",
-      "username": "john.smith",
-      "role": "trainer"
-    }
-  }
-}
-```
-
----
-
-# Audit Log Filtering
-
-The Administrator audit API supports pagination and filtering.
+Training Programmes contain Learning Sections.
 
 Example:
 
 ```text
-GET /api/admin/audit-logs?page=1&limit=50
+Working at Height
+       │
+       ├── Section 1
+       │   Introduction
+       │
+       ├── Section 2
+       │   Fall Protection
+       │
+       ├── Section 3
+       │   Ladder Safety
+       │
+       └── Section 4
+           Hazard Checks
 ```
 
-Filter by action:
+Each Learning Section contains:
 
 ```text
-GET /api/admin/audit-logs?action=LOGIN_FAILED
+Section ID
+Programme ID
+Title
+Content
+Image
+Image Alt Text
+Order
+Status
+Created By
+Updated By
 ```
 
-Filter by status:
-
-```text
-GET /api/admin/audit-logs?status=success
-```
-
-Filter by role:
-
-```text
-GET /api/admin/audit-logs?role=trainer
-```
-
-The maximum result limit per request is restricted by the backend.
+Sprint 2 requires Learning Sections to support text, images, instructions, examples and ordering. :contentReference[oaicite:2]{index=2}
 
 ---
 
-# User Profile
-
-Users can view their own profile.
-
-The profile can contain:
-
-* First Name
-* Last Name
-* Username
-* Email
-* Age
-* Gender
-* Phone Number
-* Address
-* Role
-* Account Status
-* Profile Image
-
-Profile information is retrieved securely through authenticated API routes.
-
----
-
-# Profile Image Management
-
-Trainer and Trainee users can upload, replace, and remove their own profile images.
-
-Supported file formats include:
-
-* JPG
-* JPEG
-* PNG
-* WebP
-
-The maximum supported profile-image upload size is:
+# 19. Learning Section Creation Workflow
 
 ```text
-2 MB
-```
-
-The backend uses:
-
-* Multer for file upload processing.
-* Sharp for image processing.
-
-Uploaded profile images are stored under:
-
-```text
-backend/uploads/profiles/
-```
-
-They are publicly served through:
-
-```text
-/uploads/profiles/
+Administrator / Trainer
+          ↓
+Open Training Programme
+          ↓
+Learning Sections
+          ↓
+Add Learning Section
+          ↓
+Enter Section Title
+          ↓
+Enter Learning Content
+          ↓
+Choose Training Image
+          ↓
+Enter Image Alt Text
+          ↓
+Select Status
+          ↓
+Save Section
+          ↓
+Backend validates section
+          ↓
+Image processed
+          ↓
+Learning Section saved
+          ↓
+MongoDB stores section
 ```
 
 ---
 
-# Trainee Training Progress
+# 20. Training Image Upload
 
-The project includes a training-progress model for Trainee accounts.
+Training images can be selected directly from the user's computer.
 
-Each Trainee can have one progress record for each training section.
+Supported formats:
 
-Supported progress states are:
+- JPG
+- JPEG
+- PNG
+- WebP
+
+Example workflow:
 
 ```text
-not-started
-in-progress
-completed
+Choose Image
+    ↓
+File Input
+    ↓
+Frontend FormData
+    ↓
+multipart/form-data
+    ↓
+Backend Route
+    ↓
+Multer
+    ↓
+Sharp Image Processing
+    ↓
+Image Stored
+    ↓
+Image Path Generated
+    ↓
+Path stored in MongoDB
 ```
 
-Progress values can range from:
+The database stores the image path rather than storing the complete image binary.
+
+Example:
 
 ```text
-0 - 100
-```
-
-The progress system also stores information such as:
-
-* Training section.
-* Start time.
-* Completion time.
-* Last accessed time.
-* Progress percentage.
-* Current status.
-
----
-
-# Start Training Module
-
-A Trainee can start or continue an assigned training module.
-
-Example API routes:
-
-```text
-POST /api/users/me/training-progress/manual-handling/start
-```
-
-and:
-
-```text
-POST /api/users/me/training-progress/working-at-height/start
-```
-
-If the progress record does not exist, it is created.
-
-If the module has already been started, the existing progress record is continued.
-
-If the module has already been completed, the system keeps the completed state.
-
----
-
-# View Training Progress
-
-Trainees can retrieve their own training progress using:
-
-```text
-GET /api/users/me/training-progress
-```
-
-Training progress belongs specifically to the authenticated Trainee.
-
----
-
-# Database Models
-
-The current backend contains the following main MongoDB models.
-
-## User
-
-Stores:
-
-* Account information.
-* Authentication information.
-* User profile data.
-* Role.
-* Training assignments.
-* Account status.
-* Security state.
-
-File:
-
-```text
-backend/src/models/User.js
+/uploads/training/training-xxxxx.webp
 ```
 
 ---
 
-## PasswordResetRequest
+# 21. Image Accessibility
 
-Stores password reset requests submitted by users.
+Each training image should include meaningful alternative text.
 
-File:
+Example:
 
 ```text
-backend/src/models/PasswordResetRequest.js
+Worker using correct lifting posture while moving a box
+```
+
+Alternative text helps improve accessibility and explains the image when it cannot be displayed.
+
+---
+
+# 22. Learning Section Ordering
+
+Sections are shown in their configured order.
+
+Example:
+
+```text
+Order 1 → Introduction
+Order 2 → Safety Equipment
+Order 3 → Safe Procedure
+Order 4 → Hazard Check
+```
+
+Administrators and authorised Trainers can move sections:
+
+```text
+↑ Move Up
+↓ Move Down
+```
+
+The stored order determines how the Trainee sees the learning programme.
+
+---
+
+# 23. Programme Preview
+
+Administrator and Trainer can preview programme content.
+
+Preview allows authorised users to check:
+
+- Programme information
+- Section titles
+- Learning text
+- Uploaded image
+- Alternative text
+- Section order
+
+before the programme is used by Trainees.
+
+---
+
+# 24. Training Assignment
+
+Administrator assigns Training Programmes to Trainees.
+
+```text
+Administrator
+      ↓
+Training Assignments
+      ↓
+Select Programme
+      ↓
+Select Active Trainee
+      ↓
+Assign
+      ↓
+Validate Programme
+      ↓
+Validate Trainee
+      ↓
+Check Existing Assignment
+      ↓
+Create TrainingAssignment
+      ↓
+Save in MongoDB
+```
+
+The Sprint 2 plan requires Administrator assignment and correct display of the assigned programme to the selected Trainee. :contentReference[oaicite:3]{index=3}
+
+---
+
+# 25. Training Assignment Data
+
+Training Assignment contains information such as:
+
+```text
+Assignment ID
+Programme
+Trainee
+Assigned By
+Assigned At
+Status
+```
+
+The system prevents invalid or duplicate assignments where appropriate.
+
+---
+
+# 26. Trainee My Training
+
+After assignment:
+
+```text
+Trainee Login
+      ↓
+Trainee Dashboard
+      ↓
+My Training
+      ↓
+Backend identifies logged-in Trainee
+      ↓
+Retrieve assigned programmes
+      ↓
+Display programme cards
+```
+
+Example:
+
+```text
+Working at Height
+
+Safe working practices for elevated work.
+
+Status: Active
+
+[ Start Learning ]
 ```
 
 ---
 
-## TrainingProgress
+# 27. Trainee Learning Page
 
-Stores Trainee training progress.
-
-File:
+The Trainee opens an assigned programme by selecting:
 
 ```text
-backend/src/models/TrainingProgress.js
+Start Learning
+```
+
+The system then retrieves:
+
+- Programme information
+- Active Learning Sections
+- Correct section order
+- Learning text
+- Training image
+- Image alternative text
+
+Sprint 2 requires the Trainee to open programme information, view ordered Learning Sections and use Previous/Next navigation. :contentReference[oaicite:4]{index=4}
+
+---
+
+# 28. Previous and Next Navigation
+
+Example:
+
+```text
+Section 1 of 4
+
+Introduction to Working at Height
+
+[Image]
+
+Learning content...
+
+                [Next →]
+```
+
+After clicking Next:
+
+```text
+Section 2 of 4
+
+Fall Protection Equipment
+
+[Image]
+
+Learning content...
+
+[← Previous]    [Next →]
+```
+
+The navigation continues until the final section.
+
+The system handles:
+
+- First section
+- Middle section
+- Last section
+- Missing sections
+- Programmes without available sections
+
+---
+
+# 29. Combined Sprint 1 + Sprint 2 Workflow
+
+```text
+                    USER ENTERS SYSTEM
+                           │
+                           ▼
+                       LOGIN PAGE
+                           │
+                           ▼
+                 Username + Password
+                           │
+                           ▼
+                 Backend Authentication
+                           │
+                           ▼
+                    Verify Password
+                           │
+                           ▼
+                     Generate JWT
+                           │
+                           ▼
+                      Check Role
+                           │
+            ┌──────────────┼──────────────┐
+            ▼              ▼              ▼
+          ADMIN          TRAINER        TRAINEE
+            │              │              │
+            ▼              ▼              ▼
+       Admin Dash     Trainer Dash     Trainee Dash
+            │              │              │
+            │              │              │
+            ▼              ▼              │
+      User Management      │              │
+            │              │              │
+      Create Accounts      │              │
+            │              │              │
+      Generate Login       │              │
+            │              │              │
+      RBAC / Audit         │              │
+            │              │              │
+            └──────────────┼──────────────┘
+                           │
+                           ▼
+                  TRAINING PROGRAMMES
+                           │
+             ┌─────────────┴──────────────┐
+             ▼                            ▼
+          ADMIN                        TRAINER
+      Manage all                Own / Authorised only
+             │                            │
+             └─────────────┬──────────────┘
+                           ▼
+                   CREATE PROGRAMME
+                           │
+                           ▼
+                   Programme Details
+                           │
+                           ▼
+                         SAVE
+                           │
+                           ▼
+                        MongoDB
+                           │
+                           ▼
+                  LEARNING SECTIONS
+                           │
+                           ▼
+                     Add Section
+                           │
+             ┌─────────────┼──────────────┐
+             ▼             ▼              ▼
+           Title         Content         Image
+                                          │
+                                          ▼
+                                    Choose Image
+                                          │
+                                          ▼
+                                         Upload
+                                          │
+                                          ▼
+                                  Store Image Path
+             └─────────────┼──────────────┘
+                           ▼
+                   SAVE LEARNING SECTION
+                           │
+                           ▼
+                    Repeat Sections
+                           │
+                           ▼
+                    Reorder Sections
+                           │
+                           ▼
+                         Preview
+                           │
+                           ▼
+                 ADMIN ASSIGNS PROGRAMME
+                           │
+                           ▼
+                    Select Trainee
+                           │
+                           ▼
+                 TrainingAssignment
+                           │
+                           ▼
+                        MongoDB
+                           │
+                           ▼
+                      TRAINEE LOGIN
+                           │
+                           ▼
+                     My Training
+                           │
+                           ▼
+                 Assigned Programme
+                           │
+                           ▼
+                    Start Learning
+                           │
+                           ▼
+                      Section 1
+                           │
+                         Next
+                           ▼
+                      Section 2
+                           │
+                    Previous / Next
+                           ▼
+                      Section 3
+                           │
+                         Next
+                           ▼
+                      Final Section
 ```
 
 ---
 
-## AuditLog
+# 30. Role Permission Matrix
 
-Stores security and administrative audit information.
-
-File:
-
-```text
-backend/src/models/AuditLog.js
-```
+| Function | Administrator | Trainer | Trainee |
+|---|---|---|---|
+| Login | Yes | Yes | Yes |
+| View Dashboard | Yes | Yes | Yes |
+| Manage Users | Yes | No | No |
+| Manage Roles | Yes | No | No |
+| View Programmes | All | Own/Authorised | Assigned |
+| Create Programme | Yes | Yes | No |
+| Edit Programme | Any | Own/Authorised | No |
+| Deactivate Programme | Any | Own/Authorised | No |
+| Manage Learning Sections | Any | Own/Authorised | No |
+| Upload Training Images | Yes | Yes | No |
+| Reorder Sections | Yes | Own/Authorised | No |
+| Assign Programme | Yes | No | No |
+| View Assigned Training | No | No | Yes |
+| Navigate Learning Sections | Preview | Preview | Yes |
+| Change Password | Yes | Yes | Yes |
+| Manage Profile | Yes | Yes | Yes |
 
 ---
 
-# Main Backend API Routes
+# 31. Main Backend Models
 
-## Authentication
+The application uses MongoDB models including:
 
-Base route:
+```text
+User
+AuditLog
+PasswordResetRequest
+TrainingProgramme
+LearningSection
+TrainingAssignment
+TrainingProgress
+```
+
+The first three mainly support account/security functionality while TrainingProgramme, LearningSection and TrainingAssignment support Sprint 2 training management.
+
+---
+
+# 32. Main Backend Routes
+
+Examples include:
 
 ```text
 /api/auth
-```
-
-Current endpoints include:
-
-```text
-POST /api/auth/login
-POST /api/auth/forgot-password
-POST /api/auth/refresh
-POST /api/auth/change-password
-POST /api/auth/logout
-```
-
----
-
-# Administrator Routes
-
-Base route:
-
-```text
 /api/admin
-```
-
-Current endpoints include:
-
-```text
-GET    /api/admin/audit-logs
-
-POST   /api/admin/pending-users
-GET    /api/admin/pending-users
-
-POST   /api/admin/generate-credentials
-
-GET    /api/admin/users
-PATCH  /api/admin/users/:id
-
-GET    /api/admin/password-reset-requests
-POST   /api/admin/users/:id/reset-password
-
-PATCH  /api/admin/users/:id/training-sections
-
-PATCH  /api/admin/users/:id/deactivate
-PATCH  /api/admin/users/:id/reactivate
-
-DELETE /api/admin/users/:id
-```
-
-All Admin routes are protected using:
-
-* Authentication.
-* Active-account checking.
-* Admin role authorization.
-
----
-
-# User Routes
-
-Base route:
-
-```text
 /api/users
+/api/training-programmes
+/api/training-assignments
+/api/my-training
 ```
 
-Current endpoints include:
-
-```text
-GET /api/users/me
-```
-
-Trainee progress:
-
-```text
-GET /api/users/me/training-progress
-POST /api/users/me/training-progress/:trainingSection/start
-```
-
-Profile images:
-
-```text
-PATCH  /api/users/me/profile-image
-DELETE /api/users/me/profile-image
-```
+All protected endpoints use authentication and role validation.
 
 ---
 
-# Backend Test Route
-
-A simple backend test endpoint is available:
+# 33. Security Architecture
 
 ```text
-GET /api/test
+Frontend Request
+      ↓
+Authentication Middleware
+      ↓
+JWT Validation
+      ↓
+Account Status Check
+      ↓
+Role Authorisation
+      ↓
+Resource Permission
+      ↓
+Trainer Ownership Check
+      ↓
+Input Validation
+      ↓
+Controller
+      ↓
+MongoDB
+      ↓
+Response
 ```
 
-Expected response:
+Backend security remains authoritative.
 
-```json
-{
-  "message": "Backend is working!"
-}
-```
+Frontend hiding of buttons is only a user-interface restriction.
 
 ---
 
-# Project Structure
+# 34. Responsive Design
 
-```text
-Logistic_warehouse/
-│
-├── backend/
-│   │
-│   ├── src/
-│   │   │
-│   │   ├── controllers/
-│   │   │   ├── adminController.js
-│   │   │   ├── auditController.js
-│   │   │   ├── authController.js
-│   │   │   ├── passwordResetController.js
-│   │   │   ├── trainerAssignmentController.js
-│   │   │   ├── trainingProgressController.js
-│   │   │   ├── userController.js
-│   │   │   └── userTrainingAssignmentController.js
-│   │   │
-│   │   ├── middleware/
-│   │   │   ├── authenticate.js
-│   │   │   ├── authorize.js
-│   │   │   ├── checkActiveStatus.js
-│   │   │   └── uploadProfileImage.js
-│   │   │
-│   │   ├── models/
-│   │   │   ├── AuditLog.js
-│   │   │   ├── PasswordResetRequest.js
-│   │   │   ├── TrainingProgress.js
-│   │   │   └── User.js
-│   │   │
-│   │   ├── routes/
-│   │   │   ├── adminRoutes.js
-│   │   │   ├── authRoutes.js
-│   │   │   └── userRoutes.js
-│   │   │
-│   │   ├── scripts/
-│   │   │   └── createAdmin.js
-│   │   │
-│   │   └── utils/
-│   │       ├── auditLogger.js
-│   │       ├── generatePassword.js
-│   │       ├── generateTokens.js
-│   │       └── generateUsername.js
-│   │
-│   ├── test/
-│   │   ├── accessControl.test.js
-│   │   ├── auth.test.js
-│   │   ├── setup.js
-│   │   └── userProfile.test.js
-│   │
-│   ├── uploads/
-│   │   └── profiles/
-│   │
-│   ├── app.js
-│   ├── server.js
-│   ├── jest.config.js
-│   ├── package.json
-│   └── package-lock.json
-│
-├── frontend/
-│   │
-│   ├── public/
-│   │
-│   ├── src/
-│   │   │
-│   │   ├── assets/
-│   │   │
-│   │   ├── components/
-│   │   │   ├── account/
-│   │   │   ├── admin/
-│   │   │   ├── auth/
-│   │   │   ├── dashboard/
-│   │   │   ├── layout/
-│   │   │   ├── trainee/
-│   │   │   └── trainer/
-│   │   │
-│   │   ├── images/
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── admin/
-│   │   │   ├── trainer/
-│   │   │   ├── AdminDashboard.jsx
-│   │   │   ├── ChangePasswordPage.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── ProfilePage.jsx
-│   │   │   ├── TraineeDashboard.jsx
-│   │   │   ├── TrainerDashboard.jsx
-│   │   │   └── Unauthorized.jsx
-│   │   │
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   │
-│   ├── index.html
-│   ├── eslint.config.js
-│   ├── vite.config.js
-│   ├── package.json
-│   └── package-lock.json
-│
-├── README.md
-│
-└── .git/
-```
+The application is designed for different screen sizes.
+
+The frontend includes:
+
+- Responsive sidebar
+- Responsive cards
+- Responsive tables
+- Responsive forms
+- Flexible dashboard layouts
+- Mobile-friendly controls
+
+The project uses a light visual theme with consistent workplace-training branding.
 
 ---
 
-# Installation and Setup
+# 35. Installation
 
-## Prerequisites
+## Requirements
 
-Before running the system, install:
+Install:
 
-* Node.js
-* npm
-* MongoDB
-
-MongoDB Compass can also be installed if a graphical interface is preferred for viewing the database.
+- Node.js
+- npm
+- MongoDB
+- Git
 
 ---
 
-# 1. Clone the Repository
+# 36. Clone Repository
 
 ```bash
 git clone <repository-url>
-```
-
-Move into the project directory:
-
-```bash
 cd Logistic_warehouse
 ```
 
 ---
 
-# 2. Backend Installation
-
-Move into the backend folder:
+# 37. Backend Setup
 
 ```bash
 cd backend
-```
-
-Install the dependencies:
-
-```bash
 npm install
 ```
 
----
-
-# 3. Backend Environment Variables
-
-Create a `.env` file inside:
+Create/configure:
 
 ```text
-backend/.env
+.env
 ```
 
-The backend expects the following environment variables:
+Use the environment variables required by the project.
 
-```env
-MONGO_URI=mongodb://127.0.0.1:27017/logistic_warehouse
+Do not commit secrets to GitHub.
 
-PORT=5000
-
-JWT_ACCESS_SECRET=replace_with_a_secure_access_secret
-
-JWT_REFRESH_SECRET=replace_with_a_secure_refresh_secret
-
-ACCESS_TOKEN_EXPIRES_IN=15m
-
-REFRESH_TOKEN_EXPIRES_IN=7d
-
-CLIENT_URL=http://localhost:5173
-```
-
-Do not upload real passwords, database credentials, or JWT secrets to a public GitHub repository.
-
----
-
-# 4. Start MongoDB
-
-Make sure MongoDB is running before starting the backend.
-
-For a local MongoDB installation, the normal database address is:
-
-```text
-mongodb://127.0.0.1:27017
-```
-
-The project can use a database such as:
-
-```text
-logistic_warehouse
-```
-
-MongoDB Compass can be used to inspect the collections.
-
----
-
-# 5. Create the Administrator Account
-
-The backend contains an Admin creation script:
-
-```text
-backend/src/scripts/createAdmin.js
-```
-
-Run the script from the backend directory using:
-
-```bash
-node src/scripts/createAdmin.js
-```
-
-The script checks whether an Administrator already exists before creating another one.
-
-For security, production credentials should be changed from any development/default values before deployment.
-
----
-
-# 6. Start the Backend
-
-Development mode:
+Run backend:
 
 ```bash
 npm run dev
 ```
 
-Normal mode:
-
-```bash
-npm start
-```
-
-The backend normally runs on:
+The backend commonly runs on:
 
 ```text
 http://localhost:5000
 ```
 
-Test the backend using:
-
-```text
-http://localhost:5000/api/test
-```
-
 ---
 
-# 7. Frontend Installation
+# 38. Frontend Setup
 
-Open another terminal.
-
-From the project root:
+Open another terminal:
 
 ```bash
 cd frontend
-```
-
-Install frontend dependencies:
-
-```bash
 npm install
-```
-
----
-
-# 8. Start the Frontend
-
-Run:
-
-```bash
 npm run dev
 ```
 
-Vite normally starts the frontend at:
+The frontend normally runs on:
 
 ```text
 http://localhost:5173
 ```
 
-Open this address in a web browser.
-
 ---
 
-# Available Backend Commands
-
-From the `backend` directory:
-
-## Development Server
-
-```bash
-npm run dev
-```
-
-## Production/Normal Server
-
-```bash
-npm start
-```
-
-## Run Tests
-
-```bash
-npm test
-```
-
-## Watch Tests
-
-```bash
-npm run test:watch
-```
-
----
-
-# Available Frontend Commands
-
-From the `frontend` directory:
-
-## Development Server
-
-```bash
-npm run dev
-```
-
-## Production Build
+# 39. Frontend Production Build
 
 ```bash
 npm run build
 ```
 
-## ESLint
+A successful build generates:
 
-```bash
-npm run lint
-```
-
-## Preview Production Build
-
-```bash
-npm run preview
+```text
+frontend/dist
 ```
 
 ---
 
-# Testing
+# 40. Testing
 
-The backend currently contains automated tests for areas including:
-
-* Authentication.
-* Access control.
-* User profiles.
-
-Test files are located in:
-
-```text
-backend/test/
-```
-
-Current test files include:
-
-```text
-accessControl.test.js
-auth.test.js
-userProfile.test.js
-```
-
-Run backend tests using:
+Backend:
 
 ```bash
 cd backend
 npm test
 ```
 
----
-
-# Database Collections
-
-Depending on which features have been used, MongoDB may contain collections related to:
-
-```text
-users
-passwordresetrequests
-trainingprogresses
-auditlogs
-```
-
-Collection names are generated by Mongoose from their corresponding model names.
-
----
-
-# Security Features
-
-The current system includes several security protections:
-
-* bcrypt password hashing.
-* JWT authentication.
-* Access tokens.
-* Refresh tokens.
-* HTTP-only refresh-token cookies.
-* Role-Based Access Control.
-* Protected API routes.
-* Protected frontend routes.
-* User account status validation.
-* Session revocation.
-* Authentication version validation.
-* Mandatory Trainer/Trainee password change.
-* Temporary password protection.
-* Login rate limiting.
-* Forgot-password rate limiting.
-* Profile image type validation.
-* Profile image size limits.
-* Audit logging.
-* Password reset protection.
-* No plaintext password storage.
-
----
-
-# Current Development Status
-
-The current system provides a secure foundation for the workplace safety training platform.
-
-Implemented areas include:
-
-* Login and logout.
-* JWT authentication.
-* Refresh-token system.
-* Role-Based Access Control.
-* Admin Dashboard.
-* Trainer Dashboard.
-* Trainee Dashboard.
-* Protected routes.
-* Trainer/Trainee creation.
-* Training assignment.
-* Automatic Trainee training assignment.
-* Username generation.
-* Temporary password generation.
-* Mandatory first-login password change.
-* User management.
-* User editing.
-* User deactivation.
-* User reactivation.
-* User deletion.
-* Password reset requests.
-* Admin password reset.
-* User profiles.
-* Profile image upload/removal.
-* Training progress.
-* Audit logging.
-* Backend automated testing.
-
----
-
-# Future Development
-
-The project architecture supports the addition of further workplace training functionality.
-
-Future features may include:
-
-* Full Manual Handling lessons.
-* Full Working at Height lessons.
-* Hazard identification activities.
-* Interactive workplace scenarios.
-* Image hotspot activities.
-* Quiz management.
-* Question management.
-* Quiz attempts.
-* Automatic scoring.
-* Trainer task management.
-* Trainer assessment.
-* Detailed trainee progress reports.
-* Admin reporting and analytics.
-* Trainer reporting.
-* Notifications.
-* Training completion records.
-* Certificates.
-* Badges and achievements.
-* Leaderboards.
-* 360-degree workplace scenarios.
-* VR-based workplace training.
-* More advanced security monitoring.
-
----
-
-# Future Training Workflow
-
-The intended complete training workflow is:
-
-```text
-Administrator
-      ↓
-Creates Trainer/Trainee
-      ↓
-Assigns Training
-      ↓
-Generates Credentials
-      ↓
-Trainer/Trainee Changes Temporary Password
-      ↓
-User Logs In
-      ↓
-Training Module
-      ↓
-Lessons
-      ↓
-Safety Scenario
-      ↓
-Hazard Identification
-      ↓
-Quiz
-      ↓
-Score
-      ↓
-Progress Updated
-      ↓
-Trainer/Admin Monitoring
-      ↓
-Training Completion
-```
-
----
-
-# Important Security Notes
-
-Do not commit the following to GitHub:
-
-```text
-backend/.env
-```
-
-Do not publish:
-
-* MongoDB passwords.
-* JWT secrets.
-* Temporary user passwords.
-* Production credentials.
-* Authentication tokens.
-* Refresh tokens.
-
-The `node_modules` folders should also not be committed because dependencies can be restored using:
+Frontend build verification:
 
 ```bash
-npm install
+cd frontend
+npm run build
 ```
 
 ---
 
-# Git Ignore
+# 41. Overall Testing Checklist
 
-Recommended ignored backend files include:
+## Authentication
+
+- [ ] Admin login works
+- [ ] Trainer login works
+- [ ] Trainee login works
+- [ ] Invalid login rejected
+- [ ] Logout works
+- [ ] Protected routes work
+
+## User Management
+
+- [ ] Admin can create Trainer
+- [ ] Admin can create Trainee
+- [ ] Generated username works
+- [ ] Temporary password works
+- [ ] First-login password change works
+- [ ] User editing works
+- [ ] User status changes work
+
+## RBAC
+
+- [ ] Admin permissions work
+- [ ] Trainer restrictions work
+- [ ] Trainee restrictions work
+- [ ] Direct unauthorised API access is rejected
+
+## Training Programmes
+
+- [ ] Programme creation works
+- [ ] Programme editing works
+- [ ] Programme deactivation works
+- [ ] Programme reactivation works
+- [ ] Pass mark validation works
+
+## Trainer Ownership
+
+- [ ] Trainer A manages own programme
+- [ ] Trainer B cannot modify Trainer A's restricted programme
+- [ ] Administrator can manage both
+
+## Learning Sections
+
+- [ ] Section creation works
+- [ ] Section editing works
+- [ ] Image upload works
+- [ ] Image displays
+- [ ] Alt text works
+- [ ] Reordering works
+- [ ] Programme/section relationships remain correct
+
+## Assignment
+
+- [ ] Admin can assign programme
+- [ ] Invalid Trainee rejected
+- [ ] Duplicate assignment prevented
+- [ ] Correct Trainee receives programme
+
+## Trainee Training
+
+- [ ] My Training loads
+- [ ] Assigned programme appears
+- [ ] Start Learning works
+- [ ] Section image displays
+- [ ] Section content displays
+- [ ] Previous works
+- [ ] Next works
+- [ ] First section works
+- [ ] Last section works
+- [ ] Trainee cannot access management pages
+
+---
+
+# 42. Current Project Scope
+
+The current application includes functionality completed across Sprint 1 and Sprint 2.
+
+## Completed Foundation
+
+- Authentication
+- RBAC
+- Dashboards
+- User management
+- Account security
+- Profile management
+- Audit logging
+
+## Training Management
+
+- Training Programmes
+- Trainer ownership
+- Learning Sections
+- Image upload
+- Section ordering
+- Training Assignment
+- Trainee learning navigation
+
+---
+
+# 43. Features Planned for Later Sprints
+
+The following are outside the current Sprint 1 + Sprint 2 implementation:
+
+- Interactive panoramic training
+- Hazard-identification hotspots
+- Full quiz system
+- Automatic scoring
+- Pass/fail assessment
+- Quiz retakes
+- Badges
+- Leaderboards
+- Detailed progress tracking
+- Advanced notifications
+- Advanced reports
+- 360° / VR training
+
+These are intentionally outside Sprint 2. :contentReference[oaicite:5]{index=5}
+
+---
+
+# 44. Overall System Workflow
 
 ```text
-node_modules/
-.env
-uploads/profiles/*
-!uploads/profiles/.gitkeep
-```
-
-Recommended ignored frontend files include:
-
-```text
-node_modules/
-dist/
-.env
-```
-
----
-
-# Development Architecture
-
-The application follows a separated frontend/backend architecture.
-
-```text
-React Frontend
-      ↓
-Axios HTTP Requests
-      ↓
-Express REST API
-      ↓
-Authentication / Authorization Middleware
-      ↓
-Controllers
-      ↓
-Mongoose Models
-      ↓
-MongoDB Database
-```
-
----
-
-# Authentication Architecture
-
-```text
-User
-  ↓
-Login Form
-  ↓
-POST /api/auth/login
-  ↓
-Express Backend
-  ↓
-MongoDB User Verification
-  ↓
-bcrypt Password Check
-  ↓
-JWT Access Token
-+
-Refresh Token
-  ↓
-Role-Based Dashboard
+Administrator Creates Accounts
+          ↓
+Trainer / Trainee Login
+          ↓
+Authentication + RBAC
+          ↓
+Role Dashboard
+          ↓
+Administrator / Trainer Creates Training Programme
+          ↓
+Trainer Ownership Stored
+          ↓
+Create Learning Sections
+          ↓
+Add Text + Images
+          ↓
+Arrange Learning Order
+          ↓
+Preview Programme
+          ↓
+Administrator Assigns Programme to Trainee
+          ↓
+Trainee Logs In
+          ↓
+My Training
+          ↓
+Assigned Programme
+          ↓
+Start Learning
+          ↓
+Read Ordered Learning Sections
+          ↓
+View Safety Images
+          ↓
+Previous / Next Navigation
+          ↓
+Complete Available Learning Content
 ```
 
 ---
 
-# Administrative User Management Architecture
+# 45. Sprint 1 + Sprint 2 Outcome
 
-```text
-Admin
-  ↓
-Create User
-  ↓
-Pending Account
-  ↓
-Training Assignment
-  ↓
-Generate Credentials
-  ↓
-Created Account
-  ↓
-Temporary Password Login
-  ↓
-Mandatory Password Change
-  ↓
-Normal Account Access
-```
+After Sprint 1 and Sprint 2, UK LogiWare provides a secure foundation for workplace safety training.
 
----
+The system now supports:
 
-# Audit Architecture
+- Secure user authentication
+- Role-based access control
+- Administrator, Trainer and Trainee dashboards
+- User and account management
+- Temporary password security
+- Training Programme Management
+- Trainer programme ownership
+- Learning Section Management
+- Workplace safety image upload
+- Programme assignment
+- Trainee training access
+- Ordered learning navigation
 
-```text
-System/User Operation
-        ↓
-Backend Controller
-        ↓
-Audit Logger
-        ↓
-AuditLog Model
-        ↓
-MongoDB
-        ↓
-Administrator Audit History
-```
-
-The audit log is designed to improve accountability by showing who performed important administrative and security-related operations.
-
----
-
-# Conclusion
-
-The **UK LogiWare Workplace Safety Training System** provides a secure role-based foundation for delivering workplace safety training in a logistics and warehousing environment.
-
-The current implementation combines secure authentication, Trainer and Trainee account management, training assignment, password security, user profiles, trainee progress tracking, and audit logging.
-
-The architecture allows the project to be expanded into a complete workplace training platform containing interactive lessons, scenarios, quizzes, assessments, reports, analytics, and future immersive training technologies.
-
----
-
-## Project
-
-**UK LogiWare – Workplace Safety Training System**
-
-## Team
-
-**Bug Busters**
-
-## Programme
-
-**Enterprise Project**
+This establishes the foundation required for later project features such as quizzes, interactive hazard scenarios, detailed progress tracking, reporting and advanced workplace-safety training experiences.
