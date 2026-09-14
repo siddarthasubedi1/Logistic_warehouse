@@ -14,29 +14,42 @@ const path =
 
 
 const authRoutes =
-    require("./src/routes/authRoutes");
+    require(
+        "./src/routes/authRoutes"
+    );
 
 const adminRoutes =
-    require("./src/routes/adminRoutes");
+    require(
+        "./src/routes/adminRoutes"
+    );
 
 const userRoutes =
-    require("./src/routes/userRoutes");
+    require(
+        "./src/routes/userRoutes"
+    );
 
 const trainingProgrammeRoutes =
-    require("./src/routes/trainingProgrammeRoutes");
+    require(
+        "./src/routes/trainingProgrammeRoutes"
+    );
 
 const trainingAssignmentRoutes =
-    require("./src/routes/trainingAssignmentRoutes");
+    require(
+        "./src/routes/trainingAssignmentRoutes"
+    );
 
 const myTrainingRoutes =
-    require("./src/routes/myTrainingRoutes");
+    require(
+        "./src/routes/myTrainingRoutes"
+    );
+
 
 const app =
     express();
 
 
 // ======================================================
-// MIDDLEWARE
+// CORS
 // ======================================================
 
 app.use(
@@ -51,8 +64,20 @@ app.use(
 );
 
 
+// ======================================================
+// BODY PARSING
+// ======================================================
+
 app.use(
     express.json()
+);
+
+
+app.use(
+    express.urlencoded({
+        extended:
+            true,
+    })
 );
 
 
@@ -72,6 +97,30 @@ app.use(
         path.join(
             __dirname,
             "uploads/profiles"
+        ),
+
+        {
+            index:
+                false,
+
+            maxAge:
+                "1d",
+        }
+    )
+);
+
+
+// ======================================================
+// STATIC TRAINING IMAGES
+// ======================================================
+
+app.use(
+    "/uploads/training",
+
+    express.static(
+        path.join(
+            __dirname,
+            "uploads/training"
         ),
 
         {
@@ -107,7 +156,7 @@ app.get(
 
 
 // ======================================================
-// ROUTES
+// SPRINT 1 ROUTES
 // ======================================================
 
 app.use(
@@ -147,14 +196,16 @@ app.use(
     trainingAssignmentRoutes
 );
 
+
 // ======================================================
-// SPRINT 2 - MY TRAINING
+// SPRINT 2 - TRAINEE MY TRAINING
 // ======================================================
 
 app.use(
     "/api/my-training",
     myTrainingRoutes
 );
+
 
 // ======================================================
 // UPLOAD ERROR HANDLER
@@ -167,11 +218,36 @@ app.use(
         res,
         next
     ) => {
+        const trainingUpload =
+            req.originalUrl
+                ?.includes(
+                    "/training-programmes/"
+                );
+
+
+        // ==================================================
+        // FILE TOO LARGE
+        // ==================================================
 
         if (
             error?.code ===
             "LIMIT_FILE_SIZE"
         ) {
+            if (
+                trainingUpload
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        code:
+                            "TRAINING_IMAGE_TOO_LARGE",
+
+                        message:
+                            "Training image must not be larger than 5 MB.",
+                    });
+            }
+
+
             return res
                 .status(400)
                 .json({
@@ -184,6 +260,10 @@ app.use(
         }
 
 
+        // ==================================================
+        // TOO MANY FILES
+        // ==================================================
+
         if (
             error?.code ===
             "LIMIT_FILE_COUNT"
@@ -195,10 +275,14 @@ app.use(
                         "TOO_MANY_FILES",
 
                     message:
-                        "Only one profile image can be uploaded.",
+                        "Only one image can be uploaded at a time.",
                 });
         }
 
+
+        // ==================================================
+        // INVALID IMAGE TYPE
+        // ==================================================
 
         if (
             error?.message ===
@@ -222,6 +306,10 @@ app.use(
     }
 );
 
+
+// ======================================================
+// EXPORT
+// ======================================================
 
 module.exports =
     app;

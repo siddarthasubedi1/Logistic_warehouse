@@ -29,26 +29,34 @@ function MyTrainingPage() {
     const navigate =
         useNavigate();
 
+
     const [
         assignments,
         setAssignments,
     ] = useState([]);
+
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
+
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
+
 
     const [
         typeFilter,
         setTypeFilter,
     ] = useState("all");
 
+
+    /* =====================================================
+       LOAD ASSIGNED TRAINING
+    ===================================================== */
 
     const loadTraining =
         useCallback(
@@ -57,6 +65,7 @@ function MyTrainingPage() {
                     setLoading(
                         true
                     );
+
 
                     setErrorMessage(
                         ""
@@ -102,12 +111,19 @@ function MyTrainingPage() {
         );
 
 
-    useEffect(() => {
-        loadTraining();
-    }, [
-        loadTraining,
-    ]);
+    useEffect(
+        () => {
+            loadTraining();
+        },
+        [
+            loadTraining,
+        ]
+    );
 
+
+    /* =====================================================
+       VALID ASSIGNMENTS
+    ===================================================== */
 
     const availableAssignments =
         useMemo(
@@ -127,6 +143,10 @@ function MyTrainingPage() {
             ]
         );
 
+
+    /* =====================================================
+       FILTER
+    ===================================================== */
 
     const filteredAssignments =
         useMemo(
@@ -148,8 +168,10 @@ function MyTrainingPage() {
                                 assignment
                             );
 
+
                         return (
-                            programme?.programmeType ===
+                            programme
+                                ?.programmeType ===
                             typeFilter
                         );
                     }
@@ -161,6 +183,41 @@ function MyTrainingPage() {
             ]
         );
 
+
+    /* =====================================================
+       OPEN TRAINING
+    ===================================================== */
+
+    const handleStartTraining =
+        (
+            assignment
+        ) => {
+            const programme =
+                getAssignmentProgramme(
+                    assignment
+                );
+
+
+            if (
+                !programme?._id
+            ) {
+                setErrorMessage(
+                    "Training programme information is missing."
+                );
+
+                return;
+            }
+
+
+            navigate(
+                `/my-training/${programme._id}`
+            );
+        };
+
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
     if (
         loading
@@ -184,6 +241,10 @@ function MyTrainingPage() {
         );
     }
 
+
+    /* =====================================================
+       PAGE
+    ===================================================== */
 
     return (
         <DashboardLayout
@@ -210,7 +271,9 @@ function MyTrainingPage() {
                 />
 
 
-                {/* SUMMARY */}
+                {/* ==========================================
+                    SUMMARY
+                =========================================== */}
 
                 <section
                     className="
@@ -243,6 +306,7 @@ function MyTrainingPage() {
                                 Assigned Programmes
                             </h2>
 
+
                             <p
                                 className="
                                     mt-1
@@ -268,13 +332,18 @@ function MyTrainingPage() {
                                 sm:self-auto
                             "
                         >
-                            {availableAssignments.length} Assigned
+                            {
+                                availableAssignments.length
+                            }{" "}
+                            Assigned
                         </span>
                     </div>
                 </section>
 
 
-                {/* FILTER */}
+                {/* ==========================================
+                    FILTERS
+                =========================================== */}
 
                 <section
                     className="
@@ -335,7 +404,9 @@ function MyTrainingPage() {
                 </section>
 
 
-                {/* PROGRAMMES */}
+                {/* ==========================================
+                    ASSIGNED PROGRAMMES
+                =========================================== */}
 
                 {filteredAssignments.length ===
                     0 ? (
@@ -343,43 +414,31 @@ function MyTrainingPage() {
                         title="No training programmes found"
                         message="There are no assigned programmes matching this filter."
                     />
+
                 ) : (
                     <section
                         className="
                             grid
                             gap-4
-                            lg:grid-cols-2
+                            md:grid-cols-2
                         "
                     >
                         {filteredAssignments.map(
                             (
                                 assignment
-                            ) => {
-                                const programme =
-                                    getAssignmentProgramme(
+                            ) => (
+                                <AssignedProgrammeCard
+                                    key={
+                                        assignment._id
+                                    }
+                                    assignment={
                                         assignment
-                                    );
-
-
-                                return (
-                                    <AssignedProgrammeCard
-                                        key={
-                                            assignment._id
-                                        }
-                                        assignment={
-                                            assignment
-                                        }
-                                        programme={
-                                            programme
-                                        }
-                                        onOpen={() =>
-                                            navigate(
-                                                `/my-training/${programme._id}`
-                                            )
-                                        }
-                                    />
-                                );
-                            }
+                                    }
+                                    onStart={
+                                        handleStartTraining
+                                    }
+                                />
+                            )
                         )}
                     </section>
                 )}
@@ -388,6 +447,10 @@ function MyTrainingPage() {
     );
 }
 
+
+/* =========================================================
+   FILTER BUTTON
+========================================================= */
 
 function FilterButton({
     active,

@@ -869,7 +869,7 @@ const getTrainingProgrammeById = async (
 ) => {
     try {
         const programmeId =
-            req.params.id;
+            req.params.programmeId;
 
 
         if (
@@ -969,7 +969,7 @@ const updateTrainingProgramme = async (
 ) => {
     try {
         const programmeId =
-            req.params.id;
+            req.params.programmeId;
 
 
         if (
@@ -1509,7 +1509,7 @@ const deleteTrainingProgramme = async (
 ) => {
     try {
         const programmeId =
-            req.params.id;
+            req.params.programmeId;
 
 
         if (
@@ -1659,9 +1659,222 @@ const deleteTrainingProgramme = async (
 };
 
 
+
+
+
 // ======================================================
 // EXPORTS
 // ======================================================
+
+// ======================================================
+// REACTIVATE TRAINING PROGRAMME
+//
+// PATCH
+// /api/training-programmes/:programmeId/reactivate
+//
+// ADMIN:
+// - Can reactivate any programme.
+//
+// TRAINER:
+// - Can reactivate only a programme they own
+//   or are authorised to manage.
+// ======================================================
+
+const reactivateTrainingProgramme = async (
+    req,
+    res
+) => {
+    try {
+        const programmeId =
+            req.params.programmeId;
+
+
+        // ==================================================
+        // PROGRAMME ID
+        // ==================================================
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                programmeId
+            )
+        ) {
+            return res
+                .status(400)
+                .json({
+                    code:
+                        "INVALID_PROGRAMME_ID",
+
+                    message:
+                        "Invalid training programme ID.",
+                });
+        }
+
+
+        // ==================================================
+        // MANAGEMENT ACCESS
+        // ==================================================
+
+        const query = {
+            _id:
+                programmeId,
+        };
+
+
+        if (
+            req.user.role ===
+            "trainer"
+        ) {
+            query.$or = [
+                {
+                    owner:
+                        req.user.id,
+                },
+
+                {
+                    authorizedTrainers:
+                        req.user.id,
+                },
+            ];
+        }
+
+
+        const programme =
+            await TrainingProgramme.findOne(
+                query
+            );
+
+
+        if (
+            !programme
+        ) {
+            return res
+                .status(404)
+                .json({
+                    code:
+                        "PROGRAMME_NOT_FOUND_OR_ACCESS_DENIED",
+
+                    message:
+                        "Training programme was not found or you do not have permission to reactivate it.",
+                });
+        }
+
+
+        // ==================================================
+        // ALREADY ACTIVE
+        // ==================================================
+
+        if (
+            programme.status !==
+            "inactive"
+        ) {
+            return res
+                .status(400)
+                .json({
+                    code:
+                        "PROGRAMME_NOT_INACTIVE",
+
+                    message:
+                        "Only an inactive training programme can be reactivated.",
+                });
+        }
+
+
+        // ==================================================
+        // REACTIVATE
+        // ==================================================
+
+        programme.status =
+            "active";
+
+
+        programme.updatedBy =
+            req.user.id;
+
+
+        await programme.save();
+
+
+        // ==================================================
+        // AUDIT LOG
+        // ==================================================
+
+        await writeAuditLog({
+            req,
+
+            user:
+                req.user,
+
+            action:
+                "TRAINING_PROGRAMME_REACTIVATED",
+
+            status:
+                "success",
+
+            details: {
+                programmeId:
+                    programme._id
+                        .toString(),
+
+                title:
+                    programme.title,
+
+                programmeType:
+                    programme.programmeType,
+
+                ownerId:
+                    programme.owner
+                        ? programme.owner
+                            .toString()
+                        : null,
+            },
+        });
+
+
+        // ==================================================
+        // RESPONSE
+        // ==================================================
+
+        return res
+            .status(200)
+            .json({
+                message:
+                    "Training programme reactivated successfully.",
+
+                programme: {
+                    id:
+                        programme._id,
+
+                    title:
+                        programme.title,
+
+                    programmeType:
+                        programme.programmeType,
+
+                    status:
+                        programme.status,
+                },
+            });
+
+    } catch (
+    error
+    ) {
+        console.error(
+            "Reactivate training programme error:",
+            error
+        );
+
+
+        return res
+            .status(500)
+            .json({
+                code:
+                    "REACTIVATE_PROGRAMME_FAILED",
+
+                message:
+                    "Unable to reactivate training programme.",
+            });
+    }
+};
 
 module.exports = {
     createTrainingProgramme,
@@ -1673,4 +1886,6 @@ module.exports = {
     updateTrainingProgramme,
 
     deleteTrainingProgramme,
+
+    reactivateTrainingProgramme,
 };

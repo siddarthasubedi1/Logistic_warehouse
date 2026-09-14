@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+const {
+    saveTrainingImage,
+    deleteTrainingImage,
+} = require(
+    "../utils/trainingImageStorage"
+);
+
 const TrainingProgramme = require(
     "../models/TrainingProgramme"
 );
@@ -29,14 +36,18 @@ const SECTION_STATUSES = [
 // HELPERS
 // ======================================================
 
-const isValidObjectId = (value) => {
+const isValidObjectId = (
+    value
+) => {
     return mongoose.Types.ObjectId.isValid(
         value
     );
 };
 
 
-const normalizeString = (value) => {
+const normalizeString = (
+    value
+) => {
     if (
         typeof value !==
         "string"
@@ -107,16 +118,6 @@ const getManageableProgramme = async (
 
 // ======================================================
 // GET NEXT SECTION ORDER
-//
-// Example:
-//
-// Existing:
-// 1
-// 2
-// 3
-//
-// New section gets:
-// 4
 // ======================================================
 
 const getNextSectionOrder = async (
@@ -128,20 +129,24 @@ const getNextSectionOrder = async (
                 programmeId,
         })
             .sort({
-                order: -1,
+                order:
+                    -1,
             })
             .select(
                 "order"
             );
 
 
-    if (!lastSection) {
+    if (
+        !lastSection
+    ) {
         return 1;
     }
 
 
     return (
-        lastSection.order + 1
+        lastSection.order +
+        1
     );
 };
 
@@ -151,25 +156,23 @@ const getNextSectionOrder = async (
 //
 // POST
 // /api/training-programmes/:programmeId/sections
-//
-// ADMIN:
-// - Can add section to any programme.
-//
-// TRAINER:
-// - Can add section only to owned/authorised programme.
 // ======================================================
 
 const createLearningSection = async (
     req,
     res
 ) => {
+    let savedImageUrl =
+        "";
+
+
     try {
         const programmeId =
             req.params.programmeId;
 
 
         // ==================================================
-        // VALIDATE PROGRAMME ID
+        // PROGRAMME ID
         // ==================================================
 
         if (
@@ -200,7 +203,9 @@ const createLearningSection = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -214,7 +219,7 @@ const createLearningSection = async (
 
 
         // ==================================================
-        // DO NOT ADD SECTIONS TO INACTIVE PROGRAMME
+        // INACTIVE PROGRAMME
         // ==================================================
 
         if (
@@ -245,12 +250,6 @@ const createLearningSection = async (
             );
 
 
-        const imageUrl =
-            normalizeString(
-                req.body.imageUrl
-            );
-
-
         const imageAltText =
             normalizeString(
                 req.body.imageAltText
@@ -265,10 +264,31 @@ const createLearningSection = async (
 
 
         // ==================================================
+        // IMAGE REQUIRED
+        // ==================================================
+
+        if (
+            !req.file
+        ) {
+            return res
+                .status(400)
+                .json({
+                    code:
+                        "TRAINING_IMAGE_REQUIRED",
+
+                    message:
+                        "Please choose a learning section image.",
+                });
+        }
+
+
+        // ==================================================
         // TITLE
         // ==================================================
 
-        if (!title) {
+        if (
+            !title
+        ) {
             return res
                 .status(400)
                 .json({
@@ -282,8 +302,10 @@ const createLearningSection = async (
 
 
         if (
-            title.length < 2 ||
-            title.length > 150
+            title.length <
+            2 ||
+            title.length >
+            150
         ) {
             return res
                 .status(400)
@@ -301,7 +323,9 @@ const createLearningSection = async (
         // CONTENT
         // ==================================================
 
-        if (!content) {
+        if (
+            !content
+        ) {
             return res
                 .status(400)
                 .json({
@@ -315,8 +339,23 @@ const createLearningSection = async (
 
 
         // ==================================================
-        // IMAGE ALT TEXT
+        // ALT TEXT
         // ==================================================
+
+        if (
+            !imageAltText
+        ) {
+            return res
+                .status(400)
+                .json({
+                    code:
+                        "IMAGE_ALT_TEXT_REQUIRED",
+
+                    message:
+                        "Alternative text is required for the learning section image.",
+                });
+        }
+
 
         if (
             imageAltText.length >
@@ -330,26 +369,6 @@ const createLearningSection = async (
 
                     message:
                         "Image alternative text cannot exceed 250 characters.",
-                });
-        }
-
-
-        // ==================================================
-        // REQUIRE ALT TEXT WHEN IMAGE EXISTS
-        // ==================================================
-
-        if (
-            imageUrl &&
-            !imageAltText
-        ) {
-            return res
-                .status(400)
-                .json({
-                    code:
-                        "IMAGE_ALT_TEXT_REQUIRED",
-
-                    message:
-                        "Alternative text is required when a learning section contains an image.",
                 });
         }
 
@@ -377,9 +396,6 @@ const createLearningSection = async (
 
         // ==================================================
         // ORDER
-        //
-        // If frontend does not provide an order,
-        // section is automatically placed at the end.
         // ==================================================
 
         let order;
@@ -403,7 +419,8 @@ const createLearningSection = async (
                 !Number.isInteger(
                     order
                 ) ||
-                order < 1
+                order <
+                1
             ) {
                 return res
                     .status(400)
@@ -449,6 +466,20 @@ const createLearningSection = async (
 
 
         // ==================================================
+        // SAVE IMAGE
+        // ==================================================
+
+        const uploadedImage =
+            await saveTrainingImage(
+                req.file
+            );
+
+
+        savedImageUrl =
+            uploadedImage.imageUrl;
+
+
+        // ==================================================
         // CREATE SECTION
         // ==================================================
 
@@ -461,7 +492,8 @@ const createLearningSection = async (
 
                 content,
 
-                imageUrl,
+                imageUrl:
+                    savedImageUrl,
 
                 imageAltText,
 
@@ -523,7 +555,18 @@ const createLearningSection = async (
                 section,
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
+        if (
+            savedImageUrl
+        ) {
+            await deleteTrainingImage(
+                savedImageUrl
+            );
+        }
+
+
         console.error(
             "Create learning section error:",
             error
@@ -580,12 +623,6 @@ const createLearningSection = async (
 
 // ======================================================
 // GET ALL LEARNING SECTIONS
-//
-// GET
-// /api/training-programmes/:programmeId/sections
-//
-// Returns sections ordered:
-// 1, 2, 3, 4...
 // ======================================================
 
 const getLearningSections = async (
@@ -614,10 +651,6 @@ const getLearningSections = async (
         }
 
 
-        // ==================================================
-        // PROGRAMME ACCESS
-        // ==================================================
-
         const programme =
             await getManageableProgramme(
                 programmeId,
@@ -625,7 +658,9 @@ const getLearningSections = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -643,13 +678,6 @@ const getLearningSections = async (
                 programmeId,
         };
 
-
-        // ==================================================
-        // OPTIONAL STATUS FILTER
-        //
-        // ?status=active
-        // ?status=inactive
-        // ==================================================
 
         const requestedStatus =
             normalizeString(
@@ -688,18 +716,15 @@ const getLearningSections = async (
             )
                 .populate(
                     "createdBy",
-
                     "firstName lastName username role"
                 )
-
                 .populate(
                     "updatedBy",
-
                     "firstName lastName username role"
                 )
-
                 .sort({
-                    order: 1,
+                    order:
+                        1,
                 });
 
 
@@ -726,7 +751,9 @@ const getLearningSections = async (
                 sections,
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
             "Get learning sections error:",
             error
@@ -748,9 +775,6 @@ const getLearningSections = async (
 
 // ======================================================
 // GET ONE LEARNING SECTION
-//
-// GET
-// /api/training-programmes/:programmeId/sections/:sectionId
 // ======================================================
 
 const getLearningSectionById = async (
@@ -761,7 +785,8 @@ const getLearningSectionById = async (
         const {
             programmeId,
             sectionId,
-        } = req.params;
+        } =
+            req.params;
 
 
         if (
@@ -798,10 +823,6 @@ const getLearningSectionById = async (
         }
 
 
-        // ==================================================
-        // PROGRAMME ACCESS
-        // ==================================================
-
         const programme =
             await getManageableProgramme(
                 programmeId,
@@ -809,7 +830,9 @@ const getLearningSectionById = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -822,10 +845,6 @@ const getLearningSectionById = async (
         }
 
 
-        // ==================================================
-        // SECTION MUST BELONG TO PROGRAMME
-        // ==================================================
-
         const section =
             await LearningSection.findOne({
                 _id:
@@ -836,18 +855,17 @@ const getLearningSectionById = async (
             })
                 .populate(
                     "createdBy",
-
                     "firstName lastName username role"
                 )
-
                 .populate(
                     "updatedBy",
-
                     "firstName lastName username role"
                 );
 
 
-        if (!section) {
+        if (
+            !section
+        ) {
             return res
                 .status(404)
                 .json({
@@ -866,7 +884,9 @@ const getLearningSectionById = async (
                 section,
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
             "Get learning section error:",
             error
@@ -888,20 +908,25 @@ const getLearningSectionById = async (
 
 // ======================================================
 // UPDATE LEARNING SECTION
-//
-// PATCH
-// /api/training-programmes/:programmeId/sections/:sectionId
 // ======================================================
 
 const updateLearningSection = async (
     req,
     res
 ) => {
+    let newImageUrl =
+        "";
+
+    let previousImageUrl =
+        "";
+
+
     try {
         const {
             programmeId,
             sectionId,
-        } = req.params;
+        } =
+            req.params;
 
 
         if (
@@ -938,10 +963,6 @@ const updateLearningSection = async (
         }
 
 
-        // ==================================================
-        // PROGRAMME ACCESS
-        // ==================================================
-
         const programme =
             await getManageableProgramme(
                 programmeId,
@@ -949,7 +970,9 @@ const updateLearningSection = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -978,10 +1001,6 @@ const updateLearningSection = async (
         }
 
 
-        // ==================================================
-        // FIND SECTION
-        // ==================================================
-
         const section =
             await LearningSection.findOne({
                 _id:
@@ -992,7 +1011,9 @@ const updateLearningSection = async (
             });
 
 
-        if (!section) {
+        if (
+            !section
+        ) {
             return res
                 .status(404)
                 .json({
@@ -1020,8 +1041,10 @@ const updateLearningSection = async (
 
 
             if (
-                title.length < 2 ||
-                title.length > 150
+                title.length <
+                2 ||
+                title.length >
+                150
             ) {
                 return res
                     .status(400)
@@ -1054,7 +1077,9 @@ const updateLearningSection = async (
                 );
 
 
-            if (!content) {
+            if (
+                !content
+            ) {
                 return res
                     .status(400)
                     .json({
@@ -1073,22 +1098,7 @@ const updateLearningSection = async (
 
 
         // ==================================================
-        // IMAGE URL
-        // ==================================================
-
-        if (
-            req.body.imageUrl !==
-            undefined
-        ) {
-            section.imageUrl =
-                normalizeString(
-                    req.body.imageUrl
-                );
-        }
-
-
-        // ==================================================
-        // IMAGE ALT TEXT
+        // ALT TEXT
         // ==================================================
 
         if (
@@ -1122,13 +1132,13 @@ const updateLearningSection = async (
         }
 
 
-        // ==================================================
-        // AFTER IMAGE CHANGES:
-        // IMAGE REQUIRES ALT TEXT
-        // ==================================================
+        // Existing image or newly selected image requires alt text.
 
         if (
-            section.imageUrl &&
+            (
+                section.imageUrl ||
+                req.file
+            ) &&
             !section.imageAltText
         ) {
             return res
@@ -1181,13 +1191,6 @@ const updateLearningSection = async (
 
         // ==================================================
         // ORDER
-        //
-        // Individual order changes are allowed only if
-        // target order is not already occupied.
-        //
-        // For proper multi-section movement use:
-        //
-        // PUT /sections/reorder
         // ==================================================
 
         if (
@@ -1204,7 +1207,8 @@ const updateLearningSection = async (
                 !Number.isInteger(
                     order
                 ) ||
-                order < 1
+                order <
+                1
             ) {
                 return res
                     .status(400)
@@ -1257,6 +1261,33 @@ const updateLearningSection = async (
         }
 
 
+        // ==================================================
+        // REPLACE IMAGE
+        // ==================================================
+
+        if (
+            req.file
+        ) {
+            previousImageUrl =
+                section.imageUrl ||
+                "";
+
+
+            const uploadedImage =
+                await saveTrainingImage(
+                    req.file
+                );
+
+
+            newImageUrl =
+                uploadedImage.imageUrl;
+
+
+            section.imageUrl =
+                newImageUrl;
+        }
+
+
         section.updatedBy =
             req.user.id;
 
@@ -1264,9 +1295,20 @@ const updateLearningSection = async (
         await section.save();
 
 
-        // ==================================================
-        // AUDIT LOG
-        // ==================================================
+        // Only remove the previous image after MongoDB
+        // successfully stores the new image path.
+
+        if (
+            newImageUrl &&
+            previousImageUrl &&
+            previousImageUrl !==
+            newImageUrl
+        ) {
+            await deleteTrainingImage(
+                previousImageUrl
+            );
+        }
+
 
         await writeAuditLog({
             req,
@@ -1313,7 +1355,22 @@ const updateLearningSection = async (
                 section,
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
+        /*
+         * If a new image was already created but MongoDB
+         * failed to save the section, remove the new file.
+         */
+        if (
+            newImageUrl
+        ) {
+            await deleteTrainingImage(
+                newImageUrl
+            );
+        }
+
+
         console.error(
             "Update learning section error:",
             error
@@ -1371,11 +1428,8 @@ const updateLearningSection = async (
 // ======================================================
 // DEACTIVATE LEARNING SECTION
 //
-// DELETE
-// /api/training-programmes/:programmeId/sections/:sectionId
-//
 // Soft delete.
-// We retain the section for audit/history.
+// The image remains because the section is retained.
 // ======================================================
 
 const deleteLearningSection = async (
@@ -1386,7 +1440,8 @@ const deleteLearningSection = async (
         const {
             programmeId,
             sectionId,
-        } = req.params;
+        } =
+            req.params;
 
 
         if (
@@ -1423,10 +1478,6 @@ const deleteLearningSection = async (
         }
 
 
-        // ==================================================
-        // PROGRAMME ACCESS
-        // ==================================================
-
         const programme =
             await getManageableProgramme(
                 programmeId,
@@ -1434,7 +1485,9 @@ const deleteLearningSection = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -1447,10 +1500,6 @@ const deleteLearningSection = async (
         }
 
 
-        // ==================================================
-        // SECTION
-        // ==================================================
-
         const section =
             await LearningSection.findOne({
                 _id:
@@ -1461,7 +1510,9 @@ const deleteLearningSection = async (
             });
 
 
-        if (!section) {
+        if (
+            !section
+        ) {
             return res
                 .status(404)
                 .json({
@@ -1490,10 +1541,6 @@ const deleteLearningSection = async (
         }
 
 
-        // ==================================================
-        // SOFT DELETE
-        // ==================================================
-
         section.status =
             "inactive";
 
@@ -1504,10 +1551,6 @@ const deleteLearningSection = async (
 
         await section.save();
 
-
-        // ==================================================
-        // AUDIT LOG
-        // ==================================================
 
         await writeAuditLog({
             req,
@@ -1563,7 +1606,9 @@ const deleteLearningSection = async (
                 },
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
             "Delete learning section error:",
             error
@@ -1588,26 +1633,6 @@ const deleteLearningSection = async (
 //
 // PUT
 // /api/training-programmes/:programmeId/sections/reorder
-//
-// BODY:
-//
-// {
-//   "sectionIds": [
-//      "section-id-3",
-//      "section-id-1",
-//      "section-id-2"
-//   ]
-// }
-//
-// New order becomes:
-//
-// section-id-3 => 1
-// section-id-1 => 2
-// section-id-2 => 3
-//
-// IMPORTANT:
-// All sections for the programme must be supplied.
-// This prevents duplicate/gapped order values.
 // ======================================================
 
 const reorderLearningSections = async (
@@ -1636,10 +1661,6 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // PROGRAMME ACCESS
-        // ==================================================
-
         const programme =
             await getManageableProgramme(
                 programmeId,
@@ -1647,7 +1668,9 @@ const reorderLearningSections = async (
             );
 
 
-        if (!programme) {
+        if (
+            !programme
+        ) {
             return res
                 .status(404)
                 .json({
@@ -1676,10 +1699,6 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // BODY VALIDATION
-        // ==================================================
-
         const sectionIds =
             req.body.sectionIds;
 
@@ -1703,20 +1722,20 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // VALID OBJECT IDS
-        // ==================================================
-
         const invalidId =
             sectionIds.find(
-                (sectionId) =>
+                (
+                    sectionId
+                ) =>
                     !isValidObjectId(
                         sectionId
                     )
             );
 
 
-        if (invalidId) {
+        if (
+            invalidId
+        ) {
             return res
                 .status(400)
                 .json({
@@ -1729,13 +1748,11 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // DUPLICATE IDS
-        // ==================================================
-
         const normalizedIds =
             sectionIds.map(
-                (sectionId) =>
+                (
+                    sectionId
+                ) =>
                     String(
                         sectionId
                     )
@@ -1764,17 +1781,14 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // LOAD ALL PROGRAMME SECTIONS
-        // ==================================================
-
         const programmeSections =
             await LearningSection.find({
                 programme:
                     programmeId,
-            }).select(
-                "_id order"
-            );
+            })
+                .select(
+                    "_id order"
+                );
 
 
         if (
@@ -1793,14 +1807,12 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // ENSURE EVERY ID BELONGS TO PROGRAMME
-        // ==================================================
-
         const existingSectionIds =
             new Set(
                 programmeSections.map(
-                    (section) =>
+                    (
+                        section
+                    ) =>
                         section._id
                             .toString()
                 )
@@ -1809,7 +1821,9 @@ const reorderLearningSections = async (
 
         const foreignSectionId =
             normalizedIds.find(
-                (sectionId) =>
+                (
+                    sectionId
+                ) =>
                     !existingSectionIds.has(
                         sectionId
                     )
@@ -1831,31 +1845,10 @@ const reorderLearningSections = async (
         }
 
 
-        // ==================================================
-        // TWO-PHASE REORDER
-        //
-        // Why?
-        //
-        // LearningSection has unique:
-        //
-        // programme + order
-        //
-        // Swapping:
-        // 1 -> 2
-        // 2 -> 1
-        //
-        // directly can trigger MongoDB duplicate key.
-        //
-        // Therefore:
-        //
-        // Phase 1:
-        // 1 -> -1
-        // 2 -> -2
-        //
-        // Phase 2:
-        // -1 -> final positive order
-        // -2 -> final positive order
-        // ==================================================
+        /*
+         * Two phase update prevents duplicate
+         * compound programme/order collisions.
+         */
 
         const temporaryOperations =
             normalizedIds.map(
@@ -1892,7 +1885,8 @@ const reorderLearningSections = async (
         await LearningSection.bulkWrite(
             temporaryOperations,
             {
-                ordered: true,
+                ordered:
+                    true,
             }
         );
 
@@ -1930,14 +1924,11 @@ const reorderLearningSections = async (
         await LearningSection.bulkWrite(
             finalOperations,
             {
-                ordered: true,
+                ordered:
+                    true,
             }
         );
 
-
-        // ==================================================
-        // RETURN NEW ORDER
-        // ==================================================
 
         const reorderedSections =
             await LearningSection.find({
@@ -1946,24 +1937,17 @@ const reorderLearningSections = async (
             })
                 .populate(
                     "createdBy",
-
                     "firstName lastName username role"
                 )
-
                 .populate(
                     "updatedBy",
-
                     "firstName lastName username role"
                 )
-
                 .sort({
-                    order: 1,
+                    order:
+                        1,
                 });
 
-
-        // ==================================================
-        // AUDIT LOG
-        // ==================================================
 
         await writeAuditLog({
             req,
@@ -1987,7 +1971,9 @@ const reorderLearningSections = async (
 
                 sectionOrder:
                     reorderedSections.map(
-                        (section) => ({
+                        (
+                            section
+                        ) => ({
                             sectionId:
                                 section._id
                                     .toString(),
@@ -2013,7 +1999,9 @@ const reorderLearningSections = async (
                     reorderedSections,
             });
 
-    } catch (error) {
+    } catch (
+    error
+    ) {
         console.error(
             "Reorder learning sections error:",
             error

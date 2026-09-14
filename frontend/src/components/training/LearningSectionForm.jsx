@@ -5,24 +5,29 @@ function LearningSectionForm({
     formData,
     editingSection = null,
     saving = false,
+
+    imageFile = null,
+    imagePreview = "",
+
     onChange,
+    onImageChange,
     onSubmit,
     onCancel,
 }) {
-    const imageExists =
-        Boolean(
-            formData?.imageUrl
-                ?.trim()
-        );
-
-
     const titleLength =
-        formData?.title?.length || 0;
-
+        formData?.title?.length ||
+        0;
 
     const altTextLength =
-        formData?.imageAltText?.length ||
+        formData?.imageAltText
+            ?.length ||
         0;
+
+    const hasImage =
+        Boolean(
+            imageFile ||
+            imagePreview
+        );
 
 
     return (
@@ -39,9 +44,9 @@ function LearningSectionForm({
                 shadow-sm
             "
         >
-            {/* =====================================================
+            {/* ==========================================
                 HEADER
-            ====================================================== */}
+            =========================================== */}
 
             <div
                 className="
@@ -71,6 +76,7 @@ function LearningSectionForm({
                         bg-white/10
                     "
                 />
+
 
                 <div
                     className="
@@ -108,6 +114,7 @@ function LearningSectionForm({
                         </svg>
                     </div>
 
+
                     <div>
                         <p
                             className="
@@ -120,6 +127,7 @@ function LearningSectionForm({
                         >
                             Learning Content
                         </p>
+
 
                         <h2
                             className="
@@ -135,6 +143,7 @@ function LearningSectionForm({
                                 : "Add Learning Section"}
                         </h2>
 
+
                         <p
                             className="
                                 mt-1
@@ -145,17 +154,17 @@ function LearningSectionForm({
                             "
                         >
                             Add structured workplace safety
-                            information, instructions and
-                            supporting visual content.
+                            information, instructions and a
+                            supporting training image.
                         </p>
                     </div>
                 </div>
             </div>
 
 
-            {/* =====================================================
-                FORM BODY
-            ====================================================== */}
+            {/* ==========================================
+                BODY
+            =========================================== */}
 
             <div
                 className="
@@ -165,9 +174,9 @@ function LearningSectionForm({
                     lg:p-6
                 "
             >
-                {/* =================================================
+                {/* ======================================
                     CONTENT
-                ================================================== */}
+                ======================================= */}
 
                 <FormSection
                     title="Section Content"
@@ -201,11 +210,11 @@ function LearningSectionForm({
                                 required
                             />
 
+
                             <div
                                 className="
                                     mt-2
                                     flex
-                                    items-center
                                     justify-between
                                     gap-3
                                     text-[9px]
@@ -260,63 +269,146 @@ function LearningSectionForm({
                 </FormSection>
 
 
-                {/* =================================================
+                {/* ======================================
                     IMAGE
-                ================================================== */}
+                ======================================= */}
 
                 <FormSection
                     title="Section Image"
-                    description="Add an optional supporting workplace safety image."
+                    description="Upload a supporting workplace safety image for this learning section."
                     icon="image"
                 >
                     <div
                         className="
                             grid
-                            gap-4
+                            gap-5
                             lg:grid-cols-2
                         "
                     >
-                        <FormField
-                            label="Image URL"
-                        >
-                            <input
-                                type="url"
-                                name="imageUrl"
-                                value={
-                                    formData?.imageUrl ||
-                                    ""
-                                }
-                                onChange={
-                                    onChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                placeholder="https://example.com/image.jpg"
-                                className={
-                                    inputClass
-                                }
-                            />
+                        {/* IMAGE FILE */}
 
-                            <HelperText>
-                                Optional. Enter a direct URL to a
-                                relevant learning image.
-                            </HelperText>
+                        <FormField
+                            label="Upload Image"
+                            required={
+                                !editingSection
+                            }
+                        >
+                            <label
+                                className="
+                                    group
+                                    flex
+                                    min-h-[145px]
+                                    cursor-pointer
+                                    flex-col
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    border-2
+                                    border-dashed
+                                    border-slate-300
+                                    bg-slate-50
+                                    px-5
+                                    py-5
+                                    text-center
+                                    transition
+
+                                    hover:border-blue-400
+                                    hover:bg-blue-50/50
+                                "
+                            >
+                                <div
+                                    className="
+                                        flex
+                                        h-11
+                                        w-11
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        bg-blue-100
+                                        text-blue-600
+                                    "
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        className="h-5 w-5"
+                                    >
+                                        <path d="M12 16V4" />
+                                        <path d="m7 9 5-5 5 5" />
+                                        <path d="M5 14v5h14v-5" />
+                                    </svg>
+                                </div>
+
+
+                                <p
+                                    className="
+                                        mt-3
+                                        max-w-full
+                                        truncate
+                                        text-[10px]
+                                        font-bold
+                                        text-slate-800
+                                    "
+                                >
+                                    {imageFile
+                                        ? imageFile.name
+                                        : editingSection &&
+                                            hasImage
+                                            ? "Choose a new image to replace current image"
+                                            : "Choose training image"}
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-[8px]
+                                        text-slate-500
+                                    "
+                                >
+                                    JPG, PNG or WebP • Maximum 5 MB
+                                </p>
+
+
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={
+                                        onImageChange
+                                    }
+                                    disabled={
+                                        saving
+                                    }
+                                    className="hidden"
+                                />
+                            </label>
+
+
+                            {editingSection && (
+                                <HelperText>
+                                    Leave this unchanged to keep the
+                                    current image, or choose another
+                                    image to replace it.
+                                </HelperText>
+                            )}
                         </FormField>
 
 
+                        {/* ALT TEXT */}
+
                         <FormField
                             label="Image Alt Text"
-                            required={
-                                imageExists
-                            }
+                            required
                         >
                             <input
                                 type="text"
                                 name="imageAltText"
                                 maxLength="250"
                                 value={
-                                    formData?.imageAltText ||
+                                    formData
+                                        ?.imageAltText ||
                                     ""
                                 }
                                 onChange={
@@ -325,14 +417,13 @@ function LearningSectionForm({
                                 disabled={
                                     saving
                                 }
-                                placeholder="Example: Worker lifting a box using correct posture"
+                                placeholder="Example: Worker lifting a box with correct posture"
                                 className={
                                     inputClass
                                 }
-                                required={
-                                    imageExists
-                                }
+                                required
                             />
+
 
                             <div
                                 className="
@@ -346,9 +437,7 @@ function LearningSectionForm({
                                 "
                             >
                                 <span>
-                                    {imageExists
-                                        ? "Required because an image URL is provided."
-                                        : "Required only when an image is used."}
+                                    Describe the image for accessibility.
                                 </span>
 
                                 <span
@@ -360,11 +449,38 @@ function LearningSectionForm({
                                     {altTextLength}/250
                                 </span>
                             </div>
+
+
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-lg
+                                    border
+                                    border-blue-100
+                                    bg-blue-50
+                                    p-3
+                                "
+                            >
+                                <p
+                                    className="
+                                        text-[8px]
+                                        font-semibold
+                                        leading-4
+                                        text-blue-700
+                                    "
+                                >
+                                    The image is uploaded directly
+                                    from your computer. You no longer
+                                    need to enter an Image URL.
+                                </p>
+                            </div>
                         </FormField>
                     </div>
 
 
-                    {imageExists && (
+                    {/* IMAGE PREVIEW */}
+
+                    {imagePreview && (
                         <div
                             className="
                                 mt-5
@@ -401,14 +517,16 @@ function LearningSectionForm({
                                     <p
                                         className="
                                             mt-1
-                                            text-[9px]
+                                            text-[8px]
                                             text-slate-500
                                         "
                                     >
-                                        Preview how the supporting
-                                        learning image will appear.
+                                        Preview of the image that
+                                        will appear in this learning
+                                        section.
                                     </p>
                                 </div>
+
 
                                 <span
                                     className="
@@ -417,22 +535,18 @@ function LearningSectionForm({
                                         bg-blue-50
                                         px-3
                                         py-1
-                                        text-[9px]
+                                        text-[7px]
                                         font-semibold
                                         text-blue-700
                                     "
                                 >
-                                    Optional Visual
+                                    Training Image
                                 </span>
                             </div>
 
 
                             <div
                                 className="
-                                    flex
-                                    min-h-[180px]
-                                    items-center
-                                    justify-center
                                     overflow-hidden
                                     rounded-xl
                                     border
@@ -442,268 +556,114 @@ function LearningSectionForm({
                             >
                                 <img
                                     src={
-                                        formData.imageUrl
+                                        imagePreview
                                     }
                                     alt={
-                                        formData.imageAltText ||
-                                        "Learning section preview"
+                                        formData
+                                            ?.imageAltText ||
+                                        "Training image preview"
                                     }
                                     className="
-                                        max-h-[360px]
+                                        mx-auto
+                                        max-h-[420px]
                                         w-full
                                         object-contain
                                     "
-                                    onError={(
-                                        event
-                                    ) => {
-                                        event.currentTarget.style.display =
-                                            "none";
-                                    }}
                                 />
                             </div>
-
-
-                            {formData?.imageAltText && (
-                                <div
-                                    className="
-                                        mt-3
-                                        rounded-xl
-                                        bg-white
-                                        px-3
-                                        py-2
-                                        text-[9px]
-                                        text-slate-500
-                                    "
-                                >
-                                    <span
-                                        className="
-                                            font-semibold
-                                            text-slate-700
-                                        "
-                                    >
-                                        Alternative text:
-                                    </span>{" "}
-
-                                    {formData.imageAltText}
-                                </div>
-                            )}
                         </div>
                     )}
                 </FormSection>
 
 
-                {/* =================================================
+                {/* ======================================
                     STATUS
-                ================================================== */}
+                ======================================= */}
 
                 <FormSection
-                    title="Section Availability"
-                    description="Control whether Trainees can access this learning section."
+                    title="Section Status"
+                    description="Control whether this learning section is currently available."
                     icon="status"
                 >
                     <FormField
-                        label="Section Status"
+                        label="Status"
                         required
                     >
-                        <div className="relative">
-                            <select
-                                name="status"
-                                value={
-                                    formData?.status ||
-                                    "active"
-                                }
-                                onChange={
-                                    onChange
-                                }
-                                disabled={
-                                    saving
-                                }
-                                className={
-                                    selectClass
-                                }
-                                required
-                            >
-                                <option value="active">
-                                    Active
-                                </option>
-
-                                <option value="inactive">
-                                    Inactive
-                                </option>
-                            </select>
-
-                            <SelectArrow />
-                        </div>
-
-
-                        <div
-                            className="
-                                mt-3
-                                grid
-                                gap-3
-                                sm:grid-cols-2
-                            "
+                        <select
+                            name="status"
+                            value={
+                                formData?.status ||
+                                "active"
+                            }
+                            onChange={
+                                onChange
+                            }
+                            disabled={
+                                saving
+                            }
+                            className={
+                                inputClass
+                            }
                         >
-                            <StatusCard
-                                title="Active"
-                                description="Available to Trainees through the learning flow."
-                                selected={
-                                    formData?.status ===
-                                    "active"
-                                }
-                                type="active"
-                            />
+                            <option value="active">
+                                Active
+                            </option>
 
-                            <StatusCard
-                                title="Inactive"
-                                description="Retained in the programme but unavailable to normal Trainee access."
-                                selected={
-                                    formData?.status ===
-                                    "inactive"
-                                }
-                                type="inactive"
-                            />
-                        </div>
+                            <option value="inactive">
+                                Inactive
+                            </option>
+                        </select>
                     </FormField>
                 </FormSection>
+            </div>
 
 
-                {/* =================================================
-                    ORDER INFO
-                ================================================== */}
+            {/* ==========================================
+                ACTIONS
+            =========================================== */}
 
-                <div
-                    className="
-                        rounded-2xl
-                        border
-                        border-blue-100
-                        bg-gradient-to-r
-                        from-blue-50
-                        to-white
-                        p-4
-                        sm:p-5
-                    "
+            <div
+                className="
+                    flex
+                    flex-col-reverse
+                    gap-2
+                    border-t
+                    border-slate-200
+                    bg-slate-50
+                    px-4
+                    py-4
+                    sm:flex-row
+                    sm:justify-end
+                    sm:px-6
+                "
+            >
+                <ActionButton
+                    type="button"
+                    variant="secondary"
+                    disabled={
+                        saving
+                    }
+                    onClick={
+                        onCancel
+                    }
                 >
-                    <div
-                        className="
-                            flex
-                            items-start
-                            gap-3
-                        "
-                    >
-                        <div
-                            className="
-                                flex
-                                h-9
-                                w-9
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-white
-                                text-blue-600
-                                shadow-sm
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="h-5 w-5"
-                            >
-                                <path d="M8 5h12" />
-                                <path d="M8 12h12" />
-                                <path d="M8 19h12" />
-                                <path d="m3 7 2-2 2 2" />
-                                <path d="m3 17 2 2 2-2" />
-                            </svg>
-                        </div>
-
-                        <div>
-                            <p
-                                className="
-                                    text-[11px]
-                                    font-bold
-                                    text-blue-800
-                                "
-                            >
-                                Section Order
-                            </p>
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    leading-5
-                                    text-blue-700
-                                "
-                            >
-                                New sections are automatically
-                                added to the end of the programme.
-                                Their position can later be changed
-                                using the existing Move Up and
-                                Move Down controls.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                    Cancel
+                </ActionButton>
 
 
-                {/* =================================================
-                    ACTIONS
-                ================================================== */}
-
-                <div
-                    className="
-                        flex
-                        flex-col-reverse
-                        gap-3
-                        border-t
-                        border-slate-100
-                        pt-5
-                        sm:flex-row
-                        sm:justify-end
-                    "
+                <ActionButton
+                    type="submit"
+                    variant="primary"
+                    disabled={
+                        saving
+                    }
                 >
-                    <ActionButton
-                        type="button"
-                        variant="secondary"
-                        disabled={
-                            saving
-                        }
-                        onClick={
-                            onCancel
-                        }
-                        className="
-                            w-full
-                            justify-center
-                            sm:w-auto
-                        "
-                    >
-                        Cancel
-                    </ActionButton>
-
-
-                    <ActionButton
-                        type="submit"
-                        variant="primary"
-                        disabled={
-                            saving
-                        }
-                        className="
-                            w-full
-                            justify-center
-                            sm:w-auto
-                        "
-                    >
-                        {saving
-                            ? "Saving..."
-                            : editingSection
-                                ? "Save Changes"
-                                : "Add Section"}
-                    </ActionButton>
-                </div>
+                    {saving
+                        ? "Saving..."
+                        : editingSection
+                            ? "Save Changes"
+                            : "Create Section"}
+                </ActionButton>
             </div>
         </form>
     );
@@ -721,13 +681,24 @@ function FormSection({
     children,
 }) {
     return (
-        <section>
+        <section
+            className="
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+            "
+        >
             <div
                 className="
-                    mb-5
                     flex
                     items-start
                     gap-3
+                    border-b
+                    border-slate-100
+                    px-4
+                    py-4
+                    sm:px-5
                 "
             >
                 <div
@@ -738,7 +709,7 @@ function FormSection({
                         shrink-0
                         items-center
                         justify-center
-                        rounded-xl
+                        rounded-lg
                         bg-blue-50
                         text-blue-600
                     "
@@ -750,12 +721,13 @@ function FormSection({
                     />
                 </div>
 
+
                 <div>
                     <h3
                         className="
-                            text-sm
+                            text-[11px]
                             font-bold
-                            text-slate-900
+                            text-[#172033]
                         "
                     >
                         {title}
@@ -764,8 +736,8 @@ function FormSection({
                     <p
                         className="
                             mt-1
-                            text-[10px]
-                            leading-5
+                            text-[8px]
+                            leading-4
                             text-slate-500
                         "
                     >
@@ -774,7 +746,15 @@ function FormSection({
                 </div>
             </div>
 
-            {children}
+
+            <div
+                className="
+                    p-4
+                    sm:p-5
+                "
+            >
+                {children}
+            </div>
         </section>
     );
 }
@@ -790,12 +770,12 @@ function FormField({
     children,
 }) {
     return (
-        <label className="block">
-            <span
+        <div>
+            <label
                 className="
                     mb-2
                     block
-                    text-[11px]
+                    text-[9px]
                     font-semibold
                     text-slate-700
                 "
@@ -807,16 +787,16 @@ function FormField({
                         *
                     </span>
                 )}
-            </span>
+            </label>
 
             {children}
-        </label>
+        </div>
     );
 }
 
 
 /* =========================================================
-   HELPER
+   HELPER TEXT
 ========================================================= */
 
 function HelperText({
@@ -826,87 +806,13 @@ function HelperText({
         <p
             className="
                 mt-2
-                text-[9px]
+                text-[8px]
                 leading-4
                 text-slate-400
             "
         >
             {children}
         </p>
-    );
-}
-
-
-/* =========================================================
-   STATUS CARD
-========================================================= */
-
-function StatusCard({
-    title,
-    description,
-    selected,
-    type,
-}) {
-    return (
-        <div
-            className={`
-                rounded-xl
-                border
-                p-3
-                transition
-
-                ${selected
-                    ? type === "active"
-                        ? "border-emerald-300 bg-emerald-50"
-                        : "border-red-200 bg-red-50"
-                    : "border-slate-200 bg-slate-50"
-                }
-            `}
-        >
-            <div
-                className="
-                    flex
-                    items-center
-                    gap-2
-                "
-            >
-                <span
-                    className={`
-                        h-2
-                        w-2
-                        rounded-full
-
-                        ${selected
-                            ? type === "active"
-                                ? "bg-emerald-500"
-                                : "bg-red-500"
-                            : "bg-slate-300"
-                        }
-                    `}
-                />
-
-                <p
-                    className="
-                        text-[10px]
-                        font-bold
-                        text-slate-700
-                    "
-                >
-                    {title}
-                </p>
-            </div>
-
-            <p
-                className="
-                    mt-2
-                    text-[9px]
-                    leading-4
-                    text-slate-500
-                "
-            >
-                {description}
-            </p>
-        </div>
     );
 }
 
@@ -928,7 +834,7 @@ function SectionIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="h-5 w-5"
+                className="h-4 w-4"
             >
                 <rect
                     x="3"
@@ -944,7 +850,7 @@ function SectionIcon({
                     r="2"
                 />
 
-                <path d="m4 18 5-5 3 3 3-4 5 6" />
+                <path d="m5 18 5-5 3 3 2-2 4 4" />
             </svg>
         );
     }
@@ -960,7 +866,7 @@ function SectionIcon({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="h-5 w-5"
+                className="h-4 w-4"
             >
                 <circle
                     cx="12"
@@ -980,94 +886,35 @@ function SectionIcon({
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
-            className="h-5 w-5"
+            className="h-4 w-4"
         >
-            <path d="M4 5h7v14H4z" />
-            <path d="M13 5h7v14h-7z" />
-            <path d="M7 9h2" />
-            <path d="M16 9h2" />
+            <path d="M4 5h16v14H4z" />
+            <path d="M8 9h8" />
+            <path d="M8 13h6" />
         </svg>
     );
 }
 
 
-/* =========================================================
-   SELECT ARROW
-========================================================= */
-
-function SelectArrow() {
-    return (
-        <div
-            className="
-                pointer-events-none
-                absolute
-                inset-y-0
-                right-0
-                flex
-                items-center
-                pr-3
-                text-slate-400
-            "
-        >
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="h-4 w-4"
-            >
-                <path d="m7 10 5 5 5-5" />
-            </svg>
-        </div>
-    );
-}
-
-
-/* =========================================================
-   SHARED INPUT STYLE
-========================================================= */
-
 const inputClass = `
-    min-h-[40px]
+    min-h-[42px]
     w-full
-    rounded-xl
+    rounded-lg
     border
     border-slate-300
     bg-white
-    px-3.5
-    py-3
-    text-xs
-    text-slate-800
+    px-3
+    text-[10px]
+    text-[#172033]
     outline-none
     transition
+
     placeholder:text-slate-400
+
     focus:border-blue-500
     focus:ring-2
     focus:ring-blue-100
-    disabled:cursor-not-allowed
-    disabled:bg-slate-100
-    disabled:text-slate-500
-`;
 
-
-const selectClass = `
-    min-h-[40px]
-    w-full
-    appearance-none
-    rounded-xl
-    border
-    border-slate-300
-    bg-white
-    px-3.5
-    py-3
-    pr-10
-    text-xs
-    text-slate-800
-    outline-none
-    transition
-    focus:border-blue-500
-    focus:ring-2
-    focus:ring-blue-100
     disabled:cursor-not-allowed
     disabled:bg-slate-100
     disabled:text-slate-500

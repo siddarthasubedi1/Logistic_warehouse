@@ -14,6 +14,7 @@ import api from "../../services/api";
 import TrainingProgrammeForm from "./TrainingProgrammeForm";
 import TrainingProgrammeFilters from "./TrainingProgrammeFilters";
 import TrainingProgrammeTable from "./TrainingProgrammeTable";
+import TrainingProgrammePreviewModal from "./TrainingProgrammePreviewModal";
 
 import ActionButton from "../ui/ActionButton";
 import FeedbackAlert from "../ui/FeedbackAlert";
@@ -142,6 +143,11 @@ function TrainingProgrammeManager({
     ] = useState("");
 
     const [
+        previewProgramme,
+        setPreviewProgramme,
+    ] = useState(null);
+
+    const [
         searchTerm,
         setSearchTerm,
     ] = useState("");
@@ -266,7 +272,9 @@ function TrainingProgrammeManager({
         const load =
             async () => {
                 try {
-                    setLoading(true);
+                    setLoading(
+                        true
+                    );
 
                     await Promise.all([
                         loadProgrammes(),
@@ -295,7 +303,9 @@ function TrainingProgrammeManager({
                     if (
                         active
                     ) {
-                        setLoading(false);
+                        setLoading(
+                            false
+                        );
                     }
                 }
             };
@@ -411,7 +421,7 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // FILTER
+    // FILTER PROGRAMMES
     // ======================================================
 
     const filteredProgrammes =
@@ -459,17 +469,24 @@ function TrainingProgrammeManager({
                             [
                                 programme.title,
                                 programme.description,
+
                                 formatProgrammeType(
                                     programme.programmeType
                                 ),
+
                                 getUserDisplayName(
                                     owner,
                                     ""
                                 ),
+
                                 programme.status,
                             ]
-                                .filter(Boolean)
-                                .join(" ")
+                                .filter(
+                                    Boolean
+                                )
+                                .join(
+                                    " "
+                                )
                                 .toLowerCase();
 
                         return text.includes(
@@ -486,6 +503,10 @@ function TrainingProgrammeManager({
             ]
         );
 
+
+    // ======================================================
+    // STATISTICS
+    // ======================================================
 
     const activeCount =
         programmes.filter(
@@ -518,13 +539,18 @@ function TrainingProgrammeManager({
 
 
     // ======================================================
-    // FORM
+    // FORM HELPERS
     // ======================================================
 
     const clearFeedback =
         () => {
-            setErrorMessage("");
-            setSuccessMessage("");
+            setErrorMessage(
+                ""
+            );
+
+            setSuccessMessage(
+                ""
+            );
         };
 
 
@@ -544,6 +570,10 @@ function TrainingProgrammeManager({
         };
 
 
+    // ======================================================
+    // CREATE PROGRAMME
+    // ======================================================
+
     const handleCreateProgramme =
         () => {
             clearFeedback();
@@ -561,6 +591,10 @@ function TrainingProgrammeManager({
             );
         };
 
+
+    // ======================================================
+    // EDIT PROGRAMME
+    // ======================================================
 
     const handleEditProgramme =
         (
@@ -588,7 +622,9 @@ function TrainingProgrammeManager({
                                     ? trainer
                                     : trainer._id
                         )
-                        .filter(Boolean)
+                        .filter(
+                            Boolean
+                        )
                     : [];
 
             setEditingProgramme(
@@ -631,11 +667,16 @@ function TrainingProgrammeManager({
 
             window.scrollTo({
                 top: 0,
+
                 behavior:
                     "smooth",
             });
         };
 
+
+    // ======================================================
+    // INPUT CHANGE
+    // ======================================================
 
     const handleInputChange =
         (
@@ -707,6 +748,10 @@ function TrainingProgrammeManager({
         };
 
 
+    // ======================================================
+    // AUTHORISED TRAINERS
+    // ======================================================
+
     const handleToggleAuthorizedTrainer =
         (
             trainerId
@@ -739,6 +784,7 @@ function TrainingProgrammeManager({
                                 : [
                                     ...current
                                         .authorizedTrainers,
+
                                     trainerId,
                                 ],
                     };
@@ -746,6 +792,10 @@ function TrainingProgrammeManager({
             );
         };
 
+
+    // ======================================================
+    // VALIDATION
+    // ======================================================
 
     const validateForm =
         () => {
@@ -830,6 +880,10 @@ function TrainingProgrammeManager({
         };
 
 
+    // ======================================================
+    // SAVE PROGRAMME
+    // ======================================================
+
     const handleSubmit =
         async (
             event
@@ -874,6 +928,7 @@ function TrainingProgrammeManager({
                     formData.status,
             };
 
+
             if (
                 isAdmin
             ) {
@@ -884,8 +939,11 @@ function TrainingProgrammeManager({
                     formData.authorizedTrainers;
             }
 
+
             try {
-                setSaving(true);
+                setSaving(
+                    true
+                );
 
                 if (
                     editingProgramme
@@ -918,7 +976,9 @@ function TrainingProgrammeManager({
 
                 await loadProgrammes();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 console.error(
                     "Save programme error:",
                     error
@@ -932,13 +992,15 @@ function TrainingProgrammeManager({
                 );
 
             } finally {
-                setSaving(false);
+                setSaving(
+                    false
+                );
             }
         };
 
 
     // ======================================================
-    // STATUS ACTIONS
+    // DEACTIVATE PROGRAMME
     // ======================================================
 
     const handleDeactivate =
@@ -979,7 +1041,9 @@ function TrainingProgrammeManager({
 
                 await loadProgrammes();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
@@ -988,10 +1052,16 @@ function TrainingProgrammeManager({
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
+
+    // ======================================================
+    // REACTIVATE PROGRAMME
+    // ======================================================
 
     const handleReactivate =
         async (
@@ -1020,7 +1090,9 @@ function TrainingProgrammeManager({
 
                 await loadProgrammes();
 
-            } catch (error) {
+            } catch (
+            error
+            ) {
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
@@ -1029,10 +1101,30 @@ function TrainingProgrammeManager({
                 );
 
             } finally {
-                setProcessingId("");
+                setProcessingId(
+                    ""
+                );
             }
         };
 
+
+    // ======================================================
+    // PREVIEW
+    // ======================================================
+
+    const handlePreviewProgramme =
+        (
+            programme
+        ) => {
+            setPreviewProgramme(
+                programme
+            );
+        };
+
+
+    // ======================================================
+    // MANAGE LEARNING SECTIONS
+    // ======================================================
 
     const handleManageSections =
         (
@@ -1043,6 +1135,10 @@ function TrainingProgrammeManager({
             );
         };
 
+
+    // ======================================================
+    // LOADING
+    // ======================================================
 
     if (
         loading
@@ -1055,13 +1151,20 @@ function TrainingProgrammeManager({
     }
 
 
+    // ======================================================
+    // PAGE
+    // ======================================================
+
     return (
         <div
             className="
                 space-y-4
             "
         >
-            {/* STATS */}
+
+            {/* =============================================
+                STATISTICS
+            ============================================== */}
 
             <section
                 className="
@@ -1101,15 +1204,26 @@ function TrainingProgrammeManager({
             </section>
 
 
+            {/* =============================================
+                SUCCESS MESSAGE
+            ============================================== */}
+
             <FeedbackAlert
                 type="success"
                 message={
                     successMessage
                 }
                 onClose={() =>
-                    setSuccessMessage("")
+                    setSuccessMessage(
+                        ""
+                    )
                 }
             />
+
+
+            {/* =============================================
+                ERROR MESSAGE
+            ============================================== */}
 
             <FeedbackAlert
                 type="error"
@@ -1117,10 +1231,16 @@ function TrainingProgrammeManager({
                     errorMessage
                 }
                 onClose={() =>
-                    setErrorMessage("")
+                    setErrorMessage(
+                        ""
+                    )
                 }
             />
 
+
+            {/* =============================================
+                CREATE BUTTON
+            ============================================== */}
 
             {!showForm && (
                 <div
@@ -1144,6 +1264,10 @@ function TrainingProgrammeManager({
                 </div>
             )}
 
+
+            {/* =============================================
+                CREATE / EDIT FORM
+            ============================================== */}
 
             {showForm && (
                 <TrainingProgrammeForm
@@ -1184,6 +1308,10 @@ function TrainingProgrammeManager({
             )}
 
 
+            {/* =============================================
+                FILTERS
+            ============================================== */}
+
             <TrainingProgrammeFilters
                 searchTerm={
                     searchTerm
@@ -1214,12 +1342,19 @@ function TrainingProgrammeManager({
             />
 
 
+            {/* =============================================
+                PROGRAMME TABLE
+            ============================================== */}
+
             <TrainingProgrammeTable
                 programmes={
                     filteredProgrammes
                 }
                 processingId={
                     processingId
+                }
+                onPreview={
+                    handlePreviewProgramme
                 }
                 onEdit={
                     handleEditProgramme
@@ -1234,10 +1369,42 @@ function TrainingProgrammeManager({
                     handleReactivate
                 }
             />
+
+
+            {/* =============================================
+                PROGRAMME PREVIEW
+            ============================================== */}
+
+            <TrainingProgrammePreviewModal
+                programme={
+                    previewProgramme
+                }
+                onClose={() =>
+                    setPreviewProgramme(
+                        null
+                    )
+                }
+                onManageSections={(
+                    programme
+                ) => {
+                    setPreviewProgramme(
+                        null
+                    );
+
+                    handleManageSections(
+                        programme
+                    );
+                }}
+            />
+
         </div>
     );
 }
 
+
+/* =========================================================
+   MANAGER STAT
+========================================================= */
 
 function ManagerStat({
     label,

@@ -1,6 +1,7 @@
 import {
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
@@ -9,10 +10,13 @@ import {
     useParams,
 } from "react-router-dom";
 
-import api from "../../services/api";
+import api, {
+    API_BASE_URL,
+} from "../../services/api";
 
 import LearningSectionForm from "./LearningSectionForm";
 import LearningSectionTable from "./LearningSectionTable";
+import LearningSectionPreviewModal from "./LearningSectionPreviewModal";
 
 import ActionButton from "../ui/ActionButton";
 import FeedbackAlert from "../ui/FeedbackAlert";
@@ -23,19 +27,62 @@ import {
     formatProgrammeType,
     getApiErrorMessage,
     parseArrayResponse,
-    sortLearningSections,
 } from "../../utils/training";
 
 
-const getInitialFormData =
-    () => ({
+/* =========================================================
+   BACKEND URL
+========================================================= */
+
+const BACKEND_URL =
+    API_BASE_URL.replace(
+        /\/api\/?$/,
+        ""
+    );
+
+
+function getTrainingImageUrl(
+    imageUrl
+) {
+    if (
+        !imageUrl
+    ) {
+        return "";
+    }
+
+
+    if (
+        imageUrl.startsWith(
+            "http://"
+        ) ||
+        imageUrl.startsWith(
+            "https://"
+        ) ||
+        imageUrl.startsWith(
+            "blob:"
+        ) ||
+        imageUrl.startsWith(
+            "data:"
+        )
+    ) {
+        return imageUrl;
+    }
+
+
+    return `${BACKEND_URL}${imageUrl}`;
+}
+
+
+/* =========================================================
+   INITIAL FORM
+========================================================= */
+
+function getInitialFormData() {
+    return {
         title:
             "",
 
         content:
-            "",
-
-        imageUrl:
             "",
 
         imageAltText:
@@ -43,12 +90,20 @@ const getInitialFormData =
 
         status:
             "active",
-    });
+    };
+}
 
 
-function LearningSectionManager() {
+/* =========================================================
+   LEARNING SECTION MANAGER
+========================================================= */
+
+function LearningSectionManager({
+    role,
+}) {
     const navigate =
         useNavigate();
+
 
     const {
         programmeId,
@@ -61,25 +116,36 @@ function LearningSectionManager() {
         setProgramme,
     ] = useState(null);
 
+
     const [
         sections,
         setSections,
     ] = useState([]);
+
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
+
     const [
         showForm,
         setShowForm,
     ] = useState(false);
 
+
     const [
         editingSection,
         setEditingSection,
     ] = useState(null);
+
+
+    const [
+        previewSection,
+        setPreviewSection,
+    ] = useState(null);
+
 
     const [
         formData,
@@ -88,20 +154,42 @@ function LearningSectionManager() {
         getInitialFormData()
     );
 
+
+    const [
+        imageFile,
+        setImageFile,
+    ] = useState(null);
+
+
+    const [
+        imagePreview,
+        setImagePreview,
+    ] = useState("");
+
+
     const [
         saving,
         setSaving,
     ] = useState(false);
+
 
     const [
         processingId,
         setProcessingId,
     ] = useState("");
 
+
+    const [
+        reordering,
+        setReordering,
+    ] = useState(false);
+
+
     const [
         errorMessage,
         setErrorMessage,
     ] = useState("");
+
 
     const [
         successMessage,
@@ -109,25 +197,39 @@ function LearningSectionManager() {
     ] = useState("");
 
 
+    const canManage =
+        role ===
+        "admin" ||
+        role ===
+        "trainer";
+
+
+    /* =====================================================
+       LOAD PROGRAMME
+    ===================================================== */
+
     const loadProgramme =
         useCallback(
             async () => {
+                if (
+                    !programmeId
+                ) {
+                    return;
+                }
+
+
                 const response =
                     await api.get(
                         `/training-programmes/${programmeId}`
                     );
 
-                const loaded =
+
+                setProgramme(
                     response.data
                         ?.programme ||
                     response.data ||
-                    null;
-
-                setProgramme(
-                    loaded
+                    null
                 );
-
-                return loaded;
             },
             [
                 programmeId,
@@ -135,27 +237,51 @@ function LearningSectionManager() {
         );
 
 
+    /* =====================================================
+       LOAD SECTIONS
+    ===================================================== */
+
     const loadSections =
         useCallback(
             async () => {
+                if (
+                    !programmeId
+                ) {
+                    return;
+                }
+
+
                 const response =
                     await api.get(
                         `/training-programmes/${programmeId}/sections`
                     );
 
-                const loaded =
-                    sortLearningSections(
-                        parseArrayResponse(
-                            response.data,
-                            "sections"
-                        )
+
+                const sectionData =
+                    parseArrayResponse(
+                        response.data,
+                        "sections"
                     );
 
-                setSections(
-                    loaded
-                );
 
-                return loaded;
+                setSections(
+                    [
+                        ...sectionData,
+                    ].sort(
+                        (
+                            first,
+                            second
+                        ) =>
+                            Number(
+                                first.order ||
+                                0
+                            ) -
+                            Number(
+                                second.order ||
+                                0
+                            )
+                    )
+                );
             },
             [
                 programmeId,
@@ -163,61 +289,133 @@ function LearningSectionManager() {
         );
 
 
+    /* =====================================================
+       INITIAL LOAD
+    ===================================================== */
+
     useEffect(() => {
-        let active =
+        let mounted =
             true;
+
 
         const load =
             async () => {
                 try {
-                    setLoading(true);
+                    setLoading(
+                        true
+                    );
+
+
+                    setErrorMessage(
+                        ""
+                    );
+
 
                     await Promise.all([
                         loadProgramme(),
                         loadSections(),
                     ]);
 
-                } catch (error) {
+
+                } catch (
+                error
+                ) {
                     console.error(
-                        "Learning content load error:",
+                        "Learning section load error:",
                         error
                     );
 
+
                     if (
-                        active
+                        mounted
                     ) {
                         setErrorMessage(
                             getApiErrorMessage(
                                 error,
-                                "Unable to load learning sections."
+                                "Unable to load the learning sections."
                             )
                         );
                     }
 
+
                 } finally {
                     if (
-                        active
+                        mounted
                     ) {
-                        setLoading(false);
+                        setLoading(
+                            false
+                        );
                     }
                 }
             };
 
+
         load();
 
+
         return () => {
-            active =
+            mounted =
                 false;
         };
+
     }, [
         loadProgramme,
         loadSections,
     ]);
 
 
-    const programmeInactive =
-        programme?.status ===
-        "inactive";
+    /* =====================================================
+       CLEAN UP BLOB PREVIEW
+    ===================================================== */
+
+    useEffect(
+        () => {
+            return () => {
+                if (
+                    imagePreview &&
+                    imagePreview.startsWith(
+                        "blob:"
+                    )
+                ) {
+                    URL.revokeObjectURL(
+                        imagePreview
+                    );
+                }
+            };
+        },
+        [
+            imagePreview,
+        ]
+    );
+
+
+    /* =====================================================
+       SORTED SECTIONS
+    ===================================================== */
+
+    const sortedSections =
+        useMemo(
+            () =>
+                [
+                    ...sections,
+                ].sort(
+                    (
+                        first,
+                        second
+                    ) =>
+                        Number(
+                            first.order ||
+                            0
+                        ) -
+                        Number(
+                            second.order ||
+                            0
+                        )
+                ),
+            [
+                sections,
+            ]
+        );
 
 
     const activeCount =
@@ -240,22 +438,69 @@ function LearningSectionManager() {
         ).length;
 
 
+    /* =====================================================
+       FEEDBACK
+    ===================================================== */
+
     const clearFeedback =
         () => {
-            setErrorMessage("");
-            setSuccessMessage("");
+            setErrorMessage(
+                ""
+            );
+
+            setSuccessMessage(
+                ""
+            );
         };
 
 
+    /* =====================================================
+       PREVIEW CLEANUP
+    ===================================================== */
+
+    const revokeTemporaryPreview =
+        () => {
+            if (
+                imagePreview &&
+                imagePreview.startsWith(
+                    "blob:"
+                )
+            ) {
+                URL.revokeObjectURL(
+                    imagePreview
+                );
+            }
+        };
+
+
+    /* =====================================================
+       RESET FORM
+    ===================================================== */
+
     const resetForm =
         () => {
-            setEditingSection(
+            revokeTemporaryPreview();
+
+
+            setImageFile(
                 null
             );
+
+
+            setImagePreview(
+                ""
+            );
+
 
             setFormData(
                 getInitialFormData()
             );
+
+
+            setEditingSection(
+                null
+            );
+
 
             setShowForm(
                 false
@@ -263,39 +508,69 @@ function LearningSectionManager() {
         };
 
 
-    const handleCreate =
+    /* =====================================================
+       CREATE
+    ===================================================== */
+
+    const handleCreateSection =
         () => {
             clearFeedback();
+
+            revokeTemporaryPreview();
+
 
             setEditingSection(
                 null
             );
 
+
             setFormData(
                 getInitialFormData()
             );
 
+
+            setImageFile(
+                null
+            );
+
+
+            setImagePreview(
+                ""
+            );
+
+
             setShowForm(
                 true
             );
+
+
+            window.scrollTo({
+                top:
+                    0,
+
+                behavior:
+                    "smooth",
+            });
         };
 
+
+    /* =====================================================
+       EDIT
+    ===================================================== */
 
     const handleEditSection =
         (
             section
         ) => {
-            if (
-                programmeInactive
-            ) {
-                return;
-            }
-
             clearFeedback();
+
+            revokeTemporaryPreview();
+
 
             setEditingSection(
                 section
             );
+
 
             setFormData({
                 title:
@@ -304,10 +579,6 @@ function LearningSectionManager() {
 
                 content:
                     section.content ||
-                    "",
-
-                imageUrl:
-                    section.imageUrl ||
                     "",
 
                 imageAltText:
@@ -319,17 +590,37 @@ function LearningSectionManager() {
                     "active",
             });
 
+
+            setImageFile(
+                null
+            );
+
+
+            setImagePreview(
+                getTrainingImageUrl(
+                    section.imageUrl
+                )
+            );
+
+
             setShowForm(
                 true
             );
 
+
             window.scrollTo({
-                top: 0,
+                top:
+                    0,
+
                 behavior:
                     "smooth",
             });
         };
 
+
+    /* =====================================================
+       STANDARD INPUT
+    ===================================================== */
 
     const handleInputChange =
         (
@@ -340,6 +631,7 @@ function LearningSectionManager() {
                 value,
             } =
                 event.target;
+
 
             setFormData(
                 (
@@ -354,65 +646,264 @@ function LearningSectionManager() {
         };
 
 
-    const handleSubmit =
-        async (
+    /* =====================================================
+       IMAGE SELECT
+    ===================================================== */
+
+    const handleImageChange =
+        (
             event
         ) => {
-            event.preventDefault();
+            const file =
+                event.target
+                    .files?.[0];
 
-            clearFeedback();
 
             if (
-                !formData
-                    .title
-                    .trim()
+                !file
+            ) {
+                return;
+            }
+
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+            ];
+
+
+            if (
+                !allowedTypes.includes(
+                    file.type
+                )
             ) {
                 setErrorMessage(
-                    "Section title is required."
+                    "Only JPG, JPEG, PNG and WebP images are allowed."
                 );
+
+
+                event.target.value =
+                    "";
 
                 return;
             }
+
+
+            const maximumSize =
+                5 *
+                1024 *
+                1024;
+
+
+            if (
+                file.size >
+                maximumSize
+            ) {
+                setErrorMessage(
+                    "Training image must not be larger than 5 MB."
+                );
+
+
+                event.target.value =
+                    "";
+
+                return;
+            }
+
+
+            setErrorMessage(
+                ""
+            );
+
+
+            revokeTemporaryPreview();
+
+
+            setImageFile(
+                file
+            );
+
+
+            const previewUrl =
+                URL.createObjectURL(
+                    file
+                );
+
+
+            setImagePreview(
+                previewUrl
+            );
+        };
+
+
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
+    const validateForm =
+        () => {
+            if (
+                formData
+                    .title
+                    .trim()
+                    .length <
+                2
+            ) {
+                return "Section title must contain at least 2 characters.";
+            }
+
 
             if (
                 !formData
                     .content
                     .trim()
             ) {
+                return "Learning content is required.";
+            }
+
+
+            if (
+                !editingSection &&
+                !imageFile
+            ) {
+                return "Please choose a learning section image.";
+            }
+
+
+            if (
+                !formData
+                    .imageAltText
+                    .trim()
+            ) {
+                return "Please provide alternative text for the learning section image.";
+            }
+
+
+            if (
+                formData
+                    .imageAltText
+                    .trim()
+                    .length >
+                250
+            ) {
+                return "Image alternative text cannot exceed 250 characters.";
+            }
+
+
+            if (
+                ![
+                    "active",
+                    "inactive",
+                ].includes(
+                    formData.status
+                )
+            ) {
+                return "Please select a valid section status.";
+            }
+
+
+            return "";
+        };
+
+
+    /* =====================================================
+       SUBMIT
+    ===================================================== */
+
+    const handleSubmit =
+        async (
+            event
+        ) => {
+            event.preventDefault();
+
+
+            clearFeedback();
+
+
+            if (
+                !canManage
+            ) {
                 setErrorMessage(
-                    "Learning content is required."
+                    "You do not have permission to manage learning sections."
                 );
 
                 return;
             }
 
-            const payload = {
-                title:
-                    formData
-                        .title
-                        .trim(),
 
-                content:
-                    formData
-                        .content
-                        .trim(),
+            const validationError =
+                validateForm();
 
-                imageUrl:
-                    formData
-                        .imageUrl
-                        .trim(),
 
-                imageAltText:
-                    formData
-                        .imageAltText
-                        .trim(),
+            if (
+                validationError
+            ) {
+                setErrorMessage(
+                    validationError
+                );
 
-                status:
-                    formData.status,
-            };
+                return;
+            }
+
+
+            /*
+             * IMPORTANT:
+             * We now send multipart/form-data.
+             *
+             * Do NOT manually set Content-Type.
+             * api.js already handles FormData.
+             */
+
+            const payload =
+                new FormData();
+
+
+            payload.append(
+                "title",
+                formData
+                    .title
+                    .trim()
+            );
+
+
+            payload.append(
+                "content",
+                formData
+                    .content
+                    .trim()
+            );
+
+
+            payload.append(
+                "imageAltText",
+                formData
+                    .imageAltText
+                    .trim()
+            );
+
+
+            payload.append(
+                "status",
+                formData.status
+            );
+
+
+            if (
+                imageFile
+            ) {
+                payload.append(
+                    "image",
+                    imageFile
+                );
+            }
+
 
             try {
-                setSaving(true);
+                setSaving(
+                    true
+                );
+
 
                 if (
                     editingSection
@@ -423,10 +914,13 @@ function LearningSectionManager() {
                             payload
                         );
 
+
                     setSuccessMessage(
-                        response.data?.message ||
+                        response.data
+                            ?.message ||
                         "Learning section updated successfully."
                     );
+
 
                 } else {
                     const response =
@@ -435,38 +929,67 @@ function LearningSectionManager() {
                             payload
                         );
 
+
                     setSuccessMessage(
-                        response.data?.message ||
+                        response.data
+                            ?.message ||
                         "Learning section created successfully."
                     );
                 }
 
+
                 resetForm();
+
 
                 await loadSections();
 
-            } catch (error) {
+
+            } catch (
+            error
+            ) {
+                console.error(
+                    "Save learning section error:",
+                    error
+                );
+
+
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to save learning section."
+                        "Unable to save the learning section."
                     )
                 );
 
+
             } finally {
-                setSaving(false);
+                setSaving(
+                    false
+                );
             }
         };
 
 
-    const handleDeactivate =
+    /* =====================================================
+       DEACTIVATE SECTION
+    ===================================================== */
+
+    const handleDeleteSection =
         async (
             section
         ) => {
+            if (
+                !canManage ||
+                !section?._id
+            ) {
+                return;
+            }
+
+
             const confirmed =
                 window.confirm(
                     `Deactivate "${section.title}"?`
                 );
+
 
             if (
                 !confirmed
@@ -474,87 +997,76 @@ function LearningSectionManager() {
                 return;
             }
 
+
+            clearFeedback();
+
+
             try {
                 setProcessingId(
                     section._id
                 );
+
 
                 const response =
                     await api.delete(
                         `/training-programmes/${programmeId}/sections/${section._id}`
                     );
 
+
                 setSuccessMessage(
-                    response.data?.message ||
+                    response.data
+                        ?.message ||
                     "Learning section deactivated successfully."
                 );
 
+
                 await loadSections();
 
-            } catch (error) {
+
+            } catch (
+            error
+            ) {
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to deactivate learning section."
+                        "Unable to deactivate the learning section."
                     )
                 );
 
+
             } finally {
-                setProcessingId("");
-            }
-        };
-
-
-    const handleReactivate =
-        async (
-            section
-        ) => {
-            try {
                 setProcessingId(
-                    section._id
+                    ""
                 );
-
-                const response =
-                    await api.patch(
-                        `/training-programmes/${programmeId}/sections/${section._id}/reactivate`
-                    );
-
-                setSuccessMessage(
-                    response.data?.message ||
-                    "Learning section reactivated successfully."
-                );
-
-                await loadSections();
-
-            } catch (error) {
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to reactivate learning section."
-                    )
-                );
-
-            } finally {
-                setProcessingId("");
             }
         };
 
 
-    const reorderSections =
+    /* =====================================================
+       REORDER
+    ===================================================== */
+
+    const saveNewOrder =
         async (
-            reordered
+            reorderedSections
         ) => {
             if (
-                programmeInactive
+                !canManage ||
+                reordering
             ) {
                 return;
             }
 
-            const previous =
+
+            clearFeedback();
+
+
+            const previousSections =
                 sections;
 
-            const optimistic =
-                reordered.map(
+
+            const normalized =
+                reorderedSections.map(
                     (
                         section,
                         index
@@ -562,86 +1074,94 @@ function LearningSectionManager() {
                         ...section,
 
                         order:
-                            index +
-                            1,
+                            index + 1,
                     })
                 );
 
+
             setSections(
-                optimistic
+                normalized
             );
 
+
             try {
-                setProcessingId(
-                    "reorder"
+                setReordering(
+                    true
                 );
 
-                await api.put(
-                    `/training-programmes/${programmeId}/sections/reorder`,
-                    {
-                        sectionIds:
-                            reordered.map(
-                                (
-                                    section
-                                ) =>
-                                    section._id
-                            ),
-                    }
-                );
 
-                await loadSections();
+                const response =
+                    await api.put(
+                        `/training-programmes/${programmeId}/sections/reorder`,
+                        {
+                            sectionIds:
+                                normalized.map(
+                                    (
+                                        section
+                                    ) =>
+                                        section._id
+                                ),
+                        }
+                    );
+
 
                 setSuccessMessage(
+                    response.data
+                        ?.message ||
                     "Learning section order updated successfully."
                 );
 
-            } catch (error) {
+
+                await loadSections();
+
+
+            } catch (
+            error
+            ) {
                 setSections(
-                    previous
+                    previousSections
                 );
+
 
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to reorder learning sections."
+                        "Unable to update learning section order."
                     )
                 );
 
+
             } finally {
-                setProcessingId("");
+                setReordering(
+                    false
+                );
             }
         };
 
 
     const handleMoveUp =
         (
-            section
+            section,
+            index
         ) => {
-            const index =
-                sections.findIndex(
-                    (
-                        item
-                    ) =>
-                        item._id ===
-                        section._id
-                );
-
             if (
                 index <=
-                0
+                0 ||
+                reordering
             ) {
                 return;
             }
 
+
             const reordered =
                 [
-                    ...sections,
+                    ...sortedSections,
                 ];
+
 
             [
                 reordered[
-                index -
-                1
+                index - 1
                 ],
                 reordered[
                 index
@@ -651,12 +1171,12 @@ function LearningSectionManager() {
                     index
                     ],
                     reordered[
-                    index -
-                    1
+                    index - 1
                     ],
                 ];
 
-            reorderSections(
+
+            saveNewOrder(
                 reordered
             );
         };
@@ -664,55 +1184,82 @@ function LearningSectionManager() {
 
     const handleMoveDown =
         (
-            section
+            section,
+            index
         ) => {
-            const index =
-                sections.findIndex(
-                    (
-                        item
-                    ) =>
-                        item._id ===
-                        section._id
-                );
-
             if (
-                index ===
-                -1 ||
                 index >=
-                sections.length -
-                1
+                sortedSections.length -
+                1 ||
+                reordering
             ) {
                 return;
             }
 
+
             const reordered =
                 [
-                    ...sections,
+                    ...sortedSections,
                 ];
+
 
             [
                 reordered[
                 index
                 ],
                 reordered[
-                index +
-                1
+                index + 1
                 ],
             ] = [
                     reordered[
-                    index +
-                    1
+                    index + 1
                     ],
                     reordered[
                     index
                     ],
                 ];
 
-            reorderSections(
+
+            saveNewOrder(
                 reordered
             );
         };
 
+
+    /* =====================================================
+       PREVIEW
+    ===================================================== */
+
+    const handlePreview =
+        (
+            section
+        ) => {
+            setPreviewSection({
+                ...section,
+
+                imageUrl:
+                    getTrainingImageUrl(
+                        section.imageUrl
+                    ),
+            });
+        };
+
+
+    /* =====================================================
+       BACK
+    ===================================================== */
+
+    const handleBack =
+        () => {
+            navigate(
+                "/training-programmes"
+            );
+        };
+
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
     if (
         loading
@@ -725,109 +1272,222 @@ function LearningSectionManager() {
     }
 
 
+    /* =====================================================
+       PAGE
+    ===================================================== */
+
     return (
-        <div
-            className="
-                space-y-4
-            "
-        >
-            {/* PROGRAMME SUMMARY */}
+        <div className="space-y-4">
+
+            <FeedbackAlert
+                type="success"
+                message={
+                    successMessage
+                }
+                onClose={() =>
+                    setSuccessMessage(
+                        ""
+                    )
+                }
+            />
+
+
+            <FeedbackAlert
+                type="error"
+                message={
+                    errorMessage
+                }
+                onClose={() =>
+                    setErrorMessage(
+                        ""
+                    )
+                }
+            />
+
+
+            {/* PROGRAMME HEADER */}
 
             <section
                 className="
+                    overflow-hidden
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
-                    p-4
                     shadow-sm
-                    sm:p-5
                 "
             >
                 <div
                     className="
-                        flex
-                        flex-col
-                        gap-4
-                        md:flex-row
-                        md:items-start
-                        md:justify-between
+                        relative
+                        overflow-hidden
+                        bg-gradient-to-r
+                        from-[#073763]
+                        to-[#1769aa]
+                        px-4
+                        py-5
+                        text-white
+                        sm:px-6
                     "
                 >
-                    <div>
-                        <div
-                            className="
-                                flex
-                                flex-wrap
-                                gap-2
-                            "
-                        >
-                            <span
+                    <div
+                        className="
+                            absolute
+                            -right-14
+                            -top-16
+                            h-44
+                            w-44
+                            rounded-full
+                            bg-white/10
+                        "
+                    />
+
+
+                    <div
+                        className="
+                            relative
+                            z-10
+                            flex
+                            flex-col
+                            gap-4
+                            lg:flex-row
+                            lg:items-center
+                            lg:justify-between
+                        "
+                    >
+                        <div className="min-w-0">
+                            <button
+                                type="button"
+                                onClick={
+                                    handleBack
+                                }
                                 className="
-                                    rounded-full
-                                    bg-blue-50
-                                    px-2.5
-                                    py-1
-                                    text-[7px]
+                                    mb-3
+                                    inline-flex
+                                    items-center
+                                    gap-1
+                                    rounded-lg
+                                    bg-white/10
+                                    px-3
+                                    py-1.5
+                                    text-[8px]
                                     font-semibold
-                                    text-blue-700
+                                    text-white
+                                    transition
+                                    hover:bg-white/20
                                 "
                             >
-                                {formatProgrammeType(
-                                    programme?.programmeType
-                                )}
-                            </span>
+                                ← Training Programmes
+                            </button>
 
-                            <StatusBadge
-                                status={
-                                    programme?.status
-                                }
-                            />
+
+                            <p
+                                className="
+                                    text-[7px]
+                                    font-bold
+                                    uppercase
+                                    tracking-[0.12em]
+                                    text-blue-100
+                                "
+                            >
+                                Learning Content Management
+                            </p>
+
+
+                            <h1
+                                className="
+                                    mt-2
+                                    text-[18px]
+                                    font-bold
+                                    text-white
+                                    sm:text-[20px]
+                                "
+                            >
+                                {programme
+                                    ?.title ||
+                                    "Training Programme"}
+                            </h1>
+
+
+                            <div
+                                className="
+                                    mt-3
+                                    flex
+                                    flex-wrap
+                                    items-center
+                                    gap-2
+                                "
+                            >
+                                <span
+                                    className="
+                                        rounded-full
+                                        bg-white/10
+                                        px-3
+                                        py-1.5
+                                        text-[8px]
+                                        font-semibold
+                                        text-blue-50
+                                    "
+                                >
+                                    {formatProgrammeType(
+                                        programme
+                                            ?.programmeType
+                                    )}
+                                </span>
+
+
+                                {programme
+                                    ?.status && (
+                                        <StatusBadge
+                                            status={
+                                                programme.status
+                                            }
+                                        />
+                                    )}
+                            </div>
+
+
+                            {programme
+                                ?.description && (
+                                    <p
+                                        className="
+                                        mt-3
+                                        max-w-[720px]
+                                        text-[8px]
+                                        font-medium
+                                        leading-5
+                                        text-blue-100
+                                    "
+                                    >
+                                        {
+                                            programme.description
+                                        }
+                                    </p>
+                                )}
                         </div>
 
 
-                        <h2
-                            className="
-                                mt-3
-                                text-[16px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            {programme?.title ||
-                                "Training Programme"}
-                        </h2>
-
-
-                        {programme?.description && (
-                            <p
+                        {canManage && (
+                            <ActionButton
+                                variant="primary"
+                                onClick={
+                                    handleCreateSection
+                                }
                                 className="
-                                    mt-2
-                                    max-w-3xl
-                                    text-[9px]
-                                    font-medium
-                                    leading-5
-                                    text-slate-600
+                                    w-full
+                                    shrink-0
+                                    border
+                                    border-white/20
+                                    bg-white
+                                    text-[#0b4f87]
+                                    hover:bg-blue-50
+                                    lg:w-auto
                                 "
                             >
-                                {
-                                    programme.description
-                                }
-                            </p>
+                                + Add Learning Section
+                            </ActionButton>
                         )}
                     </div>
-
-
-                    <ActionButton
-                        variant="secondary"
-                        onClick={() =>
-                            navigate(
-                                "/training-programmes"
-                            )
-                        }
-                    >
-                        ← Back to Programmes
-                    </ActionButton>
                 </div>
             </section>
 
@@ -864,53 +1524,80 @@ function LearningSectionManager() {
             </section>
 
 
-            <FeedbackAlert
-                type="success"
-                message={
-                    successMessage
-                }
-                onClose={() =>
-                    setSuccessMessage("")
-                }
-            />
+            {/* ORDER INFO */}
 
-            <FeedbackAlert
-                type="error"
-                message={
-                    errorMessage
-                }
-                onClose={() =>
-                    setErrorMessage("")
-                }
-            />
-
-
-            {!showForm &&
-                !programmeInactive && (
-                    <div
+            {canManage &&
+                sections.length >
+                1 && (
+                    <section
                         className="
-                        flex
-                        justify-end
+                        rounded-xl
+                        border
+                        border-blue-100
+                        bg-blue-50
+                        px-4
+                        py-3
                     "
                     >
-                        <ActionButton
-                            variant="primary"
-                            onClick={
-                                handleCreate
-                            }
+                        <div
                             className="
-                            w-full
-                            sm:w-auto
+                            flex
+                            items-start
+                            gap-3
                         "
                         >
-                            + Add Learning Section
-                        </ActionButton>
-                    </div>
+                            <div
+                                className="
+                                flex
+                                h-8
+                                w-8
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-white
+                                text-[12px]
+                                font-bold
+                                text-blue-700
+                            "
+                            >
+                                ↕
+                            </div>
+
+                            <div>
+                                <p
+                                    className="
+                                    text-[9px]
+                                    font-bold
+                                    text-blue-900
+                                "
+                                >
+                                    Learning navigation order
+                                </p>
+
+                                <p
+                                    className="
+                                    mt-1
+                                    text-[8px]
+                                    leading-4
+                                    text-blue-700
+                                "
+                                >
+                                    Use the up and down controls
+                                    to change the order in which
+                                    Trainees see the learning
+                                    sections.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
                 )}
 
 
+            {/* FORM */}
+
             {showForm &&
-                !programmeInactive && (
+                canManage && (
                     <LearningSectionForm
                         formData={
                             formData
@@ -921,8 +1608,17 @@ function LearningSectionManager() {
                         saving={
                             saving
                         }
+                        imageFile={
+                            imageFile
+                        }
+                        imagePreview={
+                            imagePreview
+                        }
                         onChange={
                             handleInputChange
+                        }
+                        onImageChange={
+                            handleImageChange
                         }
                         onSubmit={
                             handleSubmit
@@ -934,107 +1630,65 @@ function LearningSectionManager() {
                 )}
 
 
-            <section
-                className="
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-white
-                    shadow-sm
-                "
-            >
-                <div
-                    className="
-                        flex
-                        flex-col
-                        gap-2
-                        border-b
-                        border-slate-100
-                        px-4
-                        py-4
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        sm:px-5
-                    "
-                >
-                    <div>
-                        <h3
-                            className="
-                                text-[11px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Learning Sections
-                        </h3>
+            {/* TABLE */}
 
-                        <p
-                            className="
-                                mt-1
-                                text-[8px]
-                                font-medium
-                                text-slate-500
-                            "
-                        >
-                            Manage content and learning order.
-                        </p>
-                    </div>
+            <LearningSectionTable
+                sections={
+                    sortedSections
+                }
+                processingId={
+                    processingId
+                }
+                onPreview={
+                    handlePreview
+                }
+                onEdit={
+                    canManage
+                        ? handleEditSection
+                        : undefined
+                }
+                onMoveUp={
+                    canManage
+                        ? handleMoveUp
+                        : undefined
+                }
+                onMoveDown={
+                    canManage
+                        ? handleMoveDown
+                        : undefined
+                }
+                onDelete={
+                    canManage
+                        ? handleDeleteSection
+                        : undefined
+                }
+            />
 
 
-                    <span
-                        className="
-                            w-fit
-                            rounded-full
-                            bg-slate-100
-                            px-3
-                            py-1
-                            text-[8px]
-                            font-semibold
-                            text-slate-600
-                        "
-                    >
-                        {sections.length} Section
-                        {sections.length ===
-                            1
-                            ? ""
-                            : "s"}
-                    </span>
-                </div>
+            {/* PREVIEW */}
 
+            <LearningSectionPreviewModal
+                section={
+                    previewSection
+                }
+                programme={
+                    programme
+                }
+                onClose={() =>
+                    setPreviewSection(
+                        null
+                    )
+                }
+            />
 
-                <LearningSectionTable
-                    sections={
-                        sections
-                    }
-                    processingId={
-                        processingId
-                    }
-                    programmeInactive={
-                        programmeInactive
-                    }
-                    onEdit={
-                        handleEditSection
-                    }
-                    onDeactivate={
-                        handleDeactivate
-                    }
-                    onReactivate={
-                        handleReactivate
-                    }
-                    onMoveUp={
-                        handleMoveUp
-                    }
-                    onMoveDown={
-                        handleMoveDown
-                    }
-                />
-            </section>
         </div>
     );
 }
 
+
+/* =========================================================
+   STAT
+========================================================= */
 
 function SectionStat({
     label,
@@ -1060,6 +1714,7 @@ function SectionStat({
             >
                 {label}
             </p>
+
 
             <p
                 className="

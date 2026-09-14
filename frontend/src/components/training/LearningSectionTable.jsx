@@ -6,128 +6,119 @@ import StatusBadge from "../ui/StatusBadge";
 function LearningSectionTable({
     sections = [],
     processingId = "",
-    programmeInactive = false,
+    onPreview,
     onEdit,
-    onDeactivate,
-    onReactivate,
     onMoveUp,
     onMoveDown,
+    onDelete,
 }) {
     if (
-        !Array.isArray(sections) ||
-        sections.length === 0
+        sections.length ===
+        0
     ) {
         return (
-            <EmptyState
-                title="No learning sections found."
-                description="Add the first learning section to this training programme."
-                icon="training"
-            />
+            <section
+                className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-sm
+                "
+            >
+                <EmptyState
+                    title="No learning sections found."
+                    description="Create the first learning section for this training programme."
+                    icon="training"
+                />
+            </section>
         );
     }
 
 
-    const reordering =
-        processingId === "reorder";
-
-
     return (
-        <div className="w-full min-w-0">
+        <section
+            className="
+                overflow-hidden
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                shadow-sm
+            "
+        >
+            {/* =================================================
+                HEADER
+            ================================================== */}
 
-            {/* PROGRAMME INACTIVE */}
-
-            {programmeInactive && (
-                <div
-                    className="
-                        border-b
-                        border-amber-200
-                        bg-amber-50
-                        px-4
-                        py-3
-                        sm:px-5
-                    "
-                >
-                    <div
+            <div
+                className="
+                    flex
+                    flex-col
+                    gap-2
+                    border-b
+                    border-slate-100
+                    px-4
+                    py-4
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                    sm:px-5
+                "
+            >
+                <div>
+                    <h2
                         className="
-                            flex
-                            items-start
-                            gap-3
+                            text-[11px]
+                            font-bold
+                            text-[#172033]
                         "
                     >
-                        <div
-                            className="
-                                flex
-                                h-8
-                                w-8
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-white
-                                text-[11px]
-                                font-bold
-                                text-amber-600
-                            "
-                        >
-                            !
-                        </div>
+                        Learning Sections
+                    </h2>
 
-
-                        <div>
-                            <p
-                                className="
-                                    text-[9px]
-                                    font-bold
-                                    text-amber-800
-                                "
-                            >
-                                Programme inactive
-                            </p>
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[8px]
-                                    font-medium
-                                    leading-4
-                                    text-amber-700
-                                "
-                            >
-                                Reactivate the programme before editing or reordering its learning sections.
-                            </p>
-                        </div>
-                    </div>
+                    <p
+                        className="
+                            mt-1
+                            text-[8px]
+                            font-medium
+                            text-slate-500
+                        "
+                    >
+                        Manage programme learning content and section order.
+                    </p>
                 </div>
-            )}
 
 
-            {reordering && (
-                <div
+                <span
                     className="
-                        border-b
-                        border-blue-100
-                        bg-blue-50
-                        px-4
-                        py-2.5
+                        w-fit
+                        rounded-full
+                        bg-slate-100
+                        px-3
+                        py-1
                         text-[8px]
                         font-semibold
-                        text-blue-700
-                        sm:px-5
+                        text-slate-600
                     "
                 >
-                    Updating learning section order...
-                </div>
-            )}
+                    {sections.length} Section
+                    {sections.length === 1
+                        ? ""
+                        : "s"}
+                </span>
+            </div>
 
 
-            {/* MOBILE / TABLET */}
+            {/* =================================================
+                MOBILE / TABLET CARDS
+            ================================================== */}
 
             <div
                 className="
                     grid
                     gap-3
                     p-4
-                    md:grid-cols-2
                     lg:hidden
                 "
             >
@@ -136,10 +127,9 @@ function LearningSectionTable({
                         section,
                         index
                     ) => (
-                        <SectionCard
+                        <LearningSectionCard
                             key={
-                                section._id ||
-                                index
+                                section._id
                             }
                             section={
                                 section
@@ -153,17 +143,11 @@ function LearningSectionTable({
                             processingId={
                                 processingId
                             }
-                            programmeInactive={
-                                programmeInactive
+                            onPreview={
+                                onPreview
                             }
                             onEdit={
                                 onEdit
-                            }
-                            onDeactivate={
-                                onDeactivate
-                            }
-                            onReactivate={
-                                onReactivate
                             }
                             onMoveUp={
                                 onMoveUp
@@ -171,13 +155,18 @@ function LearningSectionTable({
                             onMoveDown={
                                 onMoveDown
                             }
+                            onDelete={
+                                onDelete
+                            }
                         />
                     )
                 )}
             </div>
 
 
-            {/* DESKTOP */}
+            {/* =================================================
+                DESKTOP TABLE
+            ================================================== */}
 
             <div
                 className="
@@ -188,8 +177,8 @@ function LearningSectionTable({
             >
                 <table
                     className="
-                        min-w-[900px]
                         w-full
+                        min-w-[900px]
                     "
                 >
                     <thead
@@ -198,25 +187,29 @@ function LearningSectionTable({
                         "
                     >
                         <tr>
-                            <TableHead>
+                            <Head>
                                 Order
-                            </TableHead>
+                            </Head>
 
-                            <TableHead>
+                            <Head>
                                 Learning Section
-                            </TableHead>
+                            </Head>
 
-                            <TableHead>
-                                Image
-                            </TableHead>
+                            <Head>
+                                Content
+                            </Head>
 
-                            <TableHead>
+                            <Head>
                                 Status
-                            </TableHead>
+                            </Head>
 
-                            <TableHead right>
+                            <Head>
+                                Reorder
+                            </Head>
+
+                            <Head right>
                                 Actions
-                            </TableHead>
+                            </Head>
                         </tr>
                     </thead>
 
@@ -229,18 +222,13 @@ function LearningSectionTable({
                             ) => {
                                 const processing =
                                     processingId ===
-                                    section._id ||
-                                    reordering;
+                                    section._id;
 
-                                const inactive =
-                                    section.status ===
-                                    "inactive";
 
                                 return (
                                     <tr
                                         key={
-                                            section._id ||
-                                            index
+                                            section._id
                                         }
                                         className="
                                             border-t
@@ -249,6 +237,8 @@ function LearningSectionTable({
                                             hover:bg-slate-50/60
                                         "
                                     >
+                                        {/* ORDER */}
+
                                         <td
                                             className="
                                                 px-5
@@ -258,90 +248,24 @@ function LearningSectionTable({
                                             <div
                                                 className="
                                                     flex
+                                                    h-8
+                                                    w-8
                                                     items-center
-                                                    gap-2
+                                                    justify-center
+                                                    rounded-lg
+                                                    bg-blue-50
+                                                    text-[9px]
+                                                    font-bold
+                                                    text-blue-700
                                                 "
                                             >
-                                                <span
-                                                    className="
-                                                        flex
-                                                        h-7
-                                                        w-7
-                                                        shrink-0
-                                                        items-center
-                                                        justify-center
-                                                        rounded-full
-                                                        bg-blue-50
-                                                        text-[8px]
-                                                        font-bold
-                                                        text-blue-600
-                                                    "
-                                                >
-                                                    {index + 1}
-                                                </span>
-
-
-                                                <div
-                                                    className="
-                                                        flex
-                                                        flex-col
-                                                        gap-1
-                                                    "
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            programmeInactive ||
-                                                            processing ||
-                                                            index ===
-                                                            0
-                                                        }
-                                                        onClick={() =>
-                                                            onMoveUp?.(
-                                                                section
-                                                            )
-                                                        }
-                                                        className="
-                                                            text-[9px]
-                                                            font-bold
-                                                            text-slate-500
-                                                            hover:text-blue-600
-                                                            disabled:cursor-not-allowed
-                                                            disabled:opacity-30
-                                                        "
-                                                    >
-                                                        ↑
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            programmeInactive ||
-                                                            processing ||
-                                                            index ===
-                                                            sections.length -
-                                                            1
-                                                        }
-                                                        onClick={() =>
-                                                            onMoveDown?.(
-                                                                section
-                                                            )
-                                                        }
-                                                        className="
-                                                            text-[9px]
-                                                            font-bold
-                                                            text-slate-500
-                                                            hover:text-blue-600
-                                                            disabled:cursor-not-allowed
-                                                            disabled:opacity-30
-                                                        "
-                                                    >
-                                                        ↓
-                                                    </button>
-                                                </div>
+                                                {section.order ||
+                                                    index + 1}
                                             </div>
                                         </td>
 
+
+                                        {/* TITLE */}
 
                                         <td
                                             className="
@@ -351,35 +275,37 @@ function LearningSectionTable({
                                         >
                                             <div
                                                 className="
-                                                    max-w-[330px]
+                                                    max-w-[230px]
                                                 "
                                             >
                                                 <p
                                                     className="
                                                         text-[9px]
                                                         font-bold
-                                                        text-slate-800
+                                                        text-[#172033]
                                                     "
                                                 >
                                                     {section.title}
                                                 </p>
 
-                                                <p
-                                                    className="
-                                                        mt-1
-                                                        line-clamp-2
-                                                        text-[7px]
-                                                        font-medium
-                                                        leading-4
-                                                        text-slate-500
-                                                    "
-                                                >
-                                                    {section.content ||
-                                                        "No content"}
-                                                </p>
+
+                                                {section.imageUrl && (
+                                                    <p
+                                                        className="
+                                                            mt-1
+                                                            text-[7px]
+                                                            font-medium
+                                                            text-blue-600
+                                                        "
+                                                    >
+                                                        Image attached
+                                                    </p>
+                                                )}
                                             </div>
                                         </td>
 
+
+                                        {/* CONTENT */}
 
                                         <td
                                             className="
@@ -387,37 +313,23 @@ function LearningSectionTable({
                                                 py-4
                                             "
                                         >
-                                            {section.imageUrl ? (
-                                                <img
-                                                    src={
-                                                        section.imageUrl
-                                                    }
-                                                    alt={
-                                                        section.imageAltText ||
-                                                        section.title
-                                                    }
-                                                    className="
-                                                        h-12
-                                                        w-16
-                                                        rounded-lg
-                                                        border
-                                                        border-slate-200
-                                                        object-cover
-                                                    "
-                                                />
-                                            ) : (
-                                                <span
-                                                    className="
-                                                        text-[8px]
-                                                        font-medium
-                                                        text-slate-400
-                                                    "
-                                                >
-                                                    No image
-                                                </span>
-                                            )}
+                                            <p
+                                                className="
+                                                    max-w-[280px]
+                                                    line-clamp-3
+                                                    text-[8px]
+                                                    font-medium
+                                                    leading-4
+                                                    text-slate-500
+                                                "
+                                            >
+                                                {section.content ||
+                                                    "No learning content provided."}
+                                            </p>
                                         </td>
 
+
+                                        {/* STATUS */}
 
                                         <td
                                             className="
@@ -433,6 +345,62 @@ function LearningSectionTable({
                                             />
                                         </td>
 
+
+                                        {/* REORDER */}
+
+                                        <td
+                                            className="
+                                                px-5
+                                                py-4
+                                            "
+                                        >
+                                            <div
+                                                className="
+                                                    flex
+                                                    items-center
+                                                    gap-1.5
+                                                "
+                                            >
+                                                <OrderButton
+                                                    label="Move section up"
+                                                    disabled={
+                                                        processing ||
+                                                        index ===
+                                                        0
+                                                    }
+                                                    onClick={() =>
+                                                        onMoveUp?.(
+                                                            section,
+                                                            index
+                                                        )
+                                                    }
+                                                >
+                                                    ↑
+                                                </OrderButton>
+
+
+                                                <OrderButton
+                                                    label="Move section down"
+                                                    disabled={
+                                                        processing ||
+                                                        index ===
+                                                        sections.length -
+                                                        1
+                                                    }
+                                                    onClick={() =>
+                                                        onMoveDown?.(
+                                                            section,
+                                                            index
+                                                        )
+                                                    }
+                                                >
+                                                    ↓
+                                                </OrderButton>
+                                            </div>
+                                        </td>
+
+
+                                        {/* ACTIONS */}
 
                                         <td
                                             className="
@@ -451,7 +419,21 @@ function LearningSectionTable({
                                                 <ActionButton
                                                     variant="secondary"
                                                     disabled={
-                                                        programmeInactive ||
+                                                        processing
+                                                    }
+                                                    onClick={() =>
+                                                        onPreview?.(
+                                                            section
+                                                        )
+                                                    }
+                                                >
+                                                    Preview
+                                                </ActionButton>
+
+
+                                                <ActionButton
+                                                    variant="secondary"
+                                                    disabled={
                                                         processing
                                                     }
                                                     onClick={() =>
@@ -464,37 +446,21 @@ function LearningSectionTable({
                                                 </ActionButton>
 
 
-                                                {inactive ? (
-                                                    <ActionButton
-                                                        variant="success"
-                                                        disabled={
-                                                            programmeInactive ||
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onReactivate?.(
-                                                                section
-                                                            )
-                                                        }
-                                                    >
-                                                        Reactivate
-                                                    </ActionButton>
-                                                ) : (
-                                                    <ActionButton
-                                                        variant="warning"
-                                                        disabled={
-                                                            programmeInactive ||
-                                                            processing
-                                                        }
-                                                        onClick={() =>
-                                                            onDeactivate?.(
-                                                                section
-                                                            )
-                                                        }
-                                                    >
-                                                        Deactivate
-                                                    </ActionButton>
-                                                )}
+                                                <ActionButton
+                                                    variant="danger"
+                                                    disabled={
+                                                        processing
+                                                    }
+                                                    onClick={() =>
+                                                        onDelete?.(
+                                                            section
+                                                        )
+                                                    }
+                                                >
+                                                    {processing
+                                                        ? "Deleting..."
+                                                        : "Delete"}
+                                                </ActionButton>
                                             </div>
                                         </td>
                                     </tr>
@@ -504,257 +470,354 @@ function LearningSectionTable({
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
     );
 }
 
 
-function SectionCard({
+/* =========================================================
+   MOBILE SECTION CARD
+========================================================= */
+
+function LearningSectionCard({
     section,
     index,
     total,
     processingId,
-    programmeInactive,
+    onPreview,
     onEdit,
-    onDeactivate,
-    onReactivate,
     onMoveUp,
     onMoveDown,
+    onDelete,
 }) {
     const processing =
         processingId ===
-        section._id ||
-        processingId ===
-        "reorder";
-
-    const inactive =
-        section.status ===
-        "inactive";
+        section._id;
 
 
     return (
         <article
             className="
-                overflow-hidden
                 rounded-xl
                 border
                 border-slate-200
                 bg-white
+                p-4
             "
         >
-            {section.imageUrl && (
-                <img
-                    src={
-                        section.imageUrl
-                    }
-                    alt={
-                        section.imageAltText ||
-                        section.title
-                    }
-                    className="
-                        h-36
-                        w-full
-                        object-cover
-                    "
-                />
-            )}
-
-
             <div
                 className="
-                    p-4
+                    flex
+                    items-start
+                    justify-between
+                    gap-3
                 "
             >
                 <div
                     className="
                         flex
+                        min-w-0
                         items-start
-                        justify-between
                         gap-3
                     "
                 >
-                    <span
+                    <div
                         className="
                             flex
-                            h-7
-                            w-7
+                            h-9
+                            w-9
+                            shrink-0
                             items-center
                             justify-center
-                            rounded-full
+                            rounded-lg
                             bg-blue-50
-                            text-[8px]
+                            text-[9px]
                             font-bold
-                            text-blue-600
+                            text-blue-700
                         "
                     >
-                        {index + 1}
-                    </span>
+                        {section.order ||
+                            index + 1}
+                    </div>
 
-                    <StatusBadge
-                        status={
-                            section.status ||
-                            "active"
-                        }
-                    />
+
+                    <div
+                        className="
+                            min-w-0
+                        "
+                    >
+                        <h3
+                            className="
+                                text-[10px]
+                                font-bold
+                                text-[#172033]
+                            "
+                        >
+                            {section.title}
+                        </h3>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-[7px]
+                                font-medium
+                                text-slate-500
+                            "
+                        >
+                            Section{" "}
+                            {section.order ||
+                                index + 1}
+                        </p>
+                    </div>
                 </div>
 
 
-                <h3
+                <StatusBadge
+                    status={
+                        section.status ||
+                        "active"
+                    }
+                />
+            </div>
+
+
+            <p
+                className="
+                    mt-3
+                    line-clamp-4
+                    text-[8px]
+                    font-medium
+                    leading-5
+                    text-slate-600
+                "
+            >
+                {section.content ||
+                    "No learning content provided."}
+            </p>
+
+
+            {section.imageUrl && (
+                <div
                     className="
                         mt-3
-                        text-[10px]
-                        font-bold
-                        text-slate-800
+                        overflow-hidden
+                        rounded-lg
+                        border
+                        border-slate-200
+                        bg-slate-50
                     "
                 >
-                    {section.title}
-                </h3>
+                    <img
+                        src={
+                            section.imageUrl
+                        }
+                        alt={
+                            section.imageAltText ||
+                            section.title ||
+                            "Learning section"
+                        }
+                        className="
+                            h-32
+                            w-full
+                            object-cover
+                        "
+                    />
+                </div>
+            )}
 
 
+            {/* ORDER CONTROLS */}
+
+            <div
+                className="
+                    mt-4
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                    border-t
+                    border-slate-100
+                    pt-3
+                "
+            >
                 <p
                     className="
-                        mt-2
-                        line-clamp-3
-                        text-[8px]
-                        font-medium
-                        leading-5
-                        text-slate-600
+                        text-[7px]
+                        font-semibold
+                        text-slate-500
                     "
                 >
-                    {section.content ||
-                        "No learning content."}
+                    Change order
                 </p>
 
 
                 <div
                     className="
-                        mt-4
                         flex
                         gap-2
                     "
                 >
-                    <button
-                        type="button"
+                    <OrderButton
+                        label="Move section up"
                         disabled={
-                            programmeInactive ||
                             processing ||
                             index === 0
                         }
                         onClick={() =>
                             onMoveUp?.(
-                                section
+                                section,
+                                index
                             )
                         }
-                        className="
-                            min-h-[36px]
-                            flex-1
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            text-[8px]
-                            font-semibold
-                            text-slate-600
-                            disabled:opacity-40
-                        "
                     >
-                        ↑ Up
-                    </button>
+                        ↑
+                    </OrderButton>
 
-                    <button
-                        type="button"
+
+                    <OrderButton
+                        label="Move section down"
                         disabled={
-                            programmeInactive ||
                             processing ||
                             index ===
                             total - 1
                         }
                         onClick={() =>
                             onMoveDown?.(
-                                section
+                                section,
+                                index
                             )
                         }
-                        className="
-                            min-h-[36px]
-                            flex-1
-                            rounded-lg
-                            border
-                            border-slate-300
-                            bg-white
-                            text-[8px]
-                            font-semibold
-                            text-slate-600
-                            disabled:opacity-40
-                        "
                     >
-                        ↓ Down
-                    </button>
+                        ↓
+                    </OrderButton>
                 </div>
+            </div>
 
 
-                <div
-                    className="
-                        mt-3
-                        grid
-                        grid-cols-2
-                        gap-2
-                    "
+            {/* ACTIONS */}
+
+            <div
+                className="
+                    mt-3
+                    grid
+                    gap-2
+                    sm:grid-cols-3
+                "
+            >
+                <ActionButton
+                    variant="secondary"
+                    disabled={
+                        processing
+                    }
+                    onClick={() =>
+                        onPreview?.(
+                            section
+                        )
+                    }
                 >
-                    <ActionButton
-                        variant="secondary"
-                        disabled={
-                            programmeInactive ||
-                            processing
-                        }
-                        onClick={() =>
-                            onEdit?.(
-                                section
-                            )
-                        }
-                    >
-                        Edit
-                    </ActionButton>
+                    Preview
+                </ActionButton>
 
 
-                    {inactive ? (
-                        <ActionButton
-                            variant="success"
-                            disabled={
-                                programmeInactive ||
-                                processing
-                            }
-                            onClick={() =>
-                                onReactivate?.(
-                                    section
-                                )
-                            }
-                        >
-                            Reactivate
-                        </ActionButton>
-                    ) : (
-                        <ActionButton
-                            variant="warning"
-                            disabled={
-                                programmeInactive ||
-                                processing
-                            }
-                            onClick={() =>
-                                onDeactivate?.(
-                                    section
-                                )
-                            }
-                        >
-                            Deactivate
-                        </ActionButton>
-                    )}
-                </div>
+                <ActionButton
+                    variant="secondary"
+                    disabled={
+                        processing
+                    }
+                    onClick={() =>
+                        onEdit?.(
+                            section
+                        )
+                    }
+                >
+                    Edit
+                </ActionButton>
+
+
+                <ActionButton
+                    variant="danger"
+                    disabled={
+                        processing
+                    }
+                    onClick={() =>
+                        onDelete?.(
+                            section
+                        )
+                    }
+                >
+                    {processing
+                        ? "Deleting..."
+                        : "Delete"}
+                </ActionButton>
             </div>
         </article>
     );
 }
 
 
-function TableHead({
+/* =========================================================
+   ORDER BUTTON
+========================================================= */
+
+function OrderButton({
+    children,
+    label,
+    disabled,
+    onClick,
+}) {
+    return (
+        <button
+            type="button"
+            aria-label={
+                label
+            }
+            title={
+                label
+            }
+            disabled={
+                disabled
+            }
+            onClick={
+                onClick
+            }
+            className="
+                flex
+                h-8
+                w-8
+                items-center
+                justify-center
+                rounded-lg
+                border
+                border-slate-200
+                bg-white
+                text-[12px]
+                font-bold
+                text-slate-600
+                transition
+
+                hover:border-blue-300
+                hover:bg-blue-50
+                hover:text-blue-700
+
+                disabled:cursor-not-allowed
+                disabled:opacity-30
+                disabled:hover:border-slate-200
+                disabled:hover:bg-white
+                disabled:hover:text-slate-600
+            "
+        >
+            {children}
+        </button>
+    );
+}
+
+
+/* =========================================================
+   TABLE HEADER
+========================================================= */
+
+function Head({
     children,
     right = false,
 }) {

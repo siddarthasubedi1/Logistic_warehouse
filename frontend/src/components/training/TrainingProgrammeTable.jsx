@@ -11,6 +11,7 @@ import {
 function TrainingProgrammeTable({
     programmes = [],
     processingId = "",
+    onPreview,
     onEdit,
     onManageSections,
     onDeactivate,
@@ -135,6 +136,9 @@ function TrainingProgrammeTable({
                             }
                             processingId={
                                 processingId
+                            }
+                            onPreview={
+                                onPreview
                             }
                             onEdit={
                                 onEdit
@@ -364,6 +368,21 @@ function TrainingProgrammeTable({
                                                         processing
                                                     }
                                                     onClick={() =>
+                                                        onPreview?.(
+                                                            programme
+                                                        )
+                                                    }
+                                                >
+                                                    Preview
+                                                </ActionButton>
+
+
+                                                <ActionButton
+                                                    variant="secondary"
+                                                    disabled={
+                                                        processing
+                                                    }
+                                                    onClick={() =>
                                                         onManageSections?.(
                                                             programme
                                                         )
@@ -434,6 +453,7 @@ function TrainingProgrammeTable({
 function ProgrammeCard({
     programme,
     processingId,
+    onPreview,
     onEdit,
     onManageSections,
     onDeactivate,
@@ -559,6 +579,21 @@ function ProgrammeCard({
                     sm:grid-cols-2
                 "
             >
+                <ActionButton
+                    variant="secondary"
+                    disabled={
+                        processing
+                    }
+                    onClick={() =>
+                        onPreview?.(
+                            programme
+                        )
+                    }
+                >
+                    Preview
+                </ActionButton>
+
+
                 <ActionButton
                     variant="primary"
                     disabled={
