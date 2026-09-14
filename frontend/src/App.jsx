@@ -70,7 +70,9 @@ function HomeRedirect() {
       "admin",
       "trainer",
       "trainee",
-    ].includes(role)
+    ].includes(
+      role
+    )
   ) {
     clearAuthSession();
 
@@ -83,19 +85,15 @@ function HomeRedirect() {
   }
 
 
-  /*
-   * Trainer and Trainee must change the generated
-   * temporary password before accessing the system.
-   *
-   * Admin is NOT affected by this rule.
-   */
-
   if (
     [
       "trainer",
       "trainee",
-    ].includes(role) &&
-    user.mustChangePassword === true
+    ].includes(
+      role
+    ) &&
+    user.mustChangePassword ===
+    true
   ) {
     return (
       <Navigate
@@ -108,7 +106,11 @@ function HomeRedirect() {
 
   return (
     <Navigate
-      to={getDashboardPath(role)}
+      to={
+        getDashboardPath(
+          role
+        )
+      }
       replace
     />
   );
@@ -161,7 +163,7 @@ function App() {
 
 
       {/* ============================================
-              ADMIN - CREATE USER
+              ADMIN CREATE USER
           ============================================= */}
 
       <Route
@@ -179,7 +181,7 @@ function App() {
 
 
       {/* ============================================
-              ADMIN - MANAGE USERS
+              ADMIN MANAGE USERS
           ============================================= */}
 
       <Route
@@ -197,7 +199,7 @@ function App() {
 
 
       {/* ============================================
-              ADMIN - ROLES & PERMISSIONS
+              ADMIN ROLES
           ============================================= */}
 
       <Route
@@ -214,10 +216,6 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN - ROLE DETAILS
-          ============================================= */}
-
       <Route
         path="/admin/roles/:roleName"
         element={
@@ -231,10 +229,6 @@ function App() {
         }
       />
 
-
-      {/* ============================================
-              ADMIN - EDIT ROLE
-          ============================================= */}
 
       <Route
         path="/admin/roles/:roleName/edit"
@@ -251,7 +245,7 @@ function App() {
 
 
       {/* ============================================
-              ADMIN - AUDIT LOGS
+              ADMIN AUDIT LOGS
           ============================================= */}
 
       <Route
@@ -270,12 +264,6 @@ function App() {
 
       {/* ============================================
               TRAINING PROGRAMMES
-
-              Admin:
-              create/manage programmes.
-
-              Trainer:
-              access programmes allowed by their role.
           ============================================= */}
 
       <Route
@@ -295,10 +283,13 @@ function App() {
 
       {/* ============================================
               LEARNING SECTIONS
+
+              MongoDB programme ID is no longer shown
+              inside the browser URL.
           ============================================= */}
 
       <Route
-        path="/training-programmes/:programmeId/sections"
+        path="/training-programmes/sections"
         element={
           <ProtectedRoute
             allowedRoles={[
@@ -314,8 +305,6 @@ function App() {
 
       {/* ============================================
               TRAINING ASSIGNMENTS
-
-              Admin only.
           ============================================= */}
 
       <Route
@@ -409,7 +398,7 @@ function App() {
 
 
       {/* ============================================
-              TRAINEE - MY TRAINING
+              TRAINEE MY TRAINING
           ============================================= */}
 
       <Route
@@ -427,7 +416,7 @@ function App() {
 
 
       {/* ============================================
-              TRAINEE LEARNING PAGE
+              TRAINEE LEARNING
           ============================================= */}
 
       <Route
@@ -451,44 +440,78 @@ function App() {
       <Route
         path="/trainee/progress"
         element={
-          <ProtectedRoute allowedRoles={["trainee"]}>
-            <TraineeUtilityPage type="progress" />
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeUtilityPage
+              type="progress"
+            />
           </ProtectedRoute>
         }
       />
+
 
       <Route
         path="/trainee/scenarios"
         element={
-          <ProtectedRoute allowedRoles={["trainee"]}>
-            <TraineeUtilityPage type="scenarios" />
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeUtilityPage
+              type="scenarios"
+            />
           </ProtectedRoute>
         }
       />
+
 
       <Route
         path="/trainee/quizzes"
         element={
-          <ProtectedRoute allowedRoles={["trainee"]}>
-            <TraineeUtilityPage type="quizzes" />
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeUtilityPage
+              type="quizzes"
+            />
           </ProtectedRoute>
         }
       />
+
 
       <Route
         path="/trainee/notifications"
         element={
-          <ProtectedRoute allowedRoles={["trainee"]}>
-            <TraineeUtilityPage type="notifications" />
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeUtilityPage
+              type="notifications"
+            />
           </ProtectedRoute>
         }
       />
 
+
       <Route
         path="/trainee/help"
         element={
-          <ProtectedRoute allowedRoles={["trainee"]}>
-            <TraineeUtilityPage type="help" />
+          <ProtectedRoute
+            allowedRoles={[
+              "trainee",
+            ]}
+          >
+            <TraineeUtilityPage
+              type="help"
+            />
           </ProtectedRoute>
         }
       />
@@ -507,7 +530,7 @@ function App() {
 
 
       {/* ============================================
-              UNKNOWN URL
+              UNKNOWN ROUTE
           ============================================= */}
 
       <Route

@@ -258,7 +258,9 @@ function AdminStats({
                                     text-[#7c8da6]
                                 "
                             >
-                                Sprint 1
+
+
+
                             </span>
                         </div>
 
