@@ -268,14 +268,36 @@ function CreateUserForm() {
         setFormData(
             (
                 current
-            ) => ({
-                ...current,
+            ) => {
+                const alreadySelected =
+                    current
+                        .assignedTrainingSections
+                        .includes(
+                            sectionId
+                        );
 
-                assignedTrainingSections:
-                    [
-                        sectionId,
-                    ],
-            })
+                return {
+                    ...current,
+
+                    assignedTrainingSections:
+                        alreadySelected
+                            ? current
+                                .assignedTrainingSections
+                                .filter(
+                                    (
+                                        item
+                                    ) =>
+                                        item !==
+                                        sectionId
+                                )
+                            : [
+                                ...current
+                                    .assignedTrainingSections,
+
+                                sectionId,
+                            ],
+                };
+            }
         );
 
         setError("");
@@ -353,11 +375,11 @@ function CreateUserForm() {
                 "trainer" &&
                 formData
                     .assignedTrainingSections
-                    .length !==
+                    .length <
                 1
             ) {
                 setError(
-                    "Trainer must be assigned exactly one training module."
+                    "Trainer must be assigned at least one training module."
                 );
 
                 return;
@@ -1122,7 +1144,7 @@ function CreateUserForm() {
                                 >
                                     <RoleCard
                                         title="Trainer"
-                                        description="Manages and monitors an assigned training module."
+                                        description="Manages and monitors one or both assigned training modules."
                                         selected={
                                             formData.role ===
                                             "trainer"
@@ -1190,8 +1212,8 @@ function CreateUserForm() {
                                             text-[#64748b]
                                         "
                                         >
-                                            A Trainer must be assigned exactly
-                                            one module.
+                                            A Trainer must be assigned at least
+                                            one module. You can select one or both.
                                         </p>
 
 
