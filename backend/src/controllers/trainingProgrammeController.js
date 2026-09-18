@@ -19,10 +19,10 @@ const {
 // CONSTANTS
 // ======================================================
 
-const PROGRAMME_TYPES = [
-    "manual-handling",
-    "working-at-height",
-];
+const isValidProgrammeType = (value) =>
+    typeof value === "string" &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) &&
+    value.length <= 100;
 
 const PROGRAMME_STATUSES = [
     "draft",
@@ -350,7 +350,7 @@ const createTrainingProgramme = async (
         // ==================================================
 
         if (
-            !PROGRAMME_TYPES.includes(
+            !isValidProgrammeType(
                 programmeType
             )
         ) {
@@ -361,7 +361,7 @@ const createTrainingProgramme = async (
                         "INVALID_PROGRAMME_TYPE",
 
                     message:
-                        "Programme type must be manual-handling or working-at-height.",
+                        "Programme type is invalid.",
                 });
         }
 
@@ -726,7 +726,7 @@ const getTrainingProgrammes = async (
 
         if (requestedType) {
             if (
-                !PROGRAMME_TYPES.includes(
+                !isValidProgrammeType(
                     requestedType
                 )
             ) {
@@ -737,7 +737,7 @@ const getTrainingProgrammes = async (
                             "INVALID_PROGRAMME_TYPE",
 
                         message:
-                            "Programme type must be manual-handling or working-at-height.",
+                            "Programme type is invalid.",
                     });
             }
 
@@ -1113,7 +1113,7 @@ const updateTrainingProgramme = async (
         // ==================================================
 
         if (
-            !PROGRAMME_TYPES.includes(
+            !isValidProgrammeType(
                 nextProgrammeType
             )
         ) {
@@ -1124,7 +1124,7 @@ const updateTrainingProgramme = async (
                         "INVALID_PROGRAMME_TYPE",
 
                     message:
-                        "Programme type must be manual-handling or working-at-height.",
+                        "Programme type is invalid.",
                 });
         }
 

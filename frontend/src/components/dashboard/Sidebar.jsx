@@ -316,6 +316,12 @@ function Sidebar({
         },
 
         {
+            to: "/admin/panoramas",
+            label: "Panorama & Scenes",
+            icon: "training",
+        },
+
+        {
             to: "/admin/audit-logs",
             label: "Audit Logs",
             icon: "audit",
@@ -359,11 +365,6 @@ function Sidebar({
             icon: "progress",
         },
 
-        {
-            to: "/trainee/scenarios",
-            label: "Panoramic Scenarios",
-            icon: "scenario",
-        },
 
         {
             to: "/trainee/quizzes",

@@ -4,7 +4,7 @@ const trainingProgrammeSchema = new mongoose.Schema(
     {
         programmeType: {
             type: String,
-            enum: ["manual-handling", "working-at-height"],
+            trim: true,
             required: [true, "Programme type is required"],
             index: true,
         },

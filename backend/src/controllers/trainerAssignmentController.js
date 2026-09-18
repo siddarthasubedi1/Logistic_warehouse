@@ -2,10 +2,10 @@ const User =
     require("../models/User");
 
 
-const ALLOWED_TRAINING_SECTIONS = [
-    "manual-handling",
-    "working-at-height",
-];
+const isValidTrainingSection = (section) =>
+    typeof section === "string" &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(section) &&
+    section.length <= 100;
 
 
 // ======================================================
@@ -68,9 +68,7 @@ const updateTrainerTrainingSections =
             const invalidSection =
                 uniqueSections.find(
                     (section) =>
-                        !ALLOWED_TRAINING_SECTIONS.includes(
-                            section
-                        )
+                        !isValidTrainingSection(section)
                 );
 
 

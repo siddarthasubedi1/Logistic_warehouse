@@ -43,6 +43,13 @@ const myTrainingRoutes =
         "./src/routes/myTrainingRoutes"
     );
 
+const warehouseTourRoutes =
+    require(
+        "./src/routes/warehouseTourRoutes"
+    );
+
+const panoramaAdminRoutes = require("./src/routes/panoramaAdminRoutes");
+
 
 const app =
     express();
@@ -134,6 +141,8 @@ app.use(
 );
 
 
+app.use("/uploads/panoramas", express.static(path.join(__dirname, "uploads/panoramas"), { index: false, maxAge: "1d" }));
+
 // ======================================================
 // TEST ROUTE
 // ======================================================
@@ -205,6 +214,18 @@ app.use(
     "/api/my-training",
     myTrainingRoutes
 );
+
+
+// ======================================================
+// SPRINT 2 - 360 WAREHOUSE TOUR
+// ======================================================
+
+app.use(
+    "/api/warehouse-tour",
+    warehouseTourRoutes
+);
+
+app.use("/api/admin/panoramas", panoramaAdminRoutes);
 
 
 // ======================================================

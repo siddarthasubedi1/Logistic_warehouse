@@ -27,24 +27,7 @@ import {
     parseArrayResponse,
 } from "../../utils/training";
 
-
-const PROGRAMME_TYPES = [
-    {
-        value:
-            "manual-handling",
-
-        label:
-            "Manual Handling",
-    },
-
-    {
-        value:
-            "working-at-height",
-
-        label:
-            "Working at Height",
-    },
-];
+import { canonicalModuleKey, getActiveTrainingModules } from "../../utils/trainingModules";
 
 
 const PROGRAMME_STATUSES = [
@@ -81,7 +64,21 @@ const getInitialFormData =
 
 function TrainingProgrammeManager({
     role,
+    lockedProgrammeType = "",
 }) {
+    const PROGRAMME_TYPES = useMemo(
+        () => {
+            const allTypes = getActiveTrainingModules().map((module) => ({
+                value: module.id,
+                label: module.name,
+            }));
+
+            return lockedProgrammeType
+                ? allTypes.filter((type) => canonicalModuleKey(type.value) === canonicalModuleKey(lockedProgrammeType))
+                : allTypes;
+        },
+        [lockedProgrammeType]
+    );
     const navigate =
         useNavigate();
 
@@ -437,6 +434,13 @@ function TrainingProgrammeManager({
                         programme
                     ) => {
                         if (
+                            lockedProgrammeType &&
+                            canonicalModuleKey(programme.programmeType) !== canonicalModuleKey(lockedProgrammeType)
+                        ) {
+                            return false;
+                        }
+
+                        if (
                             typeFilter !==
                             "all" &&
                             programme.programmeType !==
@@ -500,6 +504,7 @@ function TrainingProgrammeManager({
                 searchTerm,
                 typeFilter,
                 statusFilter,
+                lockedProgrammeType,
             ]
         );
 
@@ -508,8 +513,12 @@ function TrainingProgrammeManager({
     // STATISTICS
     // ======================================================
 
+    const scopedProgrammes = lockedProgrammeType
+        ? programmes.filter((programme) => canonicalModuleKey(programme.programmeType) === canonicalModuleKey(lockedProgrammeType))
+        : programmes;
+
     const activeCount =
-        programmes.filter(
+        scopedProgrammes.filter(
             (
                 programme
             ) =>
@@ -519,7 +528,7 @@ function TrainingProgrammeManager({
 
 
     const draftCount =
-        programmes.filter(
+        scopedProgrammes.filter(
             (
                 programme
             ) =>
@@ -529,7 +538,7 @@ function TrainingProgrammeManager({
 
 
     const inactiveCount =
-        programmes.filter(
+        scopedProgrammes.filter(
             (
                 programme
             ) =>
@@ -556,9 +565,10 @@ function TrainingProgrammeManager({
 
     const resetForm =
         () => {
-            setFormData(
-                getInitialFormData()
-            );
+            setFormData({
+                ...getInitialFormData(),
+                programmeType: lockedProgrammeType || "",
+            });
 
             setEditingProgramme(
                 null
@@ -582,9 +592,10 @@ function TrainingProgrammeManager({
                 null
             );
 
-            setFormData(
-                getInitialFormData()
-            );
+            setFormData({
+                ...getInitialFormData(),
+                programmeType: lockedProgrammeType || "",
+            });
 
             setShowForm(
                 true
@@ -1177,7 +1188,7 @@ function TrainingProgrammeManager({
                 <ManagerStat
                     label="Total Programmes"
                     value={
-                        programmes.length
+                        scopedProgrammes.length
                     }
                 />
 

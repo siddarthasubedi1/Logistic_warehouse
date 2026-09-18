@@ -453,6 +453,7 @@ export function getDashboardPath(
     if (
         normalizedRole === "trainee"
     ) {
+        // Trainees enter directly into the 360° warehouse POV after login.
         return "/trainee";
     }
 

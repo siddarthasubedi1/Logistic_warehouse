@@ -4813,3 +4813,2647 @@ select:focus-visible {
     }
 
 }
+
+/* =========================================================
+   TRAINEE 360° TRAINING ENVIRONMENT
+   CORRECTED + FASTER MOVEMENT
+   ========================================================= */
+
+.trainee-360-page {
+    min-height: 100vh;
+    padding: 34px 38px 48px;
+    background: linear-gradient(180deg, #f8fafc 0%, #f5f7fb 100%);
+    color: #172033;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.trainee-360-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.trainee-360-header h1 {
+    margin: 3px 0 7px;
+    font-size: 32px;
+    line-height: 1.15;
+    color: #073763;
+}
+
+.trainee-360-header p {
+    margin: 0;
+    color: #64748b;
+}
+
+.trainee-360-kicker {
+    font-size: 12px !important;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #0b4f87 !important;
+}
+
+.trainee-360-back {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #073763;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* =========================================================
+   MODULE 360 VIEWPORT
+   ========================================================= */
+
+.trainee-360-viewport {
+    position: relative;
+    height: min(68vh, 680px);
+    min-height: 510px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #172033;
+    box-shadow: 0 18px 50px rgba(7, 55, 99, 0.18);
+
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+
+    /*
+    Prevent browser gestures from interfering
+    with panorama dragging.
+  */
+    overscroll-behavior: none;
+}
+
+.trainee-360-viewport:active {
+    cursor: grabbing;
+}
+
+/*
+   IMPORTANT FIX:
+
+   transition: transform .08s linear;
+
+   HAS BEEN REMOVED.
+
+   During pointer movement we want the image to follow
+   the mouse immediately.
+*/
+
+.trainee-360-panorama {
+    position: absolute;
+
+    /*
+    Extra horizontal image area gives the user
+    noticeably more room to pan.
+  */
+    inset: -10% -28%;
+
+    width: 156%;
+    height: 120%;
+
+    background-image: var(--panorama-image);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    transform:
+        translate3d(calc(var(--yaw) * 0.85),
+            0,
+            0) scale(var(--zoom));
+
+    transform-origin: center center;
+
+    /*
+    NO transition here.
+  */
+    transition: none;
+
+    will-change: transform;
+
+    pointer-events: none;
+
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/*
+   Secondary copy gives additional horizontal visual space.
+   This is still a panorama simulation when the source
+   image itself is not equirectangular.
+*/
+
+.trainee-360-panorama::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-image: var(--panorama-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    transform: translate3d(99%, 0, 0);
+}
+
+.trainee-360-shade {
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background: linear-gradient(180deg,
+            rgba(3, 23, 42, 0.42) 0%,
+            transparent 28%,
+            transparent 66%,
+            rgba(3, 23, 42, 0.55) 100%);
+}
+
+/* =========================================================
+   TITLE BADGE
+   ========================================================= */
+
+.trainee-360-title-badge {
+    position: absolute;
+    top: 22px;
+    left: 24px;
+
+    padding: 9px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+
+    background: rgba(7, 55, 99, 0.78);
+
+    backdrop-filter: blur(7px);
+
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+
+    z-index: 5;
+}
+
+.trainee-360-title-badge span {
+    margin-left: 8px;
+    color: #93c5fd;
+}
+
+/* =========================================================
+   MODULE HOTSPOTS
+   ========================================================= */
+
+.trainee-360-hotspot {
+    position: absolute;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    border: 0;
+    background: transparent;
+
+    color: #fff;
+
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+
+    cursor: pointer;
+
+    z-index: 7;
+
+    transition: transform 0.16s ease;
+}
+
+.trainee-360-hotspot:hover {
+    transform:
+        translate(-50%, -50%) scale(1.06);
+}
+
+.trainee-360-hotspot strong {
+    margin-top: 8px;
+
+    padding: 6px 10px;
+
+    border-radius: 7px;
+
+    background: rgba(7, 55, 99, 0.9);
+
+    font-size: 14px;
+
+    white-space: nowrap;
+}
+
+.trainee-360-hotspot small {
+    margin-top: 3px;
+
+    padding: 3px 7px;
+
+    border-radius: 5px;
+
+    background: rgba(15, 23, 42, 0.72);
+
+    font-size: 11px;
+
+    white-space: nowrap;
+}
+
+/* =========================================================
+   HOTSPOT PULSE
+   ========================================================= */
+
+.trainee-360-pulse {
+    position: relative;
+
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    border-radius: 50%;
+
+    background: rgba(85, 160, 255, 0.24);
+
+    border: 2px solid #fff;
+
+    box-shadow:
+        0 0 0 9px rgba(85, 160, 255, 0.16),
+        0 0 26px rgba(85, 160, 255, 0.8);
+
+    animation: training360Pulse 1.8s ease-out infinite;
+}
+
+.trainee-360-pulse span {
+    display: grid;
+    place-items: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background: #0b4f87;
+
+    font-size: 21px;
+    font-weight: 500;
+}
+
+.trainee-360-hotspot--height .trainee-360-pulse {
+    box-shadow:
+        0 0 0 9px rgba(245, 158, 11, 0.18),
+        0 0 26px rgba(245, 158, 11, 0.8);
+
+    background: rgba(245, 158, 11, 0.25);
+}
+
+.trainee-360-hotspot--height .trainee-360-pulse span {
+    background: #b45309;
+}
+
+@keyframes training360Pulse {
+    0% {
+        box-shadow:
+            0 0 0 0 rgba(85, 160, 255, 0.55),
+            0 0 24px rgba(85, 160, 255, 0.65);
+    }
+
+    70% {
+        box-shadow:
+            0 0 0 15px rgba(85, 160, 255, 0),
+            0 0 30px rgba(85, 160, 255, 0.75);
+    }
+
+    100% {
+        box-shadow:
+            0 0 0 0 rgba(85, 160, 255, 0),
+            0 0 24px rgba(85, 160, 255, 0.65);
+    }
+}
+
+/* =========================================================
+   VIEW CONTROLS
+   ========================================================= */
+
+.trainee-360-controls {
+    position: absolute;
+
+    right: 20px;
+    bottom: 20px;
+
+    display: flex;
+
+    gap: 6px;
+
+    padding: 6px;
+
+    border-radius: 10px;
+
+    background: rgba(7, 55, 99, 0.82);
+
+    backdrop-filter: blur(8px);
+
+    z-index: 20;
+}
+
+.trainee-360-controls button {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 7px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    font-size: 19px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.trainee-360-controls button:hover {
+    background: #1769aa;
+
+    transform: translateY(-2px);
+}
+
+.trainee-360-controls button:active {
+    transform: scale(0.94);
+}
+
+/* =========================================================
+   COMPASS
+   ========================================================= */
+
+.trainee-360-compass {
+    position: absolute;
+
+    left: 22px;
+    bottom: 20px;
+
+    color: #fff;
+
+    font-size: 22px;
+    font-weight: 800;
+
+    z-index: 6;
+
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.trainee-360-compass span {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 9px;
+
+    letter-spacing: 0.16em;
+
+    font-weight: 700;
+}
+
+/* =========================================================
+   HELP BOX
+   ========================================================= */
+
+.trainee-360-help {
+    position: absolute;
+
+    top: 22px;
+    right: 22px;
+
+    width: 280px;
+
+    padding: 16px 42px 16px 17px;
+
+    border: 1px solid rgba(255, 255, 255, 0.24);
+
+    border-radius: 11px;
+
+    background: rgba(15, 23, 42, 0.76);
+
+    backdrop-filter: blur(10px);
+
+    color: #fff;
+
+    z-index: 20;
+}
+
+.trainee-360-help strong {
+    font-size: 14px;
+}
+
+.trainee-360-help p {
+    margin: 5px 0 0;
+
+    color: #dbeafe;
+
+    font-size: 12px;
+
+    line-height: 1.45;
+}
+
+.trainee-360-help button {
+    position: absolute;
+
+    top: 7px;
+    right: 9px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #fff;
+
+    font-size: 21px;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   MODULE POPUP
+   ========================================================= */
+
+.trainee-360-modal-wrap {
+    position: absolute;
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    padding: 20px;
+
+    background: rgba(2, 6, 23, 0.45);
+
+    z-index: 50;
+}
+
+.trainee-360-modal {
+    position: relative;
+
+    width: min(440px, 100%);
+
+    padding: 27px;
+
+    border-radius: 16px;
+
+    background: #fff;
+
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+
+    color: #172033;
+}
+
+.trainee-360-modal h2 {
+    margin: 5px 0 8px;
+
+    color: #073763;
+
+    font-size: 25px;
+}
+
+.trainee-360-modal p {
+    line-height: 1.55;
+
+    color: #64748b;
+}
+
+.trainee-360-modal-icon {
+    display: inline-grid;
+    place-items: center;
+
+    width: 58px;
+    height: 58px;
+
+    margin-bottom: 14px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(135deg,
+            #073763,
+            #1769aa);
+
+    color: #fff;
+
+    font-weight: 800;
+}
+
+.trainee-360-modal-close {
+    position: absolute;
+
+    top: 12px;
+    right: 14px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #64748b;
+
+    font-size: 24px;
+
+    cursor: pointer;
+}
+
+.trainee-360-modal-actions {
+    display: flex;
+
+    gap: 9px;
+
+    margin-top: 20px;
+}
+
+.trainee-360-primary,
+.trainee-360-secondary {
+    padding: 11px 14px;
+
+    border-radius: 9px;
+
+    font-weight: 750;
+
+    cursor: pointer;
+}
+
+.trainee-360-primary {
+    border: 0;
+
+    background: linear-gradient(135deg,
+            #073763,
+            #1769aa);
+
+    color: #fff;
+}
+
+.trainee-360-secondary {
+    border: 1px solid #cbd5e1;
+
+    background: #fff;
+
+    color: #073763;
+}
+
+/* =========================================================
+   INFORMATION CARDS
+   ========================================================= */
+
+.trainee-360-info-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 14px;
+
+    margin-top: 18px;
+}
+
+.trainee-360-info-grid article {
+    display: flex;
+
+    gap: 13px;
+
+    padding: 17px;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 12px;
+
+    background: #fff;
+}
+
+.trainee-360-info-grid article>span {
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 36px;
+
+    height: 36px;
+
+    border-radius: 9px;
+
+    background: #eff6ff;
+
+    color: #0b4f87;
+
+    font-weight: 800;
+}
+
+.trainee-360-info-grid strong {
+    font-size: 14px;
+
+    color: #073763;
+}
+
+.trainee-360-info-grid p {
+    margin: 3px 0 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+/* =========================================================
+   SPRINT 2
+   ALL TRAINEE LEARNING STAYS IN 360
+   ========================================================= */
+
+.trainee-360-viewport--immersive {
+    height: min(76vh, 760px);
+
+    min-height: 600px;
+}
+
+.trainee-360-error {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 12px;
+
+    padding: 12px 15px;
+
+    border: 1px solid #fecaca;
+
+    border-radius: 10px;
+
+    background: #fff;
+
+    color: #b91c1c;
+
+    font-size: 13px;
+}
+
+.trainee-360-error button {
+    border: 0;
+
+    background: transparent;
+
+    color: #b91c1c;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+.trainee-360-scene-message {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    z-index: 25;
+
+    transform: translate(-50%, -50%);
+
+    padding: 16px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    border-radius: 12px;
+
+    background: rgba(7, 55, 99, 0.86);
+
+    color: #fff;
+
+    font-weight: 700;
+
+    backdrop-filter: blur(8px);
+}
+
+/* =========================================================
+   LEARNING PANEL
+   ========================================================= */
+
+.trainee-360-learning-wrap {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 60;
+
+    display: flex;
+
+    align-items: stretch;
+    justify-content: flex-end;
+
+    padding: 22px;
+
+    background: linear-gradient(90deg,
+            rgba(2, 6, 23, 0.18),
+            rgba(2, 6, 23, 0.62));
+}
+
+.trainee-360-learning-panel {
+    width: min(850px, 92%);
+
+    height: 100%;
+
+    overflow: auto;
+
+    border: 1px solid rgba(255, 255, 255, 0.45);
+
+    border-radius: 16px;
+
+    background: rgba(248, 250, 252, 0.97);
+
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+
+    backdrop-filter: blur(12px);
+}
+
+.trainee-360-learning-head {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 3;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid #dbe4ef;
+
+    background: rgba(255, 255, 255, 0.96);
+}
+
+.trainee-360-learning-head h2 {
+    margin: 2px 0 4px;
+
+    color: #073763;
+
+    font-size: 24px;
+}
+
+.trainee-360-learning-head p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+}
+
+.trainee-360-learning-head>button {
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    color: #52627a;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   SECTION TABS
+   ========================================================= */
+
+.trainee-360-section-tabs {
+    display: flex;
+
+    gap: 8px;
+
+    overflow-x: auto;
+
+    padding: 13px 18px;
+
+    border-bottom: 1px solid #e2e8f0;
+
+    background: #f8fafc;
+}
+
+.trainee-360-section-tabs button {
+    flex: 0 0 auto;
+
+    padding: 9px 12px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #52627a;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.trainee-360-section-tabs button.active {
+    border-color: #0b4f87;
+
+    background: #0b4f87;
+
+    color: #fff;
+}
+
+.trainee-360-learning-content {
+    padding: 18px;
+}
+
+/* =========================================================
+   LEARNING NAVIGATION
+   ========================================================= */
+
+.trainee-360-learning-nav {
+    position: sticky;
+
+    bottom: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 14px 18px;
+
+    border-top: 1px solid #dbe4ef;
+
+    background: rgba(255, 255, 255, 0.97);
+}
+
+.trainee-360-learning-nav button {
+    min-height: 40px;
+
+    padding: 0 17px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    color: #52627a;
+
+    font-size: 11px;
+
+    font-weight: 750;
+
+    cursor: pointer;
+}
+
+.trainee-360-learning-nav button.primary {
+    border: 0;
+
+    background: linear-gradient(135deg,
+            #073763,
+            #1769aa);
+
+    color: #fff;
+}
+
+.trainee-360-learning-nav button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.4;
+}
+
+.trainee-360-learning-nav span {
+    color: #64748b;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+.trainee-360-empty {
+    margin: 22px;
+
+    padding: 30px;
+
+    border: 1px dashed #cbd5e1;
+
+    border-radius: 12px;
+
+    background: #fff;
+
+    text-align: center;
+
+    color: #52627a;
+}
+
+.trainee-360-empty strong {
+    color: #073763;
+}
+
+/* =========================================================
+   MAIN TRAINEE 360 DASHBOARD
+   ========================================================= */
+
+.trainee-dashboard-360-home {
+    padding: 0 !important;
+
+    max-width: none !important;
+}
+
+.trainee-dashboard-360-home .trainee-home-360-intro,
+.trainee-dashboard-360-home .trainee-home-module-summary {
+    display: none;
+}
+
+/*
+   Full dashboard scene.
+*/
+
+.trainee-home-360-viewport {
+    position: relative;
+
+    height: calc(100vh - 74px);
+
+    min-height: 650px;
+
+    overflow: hidden;
+
+    border-radius: 0;
+
+    background: #172033;
+
+    box-shadow: none;
+
+    cursor: grab;
+
+    touch-action: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    overscroll-behavior: none;
+}
+
+.trainee-home-360-viewport:active {
+    cursor: grabbing;
+}
+
+/*
+   SECOND MAJOR SPEED FIX.
+
+   Your old version had:
+
+   transition: transform .08s linear;
+
+   It is intentionally removed.
+*/
+
+.trainee-home-360-panorama {
+    position: absolute;
+
+    inset: -10% -28%;
+
+    width: 156%;
+    height: 120%;
+
+    background-image: var(--home-panorama-image);
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    transform:
+        translate3d(calc(var(--home-yaw) * 0.85),
+            0,
+            0) scale(var(--home-zoom));
+
+    transform-origin: center center;
+
+    transition: none;
+
+    will-change: transform;
+
+    pointer-events: none;
+
+    backface-visibility: hidden;
+}
+
+.trainee-home-360-panorama::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image: var(--home-panorama-image);
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    transform: translate3d(99%, 0, 0);
+}
+
+.trainee-home-360-shade {
+    position: absolute;
+
+    inset: 0;
+
+    background: linear-gradient(180deg,
+            rgba(3, 23, 42, 0.38),
+            transparent 32%,
+            transparent 63%,
+            rgba(3, 23, 42, 0.58));
+
+    pointer-events: none;
+}
+
+.trainee-home-360-badge {
+    position: absolute;
+
+    top: 22px;
+    left: 24px;
+
+    padding: 10px 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+
+    border-radius: 8px;
+
+    background: rgba(7, 55, 99, 0.82);
+
+    color: #fff;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    backdrop-filter: blur(7px);
+
+    z-index: 6;
+}
+
+.trainee-home-360-badge span {
+    margin-left: 8px;
+
+    color: #93c5fd;
+}
+
+.trainee-home-360-guide {
+    position: absolute;
+
+    left: 24px;
+    bottom: 20px;
+
+    color: #fff;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    text-shadow: 0 2px 8px #000;
+
+    z-index: 6;
+}
+
+/* =========================================================
+   DASHBOARD MODULE HOTSPOTS
+   ========================================================= */
+
+.trainee-home-module-hotspot {
+    position: absolute;
+
+    z-index: 10;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #fff;
+
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+
+    cursor: pointer;
+
+    transition: transform 0.16s ease;
+}
+
+.trainee-home-module-hotspot:hover {
+    transform:
+        translate(-50%, -50%) scale(1.07);
+}
+
+.trainee-home-hotspot-pulse {
+    display: grid;
+
+    place-items: center;
+
+    width: 52px;
+    height: 52px;
+
+    border: 2px solid #fff;
+
+    border-radius: 50%;
+
+    background: #0b4f87;
+
+    box-shadow:
+        0 0 0 9px rgba(85, 160, 255, 0.18),
+        0 0 28px rgba(85, 160, 255, 0.85);
+
+    font-size: 23px;
+
+    animation: training360Pulse 1.8s ease-out infinite;
+}
+
+.trainee-home-module-hotspot--working-at-height .trainee-home-hotspot-pulse {
+    background: #b45309;
+
+    box-shadow:
+        0 0 0 9px rgba(245, 158, 11, 0.18),
+        0 0 28px rgba(245, 158, 11, 0.85);
+}
+
+.trainee-home-module-hotspot strong {
+    margin-top: 9px;
+
+    padding: 7px 11px;
+
+    border-radius: 7px;
+
+    background: rgba(7, 55, 99, 0.9);
+
+    white-space: nowrap;
+
+    font-size: 14px;
+}
+
+.trainee-home-module-hotspot small {
+    margin-top: 3px;
+
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    background: rgba(15, 23, 42, 0.75);
+
+    white-space: nowrap;
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   DASHBOARD CONTROLS
+   ========================================================= */
+
+.trainee-home-360-controls {
+    position: absolute;
+
+    right: 20px;
+    bottom: 18px;
+
+    z-index: 20;
+
+    display: flex;
+
+    gap: 6px;
+
+    padding: 6px;
+
+    border-radius: 10px;
+
+    background: rgba(7, 55, 99, 0.82);
+
+    backdrop-filter: blur(8px);
+}
+
+.trainee-home-360-controls button {
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 7px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    font-size: 19px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.trainee-home-360-controls button:hover {
+    background: #1769aa;
+
+    transform: translateY(-2px);
+}
+
+.trainee-home-360-controls button:active {
+    transform: scale(0.94);
+}
+
+/* =========================================================
+   OPTIONAL MODULE SUMMARY
+   ========================================================= */
+
+.trainee-home-module-summary {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-top: 18px;
+}
+
+.trainee-home-module-summary article {
+    display: flex;
+
+    overflow: hidden;
+
+    border: 1px solid #dbe4ef;
+
+    border-radius: 13px;
+
+    background: #fff;
+}
+
+.trainee-home-module-summary img {
+    width: 145px;
+
+    object-fit: cover;
+}
+
+.trainee-home-module-summary article>div {
+    padding: 17px;
+}
+
+.trainee-home-module-summary span {
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    color: #0b4f87;
+}
+
+.trainee-home-module-summary h3 {
+    margin: 5px 0;
+
+    color: #073763;
+}
+
+.trainee-home-module-summary p {
+    margin: 0 0 13px;
+
+    color: #64748b;
+
+    font-size: 12px;
+
+    line-height: 1.45;
+}
+
+.trainee-home-module-summary button {
+    border: 0;
+
+    border-radius: 8px;
+
+    background: linear-gradient(135deg,
+            #073763,
+            #1769aa);
+
+    padding: 9px 12px;
+
+    color: #fff;
+
+    font-size: 11px;
+
+    font-weight: 750;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   FULL-SCREEN MODULE TRAINING
+   ========================================================= */
+
+.trainee-360-page--immersive {
+    padding: 0 !important;
+
+    max-width: none !important;
+}
+
+.trainee-360-header--compact {
+    position: absolute;
+
+    z-index: 40;
+
+    top: 18px;
+    left: 22px;
+    right: 22px;
+
+    margin: 0;
+
+    padding: 12px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 12px;
+
+    background: rgba(7, 55, 99, 0.78);
+
+    backdrop-filter: blur(10px);
+
+    color: #fff;
+}
+
+.trainee-360-header--compact h1,
+.trainee-360-header--compact .trainee-360-kicker {
+    color: #fff !important;
+}
+
+.trainee-360-page--immersive>.trainee-360-viewport {
+    height: 100vh;
+
+    min-height: 700px;
+
+    border-radius: 0;
+}
+
+/* =========================================================
+   ACTION DOCK
+   LEARNING / QUIZ / PROGRESS
+   ========================================================= */
+
+.trainee-360-action-dock {
+    position: absolute;
+
+    z-index: 30;
+
+    left: 50%;
+    bottom: 24px;
+
+    display: flex;
+
+    gap: 9px;
+
+    transform: translateX(-50%);
+
+    padding: 8px;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+
+    border-radius: 14px;
+
+    background: rgba(7, 55, 99, 0.88);
+
+    backdrop-filter: blur(10px);
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.24);
+}
+
+.trainee-360-action-dock button {
+    display: grid;
+
+    grid-template-columns:
+        42px minmax(120px, 1fr);
+
+    grid-template-rows: auto auto;
+
+    column-gap: 10px;
+
+    min-width: 190px;
+
+    padding: 10px 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.trainee-360-action-dock button:hover {
+    background: rgba(85, 160, 255, 0.24);
+
+    transform: translateY(-3px);
+}
+
+.trainee-360-action-dock button>span {
+    grid-row: 1 / 3;
+
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    color: #073763;
+
+    font-weight: 900;
+}
+
+.trainee-360-action-dock strong {
+    font-size: 12px;
+}
+
+.trainee-360-action-dock small {
+    color: #cbd5e1;
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+
+.trainee-360-quiz-list {
+    display: grid;
+
+    gap: 14px;
+
+    padding: 20px;
+}
+
+.trainee-360-quiz-list article {
+    padding: 17px;
+
+    border: 1px solid #dbe4ef;
+
+    border-radius: 12px;
+
+    background: #fff;
+}
+
+.trainee-360-quiz-list h3 {
+    margin: 0 0 12px;
+
+    color: #073763;
+
+    font-size: 15px;
+}
+
+.trainee-360-quiz-list label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin: 7px 0;
+
+    padding: 9px 10px;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 8px;
+
+    color: #52627a;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.trainee-360-quiz-list label:hover {
+    border-color: #93c5fd;
+
+    background: #eff6ff;
+}
+
+.trainee-360-quiz-score {
+    color: #073763;
+}
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.trainee-360-progress-content {
+    display: grid;
+
+    grid-template-columns: 180px 1fr;
+
+    gap: 28px;
+
+    align-items: center;
+
+    padding: 42px;
+}
+
+.trainee-360-progress-ring {
+    display: grid;
+
+    place-items: center;
+
+    width: 160px;
+    height: 160px;
+
+    border: 14px solid #dbeafe;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        inset 0 0 0 5px #0b4f87;
+}
+
+.trainee-360-progress-ring strong {
+    font-size: 34px;
+
+    color: #073763;
+}
+
+.trainee-360-progress-ring span {
+    margin-top: -30px;
+
+    color: #64748b;
+
+    font-size: 11px;
+}
+
+.trainee-360-progress-content h3 {
+    text-transform: capitalize;
+
+    color: #073763;
+}
+
+.trainee-360-progress-content p {
+    color: #64748b;
+}
+
+.trainee-360-progress-bar {
+    height: 10px;
+
+    margin: 18px 0;
+
+    border-radius: 20px;
+
+    background: #e2e8f0;
+
+    overflow: hidden;
+}
+
+.trainee-360-progress-bar span {
+    display: block;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: linear-gradient(90deg,
+            #073763,
+            #1769aa);
+
+    transition: width 0.25s ease;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .trainee-360-page {
+        padding: 22px 16px 36px;
+    }
+
+    .trainee-360-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .trainee-360-header h1 {
+        font-size: 26px;
+    }
+
+    .trainee-360-viewport {
+        height: 65vh;
+
+        min-height: 470px;
+    }
+
+    .trainee-360-help {
+        width: 230px;
+    }
+
+    .trainee-360-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trainee-360-hotspot small {
+        display: none;
+    }
+
+    .trainee-home-module-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .trainee-home-360-viewport {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 800px) {
+    .trainee-360-action-dock {
+        width: calc(100% - 20px);
+
+        overflow-x: auto;
+
+        justify-content: flex-start;
+    }
+
+    .trainee-360-action-dock button {
+        min-width: 165px;
+    }
+
+    .trainee-360-progress-content {
+        grid-template-columns: 1fr;
+
+        justify-items: center;
+
+        padding: 24px;
+    }
+
+    .trainee-360-header--compact {
+        left: 10px;
+        right: 10px;
+    }
+
+    .trainee-360-header--compact h1 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 760px) {
+    .trainee-360-learning-wrap {
+        padding: 10px;
+    }
+
+    .trainee-360-learning-panel {
+        width: 100%;
+    }
+
+    .trainee-360-learning-head h2 {
+        font-size: 19px;
+    }
+
+    .trainee-360-learning-nav span {
+        display: none;
+    }
+
+    .trainee-360-viewport--immersive {
+        min-height: 570px;
+    }
+}
+
+@media (max-width: 560px) {
+    .trainee-home-module-summary article {
+        flex-direction: column;
+    }
+
+    .trainee-home-module-summary img {
+        width: 100%;
+        height: 150px;
+    }
+
+    .trainee-home-module-hotspot small {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .trainee-360-help {
+        display: none;
+    }
+
+    .trainee-360-controls {
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .trainee-360-compass {
+        left: 12px;
+        bottom: 12px;
+    }
+
+    .trainee-360-hotspot strong {
+        font-size: 12px;
+    }
+
+    .trainee-360-modal-actions {
+        flex-direction: column;
+    }
+}
+
+/* =========================================================
+   MODERN MODULE 360 TRAINING — Sprint 2
+========================================================= */
+.module360 {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    background: #071827;
+    color: #fff;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+}
+
+.module360:fullscreen {
+    width: 100vw;
+    height: 100vh
+}
+
+.module360__scene {
+    position: absolute;
+    inset: -8% -18%;
+    background-image: var(--module-image);
+    background-repeat: no-repeat;
+    background-size: var(--view-zoom) auto;
+    background-position: var(--view-x) var(--view-y);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    will-change: background-position, background-size;
+    transition: none
+}
+
+.module360__scene:active {
+    cursor: grabbing
+}
+
+.module360__shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(3, 18, 32, .58) 0%, rgba(3, 18, 32, .05) 34%, rgba(3, 18, 32, .12) 62%, rgba(3, 18, 32, .82) 100%)
+}
+
+.module360__header {
+    position: absolute;
+    z-index: 20;
+    top: 22px;
+    left: 26px;
+    right: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    pointer-events: none
+}
+
+.module360__header button,
+.module360__moduleTitle {
+    pointer-events: auto
+}
+
+.module360__back,
+.module360__fullscreen {
+    border: 1px solid rgba(255, 255, 255, .28);
+    background: rgba(7, 55, 99, .92);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: transform .15s ease, background .15s ease
+}
+
+.module360__back:hover,
+.module360__fullscreen:hover {
+    transform: translateY(-2px);
+    background: #0b4f87
+}
+
+.module360__moduleTitle {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 11px 18px;
+    border-radius: 13px;
+    background: rgba(5, 39, 68, .9);
+    border: 1px solid rgba(255, 255, 255, .18);
+    box-shadow: 0 14px 35px rgba(0, 0, 0, .2);
+    backdrop-filter: blur(13px)
+}
+
+.module360__moduleIcon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 25px
+}
+
+.module360__moduleTitle span {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    color: #9bcfff
+}
+
+.module360__moduleTitle h1 {
+    margin: 2px 0 0;
+    font-size: 21px;
+    line-height: 1.1
+}
+
+.module360__moduleTitle p {
+    margin: 4px 0 0;
+    color: #dcecff;
+    font-size: 11px
+}
+
+.module360__welcome {
+    position: absolute;
+    z-index: 10;
+    left: 30px;
+    top: 145px;
+    width: min(380px, calc(100vw - 60px));
+    padding: 22px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(7, 55, 99, .94), rgba(11, 79, 135, .88));
+    border: 1px solid rgba(255, 255, 255, .22);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .28);
+    backdrop-filter: blur(14px)
+}
+
+.module360__eyebrow {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    color: #8ec7ff
+}
+
+.module360__welcome h2 {
+    margin: 8px 0;
+    font-size: 28px
+}
+
+.module360__welcome>p {
+    margin: 0;
+    color: #e1efff;
+    font-size: 13px;
+    line-height: 1.65
+}
+
+.module360__welcomeProgress {
+    margin-top: 18px
+}
+
+.module360__welcomeProgress>div:first-child {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between
+}
+
+.module360__welcomeProgress strong {
+    font-size: 24px
+}
+
+.module360__welcomeProgress span {
+    font-size: 11px;
+    color: #d7eaff
+}
+
+.module360__miniTrack {
+    height: 7px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .2)
+}
+
+.module360__miniTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #fff;
+    transition: width .3s ease
+}
+
+.module360__hotspot {
+    position: absolute;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8px 13px 8px 8px;
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 14px;
+    background: rgba(5, 40, 70, .91);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .32);
+    backdrop-filter: blur(10px);
+    transition: transform .18s ease, background .18s ease
+}
+
+.module360__hotspot:hover {
+    transform: translateY(-5px) scale(1.03);
+    background: rgba(11, 79, 135, .97)
+}
+
+.module360__hotspot--learning {
+    left: 47%;
+    top: 48%
+}
+
+.module360__hotspot--quiz {
+    left: 69%;
+    top: 61%
+}
+
+.module360__hotspot--progress {
+    left: 31%;
+    top: 68%
+}
+
+.module360__hotspotIcon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border-radius: 50%;
+    background: #fff;
+    color: #073763;
+    font-size: 18px;
+    font-weight: 900
+}
+
+.module360__hotspotText {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start
+}
+
+.module360__hotspotText small {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: #8dc7ff;
+    font-weight: 800
+}
+
+.module360__hotspotText strong {
+    margin-top: 2px;
+    font-size: 13px
+}
+
+.module360__hotspotText em {
+    margin-top: 2px;
+    font-size: 9px;
+    color: #dbeeff;
+    font-style: normal
+}
+
+.module360__pulse {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    left: 2px;
+    border: 2px solid rgba(85, 160, 255, .75);
+    border-radius: 50%;
+    animation: module360Pulse 1.8s infinite
+}
+
+@keyframes module360Pulse {
+    0% {
+        transform: scale(.8);
+        opacity: 1
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0
+    }
+}
+
+.module360__hint {
+    position: absolute;
+    z-index: 10;
+    left: 28px;
+    bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    border-radius: 9px;
+    background: rgba(3, 28, 50, .76);
+    backdrop-filter: blur(8px)
+}
+
+.module360__hint strong {
+    font-size: 11px
+}
+
+.module360__hint span {
+    margin-top: 2px;
+    font-size: 9px;
+    color: #d6eaff
+}
+
+.module360__controls {
+    position: absolute;
+    z-index: 20;
+    right: 26px;
+    bottom: 24px;
+    display: flex;
+    gap: 7px;
+    padding: 7px;
+    border-radius: 12px;
+    background: rgba(7, 55, 99, .92);
+    border: 1px solid rgba(255, 255, 255, .2);
+    backdrop-filter: blur(10px)
+}
+
+.module360__controls button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .06);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background .15s ease, transform .15s ease
+}
+
+.module360__controls button:hover {
+    background: #1769aa;
+    transform: translateY(-2px)
+}
+
+.module360__overlay {
+    position: absolute;
+    z-index: 100;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    background: rgba(3, 17, 29, .68);
+    backdrop-filter: blur(6px)
+}
+
+.module360__learningPanel,
+.module360__quizPanel,
+.module360__progressPanel {
+    width: min(1050px, 94vw);
+    max-height: 88vh;
+    overflow: auto;
+    border-radius: 18px;
+    background: #fff;
+    color: #172033;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .4);
+    border: 1px solid #cbd5e1
+}
+
+.module360__quizPanel,
+.module360__progressPanel {
+    width: min(820px, 94vw);
+    padding-bottom: 28px
+}
+
+.module360__panelHeader {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    color: #fff;
+    background: linear-gradient(110deg, #073763, #1769aa)
+}
+
+.module360__panelHeader span {
+    font-size: 9px;
+    letter-spacing: 1.4px;
+    font-weight: 900;
+    color: #a9d4ff
+}
+
+.module360__panelHeader h2 {
+    margin: 4px 0 0;
+    font-size: 22px
+}
+
+.module360__close {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer
+}
+
+.module360__learningLayout {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    min-height: 510px
+}
+
+.module360__sections {
+    padding: 20px 15px;
+    background: #f5f7fb;
+    border-right: 1px solid #dbe3ec
+}
+
+.module360__sections h3 {
+    margin: 0 8px 15px;
+    font-size: 13px
+}
+
+.module360__sections button {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 11px;
+    margin-bottom: 7px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer
+}
+
+.module360__sections button:hover {
+    background: #eaf3ff
+}
+
+.module360__sections button.active {
+    border-color: #a9cdf3;
+    background: #e6f2ff
+}
+
+.module360__sections button>span {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    background: #0b4f87;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800
+}
+
+.module360__sections button div {
+    display: flex;
+    flex-direction: column
+}
+
+.module360__sections strong {
+    font-size: 11px
+}
+
+.module360__sections small {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 9px
+}
+
+.module360__lesson {
+    padding: 35px
+}
+
+.module360__lessonNumber {
+    color: #0b4f87;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.3px
+}
+
+.module360__lesson>h2 {
+    margin: 9px 0 18px;
+    font-size: 27px
+}
+
+.module360__lesson>p {
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.8
+}
+
+.module360__safetyBox {
+    display: flex;
+    gap: 13px;
+    margin-top: 25px;
+    padding: 17px;
+    border: 1px solid #bfdbfe;
+    border-radius: 11px;
+    background: #eff6ff
+}
+
+.module360__safetyBox>span {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+    background: #0b4f87;
+    color: #fff;
+    font-weight: 900
+}
+
+.module360__safetyBox strong {
+    font-size: 12px
+}
+
+.module360__safetyBox p {
+    margin: 5px 0 0;
+    color: #475569;
+    font-size: 11px;
+    line-height: 1.6
+}
+
+.module360__lessonProgress {
+    margin-top: 25px
+}
+
+.module360__lessonProgress>span {
+    font-size: 11px;
+    color: #64748b
+}
+
+.module360__lessonProgress>strong {
+    float: right;
+    color: #073763;
+    font-size: 12px
+}
+
+.module360__lessonProgress>div {
+    height: 7px;
+    margin-top: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0
+}
+
+.module360__lessonProgress>div span {
+    display: block;
+    height: 100%;
+    background: #0b4f87;
+    border-radius: inherit;
+    transition: width .25s ease
+}
+
+.module360__lessonFooter {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 35px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0
+}
+
+.module360 .primary,
+.module360 .secondary {
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer
+}
+
+.module360 .primary {
+    border: 1px solid #0b4f87;
+    background: #0b4f87;
+    color: #fff
+}
+
+.module360 .secondary {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #172033
+}
+
+.module360 .secondary:disabled {
+    opacity: .4;
+    cursor: not-allowed
+}
+
+.module360__quizIntro {
+    margin: 22px 25px 0;
+    color: #64748b;
+    font-size: 12px
+}
+
+.module360__questions {
+    padding: 8px 25px 20px
+}
+
+.module360__question {
+    padding: 20px 0;
+    border-bottom: 1px solid #e2e8f0
+}
+
+.module360__question>span {
+    color: #0b4f87;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px
+}
+
+.module360__question h3 {
+    margin: 7px 0 13px;
+    font-size: 15px
+}
+
+.module360__answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px
+}
+
+.module360__answers button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #172033;
+    text-align: left;
+    cursor: pointer
+}
+
+.module360__answers button:hover {
+    background: #f5f9ff
+}
+
+.module360__answers button.selected {
+    border-color: #0b4f87;
+    background: #eaf4ff
+}
+
+.module360__answers button span {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    font-size: 10px;
+    font-weight: 800
+}
+
+.module360__answers button.selected span {
+    background: #0b4f87;
+    color: #fff
+}
+
+.module360__submitQuiz {
+    display: block;
+    margin: 0 25px 5px auto;
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 8px;
+    background: #0b4f87;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer
+}
+
+.module360__submitQuiz:disabled {
+    opacity: .45;
+    cursor: not-allowed
+}
+
+.module360__quizResult {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 45px 30px;
+    text-align: center
+}
+
+.module360__scoreCircle {
+    display: grid;
+    place-items: center;
+    width: 125px;
+    height: 125px;
+    border: 10px solid #dbeafe;
+    border-top-color: #0b4f87;
+    border-radius: 50%
+}
+
+.module360__scoreCircle strong {
+    font-size: 27px;
+    color: #073763
+}
+
+.module360__scoreCircle span {
+    margin-top: -25px;
+    color: #64748b;
+    font-size: 10px
+}
+
+.module360__quizResult h2 {
+    margin: 23px 0 8px
+}
+
+.module360__quizResult p {
+    color: #64748b
+}
+
+.module360__resultActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px
+}
+
+.module360__loading {
+    padding: 70px;
+    text-align: center;
+    color: #64748b
+}
+
+.module360__bigProgress {
+    padding: 35px 30px 20px
+}
+
+.module360__bigProgress>div:first-child {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between
+}
+
+.module360__bigProgress strong {
+    color: #073763;
+    font-size: 42px
+}
+
+.module360__bigProgress span {
+    color: #64748b;
+    font-size: 12px
+}
+
+.module360__bigTrack {
+    height: 11px;
+    margin-top: 13px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0
+}
+
+.module360__bigTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #073763, #1769aa)
+}
+
+.module360__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 10px 30px 30px
+}
+
+.module360__stats article {
+    padding: 18px;
+    border: 1px solid #dbe3ec;
+    border-radius: 11px;
+    background: #f8fafc
+}
+
+.module360__stats span {
+    display: block;
+    color: #64748b;
+    font-size: 10px
+}
+
+.module360__stats strong {
+    display: block;
+    margin-top: 6px;
+    color: #073763;
+    font-size: 17px
+}
+
+.module360__progressActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 30px
+}
+
+@media(max-width:900px) {
+    .module360 {
+        height: 100vh
+    }
+
+    .module360__header {
+        left: 15px;
+        right: 15px
+    }
+
+    .module360__moduleTitle p {
+        display: none
+    }
+
+    .module360__welcome {
+        left: 15px;
+        width: 330px
+    }
+
+    .module360__learningLayout {
+        grid-template-columns: 1fr
+    }
+
+    .module360__sections {
+        display: none
+    }
+
+    .module360__answers {
+        grid-template-columns: 1fr
+    }
+
+    .module360__stats {
+        grid-template-columns: 1fr
+    }
+
+    .module360__hotspot--learning {
+        left: 45%
+    }
+
+    .module360__hotspot--quiz {
+        left: 58%;
+        top: 63%
+    }
+
+    .module360__hotspot--progress {
+        left: 25%;
+        top: 73%
+    }
+}

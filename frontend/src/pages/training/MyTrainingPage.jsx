@@ -1,487 +1,145 @@
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
-
-import {
-    useNavigate,
-} from "react-router-dom";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-import AssignedProgrammeCard from "../../components/training/AssignedProgrammeCard";
-
-import FeedbackAlert from "../../components/ui/FeedbackAlert";
-import LoadingCard from "../../components/ui/LoadingCard";
-import EmptyState from "../../components/ui/EmptyState";
-
+import { PanoramaCanvas } from "../trainee/Trainee360Environment";
 import api from "../../services/api";
-
-import {
-    getApiErrorMessage,
-    getAssignmentProgramme,
-    parseArrayResponse,
-} from "../../utils/training";
+import { getApiErrorMessage, getAssignmentProgramme, parseArrayResponse } from "../../utils/training";
+import "../trainee/Training360Flow.css";
 
 
-function MyTrainingPage() {
-    const navigate =
-        useNavigate();
+export default function MyTrainingPage() {
+    const navigate = useNavigate();
+    const [assignments, setAssignments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [yaw, setYaw] = useState(0);
+    const [pitch, setPitch] = useState(0);
+    const [fov, setFov] = useState(82);
+    const [imageFailed, setImageFailed] = useState(false);
 
+    const load = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const response = await api.get("/my-training");
+            setAssignments(parseArrayResponse(response.data, "assignments"));
+        } catch (err) {
+            setError(getApiErrorMessage(err, "Unable to load assigned training."));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    const [
-        assignments,
-        setAssignments,
-    ] = useState([]);
+    useEffect(() => { load(); }, [load]);
 
-
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
-
-
-    const [
-        errorMessage,
-        setErrorMessage,
-    ] = useState("");
-
-
-    const [
-        typeFilter,
-        setTypeFilter,
-    ] = useState("all");
-
-
-    /* =====================================================
-       LOAD ASSIGNED TRAINING
-    ===================================================== */
-
-    const loadTraining =
-        useCallback(
-            async () => {
-                try {
-                    setLoading(
-                        true
-                    );
-
-
-                    setErrorMessage(
-                        ""
-                    );
-
-
-                    const response =
-                        await api.get(
-                            "/my-training"
-                        );
-
-
-                    setAssignments(
-                        parseArrayResponse(
-                            response.data,
-                            "assignments"
-                        )
-                    );
-
-                } catch (
-                error
-                ) {
-                    console.error(
-                        "Load my training error:",
-                        error
-                    );
-
-
-                    setErrorMessage(
-                        getApiErrorMessage(
-                            error,
-                            "Unable to load your assigned training."
-                        )
-                    );
-
-                } finally {
-                    setLoading(
-                        false
-                    );
-                }
-            },
-            []
-        );
-
-
-    useEffect(
-        () => {
-            loadTraining();
-        },
-        [
-            loadTraining,
-        ]
+    const modules = useMemo(
+        () => assignments
+            .map((assignment) => ({ assignment, programme: getAssignmentProgramme(assignment) }))
+            .filter((item) => item.programme),
+        [assignments]
     );
 
+    const groupedModules = useMemo(() => {
+        const groups = new Map();
+        modules.forEach((item) => {
+            const key = String(item.programme.programmeType || "other").trim().toLowerCase();
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(item);
+        });
+        return Array.from(groups.entries()).map(([key, programmes]) => ({ key, programmes }));
+    }, [modules]);
 
-    /* =====================================================
-       VALID ASSIGNMENTS
-    ===================================================== */
+    const moduleMeta = {
+        "manual-handling": { title: "Manual Handling", description: "Safe lifting and carrying techniques", thumb: "/panoramas/training-reference-manual.jpg", pin: "◆", className: "training360-flow__module--manual" },
+        "working-at-height": { title: "Working at Height", description: "Safety when working at height", thumb: "/panoramas/training-reference-inspection.jpg", pin: "⌂", className: "training360-flow__module--height" },
+        "cyber-awareness": { title: "Cyber Awareness", description: "Cyber safety, phishing and secure working", thumb: "/panoramas/training-reference-forklift.jpg", pin: "●", className: "" },
+    };
 
-    const availableAssignments =
-        useMemo(
-            () =>
-                assignments.filter(
-                    (
-                        assignment
-                    ) =>
-                        Boolean(
-                            getAssignmentProgramme(
-                                assignment
-                            )
-                        )
-                ),
-            [
-                assignments,
-            ]
-        );
-
-
-    /* =====================================================
-       FILTER
-    ===================================================== */
-
-    const filteredAssignments =
-        useMemo(
-            () => {
-                if (
-                    typeFilter ===
-                    "all"
-                ) {
-                    return availableAssignments;
-                }
-
-
-                return availableAssignments.filter(
-                    (
-                        assignment
-                    ) => {
-                        const programme =
-                            getAssignmentProgramme(
-                                assignment
-                            );
-
-
-                        return (
-                            programme
-                                ?.programmeType ===
-                            typeFilter
-                        );
-                    }
-                );
-            },
-            [
-                availableAssignments,
-                typeFilter,
-            ]
-        );
-
-
-    /* =====================================================
-       OPEN TRAINING
-    ===================================================== */
-
-    const handleStartTraining =
-        (
-            assignment
-        ) => {
-            const programme =
-                getAssignmentProgramme(
-                    assignment
-                );
-
-
-            if (
-                !programme?._id
-            ) {
-                setErrorMessage(
-                    "Training programme information is missing."
-                );
-
-                return;
-            }
-
-
-            navigate(
-                `/my-training/${programme._id}`
-            );
-        };
-
-
-    /* =====================================================
-       LOADING
-    ===================================================== */
-
-    if (
-        loading
-    ) {
-        return (
-            <DashboardLayout
-                role="trainee"
-                title="My Training"
-                subtitle="View workplace safety programmes assigned to your account."
-            >
-                <div
-                    className="
-                        app-page
-                    "
-                >
-                    <LoadingCard
-                        message="Loading your training..."
-                    />
-                </div>
-            </DashboardLayout>
-        );
-    }
-
-
-    /* =====================================================
-       PAGE
-    ===================================================== */
+    const openModule = (moduleType) => {
+        navigate(`/my-training/module/${encodeURIComponent(moduleType)}/environment`);
+    };
 
     return (
         <DashboardLayout
             role="trainee"
-            title="My Training"
-            subtitle="View workplace safety programmes assigned to your account."
+            title="My Training – 360° Module Selection"
+            subtitle="Select a module by exploring the 360° environment. Click on a highlighted area to enter."
         >
-            <div
-                className="
-                    app-page
-                    space-y-5
-                "
-            >
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        errorMessage
-                    }
-                    onClose={() =>
-                        setErrorMessage(
-                            ""
-                        )
-                    }
-                />
-
-
-                {/* ==========================================
-                    SUMMARY
-                =========================================== */}
-
-                <section
-                    className="
-                        rounded-xl
-                        border
-                        border-[#dbe4ef]
-                        bg-white
-                        p-5
-                        shadow-sm
-                    "
-                >
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
-                    >
-                        <div>
-                            <h2
-                                className="
-                                    text-[13px]
-                                    font-bold
-                                    text-[#172033]
-                                "
-                            >
-                                Assigned Programmes
-                            </h2>
-
-
-                            <p
-                                className="
-                                    mt-1
-                                    text-[9px]
-                                    text-[#64748b]
-                                "
-                            >
-                                Complete the programmes assigned by your administrator.
-                            </p>
-                        </div>
-
-
-                        <span
-                            className="
-                                self-start
-                                rounded-full
-                                bg-blue-50
-                                px-3
-                                py-1.5
-                                text-[9px]
-                                font-semibold
-                                text-blue-600
-                                sm:self-auto
-                            "
-                        >
-                            {
-                                availableAssignments.length
-                            }{" "}
-                            Assigned
-                        </span>
-                    </div>
-                </section>
-
-
-                {/* ==========================================
-                    FILTERS
-                =========================================== */}
-
-                <section
-                    className="
-                        flex
-                        flex-wrap
-                        gap-2
-                        rounded-xl
-                        border
-                        border-[#dbe4ef]
-                        bg-white
-                        p-4
-                        shadow-sm
-                    "
-                >
-                    <FilterButton
-                        active={
-                            typeFilter ===
-                            "all"
-                        }
-                        onClick={() =>
-                            setTypeFilter(
-                                "all"
-                            )
-                        }
-                    >
-                        All Training
-                    </FilterButton>
-
-
-                    <FilterButton
-                        active={
-                            typeFilter ===
-                            "manual-handling"
-                        }
-                        onClick={() =>
-                            setTypeFilter(
-                                "manual-handling"
-                            )
-                        }
-                    >
-                        Manual Handling
-                    </FilterButton>
-
-
-                    <FilterButton
-                        active={
-                            typeFilter ===
-                            "working-at-height"
-                        }
-                        onClick={() =>
-                            setTypeFilter(
-                                "working-at-height"
-                            )
-                        }
-                    >
-                        Working at Height
-                    </FilterButton>
-                </section>
-
-
-                {/* ==========================================
-                    ASSIGNED PROGRAMMES
-                =========================================== */}
-
-                {filteredAssignments.length ===
-                    0 ? (
-                    <EmptyState
-                        title="No training programmes found"
-                        message="There are no assigned programmes matching this filter."
+            <section className="training360-flow">
+                <div className="training360-flow__viewer training360-flow__viewer--selection">
+                    <PanoramaCanvas
+                        src="/panoramas/training-selection.png"
+                        yaw={yaw}
+                        pitch={pitch}
+                        fov={fov}
+                        onImageError={() => setImageFailed(true)}
+                        onViewChange={(nextYaw, nextPitch, nextFov) => {
+                            setYaw(nextYaw); setPitch(nextPitch); setFov(nextFov);
+                        }}
                     />
+                    <div className="training360-flow__shade" />
+                    {imageFailed && (
+                        <div className="training360-flow__message training360-flow__message--overlay training360-flow__message--error">
+                            The local 360° training environment could not be loaded. Check frontend/public/panoramas/training-selection.png.
+                        </div>
+                    )}
 
-                ) : (
-                    <section
-                        className="
-                            grid
-                            gap-4
-                            md:grid-cols-2
-                        "
-                    >
-                        {filteredAssignments.map(
-                            (
-                                assignment
-                            ) => (
-                                <AssignedProgrammeCard
-                                    key={
-                                        assignment._id
-                                    }
-                                    assignment={
-                                        assignment
-                                    }
-                                    onStart={
-                                        handleStartTraining
-                                    }
-                                />
-                            )
-                        )}
-                    </section>
+                    <div className="training360-flow__intro">
+                        <strong>⌖ &nbsp; My Training</strong>
+                        <span>Select a module by exploring the 360° environment. Click on a highlighted area to enter.</span>
+                    </div>
+
+                    {groupedModules.map((group, index) => {
+                        const meta = moduleMeta[group.key] || {
+                            title: group.programmes[0]?.programme?.moduleName || group.programmes[0]?.programme?.programmeType || "Training Module",
+                            description: `${group.programmes.length} assigned programme${group.programmes.length === 1 ? "" : "s"}`,
+                            thumb: "/panoramas/training-reference-manual.jpg",
+                            pin: "◆",
+                            className: "",
+                        };
+                        const positions = [
+                            { left: "13%", top: "38%" },
+                            { right: "13%", top: "35%" },
+                            { left: "50%", top: "66%", transform: "translateX(-50%)" },
+                        ];
+                        return (
+                            <button
+                                type="button"
+                                key={group.key}
+                                className={`training360-flow__module ${meta.className}`}
+                                style={positions[index % positions.length]}
+                                onClick={() => openModule(group.key)}
+                                disabled={loading}
+                                aria-label={`Open ${meta.title} 360 degree module`}
+                            >
+                                <span className="training360-flow__module-pin training360-flow__module-pin--blue">{meta.pin}</span>
+                                <span className="training360-flow__module-card">
+                                    <img className="training360-flow__module-thumb" src={meta.thumb} alt={`${meta.title} training area`} />
+                                    <span className="training360-flow__module-copy">
+                                        <strong>{meta.title}</strong>
+                                        <small>{group.programmes.length} assigned programme{group.programmes.length === 1 ? "" : "s"} • {meta.description}</small>
+                                    </span>
+                                    <span className="training360-flow__module-arrow">›</span>
+                                </span>
+                            </button>
+                        );
+                    })}
+
+                    <div className="training360-flow__controls">
+                        <button onClick={() => setFov((value) => Math.max(45, value - 8))}>+</button>
+                        <button onClick={() => setFov((value) => Math.min(105, value + 8))}>−</button>
+                    </div>
+
+                    <div className="training360-flow__hint">ⓘ &nbsp; Explore the environment and click a module.</div>
+                </div>
+
+                {loading && <div className="training360-flow__message">Loading your assigned modules…</div>}
+                {error && <div className="training360-flow__message training360-flow__message--error">{error}</div>}
+                {!loading && !error && groupedModules.length === 0 && (
+                    <div className="training360-flow__message">No training programmes have been assigned to your account yet.</div>
                 )}
-            </div>
+            </section>
+
         </DashboardLayout>
     );
 }
-
-
-/* =========================================================
-   FILTER BUTTON
-========================================================= */
-
-function FilterButton({
-    active,
-    onClick,
-    children,
-}) {
-    return (
-        <button
-            type="button"
-            onClick={
-                onClick
-            }
-            className={`
-                min-h-[36px]
-                rounded-lg
-                border
-                px-4
-                text-[9px]
-                font-semibold
-                transition
-
-                ${active
-                    ? "border-[#1769e8] bg-[#1769e8] text-white"
-                    : "border-[#cbd5e1] bg-white text-[#52627a] hover:bg-[#f8fafc]"
-                }
-            `}
-        >
-            {children}
-        </button>
-    );
-}
-
-
-export default MyTrainingPage;

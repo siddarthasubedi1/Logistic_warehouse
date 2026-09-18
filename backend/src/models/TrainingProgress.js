@@ -24,10 +24,7 @@ const trainingProgressSchema =
                 type:
                     String,
 
-                enum: [
-                    "manual-handling",
-                    "working-at-height",
-                ],
+                trim: true,
 
                 required:
                     true,

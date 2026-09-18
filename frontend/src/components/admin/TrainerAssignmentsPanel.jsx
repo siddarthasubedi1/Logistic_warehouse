@@ -8,32 +8,11 @@ import {
 import api from "../../services/api";
 
 
-const TRAINING_SECTIONS = [
-    {
-        id:
-            "manual-handling",
-
-        name:
-            "Manual Handling",
-
-        description:
-            "Safe lifting, carrying and manual handling procedures.",
-    },
-
-    {
-        id:
-            "working-at-height",
-
-        name:
-            "Working at Height",
-
-        description:
-            "Safety procedures and hazards related to elevated work.",
-    },
-];
+import { getActiveTrainingModules } from "../../utils/trainingModules";
 
 
 function TrainerAssignmentsPanel() {
+    const TRAINING_SECTIONS = useMemo(() => getActiveTrainingModules(), []);
     const [
         users,
         setUsers,
@@ -263,7 +242,7 @@ function TrainerAssignmentsPanel() {
         /* =====================================================
            TRAINEE
     
-           Trainee always receives both modules.
+           Trainee automatically receives all currently active modules.
         ===================================================== */
 
         if (
@@ -637,7 +616,7 @@ function TrainerAssignmentsPanel() {
                             text-blue-600
                         "
                     >
-                        Trainer → 1 or both modules
+                        Trainer → one or more modules
                     </span>
 
                     <span
@@ -1118,8 +1097,7 @@ function TrainerAssignmentsPanel() {
                                             text-emerald-700
                                         "
                                         >
-                                            Trainees automatically receive both
-                                            Manual Handling and Working at Height.
+                                            Trainees automatically receive all currently active modules: {TRAINING_SECTIONS.map((section) => section.label || section.name).join(", ") || "No active modules available"}.
                                         </div>
                                     )}
 

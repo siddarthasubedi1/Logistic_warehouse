@@ -9,20 +9,7 @@ import api from "../../services/api";
 import GeneratedCredentialsModal from "./GeneratedCredentialsModal";
 
 
-const TRAINING_SECTIONS = [
-    {
-        id: "manual-handling",
-        label: "Manual Handling",
-        description:
-            "Safe lifting, carrying and manual handling practices.",
-    },
-    {
-        id: "working-at-height",
-        label: "Working at Height",
-        description:
-            "Safety procedures for working at elevated locations.",
-    },
-];
+import { getActiveTrainingModules } from "../../utils/trainingModules";
 
 
 function initialForm() {
@@ -41,6 +28,7 @@ function initialForm() {
 
 
 function CreateUserForm() {
+    const TRAINING_SECTIONS = useMemo(() => getActiveTrainingModules(), []);
     const [
         showForm,
         setShowForm,
@@ -1144,7 +1132,7 @@ function CreateUserForm() {
                                 >
                                     <RoleCard
                                         title="Trainer"
-                                        description="Manages and monitors one or both assigned training modules."
+                                        description="Manages and monitors one or more assigned training modules."
                                         selected={
                                             formData.role ===
                                             "trainer"
@@ -1162,7 +1150,7 @@ function CreateUserForm() {
 
                                     <RoleCard
                                         title="Trainee"
-                                        description="Completes both available safety training modules."
+                                        description="Automatically receives all active safety training modules."
                                         selected={
                                             formData.role ===
                                             "trainee"
@@ -1213,7 +1201,7 @@ function CreateUserForm() {
                                         "
                                         >
                                             A Trainer must be assigned at least
-                                            one module. You can select one or both.
+                                            at least one module. You can select one or more.
                                         </p>
 
 
@@ -1301,7 +1289,7 @@ function CreateUserForm() {
                                                     text-[#172033]
                                                 "
                                                 >
-                                                    Both modules assigned
+                                                    All active modules assigned
                                                     automatically
                                                 </p>
 
@@ -1313,9 +1301,7 @@ function CreateUserForm() {
                                                     text-[#64748b]
                                                 "
                                                 >
-                                                    Trainees receive Manual
-                                                    Handling and Working at
-                                                    Height training.
+                                                    Trainees automatically receive {TRAINING_SECTIONS.length} active module{TRAINING_SECTIONS.length === 1 ? "" : "s"}: {TRAINING_SECTIONS.map((section) => section.label).join(", ") || "No active modules available"}.
                                                 </p>
                                             </div>
                                         </div>

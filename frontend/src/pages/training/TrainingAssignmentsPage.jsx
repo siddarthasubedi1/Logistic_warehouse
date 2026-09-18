@@ -4,8 +4,9 @@ import {
     useState,
 } from "react";
 
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 
+import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import TrainingAssignmentForm from "../../components/training/TrainingAssignmentForm";
 import TrainingAssignmentTable from "../../components/training/TrainingAssignmentTable";
 
@@ -24,12 +25,47 @@ import {
     getApiErrorMessage,
 } from "../../utils/training";
 
+import {
+    canonicalModuleKey,
+    getActiveTrainingModules,
+} from "../../utils/trainingModules";
+
+
+/* =========================================================
+   NORMALISE MODULE / PROGRAMME KEY
+
+   Examples:
+   "Cyber Awareness"  -> "cyber-awareness"
+   "cyber_awareness"  -> "cyber-awareness"
+   "CYBER-AWARENESS"  -> "cyber-awareness"
+========================================================= */
+
+function normalizeModuleKey(value) {
+    return canonicalModuleKey(value);
+}
+
 
 function TrainingAssignmentsPage() {
+    const navigate = useNavigate();
+
+    /* =====================================================
+       STATE
+    ===================================================== */
+
     const [
         programmes,
         setProgrammes,
     ] = useState([]);
+
+    const [
+        modules,
+        setModules,
+    ] = useState([]);
+
+    const [
+        moduleId,
+        setModuleId,
+    ] = useState("");
 
     const [
         trainees,
@@ -82,117 +118,146 @@ function TrainingAssignmentsPage() {
     ] = useState("");
 
 
-    const clearFeedback =
-        () => {
-            setErrorMessage("");
-            setSuccessMessage("");
-        };
+    /* =====================================================
+       CLEAR MESSAGES
+    ===================================================== */
+
+    const clearFeedback = () => {
+        setErrorMessage("");
+        setSuccessMessage("");
+    };
 
 
     /* =====================================================
-       LOAD PROGRAMMES
+       LOAD PROGRAMMES + MODULES
     ===================================================== */
 
-    const loadProgrammes =
-        async () => {
-            const response =
-                await api.get(
-                    "/training-programmes"
-                );
+    const loadProgrammes = async () => {
+        /*
+         * Modules are created through your existing
+         * Training Module system.
+         */
+        const activeModules =
+            getActiveTrainingModules();
 
-            const programmeList =
-                parseArrayResponse(
-                    response.data,
-                    "programmes"
-                );
+        setModules(activeModules);
 
-            setProgrammes(
-                getActiveProgrammes(
-                    programmeList
-                )
+
+        /*
+         * Programmes come from MongoDB.
+         */
+        const response =
+            await api.get(
+                "/training-programmes"
             );
-        };
+
+        const programmeList =
+            parseArrayResponse(
+                response.data,
+                "programmes"
+            );
+
+
+        /*
+         * Only active programmes can be assigned.
+         */
+        const activeProgrammes =
+            getActiveProgrammes(
+                programmeList
+            );
+
+        setProgrammes(
+            activeProgrammes
+        );
+    };
 
 
     /* =====================================================
        LOAD TRAINEES
     ===================================================== */
 
-    const loadTrainees =
-        async () => {
-            const response =
-                await api.get(
-                    "/admin/users"
-                );
-
-            const userList =
-                parseArrayResponse(
-                    response.data,
-                    "users"
-                );
-
-            setTrainees(
-                getAssignableTrainees(
-                    userList
-                )
+    const loadTrainees = async () => {
+        const response =
+            await api.get(
+                "/admin/users"
             );
-        };
+
+        const userList =
+            parseArrayResponse(
+                response.data,
+                "users"
+            );
+
+        setTrainees(
+            getAssignableTrainees(
+                userList
+            )
+        );
+    };
 
 
     /* =====================================================
        LOAD ASSIGNMENTS
     ===================================================== */
 
-    const loadAssignments =
-        async () => {
+    const loadAssignments = async () => {
+        try {
             const response =
                 await api.get(
                     "/training-assignments"
                 );
 
-            setAssignments(
+            const backendAssignments =
                 parseArrayResponse(
                     response.data,
                     "assignments"
-                )
+                );
+
+            setAssignments(
+                backendAssignments
             );
-        };
+        } catch (error) {
+            console.error(
+                "Load assignments error:",
+                error
+            );
+
+            setAssignments([]);
+        }
+    };
 
 
     /* =====================================================
-       PAGE LOAD
+       LOAD PAGE
     ===================================================== */
 
-    const loadPageData =
-        async () => {
-            try {
-                setLoading(true);
+    const loadPageData = async () => {
+        try {
+            setLoading(true);
 
-                clearFeedback();
+            clearFeedback();
 
-                await Promise.all([
-                    loadProgrammes(),
-                    loadTrainees(),
-                    loadAssignments(),
-                ]);
+            await Promise.all([
+                loadProgrammes(),
+                loadTrainees(),
+                loadAssignments(),
+            ]);
+        } catch (error) {
+            console.error(
+                "Training assignment page error:",
+                error
+            );
 
-            } catch (error) {
-                console.error(
-                    "Load training assignments error:",
-                    error
-                );
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to load training assignments."
-                    )
-                );
-
-            } finally {
-                setLoading(false);
-            }
-        };
+            setErrorMessage(
+                getApiErrorMessage(
+                    error,
+                    "Unable to load training assignment data."
+                )
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     useEffect(() => {
@@ -201,25 +266,207 @@ function TrainingAssignmentsPage() {
 
 
     /* =====================================================
-       ASSIGN
+       FILTER PROGRAMMES BY SELECTED MODULE
+
+       IMPORTANT FIX:
+       Both values are normalised before comparison.
     ===================================================== */
 
-    const handleAssign =
-        async (
-            event
-        ) => {
+    const filteredProgrammes =
+        useMemo(
+            () => {
+                if (!moduleId) {
+                    return [];
+                }
+
+                const selectedKey =
+                    normalizeModuleKey(
+                        moduleId
+                    );
+
+
+                return programmes.filter(
+                    (programme) => {
+                        const programmeKey =
+                            normalizeModuleKey(
+                                programme
+                                    ?.programmeType
+                            );
+
+                        return (
+                            programmeKey ===
+                            selectedKey
+                        );
+                    }
+                );
+            },
+            [
+                programmes,
+                moduleId,
+            ]
+        );
+
+
+    /* =====================================================
+       SELECTED MODULE
+    ===================================================== */
+
+    const selectedModule =
+        useMemo(
+            () =>
+                modules.find(
+                    (module) =>
+                        normalizeModuleKey(
+                            module.id
+                        ) ===
+                        normalizeModuleKey(
+                            moduleId
+                        )
+                ),
+            [
+                modules,
+                moduleId,
+            ]
+        );
+
+
+    /* =====================================================
+       MODULE CHANGE
+    ===================================================== */
+
+    const handleModuleChange =
+        (value) => {
+            setModuleId(
+                normalizeModuleKey(
+                    value
+                )
+            );
+
+            /*
+             * Reset programme because a programme
+             * from the previous module must not remain selected.
+             */
+            setProgrammeId("");
+
+            clearFeedback();
+        };
+
+
+    /* =====================================================
+       PROGRAMME CHANGE
+    ===================================================== */
+
+    const handleProgrammeChange =
+        (value) => {
+            setProgrammeId(
+                value
+            );
+
+            clearFeedback();
+        };
+
+
+    /* =====================================================
+       TRAINEE CHANGE
+    ===================================================== */
+
+    const handleTraineeChange =
+        (value) => {
+            setTraineeId(
+                value
+            );
+
+            clearFeedback();
+        };
+
+
+    /* =====================================================
+       ADD PROGRAMME
+
+       Opens the programme page for the currently
+       selected Training Module.
+    ===================================================== */
+
+    const handleAddProgramme =
+        () => {
+            if (
+                selectedModule
+                    ?.moduleId
+            ) {
+                navigate(
+                    `/training-programmes/module/${selectedModule.moduleId}/programme`
+                );
+
+                return;
+            }
+
+            navigate(
+                "/training-programmes"
+            );
+        };
+
+
+    /* =====================================================
+       CREATE ASSIGNMENT
+    ===================================================== */
+
+    const handleSubmit =
+        async (event) => {
             event.preventDefault();
 
             clearFeedback();
 
 
-            if (
-                !programmeId ||
-                !traineeId
-            ) {
+            if (!moduleId) {
                 setErrorMessage(
-                    "Please select both a programme and a Trainee."
+                    "Please select a training module."
                 );
+
+                return;
+            }
+
+
+            if (!programmeId) {
+                setErrorMessage(
+                    "Please select a training programme."
+                );
+
+                return;
+            }
+
+
+            if (!traineeId) {
+                setErrorMessage(
+                    "Please select a Trainee."
+                );
+
+                return;
+            }
+
+
+            /*
+             * Security/data integrity check:
+             * make sure the selected programme really
+             * belongs to the selected module.
+             */
+            const selectedProgramme =
+                filteredProgrammes.find(
+                    (programme) =>
+                        String(
+                            programme._id
+                        ) ===
+                        String(
+                            programmeId
+                        )
+                );
+
+
+            if (!selectedProgramme) {
+                setErrorMessage(
+                    "The selected programme does not belong to this training module."
+                );
+
+                setProgrammeId("");
 
                 return;
             }
@@ -229,22 +476,26 @@ function TrainingAssignmentsPage() {
                 setSaving(true);
 
 
-                const response =
-                    await api.post(
-                        "/training-assignments",
-                        {
-                            programmeId,
-                            traineeId,
-                        }
-                    );
-
-
-                setSuccessMessage(
-                    response.data?.message ||
-                    "Training programme assigned successfully."
+                await api.post(
+                    "/training-assignments",
+                    {
+                        programmeId,
+                        traineeId,
+                    }
                 );
 
 
+                setSuccessMessage(
+                    `${selectedProgramme.title} assigned successfully.`
+                );
+
+
+                /*
+                 * Clear programme and trainee.
+                 * Keep module selected so Admin can
+                 * assign another programme from the
+                 * same module.
+                 */
                 setProgrammeId("");
                 setTraineeId("");
 
@@ -263,7 +514,6 @@ function TrainingAssignmentsPage() {
                         "Unable to assign the training programme."
                     )
                 );
-
             } finally {
                 setSaving(false);
             }
@@ -271,50 +521,111 @@ function TrainingAssignmentsPage() {
 
 
     /* =====================================================
-       DEACTIVATE
+       CHANGE ASSIGNMENT STATUS
     ===================================================== */
 
-    const handleDeactivate =
+    const handleStatusChange =
+        async (
+            assignment,
+            status
+        ) => {
+            const assignmentId =
+                assignment?._id;
+
+            if (!assignmentId) {
+                return;
+            }
+
+
+            try {
+                setActionLoadingId(
+                    assignmentId
+                );
+
+                clearFeedback();
+
+
+                await api.patch(
+                    `/training-assignments/${assignmentId}`,
+                    {
+                        status,
+                    }
+                );
+
+
+                setSuccessMessage(
+                    `Assignment ${status} successfully.`
+                );
+
+
+                await loadAssignments();
+
+            } catch (error) {
+                console.error(
+                    "Update assignment error:",
+                    error
+                );
+
+                setErrorMessage(
+                    getApiErrorMessage(
+                        error,
+                        "Unable to update assignment."
+                    )
+                );
+            } finally {
+                setActionLoadingId("");
+            }
+        };
+
+
+    /* =====================================================
+       DELETE ASSIGNMENT
+    ===================================================== */
+
+    const handleDelete =
         async (
             assignment
         ) => {
-            if (
-                !assignment?._id
-            ) {
+            const assignmentId =
+                assignment?._id;
+
+            if (!assignmentId) {
                 return;
             }
+
+
+            const programme =
+                getAssignmentProgramme(
+                    assignment
+                );
 
 
             const confirmed =
                 window.confirm(
-                    "Deactivate this training assignment?"
+                    `Delete assignment for "${programme?.title || "this programme"}"?`
                 );
 
 
-            if (
-                !confirmed
-            ) {
+            if (!confirmed) {
                 return;
             }
 
 
             try {
                 setActionLoadingId(
-                    assignment._id
+                    assignmentId
                 );
 
                 clearFeedback();
 
 
-                const response =
-                    await api.patch(
-                        `/training-assignments/${assignment._id}/deactivate`
-                    );
+                await api.delete(
+                    `/training-assignments/${assignmentId}`
+                );
 
 
                 setSuccessMessage(
-                    response.data?.message ||
-                    "Training assignment deactivated successfully."
+                    "Assignment deleted successfully."
                 );
 
 
@@ -322,17 +633,16 @@ function TrainingAssignmentsPage() {
 
             } catch (error) {
                 console.error(
-                    "Deactivate assignment error:",
+                    "Delete assignment error:",
                     error
                 );
 
                 setErrorMessage(
                     getApiErrorMessage(
                         error,
-                        "Unable to deactivate the training assignment."
+                        "Unable to delete assignment."
                     )
                 );
-
             } finally {
                 setActionLoadingId("");
             }
@@ -340,63 +650,7 @@ function TrainingAssignmentsPage() {
 
 
     /* =====================================================
-       REACTIVATE
-    ===================================================== */
-
-    const handleReactivate =
-        async (
-            assignment
-        ) => {
-            if (
-                !assignment?._id
-            ) {
-                return;
-            }
-
-
-            try {
-                setActionLoadingId(
-                    assignment._id
-                );
-
-                clearFeedback();
-
-
-                const response =
-                    await api.patch(
-                        `/training-assignments/${assignment._id}/reactivate`
-                    );
-
-
-                setSuccessMessage(
-                    response.data?.message ||
-                    "Training assignment reactivated successfully."
-                );
-
-
-                await loadAssignments();
-
-            } catch (error) {
-                console.error(
-                    "Reactivate assignment error:",
-                    error
-                );
-
-                setErrorMessage(
-                    getApiErrorMessage(
-                        error,
-                        "Unable to reactivate the training assignment."
-                    )
-                );
-
-            } finally {
-                setActionLoadingId("");
-            }
-        };
-
-
-    /* =====================================================
-       FILTER
+       SEARCH ASSIGNMENTS
     ===================================================== */
 
     const filteredAssignments =
@@ -414,14 +668,11 @@ function TrainingAssignmentsPage() {
 
 
                 return assignments.filter(
-                    (
-                        assignment
-                    ) => {
+                    (assignment) => {
                         const programme =
                             getAssignmentProgramme(
                                 assignment
                             );
-
 
                         const trainee =
                             getAssignmentTrainee(
@@ -429,27 +680,31 @@ function TrainingAssignmentsPage() {
                             );
 
 
-                        const text =
+                        const searchableText =
                             [
-                                programme?.title,
-                                programme?.programmeType,
-                                trainee?.username,
+                                programme
+                                    ?.title,
+
+                                programme
+                                    ?.programmeType,
+
+                                trainee
+                                    ?.username,
 
                                 getUserDisplayName(
                                     trainee,
                                     ""
                                 ),
 
-                                assignment.status,
+                                assignment
+                                    ?.status,
                             ]
-                                .filter(
-                                    Boolean
-                                )
+                                .filter(Boolean)
                                 .join(" ")
                                 .toLowerCase();
 
 
-                        return text.includes(
+                        return searchableText.includes(
                             query
                         );
                     }
@@ -462,17 +717,21 @@ function TrainingAssignmentsPage() {
         );
 
 
+    /* =====================================================
+       STATISTICS
+    ===================================================== */
+
     const activeAssignments =
         assignments.filter(
-            (
-                assignment
-            ) =>
+            (assignment) =>
                 String(
-                    assignment.status ||
+                    assignment
+                        ?.status ||
                     ""
-                ).toLowerCase() !==
+                )
+                    .toLowerCase() !==
                 "inactive"
-        ).length;
+        );
 
 
     /* =====================================================
@@ -483,52 +742,45 @@ function TrainingAssignmentsPage() {
         return (
             <DashboardLayout
                 role="admin"
-                showHeader={
-                    false
-                }
+                showHeader={false}
             >
-                <div
-                    className="
-                        app-page
-                    "
-                >
-                    <LoadingCard
-                        message="Loading training assignments..."
-                    />
-                </div>
+                <LoadingCard
+                    message="Loading training assignments..."
+                />
             </DashboardLayout>
         );
     }
 
 
+    /* =====================================================
+       UI
+    ===================================================== */
+
     return (
         <DashboardLayout
             role="admin"
-            showHeader={
-                false
-            }
+            showHeader={false}
         >
             <div
                 className="
-                    app-page
                     space-y-5
                 "
             >
-                {/* =============================================
-                    HERO
-                ============================================== */}
+                {/* =========================================
+                    PAGE HEADER
+                ========================================= */}
 
                 <section
                     className="
-                        training-hero
                         relative
                         overflow-hidden
                         rounded-xl
-                        px-5
-                        py-6
+                        bg-gradient-to-r
+                        from-[#073763]
+                        to-[#1769aa]
+                        p-7
+                        text-white
                         shadow-sm
-                        sm:px-6
-                        lg:px-7
                     "
                 >
                     <div
@@ -536,95 +788,54 @@ function TrainingAssignmentsPage() {
                             pointer-events-none
                             absolute
                             -right-16
-                            -top-16
-                            h-48
-                            w-48
+                            -top-20
+                            h-52
+                            w-52
                             rounded-full
                             bg-white/10
                         "
                     />
-
 
                     <div
                         className="
                             relative
                             z-10
                             flex
-                            items-start
+                            flex-col
                             gap-4
+                            md:flex-row
+                            md:items-center
+                            md:justify-between
                         "
                     >
-                        <div
-                            className="
-                                flex
-                                h-12
-                                w-12
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-xl
-                                border
-                                border-white/15
-                                bg-white/10
-                            "
-                        >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="
-                                    h-6
-                                    w-6
-                                "
-                            >
-                                <rect
-                                    x="5"
-                                    y="3"
-                                    width="14"
-                                    height="18"
-                                    rx="2"
-                                />
-
-                                <path d="M9 8h6" />
-                                <path d="M9 12h6" />
-                                <path d="M9 16h4" />
-                            </svg>
-                        </div>
-
-
                         <div>
                             <p
                                 className="
-                                    text-[8px]
+                                    text-[9px]
                                     font-semibold
                                     uppercase
-                                    tracking-[0.14em]
+                                    tracking-[0.15em]
                                     text-blue-100
                                 "
                             >
                                 Training Management
                             </p>
 
-
                             <h1
                                 className="
-                                    mt-1
-                                    text-[20px]
+                                    mt-2
+                                    text-2xl
                                     font-bold
-                                    text-white
                                 "
                             >
                                 Training Assignments
                             </h1>
 
-
                             <p
                                 className="
                                     mt-2
-                                    max-w-[610px]
-                                    text-[9px]
-                                    leading-5
+                                    max-w-2xl
+                                    text-sm
                                     text-blue-100
                                 "
                             >
@@ -633,80 +844,102 @@ function TrainingAssignmentsPage() {
                                 assignments.
                             </p>
                         </div>
+
+
+                        <button
+                            type="button"
+                            onClick={
+                                () =>
+                                    navigate(
+                                        "/training-programmes"
+                                    )
+                            }
+                            className="
+                                rounded-xl
+                                bg-white
+                                px-5
+                                py-3
+                                text-sm
+                                font-semibold
+                                text-[#073763]
+                                shadow-sm
+                                hover:bg-blue-50
+                            "
+                        >
+                            + Add Programme
+                        </button>
                     </div>
                 </section>
 
 
-                {/* =============================================
+                {/* =========================================
                     FEEDBACK
-                ============================================== */}
+                ========================================= */}
 
-                <FeedbackAlert
-                    type="success"
-                    message={
-                        successMessage
-                    }
-                    onClose={() =>
-                        setSuccessMessage("")
-                    }
-                />
-
-
-                <FeedbackAlert
-                    type="error"
-                    message={
-                        errorMessage
-                    }
-                    onClose={() =>
-                        setErrorMessage("")
-                    }
-                />
+                {errorMessage && (
+                    <FeedbackAlert
+                        type="error"
+                        message={
+                            errorMessage
+                        }
+                    />
+                )}
 
 
-                {/* =============================================
-                    STATS
-                ============================================== */}
+                {successMessage && (
+                    <FeedbackAlert
+                        type="success"
+                        message={
+                            successMessage
+                        }
+                    />
+                )}
 
-                <section
+
+                {/* =========================================
+                    STATISTICS
+                ========================================= */}
+
+                <div
                     className="
                         grid
                         gap-4
-                        sm:grid-cols-3
+                        md:grid-cols-3
                     "
                 >
                     <StatCard
-                        label="Total Assignments"
+                        title="Total Assignments"
                         value={
                             assignments.length
                         }
                     />
 
                     <StatCard
-                        label="Active"
+                        title="Active"
                         value={
-                            activeAssignments
+                            activeAssignments.length
                         }
                     />
 
                     <StatCard
-                        label="Assignable Trainees"
+                        title="Assignable Trainees"
                         value={
                             trainees.length
                         }
                     />
-                </section>
+                </div>
 
 
-                {/* =============================================
-                    ASSIGNMENT FORM
-                ============================================== */}
+                {/* =========================================
+                    CREATE ASSIGNMENT
+                ========================================= */}
 
                 <section
                     className="
                         overflow-hidden
                         rounded-xl
                         border
-                        border-[#dbe4ef]
+                        border-slate-200
                         bg-white
                         shadow-sm
                     "
@@ -714,14 +947,14 @@ function TrainingAssignmentsPage() {
                     <div
                         className="
                             border-b
-                            border-[#e8eef5]
+                            border-slate-100
                             px-5
-                            py-4
+                            py-5
                         "
                     >
                         <h2
                             className="
-                                text-[13px]
+                                text-sm
                                 font-bold
                                 text-[#172033]
                             "
@@ -733,11 +966,10 @@ function TrainingAssignmentsPage() {
                             className="
                                 mt-1
                                 text-[9px]
-                                text-[#64748b]
+                                text-slate-500
                             "
                         >
-                            Select an active programme and the Trainee who
-                            should receive it.
+                            Select a module, programme and Trainee.
                         </p>
                     </div>
 
@@ -748,45 +980,68 @@ function TrainingAssignmentsPage() {
                         "
                     >
                         <TrainingAssignmentForm
-                            programmes={
-                                programmes
+                            modules={
+                                modules
                             }
+
+                            moduleId={
+                                moduleId
+                            }
+
+                            onModuleChange={
+                                handleModuleChange
+                            }
+
+                            onAddProgramme={
+                                handleAddProgramme
+                            }
+
+                            programmes={
+                                filteredProgrammes
+                            }
+
                             trainees={
                                 trainees
                             }
+
                             programmeId={
                                 programmeId
                             }
+
                             traineeId={
                                 traineeId
                             }
+
                             saving={
                                 saving
                             }
+
                             onProgrammeChange={
-                                setProgrammeId
+                                handleProgrammeChange
                             }
+
                             onTraineeChange={
-                                setTraineeId
+                                handleTraineeChange
                             }
+
                             onSubmit={
-                                handleAssign
+                                handleSubmit
                             }
                         />
                     </div>
                 </section>
 
 
-                {/* =============================================
-                    TABLE
-                ============================================== */}
+                {/* =========================================
+                    EXISTING ASSIGNMENTS
+                ========================================= */}
 
                 <section
                     className="
                         overflow-hidden
                         rounded-xl
                         border
-                        border-[#dbe4ef]
+                        border-slate-200
                         bg-white
                         shadow-sm
                     "
@@ -795,20 +1050,20 @@ function TrainingAssignmentsPage() {
                         className="
                             flex
                             flex-col
-                            gap-3
+                            gap-4
                             border-b
-                            border-[#e8eef5]
+                            border-slate-100
                             px-5
-                            py-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
+                            py-5
+                            md:flex-row
+                            md:items-center
+                            md:justify-between
                         "
                     >
                         <div>
                             <h2
                                 className="
-                                    text-[13px]
+                                    text-sm
                                     font-bold
                                     text-[#172033]
                                 "
@@ -820,86 +1075,44 @@ function TrainingAssignmentsPage() {
                                 className="
                                     mt-1
                                     text-[9px]
-                                    text-[#64748b]
+                                    text-slate-500
                                 "
                             >
-                                Manage currently assigned training programmes.
+                                Manage currently assigned
+                                training programmes.
                             </p>
                         </div>
 
 
-                        <div
-                            className="
-                                relative
-                                w-full
-                                sm:w-[260px]
-                            "
-                        >
-                            <span
-                                className="
-                                    pointer-events-none
-                                    absolute
-                                    inset-y-0
-                                    left-0
-                                    flex
-                                    items-center
-                                    pl-3
-                                    text-[#94a3b8]
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="
-                                        h-4
-                                        w-4
-                                    "
-                                >
-                                    <circle
-                                        cx="11"
-                                        cy="11"
-                                        r="7"
-                                    />
-
-                                    <path d="m20 20-3.5-3.5" />
-                                </svg>
-                            </span>
-
-
-                            <input
-                                type="search"
-                                value={
-                                    searchTerm
-                                }
-                                onChange={(
-                                    event
-                                ) =>
+                        <input
+                            type="search"
+                            value={
+                                searchTerm
+                            }
+                            onChange={
+                                (event) =>
                                     setSearchTerm(
-                                        event.target.value
+                                        event
+                                            .target
+                                            .value
                                     )
-                                }
-                                placeholder="Search assignments..."
-                                className="
-                                    min-h-[40px]
-                                    w-full
-                                    rounded-lg
-                                    border
-                                    border-[#cbd5e1]
-                                    bg-white
-                                    pl-9
-                                    pr-3
-                                    text-[10px]
-                                    text-[#172033]
-                                    outline-none
-                                    placeholder:text-[#94a3b8]
-                                    focus:border-blue-500
-                                    focus:ring-2
-                                    focus:ring-blue-100
-                                "
-                            />
-                        </div>
+                            }
+                            placeholder="Search assignments..."
+                            className="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-300
+                                px-4
+                                py-3
+                                text-sm
+                                outline-none
+                                focus:border-blue-500
+                                focus:ring-2
+                                focus:ring-blue-100
+                                md:w-80
+                            "
+                        />
                     </div>
 
 
@@ -907,14 +1120,17 @@ function TrainingAssignmentsPage() {
                         assignments={
                             filteredAssignments
                         }
+
                         actionLoadingId={
                             actionLoadingId
                         }
-                        onDeactivate={
-                            handleDeactivate
+
+                        onStatusChange={
+                            handleStatusChange
                         }
-                        onReactivate={
-                            handleReactivate
+
+                        onDelete={
+                            handleDelete
                         }
                     />
                 </section>
@@ -924,78 +1140,70 @@ function TrainingAssignmentsPage() {
 }
 
 
+/* =========================================================
+   STAT CARD
+========================================================= */
+
 function StatCard({
-    label,
+    title,
     value,
 }) {
     return (
-        <article
+        <div
             className="
                 rounded-xl
                 border
-                border-[#dbe4ef]
+                border-slate-200
                 bg-white
-                p-5
+                p-6
                 shadow-sm
             "
         >
+            <p
+                className="
+                    text-[9px]
+                    font-medium
+                    text-slate-500
+                "
+            >
+                {title}
+            </p>
+
             <div
                 className="
+                    mt-3
                     flex
                     items-center
                     justify-between
                 "
             >
-                <div>
-                    <p
-                        className="
-                            text-[9px]
-                            text-[#64748b]
-                        "
-                    >
-                        {label}
-                    </p>
-
-                    <p
-                        className="
-                            mt-2
-                            text-[23px]
-                            font-bold
-                            text-[#172033]
-                        "
-                    >
-                        {value}
-                    </p>
-                </div>
-
+                <p
+                    className="
+                        text-2xl
+                        font-bold
+                        text-[#172033]
+                    "
+                >
+                    {value}
+                </p>
 
                 <div
                     className="
                         flex
-                        h-10
-                        w-10
+                        h-12
+                        w-12
                         items-center
                         justify-center
                         rounded-full
                         bg-blue-50
+                        text-xl
                         text-blue-600
                     "
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        className="
-                            h-5
-                            w-5
-                        "
-                    >
-                        <path d="M5 12 10 17 19 8" />
-                    </svg>
+                    ✓
                 </div>
             </div>
-        </article>
+        </div>
     );
 }
 

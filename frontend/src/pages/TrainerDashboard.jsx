@@ -19,6 +19,8 @@ import api from "../services/api";
 import boxLift from "../images/box-lift.jpg";
 import heightImage from "../images/hight.jpg";
 
+import { getActiveTrainingModules } from "../utils/trainingModules";
+
 import {
     getSessionUser,
     updateSessionUser,
@@ -34,29 +36,26 @@ import {
    TRAINING AREA CONFIGURATION
 ========================================================= */
 
-const TRAINING_AREAS = {
-    "manual-handling": {
-        title:
-            "Manual Handling",
+function getTrainingAreas() {
+    const modules = getActiveTrainingModules();
+    const areas = {};
 
-        description:
-            "Safe techniques for lifting, carrying, and moving loads in the workplace.",
+    modules.forEach((module) => {
+        let image = module.image || boxLift;
 
-        image:
-            boxLift,
-    },
+        if (!module.image && module.id === "working-at-height") {
+            image = heightImage;
+        }
 
-    "working-at-height": {
-        title:
-            "Working at Height",
+        areas[module.id] = {
+            title: module.name,
+            description: module.description || `Training module: ${module.name}.`,
+            image,
+        };
+    });
 
-        description:
-            "Safe working practices for elevated work and fall prevention.",
-
-        image:
-            heightImage,
-    },
-};
+    return areas;
+}
 
 
 /* =========================================================
@@ -297,6 +296,17 @@ function TrainerDashboard() {
 
 
     /* =====================================================
+       CURRENT ADMIN-CREATED MODULE DEFINITIONS
+    ===================================================== */
+
+    const trainingAreas =
+        useMemo(
+            () => getTrainingAreas(),
+            []
+        );
+
+
+    /* =====================================================
        ASSIGNED AREA INFORMATION
     ===================================================== */
 
@@ -309,9 +319,13 @@ function TrainerDashboard() {
                             id
                         ) => {
                             const area =
-                                TRAINING_AREAS[
-                                id
-                                ];
+                                trainingAreas[id] || {
+                                    title: id
+                                        .replace(/[-_]/g, " ")
+                                        .replace(/\b\w/g, (character) => character.toUpperCase()),
+                                    description: "Training module assigned by the Administrator.",
+                                    image: boxLift,
+                                };
 
 
                             if (
@@ -332,6 +346,7 @@ function TrainerDashboard() {
                     ),
             [
                 assignedSections,
+                trainingAreas,
             ]
         );
 

@@ -1,20 +1,7 @@
 import ActionButton from "../ui/ActionButton";
 
 
-const TRAINING_SECTIONS = [
-    {
-        id: "manual-handling",
-        name: "Manual Handling",
-        description:
-            "Safe lifting, carrying and handling practices.",
-    },
-    {
-        id: "working-at-height",
-        name: "Working at Height",
-        description:
-            "Safety training for elevated work environments.",
-    },
-];
+import { getActiveTrainingModules } from "../../utils/trainingModules";
 
 
 function UserDetailsForm({
@@ -25,6 +12,8 @@ function UserDetailsForm({
     onSubmit,
     onCancel,
 }) {
+    const TRAINING_SECTIONS = getActiveTrainingModules();
+
     const isTrainer =
         formData.role ===
         "trainer";
@@ -322,7 +311,7 @@ function UserDetailsForm({
                     >
                         <RoleOption
                             title="Trainer"
-                            description="Manages one assigned safety training area."
+                            description="Manages one or more assigned safety training modules."
                             value="trainer"
                             checked={
                                 isTrainer
@@ -338,7 +327,7 @@ function UserDetailsForm({
 
                         <RoleOption
                             title="Trainee"
-                            description="Receives both safety training areas automatically."
+                            description="Automatically receives all active safety training modules."
                             value="trainee"
                             checked={
                                 isTrainee

@@ -13,10 +13,10 @@ const {
 // TRAINING SECTIONS
 // ======================================================
 
-const ALLOWED_TRAINING_SECTIONS = [
-    "manual-handling",
-    "working-at-height",
-];
+const isValidTrainingSection = (section) =>
+    typeof section === "string" &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(section) &&
+    section.length <= 100;
 
 
 // ======================================================
@@ -63,9 +63,7 @@ const validateTrainingSections = (
     const invalidSection =
         uniqueSections.find(
             (section) =>
-                !ALLOWED_TRAINING_SECTIONS.includes(
-                    section
-                )
+                !isValidTrainingSection(section)
         );
 
 
@@ -181,7 +179,7 @@ const createPendingUser =
 
             /*
                 Trainee automatically receives
-                both training sections.
+                all active training sections supplied by the frontend.
             */
 
             if (
@@ -193,13 +191,13 @@ const createPendingUser =
                         true,
 
                     sections: [
-                        ...ALLOWED_TRAINING_SECTIONS,
+                        ...new Set(assignedTrainingSections || []),
                     ],
                 };
 
             } else {
                 /*
-                    Trainer can have one or both.
+                    Trainer can have one or more.
                 */
 
                 assignmentValidation =
@@ -691,43 +689,34 @@ const updateUserTrainingSections =
 
 
             // ==================================================
-            // TRAINEE ALWAYS GETS BOTH
+            // VALIDATE CURRENT DYNAMIC MODULE ASSIGNMENT
+            //
+            // Trainer: Admin selects one or more active modules.
+            // Trainee: frontend sends all currently active modules.
+            // This allows newly created Admin modules to be added
+            // to existing trainee accounts from Manage Users too.
             // ==================================================
 
+            const validation =
+                validateTrainingSections(
+                    trainingSections
+                );
+
+
             if (
-                user.role ===
-                "trainee"
+                !validation.valid
             ) {
-                sectionsToSave = [
-                    ...ALLOWED_TRAINING_SECTIONS,
-                ];
-
-            } else {
-                // ==================================================
-                // TRAINER CAN HAVE ONE OR BOTH
-                // ==================================================
-
-                const validation =
-                    validateTrainingSections(
-                        trainingSections
-                    );
-
-
-                if (
-                    !validation.valid
-                ) {
-                    return res
-                        .status(400)
-                        .json({
-                            message:
-                                validation.message,
-                        });
-                }
-
-
-                sectionsToSave =
-                    validation.sections;
+                return res
+                    .status(400)
+                    .json({
+                        message:
+                            validation.message,
+                    });
             }
+
+
+            sectionsToSave =
+                validation.sections;
 
 
             // ==================================================

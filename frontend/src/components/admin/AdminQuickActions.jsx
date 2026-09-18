@@ -47,6 +47,57 @@ function AdminQuickActions({
             icon:
                 "users",
         },
+
+        {
+            title:
+                "Training Programmes",
+
+            description:
+                "Create programmes and manage ordered learning content",
+
+            action:
+                () =>
+                    navigate(
+                        "/training-programmes"
+                    ),
+
+            icon:
+                "training",
+        },
+
+        {
+            title:
+                "Training Assignments",
+
+            description:
+                "Manage required trainee programme assignments",
+
+            action:
+                () =>
+                    navigate(
+                        "/training-assignments"
+                    ),
+
+            icon:
+                "assignment",
+        },
+
+        {
+            title:
+                "Panorama & Scenes",
+
+            description:
+                "Manage 360° scenes, images and navigation hotspots",
+
+            action:
+                () =>
+                    navigate(
+                        "/admin/panoramas"
+                    ),
+
+            icon:
+                "panorama",
+        },
     ];
 
 
@@ -86,7 +137,7 @@ function AdminQuickActions({
                         text-[#7c8da6]
                     "
                 >
-                    Common Sprint 1 administrator actions.
+                    Sprint 1 account controls and Sprint 2 training management.
                 </p>
             </div>
 
@@ -316,6 +367,38 @@ function ActionIcon({
                 <path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6" />
 
                 <path d="M15 15c3 0 5 1.5 6 5" />
+            </svg>
+        );
+    }
+
+
+    if (type === "training") {
+        return (
+            <svg {...props}>
+                <rect x="4" y="4" width="6" height="16" rx="1" />
+                <rect x="14" y="4" width="6" height="16" rx="1" />
+                <path d="M7 8h0M17 8h0" />
+            </svg>
+        );
+    }
+
+    if (type === "assignment") {
+        return (
+            <svg {...props}>
+                <path d="M9 5h6" />
+                <path d="M9 3h6v4H9z" />
+                <path d="M6 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1" />
+                <path d="m8 14 2 2 5-5" />
+            </svg>
+        );
+    }
+
+    if (type === "panorama") {
+        return (
+            <svg {...props}>
+                <path d="M3 12c0-4 4-7 9-7s9 3 9 7-4 7-9 7-9-3-9-7Z" />
+                <path d="M12 5c2 2 3 4.3 3 7s-1 5-3 7c-2-2-3-4.3-3-7s1-5 3-7Z" />
+                <path d="M3.5 12h17" />
             </svg>
         );
     }

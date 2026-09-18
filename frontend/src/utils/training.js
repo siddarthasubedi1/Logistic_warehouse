@@ -48,6 +48,14 @@ export const PROGRAMME_TYPES = [
         label:
             "Working at Height",
     },
+
+    {
+        value:
+            "cyber-awareness",
+
+        label:
+            "Cyber Awareness",
+    },
 ];
 
 
@@ -88,6 +96,9 @@ export const formatProgrammeType = (
 
         case "working-at-height":
             return "Working at Height";
+
+        case "cyber-awareness":
+            return "Cyber Awareness";
 
 
         default:
@@ -864,22 +875,17 @@ export const normalizeTrainingSections =
         }
 
 
-        const allowed = [
-            "manual-handling",
-            "working-at-height",
-        ];
-
-
         return [
             ...new Set(
-                sections.filter(
-                    (
-                        section
-                    ) =>
-                        allowed.includes(
-                            section
-                        )
-                )
+                sections
+                    .map((section) =>
+                        String(section || "")
+                            .trim()
+                            .toLowerCase()
+                            .replace(/_/g, "-")
+                            .replace(/\s+/g, "-")
+                    )
+                    .filter(Boolean)
             ),
         ];
     };

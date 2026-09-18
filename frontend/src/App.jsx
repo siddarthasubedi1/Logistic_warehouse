@@ -4,6 +4,9 @@ import {
   Routes,
 } from "react-router-dom";
 
+import CreateModulePage from "./pages/training/CreateModulePage";
+import ModuleProgrammePage from "./pages/training/ModuleProgrammePage";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
@@ -19,13 +22,17 @@ import RolesPermissionsPage from "./pages/admin/RolesPermissionsPage";
 import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
 import EditRolePage from "./pages/admin/EditRolePage";
 import AuditLogsPage from "./pages/admin/AuditLogsPage";
+import PanoramaManagementPage from "./pages/admin/PanoramaManagementPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
 import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
+
 import TraineeUtilityPage from "./pages/trainee/TraineeUtilityPage";
+import TraineeModuleEnvironment from "./pages/trainee/TraineeModuleEnvironment";
+import TraineeExercisePage from "./pages/trainee/TraineeExercisePage";
 
 import {
   clearAuthSession,
@@ -36,18 +43,15 @@ import {
 } from "./utils/session";
 
 
+/* =========================================================
+   HOME REDIRECT
+========================================================= */
+
 function HomeRedirect() {
-  const accessToken =
-    getAccessToken();
+  const accessToken = getAccessToken();
+  const user = getSessionUser();
 
-  const user =
-    getSessionUser();
-
-
-  if (
-    !accessToken ||
-    !user
-  ) {
+  if (!accessToken || !user) {
     clearAuthSession();
 
     return (
@@ -58,21 +62,14 @@ function HomeRedirect() {
     );
   }
 
-
-  const role =
-    normalizeRole(
-      user.role
-    );
-
+  const role = normalizeRole(user.role);
 
   if (
     ![
       "admin",
       "trainer",
       "trainee",
-    ].includes(
-      role
-    )
+    ].includes(role)
   ) {
     clearAuthSession();
 
@@ -84,16 +81,9 @@ function HomeRedirect() {
     );
   }
 
-
   if (
-    [
-      "trainer",
-      "trainee",
-    ].includes(
-      role
-    ) &&
-    user.mustChangePassword ===
-    true
+    ["trainer", "trainee"].includes(role) &&
+    user.mustChangePassword === true
   ) {
     return (
       <Navigate
@@ -103,35 +93,31 @@ function HomeRedirect() {
     );
   }
 
-
   return (
     <Navigate
-      to={
-        getDashboardPath(
-          role
-        )
-      }
+      to={getDashboardPath(role)}
       replace
     />
   );
 }
 
 
+/* =========================================================
+   APP
+========================================================= */
+
 function App() {
   return (
     <Routes>
 
-      {/* ============================================
-              PUBLIC
-          ============================================= */}
+      {/* ===================================================
+          PUBLIC
+      ==================================================== */}
 
       <Route
         path="/login"
-        element={
-          <Login />
-        }
+        element={<Login />}
       />
-
 
       <Route
         path="/unauthorized"
@@ -144,17 +130,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN DASHBOARD
-          ============================================= */}
+      {/* ===================================================
+          ADMIN DASHBOARD
+      ==================================================== */}
 
       <Route
         path="/admin"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <AdminDashboard />
           </ProtectedRoute>
@@ -162,17 +146,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN CREATE USER
-          ============================================= */}
+      {/* ===================================================
+          ADMIN CREATE USER
+      ==================================================== */}
 
       <Route
         path="/admin/create-user"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <CreateUserPage />
           </ProtectedRoute>
@@ -180,17 +162,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN MANAGE USERS
-          ============================================= */}
+      {/* ===================================================
+          ADMIN MANAGE USERS
+      ==================================================== */}
 
       <Route
         path="/admin/users"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <ManageUsersPage />
           </ProtectedRoute>
@@ -198,45 +178,37 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN ROLES
-          ============================================= */}
+      {/* ===================================================
+          ADMIN ROLES
+      ==================================================== */}
 
       <Route
         path="/admin/roles"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <RolesPermissionsPage />
           </ProtectedRoute>
         }
       />
 
-
       <Route
         path="/admin/roles/:roleName"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <RoleDetailsPage />
           </ProtectedRoute>
         }
       />
 
-
       <Route
         path="/admin/roles/:roleName/edit"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <EditRolePage />
           </ProtectedRoute>
@@ -244,17 +216,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              ADMIN AUDIT LOGS
-          ============================================= */}
+      {/* ===================================================
+          ADMIN AUDIT LOGS
+      ==================================================== */}
 
       <Route
         path="/admin/audit-logs"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <AuditLogsPage />
           </ProtectedRoute>
@@ -262,9 +232,27 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINING PROGRAMMES
-          ============================================= */}
+      {/* ===================================================
+          ADMIN PANORAMA MANAGEMENT
+      ==================================================== */}
+
+      <Route
+        path="/admin/panoramas"
+        element={
+          <ProtectedRoute
+            allowedRoles={["admin"]}
+          >
+            <PanoramaManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          TRAINING PROGRAMMES MAIN PAGE
+
+          THIS WAS MISSING IN YOUR CODE.
+      ==================================================== */}
 
       <Route
         path="/training-programmes"
@@ -281,12 +269,64 @@ function App() {
       />
 
 
-      {/* ============================================
-              LEARNING SECTIONS
+      {/* ===================================================
+          CREATE MODULE
+          ADMIN ONLY
+      ==================================================== */}
 
-              MongoDB programme ID is no longer shown
-              inside the browser URL.
-          ============================================= */}
+      <Route
+        path="/training-programmes/create-module"
+        element={
+          <ProtectedRoute
+            allowedRoles={["admin"]}
+          >
+            <CreateModulePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          EDIT MODULE
+          ADMIN ONLY
+      ==================================================== */}
+
+      <Route
+        path="/training-programmes/module/:moduleId/edit"
+        element={
+          <ProtectedRoute
+            allowedRoles={["admin"]}
+          >
+            <CreateModulePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          MODULE PROGRAMME INFORMATION
+
+          Admin and Trainer can access this page.
+      ==================================================== */}
+
+      <Route
+        path="/training-programmes/module/:moduleId/programme"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "admin",
+              "trainer",
+            ]}
+          >
+            <ModuleProgrammePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          LEARNING CONTENT / SECTIONS
+      ==================================================== */}
 
       <Route
         path="/training-programmes/sections"
@@ -303,17 +343,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINING ASSIGNMENTS
-          ============================================= */}
+      {/* ===================================================
+          TRAINING ASSIGNMENTS
+      ==================================================== */}
 
       <Route
         path="/training-assignments"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "admin",
-            ]}
+            allowedRoles={["admin"]}
           >
             <TrainingAssignmentsPage />
           </ProtectedRoute>
@@ -321,17 +359,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINER DASHBOARD
-          ============================================= */}
+      {/* ===================================================
+          TRAINER DASHBOARD
+      ==================================================== */}
 
       <Route
         path="/trainer"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainer",
-            ]}
+            allowedRoles={["trainer"]}
           >
             <TrainerDashboard />
           </ProtectedRoute>
@@ -339,37 +375,31 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINER PROFILE
-          ============================================= */}
+      {/* ===================================================
+          TRAINER PROFILE
+      ==================================================== */}
 
       <Route
         path="/trainer/profile"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainer",
-            ]}
+            allowedRoles={["trainer"]}
           >
-            <ProfilePage
-              role="trainer"
-            />
+            <ProfilePage role="trainer" />
           </ProtectedRoute>
         }
       />
 
 
-      {/* ============================================
-              TRAINEE DASHBOARD
-          ============================================= */}
+      {/* ===================================================
+          TRAINEE HOME / 360 WAREHOUSE TOUR
+      ==================================================== */}
 
       <Route
         path="/trainee"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeDashboard />
           </ProtectedRoute>
@@ -377,37 +407,31 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINEE PROFILE
-          ============================================= */}
+      {/* ===================================================
+          TRAINEE PROFILE
+      ==================================================== */}
 
       <Route
         path="/trainee/profile"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
-            <ProfilePage
-              role="trainee"
-            />
+            <ProfilePage role="trainee" />
           </ProtectedRoute>
         }
       />
 
 
-      {/* ============================================
-              TRAINEE MY TRAINING
-          ============================================= */}
+      {/* ===================================================
+          TRAINEE MY TRAINING
+      ==================================================== */}
 
       <Route
         path="/my-training"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <MyTrainingPage />
           </ProtectedRoute>
@@ -415,17 +439,73 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINEE LEARNING
-          ============================================= */}
+      {/* ===================================================
+          TRAINEE MODULE 360 PREVIEW
+      ==================================================== */}
+
+      <Route
+        path="/my-training/preview/:moduleType/environment"
+        element={
+          <ProtectedRoute
+            allowedRoles={["trainee"]}
+          >
+            <TraineeModuleEnvironment />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          TRAINEE MODULE ENVIRONMENT
+      ==================================================== */}
+
+      <Route
+        path="/my-training/module/:moduleType/environment"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeModuleEnvironment />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/my-training/:programmeId/environment"
+        element={
+          <ProtectedRoute
+            allowedRoles={["trainee"]}
+          >
+            <TraineeModuleEnvironment />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          TRAINEE EXERCISE
+      ==================================================== */}
+
+      <Route
+        path="/my-training/:programmeId/exercise"
+        element={
+          <ProtectedRoute
+            allowedRoles={["trainee"]}
+          >
+            <TraineeExercisePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          TRAINEE LEARNING
+      ==================================================== */}
 
       <Route
         path="/my-training/:programmeId"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeLearningPage />
           </ProtectedRoute>
@@ -433,17 +513,15 @@ function App() {
       />
 
 
-      {/* ============================================
-              TRAINEE UTILITY PAGES
-          ============================================= */}
+      {/* ===================================================
+          TRAINEE PROGRESS
+      ==================================================== */}
 
       <Route
         path="/trainee/progress"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeUtilityPage
               type="progress"
@@ -453,29 +531,63 @@ function App() {
       />
 
 
+      {/* ===================================================
+          OLD WAREHOUSE TOUR LINKS
+          REDIRECT TO TRAINEE HOME
+      ==================================================== */}
+
+      <Route
+        path="/trainee/warehouse-tour"
+        element={
+          <ProtectedRoute
+            allowedRoles={["trainee"]}
+          >
+            <Navigate
+              to="/trainee"
+              replace
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainee/360"
+        element={
+          <ProtectedRoute
+            allowedRoles={["trainee"]}
+          >
+            <Navigate
+              to="/trainee"
+              replace
+            />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/trainee/scenarios"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
-            <TraineeUtilityPage
-              type="scenarios"
+            <Navigate
+              to="/trainee"
+              replace
             />
           </ProtectedRoute>
         }
       />
 
 
+      {/* ===================================================
+          TRAINEE QUIZZES
+      ==================================================== */}
+
       <Route
         path="/trainee/quizzes"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeUtilityPage
               type="quizzes"
@@ -485,13 +597,15 @@ function App() {
       />
 
 
+      {/* ===================================================
+          TRAINEE NOTIFICATIONS
+      ==================================================== */}
+
       <Route
         path="/trainee/notifications"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeUtilityPage
               type="notifications"
@@ -501,13 +615,15 @@ function App() {
       />
 
 
+      {/* ===================================================
+          TRAINEE HELP
+      ==================================================== */}
+
       <Route
         path="/trainee/help"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "trainee",
-            ]}
+            allowedRoles={["trainee"]}
           >
             <TraineeUtilityPage
               type="help"
@@ -517,21 +633,19 @@ function App() {
       />
 
 
-      {/* ============================================
-              HOME
-          ============================================= */}
+      {/* ===================================================
+          HOME
+      ==================================================== */}
 
       <Route
         path="/"
-        element={
-          <HomeRedirect />
-        }
+        element={<HomeRedirect />}
       />
 
 
-      {/* ============================================
-              UNKNOWN ROUTE
-          ============================================= */}
+      {/* ===================================================
+          UNKNOWN ROUTE
+      ==================================================== */}
 
       <Route
         path="*"

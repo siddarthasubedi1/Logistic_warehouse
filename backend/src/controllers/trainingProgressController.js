@@ -8,23 +8,12 @@ const TrainingProgress =
     );
 
 
-const ALLOWED_TRAINING_SECTIONS = [
-    "manual-handling",
-    "working-at-height",
-];
+const isValidTrainingSection = (trainingSection) =>
+    typeof trainingSection === "string" &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trainingSection) &&
+    trainingSection.length <= 100;
 
 
-// ======================================================
-// CHECK WHETHER MODULE IS VALID
-// ======================================================
-
-const isValidTrainingSection = (
-    trainingSection
-) => {
-    return ALLOWED_TRAINING_SECTIONS.includes(
-        trainingSection
-    );
-};
 
 
 // ======================================================

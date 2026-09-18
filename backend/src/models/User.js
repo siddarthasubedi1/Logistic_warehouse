@@ -112,24 +112,19 @@ const userSchema = new mongoose.Schema(
         /*
             Training sections assigned to a Trainer.
 
-            A Trainer can have:
-            []
-            ["manual-handling"]
-            ["working-at-height"]
-            ["manual-handling", "working-at-height"]
+            Training sections assigned to a user.
 
-            This allows ONE Trainer to manage
-            more than one training section.
+            Trainer: Admin selects one or more active modules.
+            Trainee: receives all active modules automatically.
+
+            Module keys are dynamic and are not limited to
+            Manual Handling or Working at Height.
         */
         assignedTrainingSections: {
             type: [
                 {
                     type: String,
-
-                    enum: [
-                        "manual-handling",
-                        "working-at-height",
-                    ],
+                    trim: true,
                 },
             ],
 

@@ -1,0 +1,13 @@
+const express = require('express');
+const authenticate = require('../middleware/authenticate');
+const authorize = require('../middleware/authorize');
+const checkActiveStatus = require('../middleware/checkActiveStatus');
+const uploadPanorama = require('../middleware/uploadPanorama');
+const controller = require('../controllers/panoramaAdminController');
+const router = express.Router();
+router.use(authenticate, checkActiveStatus, authorize('admin'));
+router.get('/', controller.listLocations);
+router.post('/', uploadPanorama.single('panorama'), controller.createLocation);
+router.patch('/:id', uploadPanorama.single('panorama'), controller.updateLocation);
+router.delete('/:id', controller.deleteLocation);
+module.exports = router;

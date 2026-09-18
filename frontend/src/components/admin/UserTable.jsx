@@ -1,3 +1,4 @@
+import { getActiveTrainingModules, getTrainingModuleLabel } from "../../utils/trainingModules";
 function UserTable({
     users = [],
     pendingResetUserIds = [],
@@ -702,10 +703,7 @@ function TrainingBadges({
         user?.role ===
         "trainee"
     ) {
-        sections = [
-            "manual-handling",
-            "working-at-height",
-        ];
+        sections = getActiveTrainingModules().map((module) => module.id);
     }
 
 
@@ -753,13 +751,7 @@ function TrainingBadges({
                             text-[#52627a]
                         "
                     >
-                        {section ===
-                            "manual-handling"
-                            ? "Manual Handling"
-                            : section ===
-                                "working-at-height"
-                                ? "Working at Height"
-                                : section}
+                        {getTrainingModuleLabel(section)}
                     </span>
                 )
             )}

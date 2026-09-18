@@ -479,22 +479,13 @@ function TraineeLearningPage() {
 
                                 <button
                                     type="button"
-                                    disabled={
-                                        !hasNext
-                                    }
-                                    onClick={() =>
-                                        setCurrentSectionIndex(
-                                            (
-                                                current
-                                            ) =>
-                                                Math.min(
-                                                    sections.length -
-                                                    1,
-                                                    current +
-                                                    1
-                                                )
-                                        )
-                                    }
+                                    onClick={() => {
+                                        if (hasNext) {
+                                            setCurrentSectionIndex((current) => Math.min(sections.length - 1, current + 1));
+                                        } else {
+                                            navigate(`/my-training/${programmeId}/exercise`);
+                                        }
+                                    }}
                                     className="
                                         min-h-[40px]
                                         rounded-lg
@@ -509,7 +500,7 @@ function TraineeLearningPage() {
                                         disabled:bg-[#94a3b8]
                                     "
                                 >
-                                    Next →
+                                    {hasNext ? "Next →" : "Start Exercise →"}
                                 </button>
                             </div>
                         </div>

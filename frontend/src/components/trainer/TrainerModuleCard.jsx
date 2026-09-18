@@ -4,29 +4,27 @@ import {
 
 import boxLift from "../../images/box-lift.jpg";
 import heightImage from "../../images/hight.jpg";
+import { getActiveTrainingModules } from "../../utils/trainingModules";
 
 
 // ======================================================
 // TRAINING AREAS
 // ======================================================
 
-const TRAINING_AREAS = {
-    "manual-handling": {
-        id: "manual-handling",
-        title: "Manual Handling",
-        description:
-            "Manage Manual Handling training programmes and learning sections.",
-        image: boxLift,
-    },
+function getTrainingAreas() {
+    const areas = {};
 
-    "working-at-height": {
-        id: "working-at-height",
-        title: "Working at Height",
-        description:
-            "Manage Working at Height training programmes and learning sections.",
-        image: heightImage,
-    },
-};
+    getActiveTrainingModules().forEach((module) => {
+        areas[module.id] = {
+            id: module.id,
+            title: module.name,
+            description: module.description || `Manage ${module.name} training programmes and learning sections.`,
+            image: module.image || (module.id === "working-at-height" ? heightImage : boxLift),
+        };
+    });
+
+    return areas;
+}
 
 
 // ======================================================
@@ -57,15 +55,20 @@ function TrainerModuleCard({
                 : [];
 
 
+    const trainingAreas = getTrainingAreas();
+
     const availableAreas =
         sections
             .map(
                 (
                     sectionId
                 ) =>
-                    TRAINING_AREAS[
-                    sectionId
-                    ]
+                    trainingAreas[sectionId] || {
+                        id: sectionId,
+                        title: String(sectionId).replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                        description: "Training module assigned by the Administrator.",
+                        image: boxLift,
+                    }
             )
             .filter(Boolean);
 

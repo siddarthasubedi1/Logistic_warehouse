@@ -1,0 +1,873 @@
+.tour360 {
+    height: 100vh;
+    min-height: 720px;
+    background: #f5f7fb;
+    color: #172033;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden
+}
+
+.tour360__top {
+    height: 70px;
+    background: #fff;
+    border-bottom: 1px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+    gap: 18px;
+    z-index: 5
+}
+
+.tour360__title {
+    font-size: 20px;
+    font-weight: 750;
+    color: #073763
+}
+
+.tour360__subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px
+}
+
+.tour360__legend {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: #475569;
+    align-items: center
+}
+
+.tour360__legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px
+}
+
+.tour360__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block
+}
+
+.tour360__dot--nav {
+    background: #55a0ff
+}
+
+.tour360__dot--train {
+    background: #f59e0b
+}
+
+.tour360__stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #0f172a;
+    overflow: hidden;
+    user-select: none
+}
+
+.tour360__canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab
+}
+
+.tour360__canvas:active {
+    cursor: grabbing
+}
+
+.tour360__shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .28), transparent 25%, transparent 72%, rgba(0, 0, 0, .34))
+}
+
+.tour360__location {
+    position: absolute;
+    left: 20px;
+    top: 18px;
+    background: rgba(7, 55, 99, .9);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 9px;
+    padding: 10px 14px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .18)
+}
+
+.tour360__location small {
+    display: block;
+    opacity: .75;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em
+}
+
+.tour360__location strong {
+    font-size: 15px
+}
+
+.tour360__hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border: 0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 11px;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .3);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .15s, opacity .15s
+}
+
+.tour360__hotspot:hover {
+    transform: translate(-50%, -50%) scale(1.06)
+}
+
+.tour360__hotspot--navigation {
+    background: rgba(11, 79, 135, .94);
+    border: 2px solid #8ec5ff
+}
+
+.tour360__hotspot--training {
+    background: rgba(180, 83, 9, .95);
+    border: 2px solid #fcd34d
+}
+
+.tour360__hotspot-icon {
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .18);
+    display: grid;
+    place-items: center;
+    font-size: 14px
+}
+
+.tour360__controls {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px
+}
+
+.tour360__control {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #cbd5e1;
+    background: rgba(255, 255, 255, .94);
+    border-radius: 8px;
+    color: #073763;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .16)
+}
+
+.tour360__control:hover {
+    background: #fff
+}
+
+.tour360__hint {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, .78);
+    color: #fff;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 11px;
+    pointer-events: none
+}
+
+.tour360__map {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    width: 230px;
+    background: rgba(255, 255, 255, .96);
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .2)
+}
+
+.tour360__map-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #073763;
+    margin-bottom: 7px
+}
+
+.tour360__map-box {
+    height: 130px;
+    background: #eef3f8;
+    border: 1px solid #d8e0e9;
+    border-radius: 7px;
+    position: relative;
+    overflow: hidden
+}
+
+.tour360__map-line {
+    position: absolute;
+    height: 2px;
+    background: #94a3b8;
+    transform-origin: 0 50%;
+    opacity: .7
+}
+
+.tour360__map-node {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #94a3b8;
+    border: 2px solid #fff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+    cursor: pointer
+}
+
+.tour360__map-node.active {
+    width: 16px;
+    height: 16px;
+    background: #0b4f87
+}
+
+.tour360__map-label {
+    position: absolute;
+    font-size: 8px;
+    color: #334155;
+    transform: translate(-50%, 8px);
+    white-space: nowrap;
+    pointer-events: none
+}
+
+.tour360__panel-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, .42);
+    z-index: 20;
+    display: flex;
+    justify-content: flex-end
+}
+
+.tour360__panel {
+    width: min(420px, 92vw);
+    height: 100%;
+    background: #fff;
+    padding: 24px;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, .2);
+    overflow: auto
+}
+
+.tour360__panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: flex-start;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 15px
+}
+
+.tour360__panel-kicker {
+    font-size: 11px;
+    color: #b45309;
+    font-weight: 800;
+    text-transform: uppercase
+}
+
+.tour360__panel h2 {
+    font-size: 21px;
+    color: #073763;
+    margin: 5px 0
+}
+
+.tour360__panel p {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #475569
+}
+
+.tour360__close {
+    border: 0;
+    background: #eef2f7;
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 18px
+}
+
+.tour360__action {
+    margin-top: 18px;
+    background: #0b4f87;
+    color: #fff;
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer
+}
+
+.tour360__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #0f172a;
+    color: #fff;
+    z-index: 30
+}
+
+.tour360__error {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    background: #fff7ed;
+    color: #9a3412;
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-size: 11px;
+    z-index: 6
+}
+
+@media(max-width:800px) {
+
+    .tour360__legend,
+    .tour360__map {
+        display: none
+    }
+
+    .tour360__top {
+        height: 62px;
+        padding: 0 12px
+    }
+
+    .tour360__title {
+        font-size: 17px
+    }
+
+    .tour360__hint {
+        bottom: 12px
+    }
+
+    .tour360__controls {
+        right: 10px;
+        top: 10px
+    }
+}
+
+/* Dashboard-embedded warehouse POV */
+.tour360--embedded {
+    height: calc(100vh - 76px);
+    min-height: 620px;
+    width: 100%;
+}
+
+.tour360--embedded .tour360__stage {
+    border-radius: 0;
+}
+
+.tour360__dashboard-badge {
+    position: absolute;
+    left: 20px;
+    top: 18px;
+    background: rgba(7, 55, 99, .94);
+    color: #fff;
+    border-radius: 8px;
+    padding: 11px 15px;
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: .08em;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .18);
+    z-index: 3
+}
+
+.tour360__dashboard-badge span {
+    color: #9ac8ff;
+    margin-left: 8px
+}
+
+.tour360--embedded .tour360__location {
+    left: 20px;
+    top: 66px
+}
+
+.tour360--embedded .tour360__controls {
+    top: auto;
+    right: auto;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    flex-direction: row;
+    background: rgba(255, 255, 255, .96);
+    padding: 7px;
+    border-radius: 10px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .2)
+}
+
+.tour360--embedded .tour360__hint {
+    left: 20px;
+    bottom: 20px;
+    transform: none
+}
+
+.tour360--embedded .tour360__map {
+    right: 18px;
+    top: 18px;
+    bottom: auto
+}
+
+@media(max-width:800px) {
+    .tour360--embedded {
+        height: calc(100vh - 62px)
+    }
+
+    .tour360--embedded .tour360__location {
+        top: 62px
+    }
+
+    .tour360__dashboard-badge {
+        left: 10px;
+        top: 10px
+    }
+
+    .tour360--embedded .tour360__hint {
+        left: 10px
+    }
+
+    .tour360--embedded .tour360__controls {
+        bottom: 12px
+    }
+}
+
+/* Trainee navigation bar on the 360 warehouse tour */
+.tour360__navbar {
+    min-height: 58px;
+    background: #073763;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .14);
+    z-index: 8;
+    flex-shrink: 0
+}
+
+.tour360__brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: .04em;
+    white-space: nowrap
+}
+
+.tour360__brand-mark {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    background: #fff;
+    color: #073763;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 900
+}
+
+.tour360__navlinks {
+    display: flex;
+    align-items: stretch;
+    gap: 3px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1
+}
+
+.tour360__navlinks::-webkit-scrollbar {
+    display: none
+}
+
+.tour360__navlink {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+    border-bottom: 3px solid transparent;
+    color: rgba(255, 255, 255, .78);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: background .15s, color .15s, border-color .15s
+}
+
+.tour360__navlink:hover {
+    background: rgba(255, 255, 255, .08);
+    color: #fff
+}
+
+.tour360__navlink.active {
+    color: #fff;
+    border-bottom-color: #55a0ff;
+    background: rgba(255, 255, 255, .07)
+}
+
+.tour360__logout {
+    width: 105px;
+    flex: 0 0 105px
+}
+
+.tour360__logout button {
+    min-height: 38px !important;
+    padding: 6px 9px !important
+}
+
+.tour360__logout button span:last-child {
+    font-size: 11px
+}
+
+.tour360__logout button span:first-child {
+    width: 22px;
+    height: 22px
+}
+
+.tour360__logout button:hover {
+    background: rgba(255, 255, 255, .1)
+}
+
+@media(max-width:980px) {
+    .tour360__navbar {
+        gap: 10px;
+        padding: 0 10px
+    }
+
+    .tour360__brand>span:last-child {
+        display: none
+    }
+
+    .tour360__logout {
+        width: 48px;
+        flex-basis: 48px
+    }
+
+    .tour360__logout button {
+        justify-content: center
+    }
+
+    .tour360__logout button span:last-child {
+        display: none
+    }
+
+    .tour360__navlink {
+        padding: 0 9px;
+        font-size: 10px
+    }
+}
+
+@media(max-width:640px) {
+    .tour360__navbar {
+        min-height: 52px
+    }
+
+    .tour360__brand {
+        display: none
+    }
+
+    .tour360__navlink {
+        min-height: 52px
+    }
+
+    .tour360__logout {
+        width: 42px;
+        flex-basis: 42px
+    }
+
+    .tour360__top {
+        height: 58px
+    }
+
+    .tour360__subtitle {
+        display: none
+    }
+}
+
+/* 2026 dashboard integration: compact controls, no bottom scene slider */
+.tour360--embedded {
+    height: calc(100vh - 1px);
+    min-height: 640px;
+    background: #f5f7fb
+}
+
+.tour360--embedded .tour360__stage {
+    border-radius: 0;
+    box-shadow: none
+}
+
+.tour360__dashboard-badge {
+    font-size: 11px;
+    padding: 9px 13px;
+    border-radius: 9px
+}
+
+.tour360--embedded .tour360__location {
+    top: 60px;
+    padding: 8px 12px
+}
+
+.tour360--embedded .tour360__controls {
+    bottom: 14px;
+    padding: 5px;
+    gap: 5px
+}
+
+.tour360--embedded .tour360__control {
+    width: 35px;
+    height: 35px;
+    font-size: 16px
+}
+
+.tour360--embedded .tour360__hint {
+    font-size: 10px;
+    padding: 7px 11px;
+    bottom: 16px
+}
+
+.tour360--embedded .tour360__map {
+    width: 205px;
+    padding: 8px;
+    right: 14px;
+    top: 14px
+}
+
+.tour360--embedded .tour360__map-box {
+    height: 112px
+}
+
+.tour360--embedded .tour360__map-label {
+    font-size: 6.5px
+}
+
+.tour360__hotspot {
+    font-size: 10px;
+    padding: 6px 9px
+}
+
+.tour360__hotspot-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 12px
+}
+
+/* Game-style Google-Street-View-like navigation */
+.tour360--embedded .tour360__map {
+    width: 158px;
+    padding: 6px;
+    right: 10px;
+    top: 10px;
+    border-radius: 8px
+}
+
+.tour360--embedded .tour360__map-box {
+    height: 88px
+}
+
+.tour360--embedded .tour360__map-title {
+    font-size: 9px;
+    margin-bottom: 4px
+}
+
+.tour360--embedded .tour360__map-label {
+    display: none
+}
+
+.tour360--embedded .tour360__map-node {
+    width: 8px;
+    height: 8px
+}
+
+.tour360--embedded .tour360__map-node.active {
+    width: 12px;
+    height: 12px
+}
+
+.tour360__gamepad {
+    position: absolute;
+    left: 50%;
+    bottom: 66px;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(2, 38px);
+    gap: 4px;
+    z-index: 7
+}
+
+.tour360__gamepad button {
+    border: 1px solid rgba(255, 255, 255, .7);
+    background: rgba(7, 55, 99, .88);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .28);
+    backdrop-filter: blur(5px)
+}
+
+.tour360__gamepad button:hover {
+    background: #0b4f87;
+    transform: scale(1.06)
+}
+
+.tour360__gamepad button:nth-child(1) {
+    grid-column: 2;
+    grid-row: 1
+}
+
+.tour360__gamepad button:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2
+}
+
+.tour360__gamepad button:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2
+}
+
+.tour360__gamepad button:nth-child(4) {
+    grid-column: 3;
+    grid-row: 2
+}
+
+.tour360__image-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: radial-gradient(circle at center, #1e3a5f, #0f172a 70%);
+    color: #fff;
+    text-align: center;
+    padding: 24px
+}
+
+.tour360__image-fallback strong {
+    font-size: 22px
+}
+
+.tour360__image-fallback span {
+    max-width: 480px;
+    font-size: 12px;
+    color: #cbd5e1
+}
+
+.tour360__image-fallback button {
+    border: 0;
+    border-radius: 9px;
+    padding: 10px 14px;
+    background: #1769aa;
+    color: #fff;
+    font-weight: 750;
+    cursor: pointer
+}
+
+@media(max-width:800px) {
+    .tour360__gamepad {
+        bottom: 62px
+    }
+
+    .tour360--embedded .tour360__map {
+        display: none
+    }
+}
+
+/* Multi-scene map interaction fix */
+.tour360__map {
+    z-index: 12;
+    pointer-events: auto
+}
+
+.tour360__map-box {
+    pointer-events: auto
+}
+
+.tour360__map-line {
+    pointer-events: none;
+    z-index: 1
+}
+
+.tour360__map-node {
+    z-index: 4;
+    pointer-events: auto;
+    touch-action: manipulation
+}
+
+.tour360__map-label {
+    z-index: 2
+}
+
+/* Clean labelled map: only major places are displayed. */
+.tour360--embedded .tour360__map {
+    width: 245px !important;
+    padding: 8px !important
+}
+
+.tour360--embedded .tour360__map-box {
+    height: 150px !important;
+    overflow: visible !important
+}
+
+.tour360--embedded .tour360__map-label,
+.tour360__map-label {
+    display: block;
+    position: absolute;
+    border: 0;
+    background: rgba(255, 255, 255, .92);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 7px;
+    font-weight: 700;
+    color: #334155;
+    transform: translate(-50%, 8px);
+    white-space: nowrap;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 6;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .12)
+}
+
+.tour360__map-label:hover,
+.tour360__map-label.active {
+    background: #073763;
+    color: #fff
+}
+
+.tour360__map-node {
+    z-index: 8 !important
+}
+
+.tour360__map-line {
+    opacity: .35 !important
+}

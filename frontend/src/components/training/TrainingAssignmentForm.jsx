@@ -7,6 +7,10 @@ import {
 
 
 function TrainingAssignmentForm({
+    modules = [],
+    moduleId = "",
+    onModuleChange,
+    onAddProgramme,
     programmes = [],
     trainees = [],
     programmeId = "",
@@ -101,9 +105,29 @@ function TrainingAssignmentForm({
                     className="
                         grid
                         gap-4
-                        md:grid-cols-2
+                        md:grid-cols-3
                     "
                 >
+                    <Field
+                        label="Training Module"
+                    >
+                        <select
+                            value={moduleId}
+                            onChange={(event) => onModuleChange?.(event.target.value)}
+                            disabled={saving}
+                            className={selectClass}
+                            required
+                        >
+                            <option value="">Select module</option>
+                            {modules.map((module) => (
+                                <option key={module.id} value={module.id}>
+                                    {module.name}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
+
+
                     <Field
                         label="Training Programme"
                     >
@@ -119,7 +143,7 @@ function TrainingAssignmentForm({
                                 )
                             }
                             disabled={
-                                saving
+                                saving || !moduleId
                             }
                             className={
                                 selectClass
@@ -127,7 +151,11 @@ function TrainingAssignmentForm({
                             required
                         >
                             <option value="">
-                                Select programme
+                                {!moduleId
+                                    ? "Select module first"
+                                    : programmes.length === 0
+                                        ? "No active programmes for this module"
+                                        : "Select programme"}
                             </option>
 
                             {programmes.map(
@@ -142,10 +170,10 @@ function TrainingAssignmentForm({
                                             programme._id
                                         }
                                     >
-                                        {programme.title} —{" "}
-                                        {formatProgrammeType(
-                                            programme.programmeType
-                                        )}
+                                        {programme.title}
+                                        {programme.source === "local-module"
+                                            ? ` — ${programme.moduleName || programme.programmeType || "Module"}`
+                                            : ` — ${formatProgrammeType(programme.programmeType)}`}
                                     </option>
                                 )
                             )}
@@ -204,6 +232,22 @@ function TrainingAssignmentForm({
                 </div>
 
 
+                {moduleId && programmes.length === 0 && (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                        <p className="text-[8px] font-medium text-amber-800">
+                            No active programme exists for this module yet.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={onAddProgramme}
+                            className="rounded-lg bg-[#0b4f87] px-4 py-2 text-[8px] font-semibold text-white hover:bg-[#073763]"
+                        >
+                            + Add Programme
+                        </button>
+                    </div>
+                )}
+
+
                 {(selectedProgramme ||
                     selectedTrainee) && (
                         <div
@@ -224,9 +268,9 @@ function TrainingAssignmentForm({
                                 }
                                 extra={
                                     selectedProgramme
-                                        ? formatProgrammeType(
-                                            selectedProgramme.programmeType
-                                        )
+                                        ? selectedProgramme.source === "local-module"
+                                            ? selectedProgramme.moduleName || selectedProgramme.programmeType || ""
+                                            : formatProgrammeType(selectedProgramme.programmeType)
                                         : ""
                                 }
                             />
