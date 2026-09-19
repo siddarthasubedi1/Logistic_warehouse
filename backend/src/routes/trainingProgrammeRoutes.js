@@ -125,6 +125,8 @@ router.post(
         "trainer"
     ),
 
+    uploadTrainingImage.single("coverImage"),
+
     createTrainingProgramme
 );
 
@@ -312,6 +314,8 @@ router.patch(
         "admin",
         "trainer"
     ),
+
+    uploadTrainingImage.single("coverImage"),
 
     updateTrainingProgramme
 );

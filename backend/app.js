@@ -28,6 +28,8 @@ const userRoutes =
         "./src/routes/userRoutes"
     );
 
+const trainingModuleRoutes = require("./src/routes/trainingModuleRoutes");
+
 const trainingProgrammeRoutes =
     require(
         "./src/routes/trainingProgrammeRoutes"
@@ -49,6 +51,8 @@ const warehouseTourRoutes =
     );
 
 const panoramaAdminRoutes = require("./src/routes/panoramaAdminRoutes");
+const sprint2Routes = require("./src/routes/sprint2Routes");
+const sprint2ApiRoutes = require("./src/routes/sprint2ApiRoutes");
 
 
 const app =
@@ -76,7 +80,7 @@ app.use(
 // ======================================================
 
 app.use(
-    express.json()
+    express.json({ limit: "3mb" })
 );
 
 
@@ -187,8 +191,10 @@ app.use(
 
 
 // ======================================================
-// SPRINT 2 - TRAINING PROGRAMMES
+// SPRINT 2 - TRAINING MODULES + PROGRAMMES
 // ======================================================
+
+app.use("/api/training-modules", trainingModuleRoutes);
 
 app.use(
     "/api/training-programmes",
@@ -226,6 +232,10 @@ app.use(
 );
 
 app.use("/api/admin/panoramas", panoramaAdminRoutes);
+
+// Sprint 2 scenarios, assessments, attempts and progression
+app.use("/api", sprint2ApiRoutes);
+app.use("/api/sprint2", sprint2Routes);
 
 
 // ======================================================

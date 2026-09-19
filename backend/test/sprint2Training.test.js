@@ -13,6 +13,9 @@ const app =
 const User =
     require("../src/models/User");
 
+const TrainingModule =
+    require("../src/models/TrainingModule");
+
 
 /* =========================================================
    GENERATE REAL TEST PNG
@@ -195,25 +198,26 @@ describe(
                    CREATE ADMIN
                 =========================================== */
 
-                await createUser({
-                    firstName:
-                        "Sprint",
+                const admin =
+                    await createUser({
+                        firstName:
+                            "Sprint",
 
-                    lastName:
-                        "Admin",
+                        lastName:
+                            "Admin",
 
-                    email:
-                        "sprint2.admin@test.com",
+                        email:
+                            "sprint2.admin@test.com",
 
-                    username:
-                        "sprint2admin",
+                        username:
+                            "sprint2admin",
 
-                    password:
-                        adminPassword,
+                        password:
+                            adminPassword,
 
-                    role:
-                        "admin",
-                });
+                        role:
+                            "admin",
+                    });
 
 
                 /* ==========================================
@@ -307,6 +311,36 @@ describe(
                             "working-at-height",
                         ],
                     });
+
+
+                /* ==========================================
+                   CREATE DATABASE-BACKED TRAINING MODULE
+
+                   Sprint 2 programme creation now validates
+                   programmeType against TrainingModule.
+                   The test must therefore create the same
+                   module relationship used by the real app.
+                =========================================== */
+
+                await TrainingModule.create({
+                    name:
+                        "Manual Handling",
+
+                    code:
+                        "MH",
+
+                    key:
+                        "manual-handling",
+
+                    description:
+                        "Manual handling safety training module used by the Sprint 2 integration test.",
+
+                    status:
+                        "active",
+
+                    createdBy:
+                        admin._id,
+                });
 
 
                 /* ==========================================

@@ -4,6 +4,10 @@ const TrainingProgramme = require(
     "../models/TrainingProgramme"
 );
 
+const TrainingModule = require(
+    "../models/TrainingModule"
+);
+
 const User = require(
     "../models/User"
 );
@@ -13,6 +17,8 @@ const {
 } = require(
     "../utils/auditLogger"
 );
+
+const { saveTrainingImage, deleteTrainingImage } = require("../utils/trainingImageStorage");
 
 
 // ======================================================
@@ -106,7 +112,8 @@ const buildManagerQuery = (
 
 const findTrainerForProgramme = async (
     trainerId,
-    programmeType
+    programmeType,
+    requireAssignedSection = true
 ) => {
     if (
         !trainerId ||
@@ -117,22 +124,20 @@ const findTrainerForProgramme = async (
         return null;
     }
 
-    return User.findOne({
-        _id:
-            trainerId,
+    const query = {
+        _id: trainerId,
+        role: "trainer",
+        status: "active",
+        accountStatus: "created",
+    };
 
-        role:
-            "trainer",
+    // Admin-created modules are dynamic. Admin may choose any active Trainer
+    // as programme owner. Trainer self-service still respects assigned sections.
+    if (requireAssignedSection) {
+        query.assignedTrainingSections = programmeType;
+    }
 
-        status:
-            "active",
-
-        accountStatus:
-            "created",
-
-        assignedTrainingSections:
-            programmeType,
-    }).select(
+    return User.findOne(query).select(
         "_id firstName lastName username email role status accountStatus assignedTrainingSections"
     );
 };
@@ -202,9 +207,6 @@ const validateAuthorizedTrainers = async ({
 
             accountStatus:
                 "created",
-
-            assignedTrainingSections:
-                programmeType,
         }).select(
             "_id"
         );
@@ -223,7 +225,7 @@ const validateAuthorizedTrainers = async ({
                 "INVALID_AUTHORIZED_TRAINER",
 
             message:
-                "Every authorised Trainer must be an active Trainer assigned to the selected training type.",
+                "Every authorised user must be an active Trainer.",
         };
     }
 
@@ -263,6 +265,12 @@ const populateProgramme = (
             "updatedBy",
 
             "firstName lastName username role"
+        )
+
+        .populate(
+            "deletedBy",
+
+            "firstName lastName username role"
         );
 };
 
@@ -299,18 +307,25 @@ const createTrainingProgramme = async (
             );
 
 
+        const shortDescription = normalizeString(req.body.shortDescription);
+
         const description =
             normalizeString(
                 req.body.description
             );
 
+        const learningObjectives = normalizeString(req.body.learningObjectives);
+        const prerequisite = normalizeString(req.body.prerequisite || "");
+
 
         const status =
             normalizeString(
                 req.body.status ||
-                "draft"
+                "active"
             );
 
+
+        const level = normalizeString(req.body.level || "beginner").toLowerCase();
 
         const passMark =
             Number(
@@ -325,7 +340,9 @@ const createTrainingProgramme = async (
         if (
             !programmeType ||
             !title ||
+            !shortDescription ||
             !description ||
+            !learningObjectives ||
             req.body.passMark ===
             undefined ||
             req.body.passMark ===
@@ -340,7 +357,7 @@ const createTrainingProgramme = async (
                         "PROGRAMME_REQUIRED_FIELDS_MISSING",
 
                     message:
-                        "Programme type, title, description and pass mark are required.",
+                        "Programme type, title, short description, full description, learning objectives and pass mark are required.",
                 });
         }
 
@@ -367,6 +384,23 @@ const createTrainingProgramme = async (
 
 
         // ==================================================
+        // DATABASE MODULE MUST EXIST AND BE ACTIVE
+        // ==================================================
+
+        const trainingModule = await TrainingModule.findOne({
+            key: programmeType,
+            status: "active",
+        });
+
+        if (!trainingModule) {
+            return res.status(400).json({
+                code: "TRAINING_MODULE_NOT_FOUND",
+                message: "The selected training module does not exist or is inactive.",
+            });
+        }
+
+
+        // ==================================================
         // TITLE
         // ==================================================
 
@@ -387,7 +421,23 @@ const createTrainingProgramme = async (
 
 
         // ==================================================
-        // DESCRIPTION
+        // SHORT/FULL DESCRIPTION + LEARNING OBJECTIVES
+        // ==================================================
+
+        if (shortDescription.length < 10 || shortDescription.length > 300) {
+            return res.status(400).json({ code: "INVALID_SHORT_DESCRIPTION", message: "Short description must be between 10 and 300 characters." });
+        }
+
+        if (learningObjectives.length < 10 || learningObjectives.length > 2000) {
+            return res.status(400).json({ code: "INVALID_LEARNING_OBJECTIVES", message: "Learning objectives must be between 10 and 2000 characters." });
+        }
+
+        if (prerequisite.length > 500) {
+            return res.status(400).json({ code: "INVALID_PREREQUISITE", message: "Prerequisite cannot exceed 500 characters." });
+        }
+
+        // ==================================================
+        // FULL DESCRIPTION (stored in existing description field)
         // ==================================================
 
         if (
@@ -405,6 +455,17 @@ const createTrainingProgramme = async (
                 });
         }
 
+
+        // ==================================================
+        // PROGRAMME LEVEL
+        // ==================================================
+
+        if (!["beginner", "intermediate", "advanced"].includes(level)) {
+            return res.status(400).json({
+                code: "INVALID_PROGRAMME_LEVEL",
+                message: "Programme level must be Beginner, Intermediate, or Advanced.",
+            });
+        }
 
         // ==================================================
         // PASS MARK
@@ -486,7 +547,8 @@ const createTrainingProgramme = async (
         const owner =
             await findTrainerForProgramme(
                 ownerId,
-                programmeType
+                programmeType,
+                req.user.role !== "admin"
             );
 
 
@@ -498,7 +560,7 @@ const createTrainingProgramme = async (
                         "INVALID_PROGRAMME_OWNER",
 
                     message:
-                        "Programme owner must be an active Trainer assigned to the selected training type.",
+                        "Programme owner must be an active Trainer.",
                 });
         }
 
@@ -557,18 +619,30 @@ const createTrainingProgramme = async (
         // CREATE PROGRAMME
         // ==================================================
 
+        let coverImageUrl = "";
+        if (req.file) {
+            const uploadedCover = await saveTrainingImage(req.file);
+            coverImageUrl = uploadedCover.imageUrl;
+        }
+
         const programme =
             await TrainingProgramme.create({
                 programmeType,
 
                 title,
 
+                shortDescription,
                 description,
+                learningObjectives,
+                prerequisite,
+                coverImageUrl,
 
                 owner:
                     ownerId,
 
                 authorizedTrainers,
+
+                level,
 
                 passMark,
 
@@ -1077,6 +1151,10 @@ const updateTrainingProgramme = async (
                 : programme.title;
 
 
+        const nextShortDescription = req.body.shortDescription !== undefined
+            ? normalizeString(req.body.shortDescription)
+            : (programme.shortDescription || programme.description || "");
+
         const nextDescription =
             req.body.description !==
                 undefined
@@ -1087,6 +1165,14 @@ const updateTrainingProgramme = async (
 
                 : programme.description;
 
+        const nextLearningObjectives = req.body.learningObjectives !== undefined
+            ? normalizeString(req.body.learningObjectives)
+            : (programme.learningObjectives || "Complete the learning objectives for this programme.");
+
+        const nextPrerequisite = req.body.prerequisite !== undefined
+            ? normalizeString(req.body.prerequisite)
+            : (programme.prerequisite || "");
+
 
         const nextStatus =
             req.body.status !==
@@ -1096,6 +1182,12 @@ const updateTrainingProgramme = async (
                 )
 
                 : programme.status;
+
+
+        const nextLevel =
+            req.body.level !== undefined
+                ? normalizeString(req.body.level).toLowerCase()
+                : ({ easy: "beginner", medium: "intermediate", high: "advanced" }[programme.level] || programme.level || "beginner");
 
 
         const nextPassMark =
@@ -1153,6 +1245,18 @@ const updateTrainingProgramme = async (
         // VALIDATE DESCRIPTION
         // ==================================================
 
+        if (nextShortDescription.length < 10 || nextShortDescription.length > 300) {
+            return res.status(400).json({ code: "INVALID_SHORT_DESCRIPTION", message: "Short description must be between 10 and 300 characters." });
+        }
+
+        if (nextLearningObjectives.length < 10 || nextLearningObjectives.length > 2000) {
+            return res.status(400).json({ code: "INVALID_LEARNING_OBJECTIVES", message: "Learning objectives must be between 10 and 2000 characters." });
+        }
+
+        if (nextPrerequisite.length > 500) {
+            return res.status(400).json({ code: "INVALID_PREREQUISITE", message: "Prerequisite cannot exceed 500 characters." });
+        }
+
         if (
             nextDescription.length < 10 ||
             nextDescription.length > 3000
@@ -1166,6 +1270,18 @@ const updateTrainingProgramme = async (
                     message:
                         "Programme description must be between 10 and 3000 characters.",
                 });
+        }
+
+
+        // ==================================================
+        // VALIDATE PROGRAMME LEVEL
+        // ==================================================
+
+        if (!["beginner", "intermediate", "advanced"].includes(nextLevel)) {
+            return res.status(400).json({
+                code: "INVALID_PROGRAMME_LEVEL",
+                message: "Programme level must be Beginner, Intermediate, or Advanced.",
+            });
         }
 
 
@@ -1244,7 +1360,8 @@ const updateTrainingProgramme = async (
         const owner =
             await findTrainerForProgramme(
                 nextOwnerId,
-                nextProgrammeType
+                nextProgrammeType,
+                req.user.role !== "admin"
             );
 
 
@@ -1256,7 +1373,7 @@ const updateTrainingProgramme = async (
                         "INVALID_PROGRAMME_OWNER",
 
                     message:
-                        "Programme owner must be an active Trainer assigned to the selected training type.",
+                        "Programme owner must be an active Trainer.",
                 });
         }
 
@@ -1366,8 +1483,24 @@ const updateTrainingProgramme = async (
             nextTitle;
 
 
+        programme.shortDescription = nextShortDescription;
+
         programme.description =
             nextDescription;
+
+        programme.learningObjectives = nextLearningObjectives;
+        programme.prerequisite = nextPrerequisite;
+
+        if (req.file) {
+            const oldCoverImageUrl = programme.coverImageUrl;
+            const uploadedCover = await saveTrainingImage(req.file);
+            programme.coverImageUrl = uploadedCover.imageUrl;
+            if (oldCoverImageUrl) await deleteTrainingImage(oldCoverImageUrl);
+        }
+
+
+        programme.level =
+            nextLevel;
 
 
         programme.passMark =
@@ -1582,6 +1715,12 @@ const deleteTrainingProgramme = async (
         programme.updatedBy =
             req.user.id;
 
+        programme.deletedBy =
+            req.user.id;
+
+        programme.deletedAt =
+            new Date();
+
 
         await programme.save();
 
@@ -1789,6 +1928,11 @@ const reactivateTrainingProgramme = async (
 
         programme.updatedBy =
             req.user.id;
+
+        // Reactivation makes this a live record again. The historical
+        // deactivate/reactivate events remain permanently in AuditLog.
+        programme.deletedBy = null;
+        programme.deletedAt = null;
 
 
         await programme.save();

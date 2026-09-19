@@ -9,6 +9,8 @@ function TrainingProgrammeForm({
     formData,
     isAdmin = false,
     availableProgrammeTypes = [],
+    lockedProgrammeType = "",
+    lockedProgrammeLabel = "",
     eligibleOwnerTrainers = [],
     eligibleAuthorizedTrainers = [],
     editingProgramme = null,
@@ -198,60 +200,73 @@ function TrainingProgrammeForm({
                             label="Programme Type"
                             required
                         >
+                            {lockedProgrammeType ? (
+                                <>
+                                    <input
+                                        type="hidden"
+                                        name="programmeType"
+                                        value={formData?.programmeType || lockedProgrammeType}
+                                    />
+                                    <div className={`${selectClass} flex items-center bg-slate-50 font-semibold text-slate-700`}>
+                                        {lockedProgrammeLabel || lockedProgrammeType}
+                                    </div>
+                                    <HelperText>
+                                        Automatically selected from the module you are managing.
+                                    </HelperText>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="relative">
+                                        <select
+                                            name="programmeType"
+                                            value={formData?.programmeType || ""}
+                                            onChange={onInputChange}
+                                            disabled={saving || Boolean(editingProgramme)}
+                                            className={selectClass}
+                                            required
+                                        >
+                                            <option value="">Select programme type</option>
+                                            {availableProgrammeTypes.map((programme) => (
+                                                <option key={programme.value} value={programme.value}>
+                                                    {programme.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <SelectArrow />
+                                    </div>
+                                    {editingProgramme && (
+                                        <HelperText>
+                                            Programme type cannot be changed after creation.
+                                        </HelperText>
+                                    )}
+                                </>
+                            )}
+                        </FormField>
+
+
+                        <FormField
+                            label="Programme Level"
+                            required
+                        >
                             <div className="relative">
                                 <select
-                                    name="programmeType"
-                                    value={
-                                        formData?.programmeType ||
-                                        ""
-                                    }
-                                    onChange={
-                                        onInputChange
-                                    }
-                                    disabled={
-                                        saving ||
-                                        Boolean(
-                                            editingProgramme
-                                        )
-                                    }
-                                    className={
-                                        selectClass
-                                    }
+                                    name="level"
+                                    value={formData?.level || ""}
+                                    onChange={onInputChange}
+                                    disabled={saving}
+                                    className={selectClass}
                                     required
                                 >
-                                    <option value="">
-                                        Select programme type
-                                    </option>
-
-                                    {availableProgrammeTypes.map(
-                                        (
-                                            programme
-                                        ) => (
-                                            <option
-                                                key={
-                                                    programme.value
-                                                }
-                                                value={
-                                                    programme.value
-                                                }
-                                            >
-                                                {
-                                                    programme.label
-                                                }
-                                            </option>
-                                        )
-                                    )}
+                                    <option value="">Select programme level</option>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
                                 </select>
-
                                 <SelectArrow />
                             </div>
-
-                            {editingProgramme && (
-                                <HelperText>
-                                    Programme type cannot be
-                                    changed after creation.
-                                </HelperText>
-                            )}
+                            <HelperText>
+                                Select the learner difficulty level for this programme.
+                            </HelperText>
                         </FormField>
 
 
@@ -339,8 +354,15 @@ function TrainingProgrammeForm({
 
 
                         <div className="md:col-span-2">
+                            <FormField label="Short Description" required>
+                                <textarea name="shortDescription" rows="3" minLength="10" maxLength="300" value={formData?.shortDescription || ""} onChange={onInputChange} disabled={saving} placeholder="A short summary shown on programme cards." className={`${inputClass} resize-y py-3`} required />
+                                <HelperText>10–300 characters.</HelperText>
+                            </FormField>
+                        </div>
+
+                        <div className="md:col-span-2">
                             <FormField
-                                label="Description"
+                                label="Full Description"
                                 required
                             >
                                 <textarea
@@ -358,7 +380,7 @@ function TrainingProgrammeForm({
                                     disabled={
                                         saving
                                     }
-                                    placeholder="Describe the purpose and safety learning objectives of this programme."
+                                    placeholder="Provide the complete programme description, scope and learning context."
                                     className={`
                                         ${inputClass}
                                         min-h-[140px]
@@ -390,6 +412,22 @@ function TrainingProgrammeForm({
                                 </div>
                             </FormField>
                         </div>
+                        <div className="md:col-span-2">
+                            <FormField label="Learning Objectives" required>
+                                <textarea name="learningObjectives" rows="4" minLength="10" maxLength="2000" value={formData?.learningObjectives || ""} onChange={onInputChange} disabled={saving} placeholder="Example: Identify hazards, apply safe procedures, and demonstrate correct practice." className={`${inputClass} resize-y py-3`} required />
+                                <HelperText>Describe what learners should be able to do after completing the programme.</HelperText>
+                            </FormField>
+                        </div>
+
+                        <FormField label="Prerequisite">
+                            <input type="text" name="prerequisite" maxLength="500" value={formData?.prerequisite || ""} onChange={onInputChange} disabled={saving} placeholder="Example: Safety Induction (optional)" className={inputClass} />
+                            <HelperText>Optional previous knowledge or programme required before starting.</HelperText>
+                        </FormField>
+
+                        <FormField label="Cover Image">
+                            <input type="file" name="coverImage" accept="image/jpeg,image/png,image/webp" onChange={onInputChange} disabled={saving} className={inputClass} />
+                            <HelperText>Optional JPG, PNG or WebP image, maximum 5 MB. {formData?.coverImageUrl ? "Existing image is kept unless replaced." : ""}</HelperText>
+                        </FormField>
                     </div>
                 </FormSection>
 

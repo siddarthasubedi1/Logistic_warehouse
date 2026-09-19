@@ -112,7 +112,28 @@ export function PanoramaCanvas({ src, yaw, pitch, fov, onViewChange, onImageErro
 export default function Trainee360Environment({ embedded = false }) {
     const [scenes, setScenes] = useState(FALLBACK_SCENES), [sceneId, setSceneId] = useState("entrance"), [yaw, setYaw] = useState(0), [pitch, setPitch] = useState(0), [fov, setFov] = useState(78), [panel, setPanel] = useState(null), [apiNote, setApiNote] = useState(""), [imageFailed, setImageFailed] = useState(false);
     const stageRef = useRef(null); const historyRef = useRef([]); const [size, setSize] = useState({ w: 1200, h: 700 });
-    useEffect(() => { fetch(`${API_BASE}/warehouse-tour/locations`, { headers: { Authorization: `Bearer ${getAccessToken()}` } }).then(r => r.ok ? r.json() : Promise.reject()).then(data => { if (data.locations?.length) { const byId = new Map(data.locations.map(x => [x.locationId, x])); const merged = FALLBACK_SCENES.map(base => { const remote = byId.get(base.locationId) || {}; return { ...base, name: remote.name || base.name, description: remote.description || base.description, panorama: localPanoramaFor(base.locationId) }; }); setScenes(merged); setSceneId("entrance") } }).catch(() => setApiNote("Using the built-in 20-location warehouse environment.")); }, []);
+    useEffect(() => {
+        const headers = { Authorization: `Bearer ${getAccessToken()}` };
+        fetch(`${API_BASE}/trainee/warehouse-tour`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => {
+                const records = Array.isArray(data.panoramas) ? data.panoramas : [];
+                if (!records.length) { setApiNote(data.fallback || "Warehouse Tour panorama is not configured yet. Using the safe local fallback."); return; }
+                const byMongoId = new Map(records.map(x => [String(x._id), x]));
+                const origin = API_BASE.replace(/\/api\/?$/, "");
+                const dynamic = records.map((record, index) => {
+                    const locationId = record.type === "warehouse_tour" ? "entrance" : (record.area || `area-${index + 1}`);
+                    const base = FALLBACK_SCENES.find(x => x.locationId === locationId);
+                    const hotspots = (record.hotspots || []).map((h, i) => {
+                        const target = byMongoId.get(String(h.targetPanorama || ""));
+                        return { id: h._id || `${record._id}-${i}`, type: "navigation", label: h.label, yaw: Number(h.yaw || 0), pitch: Number(h.pitch || -5), targetLocationId: target ? (target.type === "warehouse_tour" ? "entrance" : target.area) : "" };
+                    }).filter(h => h.targetLocationId);
+                    return { locationId, name: record.name, description: record.description || "", panorama: /^https?:\/\//i.test(record.imageUrl) ? record.imageUrl : `${origin}${record.imageUrl}`, mapX: base?.mapX ?? 15 + (index % 5) * 18, mapY: base?.mapY ?? 25 + Math.floor(index / 5) * 20, hotspots, connectedLocations: hotspots.map(h => h.targetLocationId) };
+                });
+                setScenes(dynamic); setSceneId(dynamic.find(x => x.locationId === "entrance")?.locationId || dynamic[0].locationId); setApiNote("");
+            })
+            .catch(() => setApiNote("Warehouse Tour API is unavailable. Using the safe local fallback."));
+    }, []);
     useEffect(() => { const el = stageRef.current; if (!el) return; const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height })); ro.observe(el); return () => ro.disconnect() }, []);
     const scene = useMemo(() => scenes.find(s => s.locationId === sceneId) || scenes[0], [scenes, sceneId]);
     const go = useCallback((id, { remember = true } = {}) => { if (!scenes.some(s => s.locationId === id) || id === sceneId) return; if (remember) historyRef.current.push(sceneId); setSceneId(id); setYaw(0); setPitch(0); setFov(78); setPanel(null); setImageFailed(false) }, [scenes, sceneId]);

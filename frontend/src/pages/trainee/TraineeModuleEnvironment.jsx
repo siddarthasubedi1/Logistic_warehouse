@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { PanoramaCanvas } from "./Trainee360Environment";
-import api from "../../services/api";
+import api, { API_BASE_URL } from "../../services/api";
 import { parseArrayResponse, sortLearningSections } from "../../utils/training";
 import "./Training360Flow.css";
 
@@ -12,6 +12,7 @@ export default function TraineeModuleEnvironment() {
     const [programme, setProgramme] = useState(null);
     const [moduleProgrammes, setModuleProgrammes] = useState([]);
     const [sections, setSections] = useState([]);
+    const [environmentPanorama, setEnvironmentPanorama] = useState(null);
     const [selectedSection, setSelectedSection] = useState(0);
     const [panel, setPanel] = useState("menu");
     const [loadError, setLoadError] = useState("");
@@ -26,11 +27,14 @@ export default function TraineeModuleEnvironment() {
             Promise.all([
                 api.get(`/my-training/${programmeId}`),
                 api.get(`/my-training/${programmeId}/sections`).catch(() => ({ data: { sections: [] } })),
+                api.get(`/programmes/${programmeId}/environment`).catch((error) => ({ data: { panorama: null, fallback: error?.response?.data?.message || "Module panorama is not configured." } })),
             ])
-                .then(([programmeResponse, sectionsResponse]) => {
+                .then(([programmeResponse, sectionsResponse, environmentResponse]) => {
                     if (!alive) return;
                     setProgramme(programmeResponse.data?.programme || sectionsResponse.data?.programme || null);
                     setSections(sortLearningSections(parseArrayResponse(sectionsResponse.data, "sections")));
+                    setEnvironmentPanorama(environmentResponse.data?.panorama || null);
+                    if (!environmentResponse.data?.panorama && environmentResponse.data?.fallback) setLoadError(environmentResponse.data.fallback);
                 })
                 .catch((error) => {
                     if (alive) setLoadError(error?.response?.data?.message || "Unable to load this training programme.");
@@ -60,7 +64,10 @@ export default function TraineeModuleEnvironment() {
     }), []);
     const meta = moduleMeta[activeType] || { title: activeType.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()), subtitle: "Interactive training environment", panorama: "/panoramas/training-selection.png" };
     const title = programme?.title || programme?.name || meta.title;
-    const panorama = meta.panorama;
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
+    const panorama = environmentPanorama?.imageUrl
+        ? (/^https?:\/\//i.test(environmentPanorama.imageUrl) ? environmentPanorama.imageUrl : `${backendOrigin}${environmentPanorama.imageUrl}`)
+        : meta.panorama;
     const current = sections[selectedSection] || null;
 
     const menuItems = [
@@ -77,7 +84,11 @@ export default function TraineeModuleEnvironment() {
             else setLoadError("An active module assignment is required to start the exercise.");
             return;
         }
-        if (key === "quiz") { navigate("/trainee/quizzes"); return; }
+        if (key === "quiz") {
+            if (programmeId) navigate(`/my-training/${programmeId}/exercise`);
+            else setLoadError("Choose an assigned programme before opening assessments.");
+            return;
+        }
         if (key === "progress") navigate("/trainee/progress");
     };
 

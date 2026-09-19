@@ -16,7 +16,7 @@ import {
 
 import {
     createModule,
-    getModuleById,
+    loadModuleById,
     updateModule,
 } from "../../utils/moduleStorage";
 
@@ -59,47 +59,17 @@ export default function CreateModulePage() {
     // =====================================================
 
     useEffect(() => {
-        if (!moduleId) {
-            return;
-        }
-
-        const module =
-            getModuleById(
-                moduleId
-            );
-
-        if (!module) {
-            navigate(
-                "/training-programmes",
-                {
-                    replace: true,
-                }
-            );
-
-            return;
-        }
-
-        setFormData({
-            name:
-                module.name || "",
-
-            code:
-                module.code || "",
-
-            description:
-                module.description || "",
-
-            status:
-                module.status || "active",
-
-            image:
-                module.image || "",
-        });
-    }, [
-        moduleId,
-        navigate,
-    ]);
-
+        if (!moduleId) return;
+        let cancelled = false;
+        loadModuleById(moduleId)
+            .then((module) => {
+                if (cancelled) return;
+                if (!module) { navigate("/training-programmes", { replace: true }); return; }
+                setFormData({ name: module.name || "", code: module.code || "", description: module.description || "", status: module.status || "active", image: module.image || "" });
+            })
+            .catch(() => { if (!cancelled) setError("Unable to load module from database."); });
+        return () => { cancelled = true; };
+    }, [moduleId, navigate]);
 
     // =====================================================
     // INPUT
@@ -204,7 +174,7 @@ export default function CreateModulePage() {
     // SAVE MODULE
     // =====================================================
 
-    const handleSubmit = (
+    const handleSubmit = async (
         event
     ) => {
         event.preventDefault();
@@ -260,7 +230,7 @@ export default function CreateModulePage() {
 
 
         if (editing) {
-            updateModule(
+            await updateModule(
                 moduleId,
                 {
                     name:
@@ -289,7 +259,7 @@ export default function CreateModulePage() {
 
 
         const createdModule =
-            createModule({
+            await createModule({
                 name:
                     formData.name,
 

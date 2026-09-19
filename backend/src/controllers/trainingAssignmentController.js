@@ -272,47 +272,8 @@ const createTrainingAssignment =
             }
 
 
-            // ==================================================
-            // CHECK BROAD TRAINING ELIGIBILITY
-            // ==================================================
-            //
-            // assignedTrainingSections is intentionally kept.
-            //
-            // It is NOT the specific programme assignment.
-            //
-            // It defines which broad training types the Trainee
-            // is eligible to receive.
-            //
-            // ==================================================
-
-            const assignedTrainingSections =
-                Array.isArray(
-                    trainee
-                        .assignedTrainingSections
-                )
-                    ? trainee
-                        .assignedTrainingSections
-                    : [];
-
-
-            if (
-                !assignedTrainingSections
-                    .includes(
-                        programme
-                            .programmeType
-                    )
-            ) {
-                return res
-                    .status(400)
-                    .json({
-                        code:
-                            "TRAINEE_NOT_ELIGIBLE_FOR_PROGRAMME",
-
-                        message:
-                            "This Trainee is not eligible for the selected training programme type.",
-                    });
-            }
-
+            // Trainees are eligible for all active modules. Specific access is controlled
+            // by TrainingAssignment, so newly created modules work for existing trainees.
 
             // ==================================================
             // ACTIVE DUPLICATE
@@ -933,33 +894,9 @@ const reactivateTrainingAssignment =
             //
             // ==================================================
 
-            const assignedTrainingSections =
-                Array.isArray(
-                    trainee
-                        .assignedTrainingSections
-                )
-                    ? trainee
-                        .assignedTrainingSections
-                    : [];
-
-
-            if (
-                !assignedTrainingSections
-                    .includes(
-                        programme
-                            .programmeType
-                    )
-            ) {
-                return res
-                    .status(400)
-                    .json({
-                        code:
-                            "TRAINEE_NOT_ELIGIBLE_FOR_PROGRAMME",
-
-                        message:
-                            "This Trainee is no longer eligible for this training programme type.",
-                    });
-            }
+            // Trainees are eligible for all active database-backed modules.
+            // TrainingAssignment controls specific programme access, including
+            // modules created after the Trainee account was created.
 
 
             // ==================================================

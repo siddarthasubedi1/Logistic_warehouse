@@ -167,16 +167,17 @@ const learningSectionSchema =
 
                 enum: {
                     values: [
+                        "pending",
                         "active",
                         "inactive",
                     ],
 
                     message:
-                        "Status must be active or inactive",
+                        "Status must be pending, active, or inactive",
                 },
 
                 default:
-                    "active",
+                    "pending",
 
                 index:
                     true,

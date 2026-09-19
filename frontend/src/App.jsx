@@ -25,6 +25,7 @@ import AuditLogsPage from "./pages/admin/AuditLogsPage";
 import PanoramaManagementPage from "./pages/admin/PanoramaManagementPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
+import Sprint2ManagementPage from "./pages/training/Sprint2ManagementPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
 import MyTrainingPage from "./pages/training/MyTrainingPage";
@@ -323,6 +324,11 @@ function App() {
         }
       />
 
+
+      <Route
+        path="/training-programmes/:programmeId/sprint2-content"
+        element={<ProtectedRoute allowedRoles={["admin", "trainer"]}><Sprint2ManagementPage /></ProtectedRoute>}
+      />
 
       {/* ===================================================
           LEARNING CONTENT / SECTIONS

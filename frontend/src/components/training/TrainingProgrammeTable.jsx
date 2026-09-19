@@ -406,6 +406,10 @@ function TrainingProgrammeTable({
                                                     Edit
                                                 </ActionButton>
 
+                                                <ActionButton variant="primary" disabled={processing} onClick={() => { window.location.href = `/training-programmes/${programme._id}/sprint2-content`; }}>
+                                                    Scenarios & Assessments
+                                                </ActionButton>
+
 
                                                 {inactive ? (
                                                     <ActionButton
@@ -621,6 +625,10 @@ function ProgrammeCard({
                     }
                 >
                     Edit
+                </ActionButton>
+
+                <ActionButton variant="primary" disabled={processing} onClick={() => { window.location.href = `/training-programmes/${programme._id}/sprint2-content`; }}>
+                    Scenarios & Assessments
                 </ActionButton>
 
 

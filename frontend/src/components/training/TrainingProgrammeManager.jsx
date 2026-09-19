@@ -27,7 +27,8 @@ import {
     parseArrayResponse,
 } from "../../utils/training";
 
-import { canonicalModuleKey, getActiveTrainingModules } from "../../utils/trainingModules";
+import { canonicalModuleKey } from "../../utils/trainingModules";
+import { loadModulesFromDatabase } from "../../utils/moduleStorage";
 
 
 const PROGRAMME_STATUSES = [
@@ -39,46 +40,62 @@ const PROGRAMME_STATUSES = [
 
 const getInitialFormData =
     () => ({
-        programmeType:
-            "",
+        programmeType: "",
 
-        title:
-            "",
+        title: "",
 
-        description:
-            "",
+        shortDescription: "",
 
-        passMark:
-            70,
+        description: "",
 
-        status:
-            "draft",
+        learningObjectives: "",
 
-        ownerId:
-            "",
+        prerequisite: "",
 
-        authorizedTrainers:
-            [],
+        coverImageUrl: "",
+        coverImageFile: null,
+
+        level: "",
+
+        passMark: "",
+
+        status: "active",
+
+        ownerId: "",
+
+        authorizedTrainers: [],
     });
-
 
 function TrainingProgrammeManager({
     role,
     lockedProgrammeType = "",
 }) {
-    const PROGRAMME_TYPES = useMemo(
-        () => {
-            const allTypes = getActiveTrainingModules().map((module) => ({
-                value: module.id,
-                label: module.name,
-            }));
+    const [databaseProgrammeTypes, setDatabaseProgrammeTypes] = useState([]);
 
-            return lockedProgrammeType
-                ? allTypes.filter((type) => canonicalModuleKey(type.value) === canonicalModuleKey(lockedProgrammeType))
-                : allTypes;
-        },
-        [lockedProgrammeType]
-    );
+    useEffect(() => {
+        let mounted = true;
+        loadModulesFromDatabase()
+            .then((modules) => {
+                if (!mounted) return;
+                setDatabaseProgrammeTypes(
+                    modules
+                        .filter((module) => String(module?.status || "").toLowerCase() === "active")
+                        .map((module) => ({ value: String(module.key || "").trim(), label: module.name }))
+                        .filter((type) => type.value && type.label)
+                );
+            })
+            .catch((error) => {
+                console.error("Load training modules error:", error);
+                if (mounted) setDatabaseProgrammeTypes([]);
+            });
+        return () => { mounted = false; };
+    }, []);
+
+    const PROGRAMME_TYPES = useMemo(() => {
+        return lockedProgrammeType
+            ? databaseProgrammeTypes.filter((type) => canonicalModuleKey(type.value) === canonicalModuleKey(lockedProgrammeType))
+            : databaseProgrammeTypes;
+    }, [databaseProgrammeTypes, lockedProgrammeType]);
     const navigate =
         useNavigate();
 
@@ -354,6 +371,7 @@ function TrainingProgrammeManager({
             [
                 isTrainer,
                 currentTrainer,
+                PROGRAMME_TYPES,
             ]
         );
 
@@ -361,37 +379,21 @@ function TrainingProgrammeManager({
     const eligibleOwnerTrainers =
         useMemo(
             () => {
-                if (
-                    !isAdmin
-                ) {
+                if (!isAdmin) {
                     return [];
                 }
 
-                if (
-                    !formData.programmeType
-                ) {
-                    return trainers;
-                }
-
+                // Admin-created database modules are dynamic.
+                // Any active Trainer can own a programme.
                 return trainers.filter(
-                    (
-                        trainer
-                    ) =>
-                        Array.isArray(
-                            trainer
-                                .assignedTrainingSections
-                        ) &&
-                        trainer
-                            .assignedTrainingSections
-                            .includes(
-                                formData.programmeType
-                            )
+                    (trainer) =>
+                        trainer.role === "trainer" &&
+                        trainer.status === "active"
                 );
             },
             [
                 isAdmin,
                 trainers,
-                formData.programmeType,
             ]
         );
 
@@ -651,9 +653,25 @@ function TrainingProgrammeManager({
                     programme.title ||
                     "",
 
+                shortDescription:
+                    programme.shortDescription || programme.description || "",
+
                 description:
                     programme.description ||
                     "",
+
+                learningObjectives:
+                    programme.learningObjectives || "Complete the learning objectives for this programme.",
+
+                prerequisite:
+                    programme.prerequisite || "",
+
+                coverImageUrl:
+                    programme.coverImageUrl || "",
+                coverImageFile: null,
+
+                level:
+                    ({ easy: "beginner", medium: "intermediate", high: "advanced" }[programme.level] || programme.level || "beginner"),
 
                 passMark:
                     programme.passMark ??
@@ -693,11 +711,12 @@ function TrainingProgrammeManager({
         (
             event
         ) => {
-            const {
-                name,
-                value,
-            } =
-                event.target;
+            const { name, value, files } = event.target;
+
+            if (name === "coverImage") {
+                setFormData((current) => ({ ...current, coverImageFile: files?.[0] || null }));
+                return;
+            }
 
             setFormData(
                 (
@@ -832,14 +851,20 @@ function TrainingProgrammeManager({
                 return "Programme title must contain at least 3 characters.";
             }
 
-            if (
-                formData
-                    .description
-                    .trim()
-                    .length <
-                10
-            ) {
-                return "Programme description must contain at least 10 characters.";
+            if (formData.shortDescription.trim().length < 10) {
+                return "Short description must contain at least 10 characters.";
+            }
+
+            if (formData.description.trim().length < 10) {
+                return "Full description must contain at least 10 characters.";
+            }
+
+            if (formData.learningObjectives.trim().length < 10) {
+                return "Learning objectives must contain at least 10 characters.";
+            }
+
+            if (!["beginner", "intermediate", "advanced"].includes(formData.level)) {
+                return "Please select Beginner, Intermediate, or Advanced programme level.";
             }
 
             const passMark =
@@ -925,10 +950,18 @@ function TrainingProgrammeManager({
                         .title
                         .trim(),
 
+                shortDescription: formData.shortDescription.trim(),
+
                 description:
                     formData
                         .description
                         .trim(),
+
+                learningObjectives: formData.learningObjectives.trim(),
+                prerequisite: formData.prerequisite.trim(),
+
+                level:
+                    formData.level,
 
                 passMark:
                     Number(
@@ -951,6 +984,16 @@ function TrainingProgrammeManager({
             }
 
 
+            const requestData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    value.forEach((item) => requestData.append(`${key}[]`, item));
+                } else if (value !== undefined && value !== null) {
+                    requestData.append(key, value);
+                }
+            });
+            if (formData.coverImageFile) requestData.append("coverImage", formData.coverImageFile);
+
             try {
                 setSaving(
                     true
@@ -962,7 +1005,7 @@ function TrainingProgrammeManager({
                     const response =
                         await api.patch(
                             `/training-programmes/${editingProgramme._id}`,
-                            payload
+                            requestData
                         );
 
                     setSuccessMessage(
@@ -974,7 +1017,7 @@ function TrainingProgrammeManager({
                     const response =
                         await api.post(
                             "/training-programmes",
-                            payload
+                            requestData
                         );
 
                     setSuccessMessage(
@@ -1290,6 +1333,14 @@ function TrainingProgrammeManager({
                     }
                     availableProgrammeTypes={
                         availableProgrammeTypes
+                    }
+                    lockedProgrammeType={
+                        lockedProgrammeType
+                    }
+                    lockedProgrammeLabel={
+                        databaseProgrammeTypes.find(
+                            (type) => canonicalModuleKey(type.value) === canonicalModuleKey(lockedProgrammeType)
+                        )?.label || lockedProgrammeType
                     }
                     eligibleOwnerTrainers={
                         eligibleOwnerTrainers

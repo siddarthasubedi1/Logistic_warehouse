@@ -15,7 +15,7 @@ import {
 
 import {
     deleteModule,
-    getModules,
+    loadModulesFromDatabase,
 } from "../../utils/moduleStorage";
 
 
@@ -39,10 +39,9 @@ export default function TrainingProgrammesPage() {
     // LOAD ADMIN-CREATED MODULES
     // =====================================================
 
-    const loadModules = () => {
-        setModules(
-            getModules()
-        );
+    const loadModules = async () => {
+        const databaseModules = await loadModulesFromDatabase();
+        setModules(databaseModules);
     };
 
 
@@ -88,7 +87,7 @@ export default function TrainingProgrammesPage() {
     // DELETE MODULE
     // =====================================================
 
-    const handleDelete = (module) => {
+    const handleDelete = async (module) => {
         const confirmed =
             window.confirm(
                 `Delete "${module.name}"?`
@@ -98,11 +97,12 @@ export default function TrainingProgrammesPage() {
             return;
         }
 
-        deleteModule(
-            module.id
-        );
-
-        loadModules();
+        try {
+            await deleteModule(module.id || module._id);
+            await loadModules();
+        } catch (error) {
+            window.alert(error.response?.data?.message || "Unable to delete module.");
+        }
     };
 
 

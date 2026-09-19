@@ -27,8 +27,9 @@ import {
 
 import {
     canonicalModuleKey,
-    getActiveTrainingModules,
 } from "../../utils/trainingModules";
+
+import { loadModulesFromDatabase } from "../../utils/moduleStorage";
 
 
 /* =========================================================
@@ -137,9 +138,10 @@ function TrainingAssignmentsPage() {
          * Modules are created through your existing
          * Training Module system.
          */
-        const activeModules =
-            getActiveTrainingModules();
-
+        const databaseModules = await loadModulesFromDatabase();
+        const activeModules = databaseModules
+            .filter((module) => String(module.status || "active").toLowerCase() === "active")
+            .map((module) => ({ id: module.key || canonicalModuleKey(module.name), name: module.name, label: module.name, moduleId: module.id || module._id, image: module.image || "" }));
         setModules(activeModules);
 
 

@@ -7,7 +7,8 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "jest --runInBand",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "seed:sprint2": "node src/seeds/sprint2Seed.js"
   },
   "keywords": [],
   "author": "",

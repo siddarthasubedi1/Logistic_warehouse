@@ -10,6 +10,7 @@ import GeneratedCredentialsModal from "./GeneratedCredentialsModal";
 
 
 import { getActiveTrainingModules } from "../../utils/trainingModules";
+import { loadModulesFromDatabase } from "../../utils/moduleStorage";
 
 
 function initialForm() {
@@ -28,7 +29,9 @@ function initialForm() {
 
 
 function CreateUserForm() {
-    const TRAINING_SECTIONS = useMemo(() => getActiveTrainingModules(), []);
+    const [trainingModules, setTrainingModules] = useState([]);
+    const [loadingModules, setLoadingModules] = useState(true);
+    const TRAINING_SECTIONS = useMemo(() => getActiveTrainingModules(trainingModules), [trainingModules]);
     const [
         showForm,
         setShowForm,
@@ -184,6 +187,37 @@ function CreateUserForm() {
         loadPendingUsers,
     ]);
 
+    const loadTrainingModules = useCallback(async () => {
+        try {
+            setLoadingModules(true);
+            const modules = await loadModulesFromDatabase();
+            setTrainingModules(Array.isArray(modules) ? modules : []);
+        } catch (moduleError) {
+            console.error("Training module loading error:", moduleError);
+            setTrainingModules([]);
+            setError(moduleError.response?.data?.message || "Unable to load training modules.");
+        } finally {
+            setLoadingModules(false);
+        }
+    }, []);
+
+    // Load once for the page and refresh again whenever the create-user form is
+    // opened. This keeps the selector in sync with modules Admin creates later.
+    useEffect(() => {
+        loadTrainingModules();
+    }, [loadTrainingModules]);
+
+    useEffect(() => {
+        if (showForm) loadTrainingModules();
+    }, [showForm, loadTrainingModules]);
+
+
+
+    useEffect(() => {
+        if (formData.role !== "trainee" || loadingModules) return;
+        const ids = TRAINING_SECTIONS.map((item) => item.id);
+        setFormData((current) => ({ ...current, assignedTrainingSections: ids }));
+    }, [formData.role, loadingModules, TRAINING_SECTIONS]);
 
     /* =====================================================
        FORM CHANGE
@@ -216,14 +250,8 @@ function CreateUserForm() {
                             value,
 
                         assignedTrainingSections:
-                            value ===
-                                "trainee"
-                                ? TRAINING_SECTIONS.map(
-                                    (
-                                        item
-                                    ) =>
-                                        item.id
-                                )
+                            value === "trainee"
+                                ? TRAINING_SECTIONS.map((item) => item.id)
                                 : [],
                     };
                 }
@@ -1205,40 +1233,53 @@ function CreateUserForm() {
                                         </p>
 
 
-                                        <div
-                                            className="
+                                        {loadingModules && (
+                                            <p className="mt-3 text-[9px] text-[#64748b]">Loading active training modules...</p>
+                                        )}
+
+                                        {!loadingModules && TRAINING_SECTIONS.length === 0 && (
+                                            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                                <p className="text-[9px] font-semibold text-amber-900">No active training modules are available.</p>
+                                                <p className="mt-1 text-[8px] text-amber-800">Create or activate a module in Training Programmes, then return here. A Trainer cannot be created without at least one module.</p>
+                                            </div>
+                                        )}
+
+                                        {!loadingModules && TRAINING_SECTIONS.length > 0 && (
+                                            <div
+                                                className="
                                             mt-3
                                             grid
                                             gap-3
                                             md:grid-cols-2
                                         "
-                                        >
-                                            {TRAINING_SECTIONS.map(
-                                                (
-                                                    section
-                                                ) => (
-                                                    <TrainingCard
-                                                        key={
-                                                            section.id
-                                                        }
-                                                        title={
-                                                            section.label
-                                                        }
-                                                        description={
-                                                            section.description
-                                                        }
-                                                        selected={formData.assignedTrainingSections.includes(
-                                                            section.id
-                                                        )}
-                                                        onClick={() =>
-                                                            chooseTraining(
+                                            >
+                                                {TRAINING_SECTIONS.map(
+                                                    (
+                                                        section
+                                                    ) => (
+                                                        <TrainingCard
+                                                            key={
                                                                 section.id
-                                                            )
-                                                        }
-                                                    />
-                                                )
-                                            )}
-                                        </div>
+                                                            }
+                                                            title={
+                                                                section.name || section.label
+                                                            }
+                                                            description={
+                                                                section.description
+                                                            }
+                                                            selected={formData.assignedTrainingSections.includes(
+                                                                section.id
+                                                            )}
+                                                            onClick={() =>
+                                                                chooseTraining(
+                                                                    section.id
+                                                                )
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -1301,7 +1342,7 @@ function CreateUserForm() {
                                                     text-[#64748b]
                                                 "
                                                 >
-                                                    Trainees automatically receive {TRAINING_SECTIONS.length} active module{TRAINING_SECTIONS.length === 1 ? "" : "s"}: {TRAINING_SECTIONS.map((section) => section.label).join(", ") || "No active modules available"}.
+                                                    Trainees automatically receive {TRAINING_SECTIONS.length} active module{TRAINING_SECTIONS.length === 1 ? "" : "s"}: {TRAINING_SECTIONS.map((section) => section.name || section.label).join(", ") || "No active modules available"}.
                                                 </p>
                                             </div>
                                         </div>

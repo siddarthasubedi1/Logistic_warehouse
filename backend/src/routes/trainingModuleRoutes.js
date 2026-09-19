@@ -1,0 +1,13 @@
+const express = require("express");
+const router = express.Router();
+const authenticate = require("../middleware/authenticate");
+const authorize = require("../middleware/authorize");
+const checkActiveStatus = require("../middleware/checkActiveStatus");
+const c = require("../controllers/trainingModuleController");
+router.use(authenticate, checkActiveStatus);
+router.get("/", authorize("admin", "trainer", "trainee"), c.getTrainingModules);
+router.get("/:id", authorize("admin", "trainer", "trainee"), c.getTrainingModuleById);
+router.post("/", authorize("admin"), c.createTrainingModule);
+router.patch("/:id", authorize("admin"), c.updateTrainingModule);
+router.delete("/:id", authorize("admin"), c.deleteTrainingModule);
+module.exports = router;

@@ -1,5 +1,6 @@
 const User =
     require("../models/User");
+const TrainingModule = require("../models/TrainingModule");
 
 
 const {
@@ -182,39 +183,21 @@ const createPendingUser =
                 all active training sections supplied by the frontend.
             */
 
-            if (
-                normalizedRole ===
-                "trainee"
-            ) {
-                assignmentValidation = {
-                    valid:
-                        true,
+            const activeModules = await TrainingModule.find({ status: "active" }).select("key").lean();
+            const activeModuleKeys = activeModules.map((module) => String(module.key || "").trim()).filter(Boolean);
 
-                    sections: [
-                        ...new Set(assignedTrainingSections || []),
-                    ],
-                };
-
+            if (normalizedRole === "trainee") {
+                // Sprint 1 behaviour is preserved: every Trainee receives all currently active modules.
+                // The server is authoritative so a manipulated client cannot add arbitrary module keys.
+                assignmentValidation = { valid: true, sections: activeModuleKeys };
             } else {
-                /*
-                    Trainer can have one or more.
-                */
-
-                assignmentValidation =
-                    validateTrainingSections(
-                        assignedTrainingSections
-                    );
-
-
-                if (
-                    !assignmentValidation.valid
-                ) {
-                    return res
-                        .status(400)
-                        .json({
-                            message:
-                                assignmentValidation.message,
-                        });
+                assignmentValidation = validateTrainingSections(assignedTrainingSections);
+                if (!assignmentValidation.valid) {
+                    return res.status(400).json({ message: assignmentValidation.message });
+                }
+                const invalidModule = assignmentValidation.sections.find((key) => !activeModuleKeys.includes(key));
+                if (invalidModule) {
+                    return res.status(400).json({ message: "One or more selected training modules are inactive or do not exist." });
                 }
             }
 

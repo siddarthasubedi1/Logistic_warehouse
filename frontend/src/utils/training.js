@@ -31,32 +31,8 @@
 // ======================================================
 // PROGRAMME TYPES
 // ======================================================
-
-export const PROGRAMME_TYPES = [
-    {
-        value:
-            "manual-handling",
-
-        label:
-            "Manual Handling",
-    },
-
-    {
-        value:
-            "working-at-height",
-
-        label:
-            "Working at Height",
-    },
-
-    {
-        value:
-            "cyber-awareness",
-
-        label:
-            "Cyber Awareness",
-    },
-];
+// Modules are dynamic and come from MongoDB. No built-in module list.
+export const PROGRAMME_TYPES = [];
 
 
 // ======================================================
@@ -84,29 +60,12 @@ export const LEARNING_SECTION_STATUSES = [
 // FORMAT PROGRAMME TYPE
 // ======================================================
 
-export const formatProgrammeType = (
-    programmeType
-) => {
-    switch (
-    programmeType
-    ) {
-        case "manual-handling":
-            return "Manual Handling";
-
-
-        case "working-at-height":
-            return "Working at Height";
-
-        case "cyber-awareness":
-            return "Cyber Awareness";
-
-
-        default:
-            return (
-                programmeType ||
-                "Unknown Programme"
-            );
-    }
+export const formatProgrammeType = (programmeType) => {
+    const value = String(programmeType || "").trim();
+    if (!value) return "Unknown Programme";
+    return value
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
 

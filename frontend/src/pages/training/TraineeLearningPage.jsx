@@ -479,11 +479,18 @@ function TraineeLearningPage() {
 
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        if (hasNext) {
-                                            setCurrentSectionIndex((current) => Math.min(sections.length - 1, current + 1));
-                                        } else {
-                                            navigate(`/my-training/${programmeId}/exercise`);
+                                    onClick={async () => {
+                                        try {
+                                            if (currentSection?._id) {
+                                                await api.post(`/sprint2/trainee/${programmeId}/sections/${currentSection._id}/complete`);
+                                            }
+                                            if (hasNext) {
+                                                setCurrentSectionIndex((current) => Math.min(sections.length - 1, current + 1));
+                                            } else {
+                                                navigate(`/my-training/${programmeId}/exercise`);
+                                            }
+                                        } catch (error) {
+                                            setErrorMessage(getApiErrorMessage(error, "Unable to record learning completion."));
                                         }
                                     }}
                                     className="
