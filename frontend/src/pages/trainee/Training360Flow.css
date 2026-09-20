@@ -647,3 +647,724 @@
         max-height: 70%
     }
 }
+
+/* 2026-09 trainee 360 workspace sizing and stable module layout */
+.training360-flow__viewer--selection {
+    height: clamp(680px, calc(100vh - 150px), 900px);
+    min-height: 680px;
+}
+
+.training360-flow__viewer--module {
+    height: clamp(720px, calc(100vh - 145px), 980px);
+    min-height: 720px;
+}
+
+/* Position is controlled per module in MyTrainingPage.jsx so API ordering cannot
+   place Manual Handling beside/over Cyber Awareness. */
+.training360-flow__viewer--selection .training360-flow__module {
+    z-index: 14;
+}
+
+@media (max-width: 1100px) {
+    .training360-flow__viewer--selection .training360-flow__module {
+        width: 250px;
+    }
+
+    .training360-flow__viewer--selection {
+        min-height: 700px;
+    }
+
+    .training360-flow__viewer--module {
+        min-height: 700px;
+    }
+}
+
+@media (max-width: 760px) {
+    .training360-flow {
+        padding: 10px;
+    }
+
+    .training360-flow__viewer--selection,
+    .training360-flow__viewer--module {
+        height: 760px;
+        min-height: 760px;
+    }
+
+    .training360-flow__viewer--selection .training360-flow__module {
+        width: min(240px, calc(100% - 28px));
+    }
+
+    .training360-activity {
+        left: 14px;
+        right: 14px;
+        top: auto;
+        bottom: 72px;
+        width: auto;
+        max-height: 48%;
+    }
+}
+
+/* Immersive trainee module flow: activities live in the panorama, not a fixed list. */
+.immersive-module__viewer {
+    min-height: calc(100vh - 185px);
+    height: 760px;
+    position: relative;
+    overflow: hidden
+}
+
+.immersive-module__badge {
+    position: absolute;
+    left: 24px;
+    top: 24px;
+    z-index: 5;
+    background: rgba(8, 35, 59, .92);
+    color: #fff;
+    padding: 16px 20px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px
+}
+
+.immersive-module__badge b {
+    font-size: 18px
+}
+
+.immersive-module__badge span {
+    font-size: 12px;
+    color: #cbd5e1
+}
+
+.immersive-level {
+    position: absolute;
+    z-index: 6;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.immersive-hotspot {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #1687ed;
+    color: #fff;
+    border: 4px solid #fff;
+    box-shadow: 0 0 0 8px rgba(22, 135, 237, .25);
+    font-size: 24px;
+    font-weight: 900
+}
+
+.immersive-hotspot.locked {
+    background: #475569;
+    box-shadow: 0 0 0 8px rgba(71, 85, 105, .25)
+}
+
+.immersive-card {
+    width: 260px;
+    background: rgba(7, 31, 53, .94);
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .3)
+}
+
+.immersive-card small {
+    color: #7dd3fc;
+    font-weight: 800
+}
+
+.immersive-card strong {
+    display: block;
+    font-size: 18px;
+    margin: 3px 0
+}
+
+.immersive-card>span {
+    display: block;
+    color: #cbd5e1;
+    font-size: 11px;
+    margin-bottom: 8px
+}
+
+.immersive-card button {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    background: #173d5d;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 8px;
+    padding: 9px;
+    margin-top: 6px;
+    text-align: left;
+    cursor: pointer
+}
+
+.immersive-card button:hover {
+    background: #1769e8
+}
+
+.immersive-card em {
+    font-size: 10px;
+    font-style: normal;
+    color: #bfdbfe;
+    white-space: nowrap
+}
+
+.immersive-activity {
+    position: absolute;
+    z-index: 6;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(7, 31, 53, .94);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, .8);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .3);
+    cursor: pointer
+}
+
+.immersive-activity i {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #1687ed;
+    font-style: normal;
+    font-size: 20px
+}
+
+.immersive-activity span {
+    display: flex;
+    flex-direction: column;
+    text-align: left
+}
+
+.immersive-activity b {
+    font-size: 14px
+}
+
+.immersive-activity small {
+    font-size: 10px;
+    color: #cbd5e1
+}
+
+.immersive-activity:hover {
+    transform: translate(-50%, -50%) scale(1.04)
+}
+
+.immersive-back {
+    position: absolute;
+    z-index: 7;
+    left: 24px;
+    bottom: 24px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(7, 31, 53, .94);
+    color: #fff;
+    padding: 11px 16px;
+    cursor: pointer
+}
+
+.immersive-hint {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: rgba(7, 31, 53, .9);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 12px
+}
+
+.immersive-overlay {
+    position: absolute;
+    z-index: 20;
+    left: 7%;
+    right: 7%;
+    bottom: 6%;
+    max-height: 62%;
+    background: rgba(7, 31, 53, .98);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .5)
+}
+
+.immersive-overlay__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12)
+}
+
+.immersive-overlay__head small {
+    color: #7dd3fc
+}
+
+.immersive-overlay__head h3 {
+    margin: 2px 0
+}
+
+.immersive-overlay__head>button {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer
+}
+
+.immersive-overlay__body {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: 300px
+}
+
+.immersive-overlay nav {
+    padding: 12px;
+    border-right: 1px solid rgba(255, 255, 255, .12);
+    overflow: auto
+}
+
+.immersive-overlay nav button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 9px;
+    padding: 10px;
+    background: transparent;
+    color: #e2e8f0;
+    text-align: left;
+    cursor: pointer
+}
+
+.immersive-overlay nav button.active {
+    background: #1769e8;
+    color: #fff
+}
+
+.immersive-overlay nav b {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #64748b;
+    border-radius: 6px;
+    display: grid;
+    place-items: center
+}
+
+.immersive-overlay article {
+    padding: 20px;
+    overflow: auto
+}
+
+.immersive-overlay article h2 {
+    margin: 4px 0 12px
+}
+
+.immersive-overlay article p {
+    color: #dbeafe;
+    line-height: 1.65
+}
+
+.immersive-overlay__nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px
+}
+
+.immersive-overlay__nav button {
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 14px;
+    background: #1769e8;
+    color: #fff
+}
+
+.immersive-overlay__nav button:disabled {
+    opacity: .35
+}
+
+.training360-flow__message--overlay {
+    z-index: 30;
+    position: absolute;
+    left: 50%;
+    top: 14%;
+    transform: translateX(-50%)
+}
+
+@media(max-width:900px) {
+    .immersive-module__viewer {
+        height: 680px
+    }
+
+    .immersive-card {
+        width: 190px
+    }
+
+    .immersive-overlay__body {
+        grid-template-columns: 1fr
+    }
+
+    .immersive-overlay nav {
+        max-height: 140px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, .12)
+    }
+
+    .immersive-level {
+        transform: translate(-50%, -50%) scale(.82)
+    }
+
+    .immersive-activity {
+        transform: translate(-50%, -50%) scale(.85)
+    }
+}
+
+/* Expanded multi-scene module training environment */
+.immersive-module__viewer {
+    height: 900px;
+    min-height: calc(100vh - 145px);
+    border-radius: 18px
+}
+
+.immersive-scene-tools {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    z-index: 9;
+    display: flex;
+    gap: 8px
+}
+
+.immersive-scene-tools button {
+    border: 1px solid rgba(255, 255, 255, .35);
+    background: rgba(7, 31, 53, .94);
+    color: #fff;
+    padding: 10px 13px;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer
+}
+
+.immersive-scene-tools button:hover {
+    background: #1769e8
+}
+
+.immersive-map {
+    position: absolute;
+    right: 24px;
+    top: 76px;
+    z-index: 10;
+    width: 315px;
+    background: rgba(7, 31, 53, .96);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 15px;
+    padding: 12px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .38)
+}
+
+.immersive-map__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 9px
+}
+
+.immersive-map__head button {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer
+}
+
+.immersive-map__floor {
+    height: 190px;
+    position: relative;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px), linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px), rgba(255, 255, 255, .06);
+    background-size: 32px 32px;
+    border: 1px solid rgba(255, 255, 255, .16)
+}
+
+.immersive-map__floor button {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border: 0;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px
+}
+
+.immersive-map__floor button i {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #60a5fa;
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, .18)
+}
+
+.immersive-map__floor button.active i {
+    width: 22px;
+    height: 22px;
+    background: #1687ed;
+    border-color: #fff
+}
+
+.immersive-map__floor button span {
+    background: #0b2b48;
+    padding: 4px 6px;
+    border-radius: 5px;
+    font-size: 9px;
+    white-space: nowrap
+}
+
+.immersive-map>small {
+    display: block;
+    color: #bfdbfe;
+    margin-top: 8px;
+    font-size: 10px
+}
+
+.immersive-area-hotspot {
+    position: absolute;
+    z-index: 7;
+    top: 72%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 3px solid #fff;
+    background: #1687ed;
+    color: #fff;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 800;
+    box-shadow: 0 0 0 8px rgba(22, 135, 237, .24);
+    cursor: pointer
+}
+
+.immersive-area-hotspot span {
+    background: rgba(7, 31, 53, .94);
+    padding: 7px 10px;
+    border-radius: 8px
+}
+
+.immersive-area-hotspot--left {
+    left: 5%
+}
+
+.immersive-area-hotspot--right {
+    right: 5%
+}
+
+.immersive-related {
+    position: absolute;
+    z-index: 6;
+    border: 0;
+    background: rgba(7, 31, 53, .9);
+    color: #fff;
+    border-radius: 9px;
+    padding: 8px 11px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer
+}
+
+.immersive-related i {
+    color: #38bdf8;
+    font-style: normal
+}
+
+.immersive-related--1 {
+    left: 12%;
+    top: 31%
+}
+
+.immersive-related--2 {
+    left: 48%;
+    top: 24%
+}
+
+.immersive-related--3 {
+    left: 72%;
+    top: 74%
+}
+
+.immersive-related:hover {
+    background: #1769e8
+}
+
+@media(max-width:1100px) {
+    .immersive-module__viewer {
+        height: 800px
+    }
+
+    .immersive-map {
+        width: 260px
+    }
+
+    .immersive-scene-tools button:nth-child(n+2) {
+        display: none
+    }
+
+    .immersive-area-hotspot span {
+        display: none
+    }
+}
+
+/* Sprint 2 interactive programme activities */
+.immersive-overlay__single {
+    padding: 24px;
+    max-height: 66vh;
+    overflow: auto;
+    color: #eaf4ff
+}
+
+.immersive-notice {
+    padding: 14px 16px;
+    border: 1px solid rgba(96, 165, 250, .45);
+    background: rgba(30, 64, 175, .22);
+    border-radius: 12px;
+    margin: 12px 0
+}
+
+.immersive-status {
+    margin-top: 12px;
+    color: #bfdbfe
+}
+
+.immersive-options,
+.immersive-question {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0
+}
+
+.immersive-options label,
+.immersive-question label {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid rgba(148, 163, 184, .28);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, .42);
+    cursor: pointer
+}
+
+.immersive-options textarea {
+    min-height: 110px;
+    padding: 12px;
+    border-radius: 10px
+}
+
+.immersive-primary {
+    margin-top: 12px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #1687f8;
+    color: white;
+    font-weight: 800;
+    cursor: pointer
+}
+
+.immersive-primary:disabled {
+    opacity: .5;
+    cursor: not-allowed
+}
+
+.immersive-feedback,
+.immersive-result {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, .3)
+}
+
+.immersive-feedback.correct,
+.immersive-result.passed {
+    background: rgba(16, 185, 129, .16);
+    border-color: rgba(52, 211, 153, .45)
+}
+
+.immersive-feedback.incorrect,
+.immersive-result.failed {
+    background: rgba(239, 68, 68, .13);
+    border-color: rgba(248, 113, 113, .4)
+}
+
+.immersive-assessment-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap
+}
+
+.immersive-assessment-tabs button {
+    padding: 9px 14px;
+    border-radius: 9px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    background: #17324c;
+    color: #eaf4ff
+}
+
+.immersive-assessment-tabs button.active {
+    background: #1687f8
+}
+
+.immersive-question {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, .18)
+}
+
+.immersive-progress-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px
+}
+
+.immersive-progress-grid>div {
+    padding: 18px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, .5);
+    border: 1px solid rgba(148, 163, 184, .25);
+    display: grid;
+    gap: 6px
+}
+
+.immersive-progress-grid span {
+    color: #a9c4df
+}
+
+.immersive-progress-grid b {
+    font-size: 1.05rem
+}
+
+@media(max-width:800px) {
+    .immersive-progress-grid {
+        grid-template-columns: 1fr 1fr
+    }
+}

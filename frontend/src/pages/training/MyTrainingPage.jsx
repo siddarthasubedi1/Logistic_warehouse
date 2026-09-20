@@ -97,17 +97,25 @@ export default function MyTrainingPage() {
                             pin: "◆",
                             className: "",
                         };
-                        const positions = [
-                            { left: "13%", top: "38%" },
-                            { right: "13%", top: "35%" },
-                            { left: "50%", top: "66%", transform: "translateX(-50%)" },
-                        ];
+                        // Keep every module in a predictable area of the 360 scene.
+                        // Do not use array order here because assignments can arrive from the API
+                        // in a different order. This keeps Manual Handling clearly separated from
+                        // Cyber Awareness on every load.
+                        const modulePositions = {
+                            "cyber-awareness": { left: "22%", top: "43%" },
+                            "manual-handling": { left: "78%", top: "43%" },
+                            "working-at-height": { left: "50%", top: "72%" },
+                        };
+                        const position = modulePositions[group.key] || {
+                            left: `${22 + ((index % 3) * 28)}%`,
+                            top: index < 3 ? "43%" : "72%",
+                        };
                         return (
                             <button
                                 type="button"
                                 key={group.key}
                                 className={`training360-flow__module ${meta.className}`}
-                                style={positions[index % positions.length]}
+                                style={position}
                                 onClick={() => openModule(group.key)}
                                 disabled={loading}
                                 aria-label={`Open ${meta.title} 360 degree module`}

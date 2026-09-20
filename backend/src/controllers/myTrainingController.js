@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const TrainingAssignment = require("../models/TrainingAssignment");
 const TrainingProgramme = require("../models/TrainingProgramme");
 const LearningSection = require("../models/LearningSection");
+const AssessmentAttempt = require("../models/AssessmentAttempt");
 
 
 // ======================================================
@@ -30,6 +31,40 @@ const getActiveAssignment = async (
 };
 
 
+
+// ======================================================
+// MODULE LEVEL PROGRESSION
+// Beginner -> Intermediate -> Advanced. A level is complete
+// only when every assigned active programme in that module/level
+// has at least one passed assessment attempt.
+// ======================================================
+const LEVEL_ORDER = ["beginner", "intermediate", "advanced"];
+
+const getModuleLevelAccess = async (traineeId, moduleType) => {
+    const rows = await TrainingAssignment.find({ trainee: traineeId, status: "active" })
+        .populate({ path: "programme", match: { status: "active", programmeType: moduleType }, select: "_id level passMark" });
+    const programmes = rows.map(r => r.programme).filter(Boolean);
+    const ids = programmes.map(p => p._id);
+    const passed = ids.length ? await AssessmentAttempt.find({ trainee: traineeId, programme: { $in: ids }, passed: true }).select("programme").lean() : [];
+    const passedIds = new Set(passed.map(a => String(a.programme)));
+    const completed = {};
+    for (const level of LEVEL_ORDER) {
+        const inLevel = programmes.filter(p => (p.level || "beginner") === level);
+        completed[level] = inLevel.length > 0 && inLevel.every(p => passedIds.has(String(p._id)));
+    }
+    return {
+        beginner: { unlocked: true, completed: completed.beginner },
+        intermediate: { unlocked: completed.beginner, completed: completed.intermediate },
+        advanced: { unlocked: completed.beginner && completed.intermediate, completed: completed.advanced },
+    };
+};
+
+const verifyProgrammeLevelUnlocked = async (traineeId, programme) => {
+    const access = await getModuleLevelAccess(traineeId, programme.programmeType);
+    const level = programme.level || "beginner";
+    return { level, access, unlocked: access[level]?.unlocked !== false };
+};
+
 // ======================================================
 // GET MY TRAINING PROGRAMMES
 // TRAINEE ONLY
@@ -56,7 +91,7 @@ const getMyTrainingProgrammes = async (
                     },
 
                     select:
-                        "programmeType title description passMark status owner createdAt updatedAt",
+                        "programmeType title description passMark level status owner createdAt updatedAt",
 
                     populate: {
                         path: "owner",
@@ -78,9 +113,13 @@ const getMyTrainingProgrammes = async (
             );
 
 
+        const moduleTypes = [...new Set(availableAssignments.map(a => a.programme?.programmeType).filter(Boolean))];
+        const levelAccess = {};
+        for (const type of moduleTypes) levelAccess[type] = await getModuleLevelAccess(req.user.id, type);
+
         return res.status(200).json({
-            assignments:
-                availableAssignments,
+            assignments: availableAssignments,
+            levelAccess,
         });
 
     } catch (error) {
@@ -183,6 +222,16 @@ const getMyTrainingProgramme = async (
         }
 
 
+        const gate = await verifyProgrammeLevelUnlocked(req.user.id, programme);
+        if (!gate.unlocked) {
+            return res.status(403).json({
+                code: "PROGRAMME_LEVEL_LOCKED",
+                message: "Complete and pass the previous programme level before opening this programme.",
+                level: gate.level,
+                levelAccess: gate.access,
+            });
+        }
+
         // ==================================================
         // SECTION COUNT
         // ==================================================
@@ -212,6 +261,7 @@ const getMyTrainingProgramme = async (
             },
 
             sectionCount,
+            levelAccess: gate.access,
         });
 
     } catch (error) {
@@ -298,7 +348,7 @@ const getMyTrainingSections = async (
                         "active",
                 })
                 .select(
-                    "_id programmeType title description passMark status owner"
+                    "_id programmeType title description passMark level status owner"
                 )
                 .populate(
                     "owner",
@@ -321,6 +371,9 @@ const getMyTrainingSections = async (
         // ONLY ACTIVE SECTIONS
         // ORDERED BY ORDER
         // ==================================================
+
+        const gate = await verifyProgrammeLevelUnlocked(req.user.id, programme);
+        if (!gate.unlocked) return res.status(403).json({ code: "PROGRAMME_LEVEL_LOCKED", message: "Complete and pass the previous programme level first.", level: gate.level, levelAccess: gate.access });
 
         const sections =
             await LearningSection
