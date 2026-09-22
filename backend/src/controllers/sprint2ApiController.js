@@ -13,6 +13,7 @@ const AssessmentQuestion = require('../models/AssessmentQuestion');
 const AssessmentAttempt = require('../models/AssessmentAttempt');
 const User = require('../models/User');
 const { writeAuditLog } = require('../utils/auditLogger');
+const { getOrCreateProgrammeProgress } = require('../services/trainingProgressService');
 
 const levels = ['basic', 'intermediate', 'high'];
 const oid = v => mongoose.Types.ObjectId.isValid(v);
@@ -26,11 +27,7 @@ const managerProgramme = async (req, id) => {
     return { status: 403, message: 'You are not authorised for this programme.' };
 };
 const activeAssignment = (trainee, programme) => TrainingAssignment.findOne({ trainee, programme, status: 'active' });
-const progressFor = async (trainee, programme, assignment) => {
-    let p = await TrainingProgress.findOne({ trainee, programme });
-    if (!p) p = await TrainingProgress.create({ trainee, programme, assignment: assignment._id, status: 'in-progress', startedAt: new Date(), lastAccessedAt: new Date() });
-    return p;
-};
+const progressFor = async (trainee, programme, assignment) => getOrCreateProgrammeProgress({ traineeId: trainee, programmeId: programme, assignmentId: assignment._id });
 const syncLearning = async (trainee, programme, p) => {
     const required = await LearningSection.find({ programme, status: 'active' }).select('_id').lean();
     const done = await SectionCompletion.find({ trainee, programme, section: { $in: required.map(x => x._id) } }).select('section').lean();
@@ -64,7 +61,18 @@ exports.completeSection = async (req, res) => {
     try {
         const assignment = await activeAssignment(req.user.id, req.params.id); if (!assignment) return res.status(403).json({ code: 'TRAINING_NOT_ASSIGNED', message: 'Programme is not assigned to you.' });
         const section = await LearningSection.findOne({ _id: req.params.sectionId, programme: req.params.id, status: 'active' }); if (!section) return res.status(404).json({ message: 'Active learning section not found in this programme.' });
-        const completion = await SectionCompletion.findOneAndUpdate({ trainee: req.user.id, section: section._id }, { $setOnInsert: { programme: req.params.id, completedAt: new Date() } }, { new: true, upsert: true, setDefaultsOnInsert: true });
+        const completion = await SectionCompletion.findOneAndUpdate(
+            { trainee: req.user.id, section: section._id },
+            {
+                $setOnInsert: {
+                    trainee: req.user.id,
+                    section: section._id,
+                    programme: req.params.id,
+                    completedAt: new Date(),
+                },
+            },
+            { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
+        );
         const p = await syncLearning(req.user.id, req.params.id, await progressFor(req.user.id, req.params.id, assignment));
         res.json({ message: 'Section completion recorded.', completion, progress: p });
     } catch (e) { res.status(500).json({ message: 'Unable to record section completion.' }); }
@@ -115,4 +123,24 @@ exports.submitAssessment = async (req, res) => {
         const qs = await AssessmentQuestion.find({ programme: req.params.id, level, status: 'active' }).sort({ order: 1 }); if (!qs.length) return res.status(404).json({ message: 'No active questions are available.' }); const submitted = Array.isArray(req.body.answers) ? req.body.answers : []; const map = new Map(submitted.map(x => [String(x.questionId), String(x.answer ?? '')])); if (submitted.some(x => !oid(x.questionId))) return res.status(400).json({ message: 'Invalid answer payload.' }); if (submitted.some(x => !qs.some(q => String(q._id) === String(x.questionId)))) return res.status(400).json({ message: 'An answer references a question outside this programme and level.' }); let score = 0, total = 0; const answers = qs.map(q => { const answer = map.get(String(q._id)) || ''; const correct = answer === q.correctAnswer; total += q.points; if (correct) score += q.points; return { question: q._id, answer, correct, pointsAwarded: correct ? q.points : 0 }; }); const percentage = total ? Math.round(score / total * 10000) / 100 : 0, passed = percentage >= e.programme.passMark, attemptNumber = prior + 1; const attempt = await AssessmentAttempt.create({ trainee: req.user.id, programme: req.params.id, assignment: e.assignment._id, level, answers, score, totalPoints: total, percentage, passed, attemptNumber }); if (passed) { if (level === 'basic') e.progress.basicPassed = true; if (level === 'intermediate') e.progress.intermediatePassed = true; if (level === 'high') e.progress.highPassed = true; await syncLearning(req.user.id, req.params.id, e.progress); } res.status(201).json({ attempt: { _id: attempt._id, level, score, totalPoints: total, percentage, passed, attemptNumber }, feedback: qs.map(q => ({ questionId: q._id, feedback: q.feedback })) });
     } catch (e) { if (e?.code === 11000) return res.status(409).json({ message: 'Attempt number conflict. Please submit again.' }); res.status(500).json({ message: 'Unable to submit assessment.' }); }
 };
-exports.results = async (req, res) => { try { const query = {}; if (req.user.role === 'trainee') query.trainee = req.user.id; else if (req.user.role === 'trainer') { const programmes = await TrainingProgramme.find({ $or: [{ owner: req.user.id }, { authorizedTrainers: req.user.id }] }).select('_id'); query.programme = { $in: programmes.map(x => x._id) }; } if (req.query.traineeId && req.user.role !== 'trainee') query.trainee = req.query.traineeId; if (req.query.programmeId) query.programme = req.query.programmeId; const attempts = await AssessmentAttempt.find(query).populate('programme', 'title programmeType').populate('trainee', 'firstName lastName username').sort({ createdAt: -1 }); res.json({ attempts }); } catch (e) { res.status(500).json({ message: 'Unable to load results.' }); } };
+exports.results = async (req, res) => { try { const query = { status: { $ne: 'in-progress' } }; if (req.user.role === 'trainee') query.trainee = req.user.id; else if (req.user.role === 'trainer') { const programmes = await TrainingProgramme.find({ $or: [{ owner: req.user.id }, { authorizedTrainers: req.user.id }] }).select('_id'); query.programme = { $in: programmes.map(x => x._id) }; } if (req.query.traineeId && req.user.role !== 'trainee') query.trainee = req.query.traineeId; if (req.query.programmeId) query.programme = req.query.programmeId; const attempts = await AssessmentAttempt.find(query).populate('programme', 'title programmeType').populate('trainee', 'firstName lastName username').sort({ createdAt: -1 }); res.json({ attempts }); } catch (e) { res.status(500).json({ message: 'Unable to load results.' }); } };
+
+// Admin/authorised Trainer only: create missing starter content for programmes they are allowed to manage.
+// This is never called by trainee endpoints. Existing content is preserved.
+exports.generateMissingProgrammeContent = async (req, res) => {
+    try {
+        const { ensureStarterTrainingContent } = require('../services/starterTrainingContent');
+        const query = { deletedAt: null };
+        if (req.user.role === 'trainer') query.$or = [{ owner: req.user.id }, { authorizedTrainers: req.user.id }];
+        if (req.body?.programmeType) query.programmeType = req.body.programmeType;
+        const programmes = await TrainingProgramme.find(query);
+        const results = [];
+        for (const programme of programmes) {
+            const made = await ensureStarterTrainingContent(programme, req.user.id);
+            results.push({ programmeId: programme._id, title: programme.title, level: programme.level, ...made });
+        }
+        res.json({ message: 'Missing learning, scenario and assessment content generated for authorised programmes. Existing content was not overwritten.', results });
+    } catch (e) {
+        res.status(500).json({ message: e.message || 'Unable to generate programme content.' });
+    }
+};

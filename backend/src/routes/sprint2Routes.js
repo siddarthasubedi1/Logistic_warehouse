@@ -14,6 +14,7 @@ r.post("/trainee/:programmeId/sections/:sectionId/complete", authorize("trainee"
 r.get("/trainee/:programmeId/scenarios", authorize("trainee"), c.getTraineeScenarios);
 r.post("/trainee/:programmeId/scenarios/:scenarioId/submit", authorize("trainee"), c.submitScenario);
 r.get("/trainee/:programmeId/assessments/:level", authorize("trainee"), c.getAssessment);
+r.post("/trainee/:programmeId/assessments/:level/questions/:questionId/check", authorize("trainee"), c.checkAssessmentAnswer);
 r.post("/trainee/:programmeId/assessments/:level/submit", authorize("trainee"), c.submitAssessment);
 r.get("/trainee/results", authorize("trainee"), c.getMyResults);
 module.exports = r;

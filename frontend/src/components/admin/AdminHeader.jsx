@@ -216,6 +216,7 @@ function AdminHeader({
     return (
         <header
             className="
+                admin-dashboard-header
                 relative
                 flex
                 min-h-[80px]

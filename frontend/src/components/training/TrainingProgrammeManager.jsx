@@ -1205,6 +1205,21 @@ function TrainingProgrammeManager({
     }
 
 
+    const handleGenerateMissingContent = async () => {
+        if (!window.confirm("Add missing Learning Sections, Scenario and Assessment questions to programmes in this module? Existing content will not be overwritten.")) return;
+        setErrorMessage(""); setSuccessMessage("");
+        try {
+            const response = await api.post("/programmes/generate-missing-content", { programmeType: lockedProgrammeType || undefined });
+            const rows = response.data?.results || [];
+            const sections = rows.reduce((n, x) => n + (x.sections || 0), 0);
+            const scenarios = rows.reduce((n, x) => n + (x.scenarios || 0), 0);
+            const questions = rows.reduce((n, x) => n + (x.questions || 0), 0);
+            setSuccessMessage(`Content ready: ${sections} learning sections, ${scenarios} scenarios and ${questions} assessment questions added. Existing content was preserved.`);
+        } catch (error) {
+            setErrorMessage(getApiErrorMessage(error, "Unable to generate programme content."));
+        }
+    };
+
     // ======================================================
     // PAGE
     // ======================================================
@@ -1297,22 +1312,8 @@ function TrainingProgrammeManager({
             ============================================== */}
 
             {!showForm && (
-                <div
-                    className="
-                        flex
-                        justify-end
-                    "
-                >
-                    <ActionButton
-                        variant="primary"
-                        onClick={
-                            handleCreateProgramme
-                        }
-                        className="
-                            w-full
-                            sm:w-auto
-                        "
-                    >
+                <div className="flex flex-col justify-end gap-2 sm:flex-row">
+                    <ActionButton variant="primary" onClick={handleCreateProgramme} className="w-full sm:w-auto">
                         + Create Programme
                     </ActionButton>
                 </div>

@@ -3,7 +3,6 @@ import EmptyState from "../ui/EmptyState";
 import StatusBadge from "../ui/StatusBadge";
 
 import {
-    formatProgrammeType,
     getUserDisplayName,
 } from "../../utils/training";
 
@@ -184,7 +183,7 @@ function TrainingProgrammeTable({
                             </Head>
 
                             <Head>
-                                Type
+                                Level
                             </Head>
 
                             <Head>
@@ -293,12 +292,11 @@ function TrainingProgrammeTable({
                                                     py-1
                                                     text-[7px]
                                                     font-semibold
+                                                    capitalize
                                                     text-blue-700
                                                 "
                                             >
-                                                {formatProgrammeType(
-                                                    programme.programmeType
-                                                )}
+                                                {programme.level || "—"}
                                             </span>
                                         </td>
 
@@ -503,12 +501,11 @@ function ProgrammeCard({
                         py-1
                         text-[7px]
                         font-semibold
+                        capitalize
                         text-blue-700
                     "
                 >
-                    {formatProgrammeType(
-                        programme.programmeType
-                    )}
+                    {programme.level || "—"}
                 </span>
 
                 <StatusBadge

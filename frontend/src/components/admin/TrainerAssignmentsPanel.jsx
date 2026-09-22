@@ -582,7 +582,7 @@ function TrainerAssignmentsPanel() {
                                 text-[#172033]
                             "
                         >
-                            Training Assignments
+                            Trainer & Trainee Training Assignments
                         </h2>
 
                         <p
@@ -592,7 +592,7 @@ function TrainerAssignmentsPanel() {
                                 text-[#64748b]
                             "
                         >
-                            Manage Trainer and Trainee module access.
+                            Assign one or both training sections to a Trainer or Trainee.
                         </p>
                     </div>
                 </div>

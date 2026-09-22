@@ -17,9 +17,8 @@ import FeedbackAlert from "../components/ui/FeedbackAlert";
 import api from "../services/api";
 
 import boxLift from "../images/box-lift.jpg";
-import heightImage from "../images/hight.jpg";
-
-import { getActiveTrainingModules } from "../utils/trainingModules";
+import { loadModulesFromDatabase } from "../utils/moduleStorage";
+import { moduleKey } from "../utils/trainingModules";
 
 import {
     getSessionUser,
@@ -36,26 +35,50 @@ import {
    TRAINING AREA CONFIGURATION
 ========================================================= */
 
-function getTrainingAreas() {
-    const modules = getActiveTrainingModules();
+function getTrainingAreas(modules = []) {
     const areas = {};
 
-    modules.forEach((module) => {
-        let image = module.image || boxLift;
+    const fallbackImages = {
+        "manual-handling": "/panoramas/manual-handling.png",
+        "working-at-height": "/panoramas/working-height.png",
+        "cyber-awareness": "/panoramas/cyber-awareness.png",
+    };
 
-        if (!module.image && module.id === "working-at-height") {
-            image = heightImage;
+    (Array.isArray(modules) ? modules : []).forEach((module) => {
+        const key = normalizeTrainingSection(moduleKey(module) || module?.name);
+
+        if (!key) {
+            return;
         }
 
-        areas[module.id] = {
-            title: module.name,
-            description: module.description || `Training module: ${module.name}.`,
-            image,
+        areas[key] = {
+            moduleId: module?._id || module?.id || key,
+            title: module?.name || key.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+            description: module?.description || `Training module: ${module?.name || key}.`,
+            image: module?.image || fallbackImages[key] || boxLift,
         };
+    });
+
+    // Keep the three core modules visually distinct even if an older database
+    // record has no image configured yet.
+    [
+        ["manual-handling", "Manual Handling", "/panoramas/manual-handling.png"],
+        ["working-at-height", "Working at Height", "/panoramas/working-height.png"],
+        ["cyber-awareness", "Cyber Awareness", "/panoramas/cyber-awareness.png"],
+    ].forEach(([key, title, image]) => {
+        if (!areas[key]) {
+            areas[key] = {
+                moduleId: key,
+                title,
+                description: `Training module assigned by the Administrator.`,
+                image,
+            };
+        }
     });
 
     return areas;
 }
+
 
 
 /* =========================================================
@@ -106,6 +129,12 @@ function TrainerDashboard() {
 
 
     const [
+        modules,
+        setModules,
+    ] = useState([]);
+
+
+    const [
         loading,
         setLoading,
     ] = useState(true);
@@ -141,6 +170,7 @@ function TrainerDashboard() {
                     const [
                         profileResult,
                         programmeResult,
+                        moduleResult,
                     ] =
                         await Promise.allSettled([
                             api.get(
@@ -150,6 +180,8 @@ function TrainerDashboard() {
                             api.get(
                                 "/training-programmes"
                             ),
+
+                            loadModulesFromDatabase(),
                         ]);
 
 
@@ -203,6 +235,22 @@ function TrainerDashboard() {
                                 programmeResult.value.data,
                                 "programmes"
                             )
+                        );
+                    }
+
+
+                    /* =========================================
+                       TRAINING MODULE DEFINITIONS
+                    ========================================== */
+
+                    if (
+                        moduleResult.status ===
+                        "fulfilled"
+                    ) {
+                        setModules(
+                            Array.isArray(moduleResult.value)
+                                ? moduleResult.value
+                                : []
                         );
                     }
 
@@ -301,8 +349,8 @@ function TrainerDashboard() {
 
     const trainingAreas =
         useMemo(
-            () => getTrainingAreas(),
-            []
+            () => getTrainingAreas(modules),
+            [modules]
         );
 
 
@@ -320,11 +368,19 @@ function TrainerDashboard() {
                         ) => {
                             const area =
                                 trainingAreas[id] || {
+                                    moduleId: id,
                                     title: id
                                         .replace(/[-_]/g, " ")
                                         .replace(/\b\w/g, (character) => character.toUpperCase()),
                                     description: "Training module assigned by the Administrator.",
-                                    image: boxLift,
+                                    image:
+                                        id === "working-at-height"
+                                            ? "/panoramas/working-height.png"
+                                            : id === "cyber-awareness"
+                                                ? "/panoramas/cyber-awareness.png"
+                                                : id === "manual-handling"
+                                                    ? "/panoramas/manual-handling.png"
+                                                    : boxLift,
                                 };
 
 
@@ -706,11 +762,11 @@ function TrainerDashboard() {
                                                     type="button"
                                                     onClick={() =>
                                                         navigate(
-                                                            "/training-programmes"
+                                                            `/training-programmes/module/${area.moduleId || area.id}/programme`
                                                         )
                                                     }
                                                 >
-                                                    View Module
+                                                    View Programmes
                                                 </button>
 
 

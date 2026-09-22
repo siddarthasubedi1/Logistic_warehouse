@@ -1,621 +1,272 @@
-import {
-    useNavigate,
-    useParams,
-} from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import api from "../../services/api";
+import { parseArrayResponse } from "../../utils/training";
 
-
-const ROLES = {
+const ROLE_DETAILS = {
     administrator: {
         name: "Administrator",
-        description:
-            "Full administrative access to user management, training management and system records.",
-
+        backendRole: "admin",
+        description: "Full system access and administrative control.",
+        priority: 1,
+        tone: "purple",
+        systemRole: true,
         groups: [
             {
-                title:
-                    "User Management",
-
+                title: "User Management",
+                tone: "blue",
                 permissions: [
-                    "View Trainer and Trainee accounts",
-                    "Create user accounts",
-                    "Edit user information",
-                    "Deactivate and reactivate users",
-                    "Delete users",
-                    "Reset passwords after user request",
+                    ["View Users", "View list of all users", true, false, false, false],
+                    ["Create User", "Add new trainer or trainee", false, true, false, false],
+                    ["Edit User", "Edit user information", false, false, true, false],
+                    ["Delete/Deactivate User", "Remove or deactivate users", false, false, false, true],
+                    ["Reset Password", "Reset user passwords", false, false, true, false],
                 ],
             },
-
             {
-                title:
-                    "Training Management",
-
+                title: "Training Management",
+                tone: "green",
                 permissions: [
-                    "Create training programmes",
-                    "Manage training programmes",
-                    "Manage learning sections",
-                    "Assign training programmes",
+                    ["Manage Training", "Create and manage training modules", true, true, true, true],
                 ],
             },
-
             {
-                title:
-                    "Administration",
-
+                title: "Profile",
+                tone: "violet",
                 permissions: [
-                    "Access Admin Dashboard",
-                    "View Roles & Permissions",
-                    "View system Audit Logs",
+                    ["Manage Own Profile", "View and update own profile", true, false, true, false],
                 ],
             },
         ],
+        history: [
+            ["3 Sep 2026, 8:30 PM", "System Administrator", "Administrator role permissions reviewed."],
+            ["1 Sep 2026, 10:15 AM", "System", "Administrator role created."],
+        ],
     },
-
-
     trainer: {
         name: "Trainer",
-
-        description:
-            "Manage authorised training programmes and learning content.",
-
+        backendRole: "trainer",
+        description: "Manage assigned training modules and view trainee progress and performance.",
+        priority: 2,
+        tone: "blue",
+        systemRole: false,
         groups: [
             {
-                title:
-                    "Training Management",
-
+                title: "User Management",
+                tone: "blue",
                 permissions: [
-                    "Access Trainer Dashboard",
-                    "View assigned training module",
-                    "Create authorised programmes",
-                    "Manage authorised programmes",
-                    "Create and edit learning sections",
-                    "View trainee training activity",
+                    ["View Users", "View assigned trainee information", true, false, false, false],
+                    ["Create User", "Add new trainer or trainee", false, false, false, false],
+                    ["Edit User", "Edit trainee task and score information", false, false, true, false],
+                    ["Delete/Deactivate User", "Remove or deactivate users", false, false, false, false],
+                    ["Reset Password", "Reset user passwords", false, false, false, false],
                 ],
             },
-
             {
-                title:
-                    "Account",
-
+                title: "Training Management",
+                tone: "green",
                 permissions: [
-                    "View own profile",
-                    "Change own password",
+                    ["View and Manage Module", "Manage assigned training module", true, true, true, false],
+                    ["View Trainee Progress", "View trainee progress and scores", true, false, true, false],
+                ],
+            },
+            {
+                title: "Profile",
+                tone: "violet",
+                permissions: [
+                    ["Manage Own Profile", "View and update own profile", true, false, true, false],
                 ],
             },
         ],
+        history: [
+            ["3 Sep 2026, 9:00 PM", "System Administrator", "Trainer permissions reviewed."],
+            ["1 Sep 2026, 10:15 AM", "System", "Trainer role created."],
+        ],
     },
-
-
     trainee: {
         name: "Trainee",
-
-        description:
-            "Access workplace safety training and personal learning progress.",
-
+        backendRole: "trainee",
+        description: "Access assigned training modules, complete activities and view personal progress.",
+        priority: 3,
+        tone: "green",
+        systemRole: true,
         groups: [
             {
-                title:
-                    "Training",
-
+                title: "Training Management",
+                tone: "green",
                 permissions: [
-                    "Access Trainee Dashboard",
-                    "View assigned training programmes",
-                    "Complete Manual Handling training",
-                    "Complete Working at Height training",
-                    "Access panoramic scenarios",
-                    "Complete quizzes",
-                    "View personal progress",
+                    ["View Assigned Training", "Access assigned training modules", true, false, false, false],
+                    ["Complete Training", "Complete quizzes and scenarios", true, false, true, false],
+                    ["View Own Progress", "View personal progress and scores", true, false, false, false],
                 ],
             },
-
             {
-                title:
-                    "Account",
-
+                title: "Profile",
+                tone: "violet",
                 permissions: [
-                    "View notifications",
-                    "View own profile",
-                    "Change own password",
+                    ["Manage Own Profile", "View and update own profile", true, false, true, false],
                 ],
             },
+        ],
+        history: [
+            ["3 Sep 2026, 9:00 PM", "System Administrator", "Trainee permissions reviewed."],
+            ["1 Sep 2026, 10:15 AM", "System", "Trainee role created."],
         ],
     },
 };
 
-
 function RoleDetailsPage() {
-    const navigate =
-        useNavigate();
+    const navigate = useNavigate();
+    const { roleName } = useParams();
+    const roleKey = String(roleName || "").toLowerCase();
+    const role = ROLE_DETAILS[roleKey];
+    const [users, setUsers] = useState([]);
 
-    const {
-        roleName,
-    } =
-        useParams();
+    useEffect(() => {
+        let mounted = true;
+        api.get("/admin/users")
+            .then((response) => {
+                if (mounted) setUsers(parseArrayResponse(response.data, "users"));
+            })
+            .catch(() => {
+                if (mounted) setUsers([]);
+            });
+        return () => { mounted = false; };
+    }, []);
 
-
-    const roleKey =
-        String(
-            roleName ||
-            ""
-        ).toLowerCase();
-
-
-    const role =
-        ROLES[
-        roleKey
-        ];
-
+    const userCount = useMemo(() => {
+        if (!role) return 0;
+        return users.filter((user) => String(user.role || "").toLowerCase() === role.backendRole).length;
+    }, [role, users]);
 
     if (!role) {
         return (
-            <DashboardLayout
-                role="admin"
-                title="Role Not Found"
-                subtitle="The requested role does not exist."
-            >
-                <div
-                    className="
-                        admin-page
-                    "
-                >
-                    <section
-                        className="
-                            rounded-xl
-                            border
-                            border-[#dbe4ef]
-                            bg-white
-                            p-8
-                            text-center
-                            shadow-sm
-                        "
-                    >
-                        <h2
-                            className="
-                                text-[14px]
-                                font-bold
-                                text-[#172033]
-                            "
-                        >
-                            Role not found
-                        </h2>
-
-                        <p
-                            className="
-                                mt-2
-                                text-[9px]
-                                text-[#64748b]
-                            "
-                        >
-                            The selected role could not be found.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                navigate(
-                                    "/admin/roles"
-                                )
-                            }
-                            className="
-                                mt-5
-                                rounded-lg
-                                bg-[#1769e8]
-                                px-5
-                                py-2.5
-                                text-[9px]
-                                font-semibold
-                                text-white
-                            "
-                        >
-                            Back to Roles
-                        </button>
-                    </section>
-                </div>
+            <DashboardLayout role="admin" title="Role Not Found">
+                <div className="admin-page"><section className="designer-card empty-admin-card">Role not found.</section></div>
             </DashboardLayout>
         );
     }
 
-
-    const permissionCount =
-        role.groups.reduce(
-            (
-                total,
-                group
-            ) =>
-                total +
-                group.permissions.length,
-            0
-        );
-
+    const permissionCount = role.groups.reduce((total, group) => total + group.permissions.length, 0);
 
     return (
         <DashboardLayout
             role="admin"
-            title={`${role.name} Role`}
-            subtitle={
-                role.description
-            }
+            title={`View Role Details - ${role.name}`}
+            subtitle="Review role information, permissions and history."
         >
-            <div
-                className="
-                    admin-page
-                    space-y-5
-                "
-            >
-                {/* =============================================
-                    TOP CARD
-                ============================================== */}
+            <div className="admin-page admin-role-details-page">
+                <div className="admin-breadcrumbs">
+                    <span>Dashboard</span><b>›</b><span>User Management</span><b>›</b><span>Roles & Permissions</span><b>›</b><strong>{role.name}</strong>
+                </div>
 
-                <section
-                    className="
-                        rounded-xl
-                        border
-                        border-[#dbe4ef]
-                        bg-white
-                        p-5
-                        shadow-sm
-                    "
-                >
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-5
-                            md:flex-row
-                            md:items-center
-                            md:justify-between
-                        "
-                    >
-                        <div
-                            className="
-                                flex
-                                items-start
-                                gap-4
-                            "
-                        >
-                            <div
-                                className="
-                                    flex
-                                    h-12
-                                    w-12
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-[#eef6ff]
-                                    text-blue-600
-                                "
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.8"
-                                    className="
-                                        h-6
-                                        w-6
-                                    "
-                                >
-                                    <circle
-                                        cx="12"
-                                        cy="8"
-                                        r="3"
-                                    />
-
-                                    <path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" />
-                                </svg>
-                            </div>
-
-
-                            <div>
-                                <p
-                                    className="
-                                        text-[8px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.1em]
-                                        text-blue-600
-                                    "
-                                >
-                                    System Role
-                                </p>
-
-
-                                <h2
-                                    className="
-                                        mt-1
-                                        text-[18px]
-                                        font-bold
-                                        text-[#172033]
-                                    "
-                                >
-                                    {role.name}
-                                </h2>
-
-
-                                <p
-                                    className="
-                                        mt-2
-                                        max-w-[600px]
-                                        text-[9px]
-                                        leading-5
-                                        text-[#64748b]
-                                    "
-                                >
-                                    {role.description}
-                                </p>
-                            </div>
+                <section className="designer-card role-info-card">
+                    <div className="role-info-card__header">
+                        <div className="designer-section-title-wrap">
+                            <span className="designer-section-icon">⚙</span>
+                            <div><h2>Role Information</h2></div>
                         </div>
-
-
-                        <div
-                            className="
-                                flex
-                                flex-col
-                                gap-2
-                                sm:flex-row
-                            "
-                        >
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    navigate(
-                                        "/admin/roles"
-                                    )
-                                }
-                                className="
-                                    min-h-[40px]
-                                    rounded-lg
-                                    border
-                                    border-[#cbd5e1]
-                                    bg-white
-                                    px-4
-                                    text-[9px]
-                                    font-semibold
-                                    text-[#52627a]
-                                    transition
-                                    hover:bg-[#f8fafc]
-                                "
-                            >
-                                Back
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    navigate(
-                                        `/admin/roles/${roleKey}/edit`
-                                    )
-                                }
-                                className="
-                                    min-h-[40px]
-                                    rounded-lg
-                                    bg-[#1769e8]
-                                    px-5
-                                    text-[9px]
-                                    font-semibold
-                                    text-white
-                                    transition
-                                    hover:bg-[#0b5ed7]
-                                "
-                            >
-                                Edit Role
-                            </button>
+                        <div className="role-info-actions">
+                            <button type="button" className="designer-outline-button" onClick={() => navigate("/admin/roles")}>← Back To Roles</button>
+                            <button type="button" className="designer-primary-button" onClick={() => navigate(`/admin/roles/${roleKey}/edit`)}>✎ Edit Role</button>
                         </div>
+                    </div>
+
+                    <div className="role-identity-row">
+                        <RoleAvatar tone={role.tone} />
+                        <div>
+                            <div className="role-identity-title">
+                                <h3>{role.name}</h3>
+                                <span>{role.systemRole ? "System Role" : "Custom Role"}</span>
+                            </div>
+                            <p>{role.description}</p>
+                        </div>
+                    </div>
+
+                    <div className="role-stat-strip">
+                        <RoleStat label="Status" value="Active" success />
+                        <RoleStat label="Users" value={userCount} />
+                        <RoleStat label="Permissions" value={permissionCount} />
+                        <RoleStat label="Priority" value={role.priority} />
+                        <RoleStat label="Created On" value="System Default" />
                     </div>
                 </section>
 
-
-                {/* =============================================
-                    STATS
-                ============================================== */}
-
-                <section
-                    className="
-                        grid
-                        gap-4
-                        sm:grid-cols-2
-                    "
-                >
-                    <StatCard
-                        label="Permission Groups"
-                        value={
-                            role.groups.length
-                        }
-                    />
-
-                    <StatCard
-                        label="Total Permissions"
-                        value={
-                            permissionCount
-                        }
-                    />
-                </section>
-
-
-                {/* =============================================
-                    PERMISSION GROUPS
-                ============================================== */}
-
-                <section
-                    className="
-                        grid
-                        gap-4
-                        xl:grid-cols-2
-                    "
-                >
-                    {role.groups.map(
-                        (
-                            group
-                        ) => (
-                            <article
-                                key={
-                                    group.title
-                                }
-                                className="
-                                    overflow-hidden
-                                    rounded-xl
-                                    border
-                                    border-[#dbe4ef]
-                                    bg-white
-                                    shadow-sm
-                                "
-                            >
-                                <div
-                                    className="
-                                        flex
-                                        items-center
-                                        justify-between
-                                        border-b
-                                        border-[#e8eef5]
-                                        bg-[#f8fafc]
-                                        px-5
-                                        py-4
-                                    "
-                                >
-                                    <div>
-                                        <h3
-                                            className="
-                                                text-[12px]
-                                                font-bold
-                                                text-[#172033]
-                                            "
-                                        >
-                                            {group.title}
-                                        </h3>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-[8px]
-                                                text-[#64748b]
-                                            "
-                                        >
-                                            {group.permissions.length} permissions
-                                        </p>
-                                    </div>
-
-
-                                    <div
-                                        className="
-                                            flex
-                                            h-8
-                                            w-8
-                                            items-center
-                                            justify-center
-                                            rounded-full
-                                            bg-emerald-50
-                                            text-emerald-600
-                                        "
-                                    >
-                                        ✓
-                                    </div>
+                <div className="role-details-grid">
+                    <section className="designer-card role-permissions-card">
+                        <div className="designer-section-head designer-section-head--compact">
+                            <div className="designer-section-title-wrap">
+                                <span className="designer-section-icon designer-section-icon--key">⌕</span>
+                                <div>
+                                    <h2>Permissions ({permissionCount})</h2>
+                                    <p>View what this role can access and modify.</p>
                                 </div>
+                            </div>
+                            <label className="designer-search-box designer-search-box--small">
+                                <span>⌕</span><input type="search" placeholder="Search permissions..." />
+                            </label>
+                        </div>
+                        <div className="designer-table-scroll">
+                            <table className="role-permission-table">
+                                <thead>
+                                    <tr><th>Permissions</th><th>Description</th><th>View</th><th>Create</th><th>Edit</th><th>Delete</th></tr>
+                                </thead>
+                                <tbody>
+                                    {role.groups.flatMap((group) => [
+                                        <tr key={`${group.title}-head`} className={`permission-group-row permission-group-row--${group.tone}`}>
+                                            <td colSpan="6"><span>▣</span>{group.title}</td>
+                                        </tr>,
+                                        ...group.permissions.map(([name, description, view, create, edit, remove]) => (
+                                            <tr key={`${group.title}-${name}`} className="permission-data-row">
+                                                <td>{name}</td><td>{description}</td>
+                                                <TinyPermission enabled={view} />
+                                                <TinyPermission enabled={create} />
+                                                <TinyPermission enabled={edit} />
+                                                <TinyPermission enabled={remove} />
+                                            </tr>
+                                        )),
+                                    ])}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
 
-
-                                <div
-                                    className="
-                                        divide-y
-                                        divide-[#edf1f6]
-                                    "
-                                >
-                                    {group.permissions.map(
-                                        (
-                                            permission
-                                        ) => (
-                                            <div
-                                                key={
-                                                    permission
-                                                }
-                                                className="
-                                                    flex
-                                                    items-center
-                                                    gap-3
-                                                    px-5
-                                                    py-3.5
-                                                "
-                                            >
-                                                <span
-                                                    className="
-                                                        flex
-                                                        h-6
-                                                        w-6
-                                                        shrink-0
-                                                        items-center
-                                                        justify-center
-                                                        rounded-full
-                                                        bg-emerald-50
-                                                        text-[8px]
-                                                        font-bold
-                                                        text-emerald-600
-                                                    "
-                                                >
-                                                    ✓
-                                                </span>
-
-                                                <p
-                                                    className="
-                                                        text-[9px]
-                                                        font-medium
-                                                        text-[#334155]
-                                                    "
-                                                >
-                                                    {permission}
-                                                </p>
-                                            </div>
-                                        )
-                                    )}
+                    <aside className="designer-card role-history-card">
+                        <div className="designer-section-title-wrap role-history-title">
+                            <span className="designer-section-icon">◷</span><div><h2>Change History</h2></div>
+                        </div>
+                        <div className="role-history-timeline">
+                            {role.history.map(([date, actor, note]) => (
+                                <div className="role-history-item" key={date}>
+                                    <span className="role-history-dot" />
+                                    <strong>{date}</strong><b>{actor}</b><p>{note}</p>
                                 </div>
-                            </article>
-                        )
-                    )}
-                </section>
+                            ))}
+                        </div>
+                    </aside>
+                </div>
             </div>
         </DashboardLayout>
     );
 }
 
+function RoleAvatar({ tone }) {
+    return <div className={`role-detail-avatar role-detail-avatar--${tone}`}>♙</div>;
+}
 
-function StatCard({
-    label,
-    value,
-}) {
+function RoleStat({ label, value, success = false }) {
     return (
-        <article
-            className="
-                rounded-xl
-                border
-                border-[#dbe4ef]
-                bg-white
-                p-5
-                shadow-sm
-            "
-        >
-            <p
-                className="
-                    text-[9px]
-                    font-medium
-                    text-[#64748b]
-                "
-            >
-                {label}
-            </p>
-
-            <p
-                className="
-                    mt-2
-                    text-[24px]
-                    font-bold
-                    text-[#1769e8]
-                "
-            >
-                {value}
-            </p>
-        </article>
+        <div className="role-stat-item">
+            <span>{label}</span>
+            <strong className={success ? "role-stat-success" : ""}>{value}</strong>
+        </div>
     );
 }
 
+function TinyPermission({ enabled }) {
+    return <td className="permission-state-cell"><span className={enabled ? "permission-state permission-state--yes" : "permission-state permission-state--no"}>{enabled ? "✓" : "×"}</span></td>;
+}
 
 export default RoleDetailsPage;

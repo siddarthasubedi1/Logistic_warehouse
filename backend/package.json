@@ -8,7 +8,8 @@
     "start": "node server.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "seed:sprint2": "node src/seeds/sprint2Seed.js"
+    "seed:sprint2": "node src/seeds/sprint2Seed.js",
+    "fix:progress-indexes": "node src/scripts/fixTrainingProgressIndexes.js"
   },
   "keywords": [],
   "author": "",

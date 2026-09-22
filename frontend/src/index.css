@@ -7457,3 +7457,91 @@ select:focus-visible {
         top: 73%
     }
 }
+
+/* =========================================================
+   GLOBAL READABILITY PASS — 2026-09
+   Slightly larger typography across the application without
+   changing any route, API, state, or backend behaviour.
+========================================================= */
+
+body {
+    font-size: 15px;
+}
+
+.app-page-header__title {
+    font-size: 22px;
+}
+
+.app-page-header__subtitle {
+    font-size: 12px;
+}
+
+.sidebar-link {
+    font-size: 12px;
+}
+
+.sidebar-role-card__title {
+    font-size: 12px;
+}
+
+.sidebar-role-card__description {
+    font-size: 10px;
+}
+
+.app-section-description {
+    font-size: 12px;
+}
+
+.app-table th,
+.app-content th {
+    font-size: 11px;
+}
+
+.app-table td,
+.app-content td {
+    font-size: 12px;
+}
+
+/* The project contains many deliberately tiny arbitrary Tailwind
+   font sizes from the Figma-scale implementation. Raise only the
+   smallest sizes so content stays readable on a normal desktop. */
+.app-shell [class*="text-[6px]"],
+.app-shell [class*="text-[6.2px]"],
+.app-shell [class*="text-[6.3px]"],
+.app-shell [class*="text-[6.5px]"],
+.app-shell [class*="text-[7px]"],
+.app-shell [class*="text-[7.5px]"] {
+    font-size: 10px !important;
+}
+
+.app-shell [class*="text-[8px]"],
+.app-shell [class*="text-[8.5px]"] {
+    font-size: 11px !important;
+}
+
+.app-shell [class*="text-[9px]"],
+.app-shell [class*="text-[9.5px]"] {
+    font-size: 11.5px !important;
+}
+
+.app-shell [class*="text-[10px]"] {
+    font-size: 12px !important;
+}
+
+.app-shell [class*="text-[11px]"] {
+    font-size: 13px !important;
+}
+
+.app-shell [class*="text-[12px]"] {
+    font-size: 14px !important;
+}
+
+.app-shell [class*="text-[13px]"] {
+    font-size: 14.5px !important;
+}
+
+@media (max-width: 767px) {
+    body {
+        font-size: 14px;
+    }
+}

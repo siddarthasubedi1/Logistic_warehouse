@@ -720,7 +720,7 @@ function CreateUserForm() {
                                     sm:text-[20px]
                                 "
                             >
-                                Create a New User
+                                Create Trainer or Trainee
                             </h2>
 
                             <p
@@ -743,10 +743,7 @@ function CreateUserForm() {
                     <button
                         type="button"
                         onClick={() => {
-                            setShowForm(
-                                true
-                            );
-
+                            setShowForm((current) => !current);
                             setError("");
                             setSuccess("");
                         }}
@@ -765,7 +762,7 @@ function CreateUserForm() {
                             hover:bg-blue-50
                         "
                     >
-                        + Create User
+                        {showForm ? "Close Form" : "+ Add New User"}
                     </button>
                 </section>
 
@@ -805,14 +802,15 @@ function CreateUserForm() {
                 ================================================= */}
 
                 <section
-                    className="
+                    className={`
                         overflow-hidden
                         rounded-xl
                         border
                         border-[#dbe4ef]
                         bg-white
                         shadow-[0_1px_3px_rgba(15,23,42,0.06)]
-                    "
+                        ${showForm ? "" : "create-user-form-hidden"}
+                    `}
                 >
                     <div
                         className="

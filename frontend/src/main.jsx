@@ -9,6 +9,7 @@ import {
 import App from "./App";
 
 import "./index.css";
+import "./styles/adminDesignerRefresh.css";
 
 const rootElement =
   document.getElementById(

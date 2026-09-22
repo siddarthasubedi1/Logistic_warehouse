@@ -45,7 +45,10 @@ const getModuleLevelAccess = async (traineeId, moduleType) => {
         .populate({ path: "programme", match: { status: "active", programmeType: moduleType }, select: "_id level passMark" });
     const programmes = rows.map(r => r.programme).filter(Boolean);
     const ids = programmes.map(p => p._id);
-    const passed = ids.length ? await AssessmentAttempt.find({ trainee: traineeId, programme: { $in: ids }, passed: true }).select("programme").lean() : [];
+    // A programme is complete only after the trainee passes its final High
+    // assessment. Passing Basic or Intermediate alone must not unlock the next
+    // Beginner/Intermediate/Advanced programme level.
+    const passed = ids.length ? await AssessmentAttempt.find({ trainee: traineeId, programme: { $in: ids }, level: "high", passed: true, status: { $ne: "in-progress" } }).select("programme").lean() : [];
     const passedIds = new Set(passed.map(a => String(a.programme)));
     const completed = {};
     for (const level of LEVEL_ORDER) {
@@ -374,6 +377,10 @@ const getMyTrainingSections = async (
 
         const gate = await verifyProgrammeLevelUnlocked(req.user.id, programme);
         if (!gate.unlocked) return res.status(403).json({ code: "PROGRAMME_LEVEL_LOCKED", message: "Complete and pass the previous programme level first.", level: gate.level, levelAccess: gate.access });
+
+        // If this programme has never been given training content, create a
+        // database-backed starter pack (6 learning sections, scenario and assessments).
+        // Admin/Trainer can edit or replace all of it from Training Programmes.
 
         const sections =
             await LearningSection

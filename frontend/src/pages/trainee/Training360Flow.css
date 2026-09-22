@@ -1368,3 +1368,146 @@
         grid-template-columns: 1fr 1fr
     }
 }
+
+/* Level-aware programme navigation inside trainee Learning */
+.immersive-overlay--learning {
+    max-height: 72%;
+}
+
+.immersive-level-programmes {
+    padding: 10px 18px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(2, 18, 35, .55);
+}
+
+.immersive-level-programmes>span {
+    display: block;
+    margin-bottom: 8px;
+    color: #7dd3fc;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.immersive-level-programmes>div {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 3px;
+}
+
+.immersive-level-programmes button {
+    flex: 0 0 210px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .07);
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.immersive-level-programmes button.active {
+    background: #1769e8;
+    border-color: #60a5fa;
+}
+
+.immersive-level-programmes button b,
+.immersive-level-programmes button small {
+    display: block;
+}
+
+.immersive-level-programmes button b {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.immersive-level-programmes button small {
+    color: #bfdbfe;
+    font-size: 10px;
+}
+
+/* Trainee learning completion + collision cleanup */
+.immersive-overlay nav button.completed b {
+    background: #16a34a;
+    border-color: #22c55e;
+    color: #fff;
+}
+
+.immersive-overlay nav button span {
+    min-width: 0;
+}
+
+.immersive-overlay__nav .section-complete {
+    background: #15803d;
+    opacity: 1;
+    cursor: default;
+}
+
+/* Activity cards use separated anchor points so they do not overlap the map or each other. */
+.immersive-module .immersive-activity {
+    max-width: 230px;
+}
+
+@media (min-width:1101px) {
+    .immersive-module .immersive-map {
+        right: 24px;
+        top: 76px;
+    }
+}
+
+/* Learning sections unlock sequentially. A tick is shown only after the
+   server confirms that the trainee pressed Mark Complete. */
+.immersive-overlay nav button.completed b {
+    background: #16a34a;
+    border-color: #22c55e;
+    color: #fff;
+}
+
+.immersive-overlay nav button.locked,
+.immersive-overlay nav button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* Assessment question-by-question flow */
+.immersive-question--single {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.immersive-question--single>small {
+    display: block;
+    margin-bottom: 10px;
+    opacity: .8;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.immersive-question--single h2 {
+    margin: 0 0 18px;
+}
+
+.immersive-assessment-nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.immersive-assessment-nav> :first-child {
+    justify-self: start;
+}
+
+.immersive-assessment-nav> :last-child {
+    justify-self: end;
+}
+
+/* Quiz attempt summary for the one-question-at-a-time randomized assessment flow */
+.immersive-attempt-note {
+    margin: 6px 0 16px;
+    color: #bfdbfe;
+    font-size: 13px;
+}

@@ -1,20 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-import api from "../../services/api";
 
-const levels = ["basic", "intermediate", "high"];
+// The old standalone Sprint 2 exercise page duplicated scenario/assessment
+// behaviour. Keep the route for backwards compatibility, but send trainees to
+// the single interactive 360° flow so all modules use the same rules.
 export default function TraineeExercisePage() {
-    const { programmeId } = useParams(); const nav = useNavigate();
-    const [scenarios, setScenarios] = useState([]), [si, setSi] = useState(0), [response, setResponse] = useState(""), [feedback, setFeedback] = useState("");
-    const [phase, setPhase] = useState("scenario"), [level, setLevel] = useState("basic"), [questions, setQuestions] = useState([]), [answers, setAnswers] = useState({}), [result, setResult] = useState(null), [error, setError] = useState("");
-    useEffect(() => { api.get(`/sprint2/trainee/${programmeId}/scenarios`).then(r => { const x = r.data.scenarios || []; setScenarios(x); if (!x.length) startAssessment("basic") }).catch(e => setError(e.response?.data?.message || "Unable to start exercise")) }, [programmeId]);
-    const startAssessment = async l => { try { setError(""); const r = await api.get(`/sprint2/trainee/${programmeId}/assessments/${l}`); setQuestions(r.data.questions || []); setLevel(l); setAnswers({}); setResult(null); setPhase("assessment") } catch (e) { setError(e.response?.data?.message || "Assessment is not available") } };
-    const submitScenario = async () => { const s = scenarios[si]; if (!s || !response) return; try { const r = await api.post(`/sprint2/trainee/${programmeId}/scenarios/${s._id}/submit`, { response }); setFeedback(r.data.feedback); if (r.data.correct) { setTimeout(() => { setFeedback(""); setResponse(""); if (si < scenarios.length - 1) setSi(si + 1); else startAssessment("basic") }, 600) } } catch (e) { setError(e.response?.data?.message || "Unable to submit response") } };
-    const submitAssessment = async () => { try { const payload = { answers: questions.map(q => ({ questionId: q._id, answer: answers[q._id] || "" })) }; const r = await api.post(`/sprint2/trainee/${programmeId}/assessments/${level}/submit`, payload); setResult(r.data.attempt) } catch (e) { setError(e.response?.data?.message || "Unable to submit assessment") } };
-    const nextLevel = () => { const i = levels.indexOf(level); if (i < 2) startAssessment(levels[i + 1]); else nav("/my-training") };
-    return <DashboardLayout role="trainee" title="Sprint 2 Training Exercise" subtitle="Complete the scenario and progressive assessment."><div style={{ maxWidth: 900, margin: "0 auto", padding: 20 }}>{error && <div style={{ padding: 12, border: "1px solid #ef4444", borderRadius: 8, marginBottom: 12 }}>{error}</div>}
-        {phase === "scenario" && scenarios[si] && <section style={{ background: "white", padding: 24, borderRadius: 12 }}><small>Scenario {si + 1} of {scenarios.length}</small><h2>{scenarios[si].title}</h2><p>{scenarios[si].prompt}</p>{scenarios[si].options?.length > 0 ? scenarios[si].options.map(o => <label key={o} style={{ display: "block", padding: 8 }}><input type="radio" name="scenario" value={o} checked={response === o} onChange={e => setResponse(e.target.value)} /> {o}</label>) : <input value={response} onChange={e => setResponse(e.target.value)} placeholder="Enter your response" style={{ width: "100%", padding: 10 }} />}<button onClick={submitScenario} style={{ marginTop: 12, padding: "10px 18px" }}>Submit Scenario</button>{feedback && <p><strong>{feedback}</strong></p>}</section>}
-        {phase === "assessment" && <section style={{ background: "white", padding: 24, borderRadius: 12 }}><h2>{level[0].toUpperCase() + level.slice(1)} Assessment</h2>{questions.map((q, i) => <div key={q._id} style={{ padding: "16px 0", borderBottom: "1px solid #ddd" }}><strong>{i + 1}. {q.question}</strong>{q.options.map(o => <label key={o} style={{ display: "block", padding: 6 }}><input type="radio" name={q._id} checked={answers[q._id] === o} onChange={() => setAnswers({ ...answers, [q._id]: o })} /> {o}</label>)}</div>)}{!result && <button onClick={submitAssessment} style={{ marginTop: 16, padding: "10px 18px" }}>Submit Assessment</button>}{result && <div style={{ marginTop: 18, padding: 16, border: "1px solid #cbd5e1", borderRadius: 8 }}><h3>{result.passed ? "PASS" : "FAIL"}</h3><p>Score: {result.percentage}% · Attempt {result.attemptNumber}</p>{result.passed ? <button onClick={nextLevel}>{level === "high" ? "Finish Training" : "Continue to Next Level"}</button> : <button onClick={() => startAssessment(level)}>Retake {level}</button>}</div>}</section>}
-        <button onClick={() => nav(`/my-training/${programmeId}`)} style={{ marginTop: 16 }}>← Back to Learning</button></div></DashboardLayout>
+    const { programmeId } = useParams();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (programmeId) navigate(`/my-training/${programmeId}/environment`, { replace: true });
+    }, [programmeId, navigate]);
+
+    return <DashboardLayout role="trainee" title="Opening Training" subtitle="Loading your interactive training environment…">
+        <div style={{ padding: 24 }}>Opening the 360° training environment…</div>
+    </DashboardLayout>;
 }

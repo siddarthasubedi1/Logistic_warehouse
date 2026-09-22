@@ -1523,6 +1523,7 @@ import api from "../../services/api";
 import UserFilters from "./UserFilters";
 import UserTable from "./UserTable";
 import EditUserModal from "./EditUserModal";
+import ConfirmDialog from "./ConfirmDialog";
 
 
 const TEMP_CREDENTIALS_KEY =
@@ -1588,6 +1589,11 @@ function ManageUsersTable({
         setSavingEdit,
     ] = useState(false);
 
+    const [
+        confirmAction,
+        setConfirmAction,
+    ] = useState(null);
+
     /*
      * Shared credentials state.
      *
@@ -1650,7 +1656,7 @@ function ManageUsersTable({
 
     /* =========================================================
        READ GENERATED CREDENTIALS FROM CREATE USER
-
+ 
        Create User
            ↓
        Generate Credentials
@@ -2157,7 +2163,20 @@ function ManageUsersTable({
        DEACTIVATE USER
     ========================================================= */
 
-    const deactivateUser =
+    const deactivateUser = (user) => {
+        const name = getUserName(user);
+        setConfirmAction({
+            kind: "deactivate",
+            user,
+            title: "Deactivate User",
+            message: `Deactivate ${name}? The user will not be able to log in until reactivated.`,
+            confirmText: "Deactivate",
+            variant: "warning",
+        });
+    };
+
+
+    const performDeactivate =
         async (
             user
         ) => {
@@ -2165,19 +2184,6 @@ function ManageUsersTable({
                 getUserName(
                     user
                 );
-
-
-            const confirmed =
-                window.confirm(
-                    `Deactivate ${name}? The user will not be able to log in until reactivated.`
-                );
-
-
-            if (
-                !confirmed
-            ) {
-                return;
-            }
 
 
             const userId =
@@ -2242,7 +2248,20 @@ function ManageUsersTable({
        REACTIVATE USER
     ========================================================= */
 
-    const reactivateUser =
+    const reactivateUser = (user) => {
+        const name = getUserName(user);
+        setConfirmAction({
+            kind: "reactivate",
+            user,
+            title: "Reactivate User",
+            message: `Reactivate ${name}?`,
+            confirmText: "Reactivate",
+            variant: "success",
+        });
+    };
+
+
+    const performReactivate =
         async (
             user
         ) => {
@@ -2308,7 +2327,20 @@ function ManageUsersTable({
        DELETE USER
     ========================================================= */
 
-    const deleteUser =
+    const deleteUser = (user) => {
+        const name = getUserName(user);
+        setConfirmAction({
+            kind: "delete",
+            user,
+            title: "Delete User",
+            message: `Delete ${name}? This action cannot be undone.`,
+            confirmText: "Delete",
+            variant: "danger",
+        });
+    };
+
+
+    const performDelete =
         async (
             user
         ) => {
@@ -2316,19 +2348,6 @@ function ManageUsersTable({
                 getUserName(
                     user
                 );
-
-
-            const confirmed =
-                window.confirm(
-                    `Delete ${name}? This action cannot be undone.`
-                );
-
-
-            if (
-                !confirmed
-            ) {
-                return;
-            }
 
 
             const userId =
@@ -2638,17 +2657,17 @@ function ManageUsersTable({
 
             const body =
                 `Hello ${temporaryCredentials.name || temporaryCredentials.username},
-
-${intro}
-
-Username: ${temporaryCredentials.username}
-Temporary Password: ${temporaryCredentials.password}
-
-Please use these credentials to sign in.
-
-For security, you will be required to create a new password after your first login.
-
-UK LogiWare Safety Training`;
+    
+    ${intro}
+    
+    Username: ${temporaryCredentials.username}
+    Temporary Password: ${temporaryCredentials.password}
+    
+    Please use these credentials to sign in.
+    
+    For security, you will be required to create a new password after your first login.
+    
+    UK LogiWare Safety Training`;
 
 
             const gmailUrl =
@@ -2671,7 +2690,7 @@ UK LogiWare Safety Training`;
 
     /* =========================================================
        DONE / CLOSE
-
+ 
        Remove plaintext password from screen.
     ========================================================= */
 
@@ -2700,17 +2719,27 @@ UK LogiWare Safety Training`;
        UI
     ========================================================= */
 
+    const confirmPendingAction = async () => {
+        if (!confirmAction?.user) return;
+        const action = confirmAction;
+        setConfirmAction(null);
+        if (action.kind === "reactivate") await performReactivate(action.user);
+        else if (action.kind === "deactivate") await performDeactivate(action.user);
+        else if (action.kind === "delete") await performDelete(action.user);
+    };
+
+
     return (
         <>
             <div
                 className="
-                    space-y-4
-                "
+                        space-y-4
+                    "
             >
 
                 {/* =============================================
-                    ERROR
-                ============================================== */}
+                        ERROR
+                    ============================================== */}
 
                 {error && (
                     <Alert
@@ -2726,8 +2755,8 @@ UK LogiWare Safety Training`;
 
 
                 {/* =============================================
-                    SUCCESS
-                ============================================== */}
+                        SUCCESS
+                    ============================================== */}
 
                 {success && (
                     <Alert
@@ -2743,59 +2772,59 @@ UK LogiWare Safety Training`;
 
 
                 {/* =============================================
-                    INLINE TEMPORARY CREDENTIALS
-
-                    THIS MATCHES YOUR SECOND SCREENSHOT.
-
-                    NOT A MODAL.
-                ============================================== */}
+                        INLINE TEMPORARY CREDENTIALS
+    
+                        THIS MATCHES YOUR SECOND SCREENSHOT.
+    
+                        NOT A MODAL.
+                    ============================================== */}
 
                 {temporaryCredentials && (
                     <section
                         className="
-                            overflow-hidden
-                            rounded-xl
-                            border
-                            border-[#b9d8ff]
-                            bg-[#eef6ff]
-                            shadow-[0_1px_4px_rgba(15,23,42,0.08)]
-                        "
+                                overflow-hidden
+                                rounded-xl
+                                border
+                                border-[#b9d8ff]
+                                bg-[#eef6ff]
+                                shadow-[0_1px_4px_rgba(15,23,42,0.08)]
+                            "
                     >
                         <div
                             className="
-                                px-5
-                                py-5
-                            "
+                                    px-5
+                                    py-5
+                                "
                         >
                             {/* HEADER */}
 
                             <div
                                 className="
-                                    flex
-                                    items-start
-                                    justify-between
-                                    gap-4
-                                "
+                                        flex
+                                        items-start
+                                        justify-between
+                                        gap-4
+                                    "
                             >
                                 <div
                                     className="
-                                        flex
-                                        items-start
-                                        gap-3
-                                    "
+                                            flex
+                                            items-start
+                                            gap-3
+                                        "
                                 >
                                     <div
                                         className="
-                                            flex
-                                            h-10
-                                            w-10
-                                            shrink-0
-                                            items-center
-                                            justify-center
-                                            rounded-lg
-                                            bg-[#1769e8]
-                                            text-white
-                                        "
+                                                flex
+                                                h-10
+                                                w-10
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-lg
+                                                bg-[#1769e8]
+                                                text-white
+                                            "
                                     >
                                         <KeyIcon />
                                     </div>
@@ -2804,10 +2833,10 @@ UK LogiWare Safety Training`;
                                     <div>
                                         <h3
                                             className="
-                                                text-[13px]
-                                                font-bold
-                                                text-[#172033]
-                                            "
+                                                    text-[13px]
+                                                    font-bold
+                                                    text-[#172033]
+                                                "
                                         >
                                             New Temporary Credentials
                                         </h3>
@@ -2815,10 +2844,10 @@ UK LogiWare Safety Training`;
 
                                         <p
                                             className="
-                                                mt-1
-                                                text-[9px]
-                                                text-[#52627a]
-                                            "
+                                                    mt-1
+                                                    text-[9px]
+                                                    text-[#52627a]
+                                                "
                                         >
                                             {temporaryCredentials.name}
                                         </p>
@@ -2827,10 +2856,10 @@ UK LogiWare Safety Training`;
                                         {temporaryCredentials.email && (
                                             <p
                                                 className="
-                                                    mt-1
-                                                    text-[8px]
-                                                    text-[#8a9ab0]
-                                                "
+                                                        mt-1
+                                                        text-[8px]
+                                                        text-[#8a9ab0]
+                                                    "
                                             >
                                                 {temporaryCredentials.email}
                                             </p>
@@ -2845,12 +2874,12 @@ UK LogiWare Safety Training`;
                                         finishCredentials
                                     }
                                     className="
-                                        text-[10px]
-                                        font-medium
-                                        text-[#64748b]
-                                        transition
-                                        hover:text-[#172033]
-                                    "
+                                            text-[10px]
+                                            font-medium
+                                            text-[#64748b]
+                                            transition
+                                            hover:text-[#172033]
+                                        "
                                 >
                                     Close
                                 </button>
@@ -2861,11 +2890,11 @@ UK LogiWare Safety Training`;
 
                             <p
                                 className="
-                                    mt-4
-                                    text-[9px]
-                                    leading-5
-                                    text-[#c45f00]
-                                "
+                                        mt-4
+                                        text-[9px]
+                                        leading-5
+                                        text-[#c45f00]
+                                    "
                             >
                                 Save or send these credentials now.
                                 The temporary password is shown only once.
@@ -2876,11 +2905,11 @@ UK LogiWare Safety Training`;
 
                             <div
                                 className="
-                                    mt-4
-                                    grid
-                                    gap-3
-                                    md:grid-cols-2
-                                "
+                                        mt-4
+                                        grid
+                                        gap-3
+                                        md:grid-cols-2
+                                    "
                             >
                                 <CredentialBox
                                     label="Username"
@@ -2903,12 +2932,12 @@ UK LogiWare Safety Training`;
 
                             <div
                                 className="
-                                    mt-4
-                                    flex
-                                    flex-wrap
-                                    items-center
-                                    gap-2
-                                "
+                                        mt-4
+                                        flex
+                                        flex-wrap
+                                        items-center
+                                        gap-2
+                                    "
                             >
                                 <button
                                     type="button"
@@ -2916,20 +2945,20 @@ UK LogiWare Safety Training`;
                                         copyCredentials
                                     }
                                     className="
-                                        inline-flex
-                                        min-h-[38px]
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-lg
-                                        bg-[#1769e8]
-                                        px-4
-                                        text-[9px]
-                                        font-semibold
-                                        text-white
-                                        transition
-                                        hover:bg-[#0b5ed7]
-                                    "
+                                            inline-flex
+                                            min-h-[38px]
+                                            items-center
+                                            justify-center
+                                            gap-2
+                                            rounded-lg
+                                            bg-[#1769e8]
+                                            px-4
+                                            text-[9px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b5ed7]
+                                        "
                                 >
                                     <CopyIcon />
 
@@ -2946,22 +2975,22 @@ UK LogiWare Safety Training`;
                                         !temporaryCredentials.email
                                     }
                                     className="
-                                        inline-flex
-                                        min-h-[38px]
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-lg
-                                        bg-[#1769e8]
-                                        px-4
-                                        text-[9px]
-                                        font-semibold
-                                        text-white
-                                        transition
-                                        hover:bg-[#0b5ed7]
-                                        disabled:cursor-not-allowed
-                                        disabled:opacity-50
-                                    "
+                                            inline-flex
+                                            min-h-[38px]
+                                            items-center
+                                            justify-center
+                                            gap-2
+                                            rounded-lg
+                                            bg-[#1769e8]
+                                            px-4
+                                            text-[9px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b5ed7]
+                                            disabled:cursor-not-allowed
+                                            disabled:opacity-50
+                                        "
                                 >
                                     <MailIcon />
 
@@ -2977,20 +3006,20 @@ UK LogiWare Safety Training`;
                                         finishCredentials
                                     }
                                     className="
-                                        inline-flex
-                                        min-h-[38px]
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-lg
-                                        bg-[#073763]
-                                        px-5
-                                        text-[9px]
-                                        font-semibold
-                                        text-white
-                                        transition
-                                        hover:bg-[#0b4f87]
-                                    "
+                                            inline-flex
+                                            min-h-[38px]
+                                            items-center
+                                            justify-center
+                                            gap-2
+                                            rounded-lg
+                                            bg-[#073763]
+                                            px-5
+                                            text-[9px]
+                                            font-semibold
+                                            text-white
+                                            transition
+                                            hover:bg-[#0b4f87]
+                                        "
                                 >
                                     <CheckIcon />
 
@@ -3003,40 +3032,40 @@ UK LogiWare Safety Training`;
 
 
                 {/* =============================================
-                    TRAINER & TRAINEE ACCOUNTS
-                ============================================== */}
+                        TRAINER & TRAINEE ACCOUNTS
+                    ============================================== */}
 
                 <section
                     className="
-                        overflow-hidden
-                        rounded-xl
-                        border
-                        border-[#dbe4ef]
-                        bg-white
-                        shadow-[0_1px_3px_rgba(15,23,42,0.06)]
-                    "
+                            overflow-hidden
+                            rounded-xl
+                            border
+                            border-[#dbe4ef]
+                            bg-white
+                            shadow-[0_1px_3px_rgba(15,23,42,0.06)]
+                        "
                 >
                     <div
                         className="
-                            flex
-                            flex-col
-                            gap-3
-                            border-b
-                            border-[#e8eef5]
-                            px-5
-                            py-4
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
+                                flex
+                                flex-col
+                                gap-3
+                                border-b
+                                border-[#e8eef5]
+                                px-5
+                                py-4
+                                sm:flex-row
+                                sm:items-center
+                                sm:justify-between
+                            "
                     >
                         <div>
                             <h2
                                 className="
-                                    text-[14px]
-                                    font-bold
-                                    text-[#172033]
-                                "
+                                        text-[14px]
+                                        font-bold
+                                        text-[#172033]
+                                    "
                             >
                                 Trainer & Trainee Accounts
                             </h2>
@@ -3044,10 +3073,10 @@ UK LogiWare Safety Training`;
 
                             <p
                                 className="
-                                    mt-1
-                                    text-[9px]
-                                    text-[#64748b]
-                                "
+                                        mt-1
+                                        text-[9px]
+                                        text-[#64748b]
+                                    "
                             >
                                 Manage system access status.
                             </p>
@@ -3056,21 +3085,21 @@ UK LogiWare Safety Training`;
 
                         <div
                             className="
-                                flex
-                                items-center
-                                gap-2
-                            "
+                                    flex
+                                    items-center
+                                    gap-2
+                                "
                         >
                             <span
                                 className="
-                                    rounded-lg
-                                    bg-[#eef5ff]
-                                    px-3
-                                    py-2
-                                    text-[9px]
-                                    font-semibold
-                                    text-[#1769e8]
-                                "
+                                        rounded-lg
+                                        bg-[#eef5ff]
+                                        px-3
+                                        py-2
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#1769e8]
+                                    "
                             >
                                 {users.length} Users
                             </span>
@@ -3085,19 +3114,19 @@ UK LogiWare Safety Training`;
                                     loading
                                 }
                                 className="
-                                    min-h-[36px]
-                                    rounded-lg
-                                    border
-                                    border-[#cbd5e1]
-                                    bg-white
-                                    px-3
-                                    text-[9px]
-                                    font-semibold
-                                    text-[#52627a]
-                                    transition
-                                    hover:bg-[#f8fafc]
-                                    disabled:opacity-50
-                                "
+                                        min-h-[36px]
+                                        rounded-lg
+                                        border
+                                        border-[#cbd5e1]
+                                        bg-white
+                                        px-3
+                                        text-[9px]
+                                        font-semibold
+                                        text-[#52627a]
+                                        transition
+                                        hover:bg-[#f8fafc]
+                                        disabled:opacity-50
+                                    "
                             >
                                 Refresh
                             </button>
@@ -3109,10 +3138,10 @@ UK LogiWare Safety Training`;
 
                     <div
                         className="
-                            border-b
-                            border-[#e8eef5]
-                            p-4
-                        "
+                                border-b
+                                border-[#e8eef5]
+                                p-4
+                            "
                     >
                         <UserFilters
                             searchTerm={
@@ -3142,37 +3171,37 @@ UK LogiWare Safety Training`;
                     {loading ? (
                         <div
                             className="
-                                flex
-                                min-h-[260px]
-                                items-center
-                                justify-center
-                            "
+                                    flex
+                                    min-h-[260px]
+                                    items-center
+                                    justify-center
+                                "
                         >
                             <div
                                 className="
-                                    text-center
-                                "
+                                        text-center
+                                    "
                             >
                                 <div
                                     className="
-                                        mx-auto
-                                        h-8
-                                        w-8
-                                        animate-spin
-                                        rounded-full
-                                        border-2
-                                        border-blue-100
-                                        border-t-blue-600
-                                    "
+                                            mx-auto
+                                            h-8
+                                            w-8
+                                            animate-spin
+                                            rounded-full
+                                            border-2
+                                            border-blue-100
+                                            border-t-blue-600
+                                        "
                                 />
 
 
                                 <p
                                     className="
-                                        mt-3
-                                        text-[10px]
-                                        text-[#64748b]
-                                    "
+                                            mt-3
+                                            text-[10px]
+                                            text-[#64748b]
+                                        "
                                 >
                                     Loading users...
                                 </p>
@@ -3239,6 +3268,19 @@ UK LogiWare Safety Training`;
                     )
                 }
             />
+
+            <div className="admin-confirm-dialog">
+                <ConfirmDialog
+                    open={Boolean(confirmAction)}
+                    title={confirmAction?.title || "Confirm Action"}
+                    message={confirmAction?.message || ""}
+                    confirmText={confirmAction?.confirmText || "Confirm"}
+                    variant={confirmAction?.variant || "info"}
+                    loading={Boolean(processingId)}
+                    onConfirm={confirmPendingAction}
+                    onCancel={() => setConfirmAction(null)}
+                />
+            </div>
         </>
     );
 }
@@ -3261,21 +3303,21 @@ function Alert({
     return (
         <div
             className={`
-                flex
-                items-center
-                justify-between
-                gap-3
-                rounded-lg
-                border
-                px-4
-                py-3
-                text-[9px]
-
-                ${success
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                    rounded-lg
+                    border
+                    px-4
+                    py-3
+                    text-[9px]
+    
+                    ${success
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                     : "border-red-200 bg-red-50 text-red-700"
                 }
-            `}
+                `}
         >
             <span>
                 {text}
@@ -3288,10 +3330,10 @@ function Alert({
                     onClose
                 }
                 className="
-                    shrink-0
-                    text-[14px]
-                    font-bold
-                "
+                        shrink-0
+                        text-[14px]
+                        font-bold
+                    "
             >
                 ×
             </button>
@@ -3311,23 +3353,23 @@ function CredentialBox({
     return (
         <div
             className="
-                min-h-[72px]
-                rounded-xl
-                border
-                border-[#d7e5f7]
-                bg-white
-                px-4
-                py-3
-            "
+                    min-h-[72px]
+                    rounded-xl
+                    border
+                    border-[#d7e5f7]
+                    bg-white
+                    px-4
+                    py-3
+                "
         >
             <p
                 className="
-                    text-[7px]
-                    font-semibold
-                    uppercase
-                    tracking-wide
-                    text-[#8291a8]
-                "
+                        text-[7px]
+                        font-semibold
+                        uppercase
+                        tracking-wide
+                        text-[#8291a8]
+                    "
             >
                 {label}
             </p>
@@ -3335,12 +3377,12 @@ function CredentialBox({
 
             <p
                 className="
-                    mt-2
-                    break-all
-                    text-[10px]
-                    font-bold
-                    text-[#172033]
-                "
+                        mt-2
+                        break-all
+                        text-[10px]
+                        font-bold
+                        text-[#172033]
+                    "
             >
                 {value}
             </p>
