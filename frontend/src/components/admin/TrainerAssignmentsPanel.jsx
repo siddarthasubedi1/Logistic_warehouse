@@ -9,10 +9,25 @@ import api from "../../services/api";
 
 
 import { getActiveTrainingModules } from "../../utils/trainingModules";
+import { loadModulesFromDatabase } from "../../utils/moduleStorage";
 
 
 function TrainerAssignmentsPanel() {
-    const TRAINING_SECTIONS = useMemo(() => getActiveTrainingModules(), []);
+    const [
+        trainingModules,
+        setTrainingModules,
+    ] = useState([]);
+
+    const TRAINING_SECTIONS =
+        useMemo(
+            () =>
+                getActiveTrainingModules(
+                    trainingModules
+                ),
+            [
+                trainingModules,
+            ]
+        );
     const [
         users,
         setUsers,
@@ -52,6 +67,51 @@ function TrainerAssignmentsPanel() {
         success,
         setSuccess,
     ] = useState("");
+
+
+    /* =========================================================
+       LOAD ACTIVE TRAINING MODULES
+    ========================================================= */
+
+    const loadTrainingModules =
+        useCallback(
+            async () => {
+                try {
+                    const modules =
+                        await loadModulesFromDatabase();
+
+                    setTrainingModules(
+                        Array.isArray(
+                            modules
+                        )
+                            ? modules
+                            : []
+                    );
+
+                    return modules;
+
+                } catch (
+                moduleError
+                ) {
+                    console.error(
+                        "Training modules loading error:",
+                        moduleError
+                    );
+
+                    setTrainingModules(
+                        []
+                    );
+
+                    setError(
+                        moduleError.response?.data?.message ||
+                        "Unable to load active training modules."
+                    );
+
+                    return [];
+                }
+            },
+            []
+        );
 
 
     /* =========================================================
@@ -130,8 +190,12 @@ function TrainerAssignmentsPanel() {
 
 
     useEffect(() => {
-        loadUsers();
+        Promise.all([
+            loadTrainingModules(),
+            loadUsers(),
+        ]);
     }, [
+        loadTrainingModules,
         loadUsers,
     ]);
 
@@ -592,7 +656,7 @@ function TrainerAssignmentsPanel() {
                                 text-[#64748b]
                             "
                         >
-                            Assign one or both training sections to a Trainer or Trainee.
+                            Assign one or more active modules to a Trainer. Trainees automatically receive all active modules.
                         </p>
                     </div>
                 </div>
@@ -630,7 +694,7 @@ function TrainerAssignmentsPanel() {
                             text-emerald-600
                         "
                     >
-                        Trainee → Both
+                        Trainee → all active modules
                     </span>
                 </div>
             </div>

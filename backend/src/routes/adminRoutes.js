@@ -184,12 +184,11 @@ router.post(
 // PATCH /api/admin/users/:id/training-sections
 //
 // Trainer:
-// - Manual Handling
-// - Working at Height
-// - Both
+// - Admin can assign one or more currently active modules.
+// - Any combination is allowed and can be changed later.
 //
 // Trainee:
-// - Both automatically
+// - Receives all currently active modules automatically
 // ======================================================
 
 router.patch(

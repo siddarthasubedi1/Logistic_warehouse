@@ -1,10 +1,12 @@
 import { getActiveTrainingModules, getTrainingModuleLabel } from "../../utils/trainingModules";
 function UserTable({
     users = [],
+    trainingModules = [],
     pendingResetUserIds = [],
     processingId = "",
     selectedUserId = null,
     selectedRowRef = null,
+    onManageTraining,
     onEdit,
     onResetPassword,
     onDeactivate,
@@ -402,6 +404,9 @@ function UserTable({
                                             user={
                                                 user
                                             }
+                                            modules={
+                                                trainingModules
+                                            }
                                         />
                                     </td>
 
@@ -485,6 +490,22 @@ function UserTable({
                                                 gap-2
                                             "
                                         >
+                                            {String(user.role || "").toLowerCase() === "trainer" && (
+                                                <ActionButton
+                                                    label="Manage"
+                                                    variant="primary"
+                                                    disabled={
+                                                        processing
+                                                    }
+                                                    onClick={() =>
+                                                        onManageTraining?.(
+                                                            user
+                                                        )
+                                                    }
+                                                />
+                                            )}
+
+
                                             <ActionButton
                                                 label="Edit"
                                                 variant="secondary"
@@ -690,6 +711,7 @@ function StatusBadge({
 
 function TrainingBadges({
     user,
+    modules = [],
 }) {
     let sections =
         Array.isArray(
@@ -703,7 +725,7 @@ function TrainingBadges({
         user?.role ===
         "trainee"
     ) {
-        sections = getActiveTrainingModules().map((module) => module.id);
+        sections = getActiveTrainingModules(modules).map((module) => module.id);
     }
 
 
@@ -751,7 +773,7 @@ function TrainingBadges({
                             text-[#52627a]
                         "
                     >
-                        {getTrainingModuleLabel(section)}
+                        {getTrainingModuleLabel(section, modules)}
                     </span>
                 )
             )}

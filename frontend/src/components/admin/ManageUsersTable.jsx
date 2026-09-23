@@ -1524,6 +1524,8 @@ import UserFilters from "./UserFilters";
 import UserTable from "./UserTable";
 import EditUserModal from "./EditUserModal";
 import ConfirmDialog from "./ConfirmDialog";
+import ManageTrainerModulesModal from "./ManageTrainerModulesModal";
+import { loadModulesFromDatabase } from "../../utils/moduleStorage";
 
 
 const TEMP_CREDENTIALS_KEY =
@@ -1537,6 +1539,11 @@ function ManageUsersTable({
     const [
         users,
         setUsers,
+    ] = useState([]);
+
+    const [
+        trainingModules,
+        setTrainingModules,
     ] = useState([]);
 
     const [
@@ -1587,6 +1594,16 @@ function ManageUsersTable({
     const [
         savingEdit,
         setSavingEdit,
+    ] = useState(false);
+
+    const [
+        manageTrainingUser,
+        setManageTrainingUser,
+    ] = useState(null);
+
+    const [
+        savingTraining,
+        setSavingTraining,
     ] = useState(false);
 
     const [
@@ -1789,6 +1806,49 @@ function ManageUsersTable({
 
 
     /* =========================================================
+       LOAD TRAINING MODULES
+    ========================================================= */
+
+    const loadTrainingModules =
+        useCallback(
+            async () => {
+                try {
+                    const modules =
+                        await loadModulesFromDatabase();
+
+                    const data =
+                        Array.isArray(
+                            modules
+                        )
+                            ? modules
+                            : [];
+
+                    setTrainingModules(
+                        data
+                    );
+
+                    return data;
+
+                } catch (
+                moduleError
+                ) {
+                    console.error(
+                        "Manage users modules load error:",
+                        moduleError
+                    );
+
+                    setTrainingModules(
+                        []
+                    );
+
+                    return [];
+                }
+            },
+            []
+        );
+
+
+    /* =========================================================
        LOAD RESET REQUESTS
     ========================================================= */
 
@@ -1869,6 +1929,7 @@ function ManageUsersTable({
 
                     await Promise.all([
                         loadUsers(),
+                        loadTrainingModules(),
                         loadResetRequests(),
                     ]);
 
@@ -1896,6 +1957,7 @@ function ManageUsersTable({
             },
             [
                 loadUsers,
+                loadTrainingModules,
                 loadResetRequests,
             ]
         );
@@ -2153,6 +2215,86 @@ function ManageUsersTable({
 
             } finally {
                 setSavingEdit(
+                    false
+                );
+            }
+        };
+
+
+    /* =========================================================
+       MANAGE TRAINER MODULE ACCESS
+    ========================================================= */
+
+    const handleTrainingSave =
+        async (
+            trainingSections
+        ) => {
+            if (
+                !manageTrainingUser
+            ) {
+                return;
+            }
+
+
+            const userId =
+                getUserId(
+                    manageTrainingUser
+                );
+
+
+            try {
+                setSavingTraining(
+                    true
+                );
+
+                setError(
+                    ""
+                );
+
+                setSuccess(
+                    ""
+                );
+
+
+                const response =
+                    await api.patch(
+                        `/admin/users/${userId}/training-sections`,
+                        {
+                            trainingSections,
+                        }
+                    );
+
+
+                setSuccess(
+                    response.data?.message ||
+                    "Trainer module access updated successfully."
+                );
+
+
+                setManageTrainingUser(
+                    null
+                );
+
+
+                await loadUsers();
+
+            } catch (
+            trainingError
+            ) {
+                console.error(
+                    "Manage Trainer modules error:",
+                    trainingError
+                );
+
+                setError(
+                    trainingError.response?.data?.message ||
+                    "Unable to update Trainer module access."
+                );
+
+                throw trainingError;
+
+            } finally {
+                setSavingTraining(
                     false
                 );
             }
@@ -2657,17 +2799,17 @@ function ManageUsersTable({
 
             const body =
                 `Hello ${temporaryCredentials.name || temporaryCredentials.username},
-    
-    ${intro}
-    
-    Username: ${temporaryCredentials.username}
-    Temporary Password: ${temporaryCredentials.password}
-    
-    Please use these credentials to sign in.
-    
-    For security, you will be required to create a new password after your first login.
-    
-    UK LogiWare Safety Training`;
+        
+        ${intro}
+        
+        Username: ${temporaryCredentials.username}
+        Temporary Password: ${temporaryCredentials.password}
+        
+        Please use these credentials to sign in.
+        
+        For security, you will be required to create a new password after your first login.
+        
+        UK LogiWare Safety Training`;
 
 
             const gmailUrl =
@@ -2733,13 +2875,13 @@ function ManageUsersTable({
         <>
             <div
                 className="
-                        space-y-4
-                    "
+                            space-y-4
+                        "
             >
 
                 {/* =============================================
-                        ERROR
-                    ============================================== */}
+                            ERROR
+                        ============================================== */}
 
                 {error && (
                     <Alert
@@ -2755,8 +2897,8 @@ function ManageUsersTable({
 
 
                 {/* =============================================
-                        SUCCESS
-                    ============================================== */}
+                            SUCCESS
+                        ============================================== */}
 
                 {success && (
                     <Alert
@@ -2772,59 +2914,59 @@ function ManageUsersTable({
 
 
                 {/* =============================================
-                        INLINE TEMPORARY CREDENTIALS
-    
-                        THIS MATCHES YOUR SECOND SCREENSHOT.
-    
-                        NOT A MODAL.
-                    ============================================== */}
+                            INLINE TEMPORARY CREDENTIALS
+        
+                            THIS MATCHES YOUR SECOND SCREENSHOT.
+        
+                            NOT A MODAL.
+                        ============================================== */}
 
                 {temporaryCredentials && (
                     <section
                         className="
-                                overflow-hidden
-                                rounded-xl
-                                border
-                                border-[#b9d8ff]
-                                bg-[#eef6ff]
-                                shadow-[0_1px_4px_rgba(15,23,42,0.08)]
-                            "
+                                    overflow-hidden
+                                    rounded-xl
+                                    border
+                                    border-[#b9d8ff]
+                                    bg-[#eef6ff]
+                                    shadow-[0_1px_4px_rgba(15,23,42,0.08)]
+                                "
                     >
                         <div
                             className="
-                                    px-5
-                                    py-5
-                                "
+                                        px-5
+                                        py-5
+                                    "
                         >
                             {/* HEADER */}
 
                             <div
                                 className="
-                                        flex
-                                        items-start
-                                        justify-between
-                                        gap-4
-                                    "
+                                            flex
+                                            items-start
+                                            justify-between
+                                            gap-4
+                                        "
                             >
                                 <div
                                     className="
-                                            flex
-                                            items-start
-                                            gap-3
-                                        "
+                                                flex
+                                                items-start
+                                                gap-3
+                                            "
                                 >
                                     <div
                                         className="
-                                                flex
-                                                h-10
-                                                w-10
-                                                shrink-0
-                                                items-center
-                                                justify-center
-                                                rounded-lg
-                                                bg-[#1769e8]
-                                                text-white
-                                            "
+                                                    flex
+                                                    h-10
+                                                    w-10
+                                                    shrink-0
+                                                    items-center
+                                                    justify-center
+                                                    rounded-lg
+                                                    bg-[#1769e8]
+                                                    text-white
+                                                "
                                     >
                                         <KeyIcon />
                                     </div>
@@ -2833,10 +2975,10 @@ function ManageUsersTable({
                                     <div>
                                         <h3
                                             className="
-                                                    text-[13px]
-                                                    font-bold
-                                                    text-[#172033]
-                                                "
+                                                        text-[13px]
+                                                        font-bold
+                                                        text-[#172033]
+                                                    "
                                         >
                                             New Temporary Credentials
                                         </h3>
@@ -2844,10 +2986,10 @@ function ManageUsersTable({
 
                                         <p
                                             className="
-                                                    mt-1
-                                                    text-[9px]
-                                                    text-[#52627a]
-                                                "
+                                                        mt-1
+                                                        text-[9px]
+                                                        text-[#52627a]
+                                                    "
                                         >
                                             {temporaryCredentials.name}
                                         </p>
@@ -2856,10 +2998,10 @@ function ManageUsersTable({
                                         {temporaryCredentials.email && (
                                             <p
                                                 className="
-                                                        mt-1
-                                                        text-[8px]
-                                                        text-[#8a9ab0]
-                                                    "
+                                                            mt-1
+                                                            text-[8px]
+                                                            text-[#8a9ab0]
+                                                        "
                                             >
                                                 {temporaryCredentials.email}
                                             </p>
@@ -2874,12 +3016,12 @@ function ManageUsersTable({
                                         finishCredentials
                                     }
                                     className="
-                                            text-[10px]
-                                            font-medium
-                                            text-[#64748b]
-                                            transition
-                                            hover:text-[#172033]
-                                        "
+                                                text-[10px]
+                                                font-medium
+                                                text-[#64748b]
+                                                transition
+                                                hover:text-[#172033]
+                                            "
                                 >
                                     Close
                                 </button>
@@ -2890,11 +3032,11 @@ function ManageUsersTable({
 
                             <p
                                 className="
-                                        mt-4
-                                        text-[9px]
-                                        leading-5
-                                        text-[#c45f00]
-                                    "
+                                            mt-4
+                                            text-[9px]
+                                            leading-5
+                                            text-[#c45f00]
+                                        "
                             >
                                 Save or send these credentials now.
                                 The temporary password is shown only once.
@@ -2905,11 +3047,11 @@ function ManageUsersTable({
 
                             <div
                                 className="
-                                        mt-4
-                                        grid
-                                        gap-3
-                                        md:grid-cols-2
-                                    "
+                                            mt-4
+                                            grid
+                                            gap-3
+                                            md:grid-cols-2
+                                        "
                             >
                                 <CredentialBox
                                     label="Username"
@@ -2932,12 +3074,12 @@ function ManageUsersTable({
 
                             <div
                                 className="
-                                        mt-4
-                                        flex
-                                        flex-wrap
-                                        items-center
-                                        gap-2
-                                    "
+                                            mt-4
+                                            flex
+                                            flex-wrap
+                                            items-center
+                                            gap-2
+                                        "
                             >
                                 <button
                                     type="button"
@@ -2945,20 +3087,20 @@ function ManageUsersTable({
                                         copyCredentials
                                     }
                                     className="
-                                            inline-flex
-                                            min-h-[38px]
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            rounded-lg
-                                            bg-[#1769e8]
-                                            px-4
-                                            text-[9px]
-                                            font-semibold
-                                            text-white
-                                            transition
-                                            hover:bg-[#0b5ed7]
-                                        "
+                                                inline-flex
+                                                min-h-[38px]
+                                                items-center
+                                                justify-center
+                                                gap-2
+                                                rounded-lg
+                                                bg-[#1769e8]
+                                                px-4
+                                                text-[9px]
+                                                font-semibold
+                                                text-white
+                                                transition
+                                                hover:bg-[#0b5ed7]
+                                            "
                                 >
                                     <CopyIcon />
 
@@ -2975,22 +3117,22 @@ function ManageUsersTable({
                                         !temporaryCredentials.email
                                     }
                                     className="
-                                            inline-flex
-                                            min-h-[38px]
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            rounded-lg
-                                            bg-[#1769e8]
-                                            px-4
-                                            text-[9px]
-                                            font-semibold
-                                            text-white
-                                            transition
-                                            hover:bg-[#0b5ed7]
-                                            disabled:cursor-not-allowed
-                                            disabled:opacity-50
-                                        "
+                                                inline-flex
+                                                min-h-[38px]
+                                                items-center
+                                                justify-center
+                                                gap-2
+                                                rounded-lg
+                                                bg-[#1769e8]
+                                                px-4
+                                                text-[9px]
+                                                font-semibold
+                                                text-white
+                                                transition
+                                                hover:bg-[#0b5ed7]
+                                                disabled:cursor-not-allowed
+                                                disabled:opacity-50
+                                            "
                                 >
                                     <MailIcon />
 
@@ -3006,20 +3148,20 @@ function ManageUsersTable({
                                         finishCredentials
                                     }
                                     className="
-                                            inline-flex
-                                            min-h-[38px]
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            rounded-lg
-                                            bg-[#073763]
-                                            px-5
-                                            text-[9px]
-                                            font-semibold
-                                            text-white
-                                            transition
-                                            hover:bg-[#0b4f87]
-                                        "
+                                                inline-flex
+                                                min-h-[38px]
+                                                items-center
+                                                justify-center
+                                                gap-2
+                                                rounded-lg
+                                                bg-[#073763]
+                                                px-5
+                                                text-[9px]
+                                                font-semibold
+                                                text-white
+                                                transition
+                                                hover:bg-[#0b4f87]
+                                            "
                                 >
                                     <CheckIcon />
 
@@ -3032,40 +3174,40 @@ function ManageUsersTable({
 
 
                 {/* =============================================
-                        TRAINER & TRAINEE ACCOUNTS
-                    ============================================== */}
+                            TRAINER & TRAINEE ACCOUNTS
+                        ============================================== */}
 
                 <section
                     className="
-                            overflow-hidden
-                            rounded-xl
-                            border
-                            border-[#dbe4ef]
-                            bg-white
-                            shadow-[0_1px_3px_rgba(15,23,42,0.06)]
-                        "
+                                overflow-hidden
+                                rounded-xl
+                                border
+                                border-[#dbe4ef]
+                                bg-white
+                                shadow-[0_1px_3px_rgba(15,23,42,0.06)]
+                            "
                 >
                     <div
                         className="
-                                flex
-                                flex-col
-                                gap-3
-                                border-b
-                                border-[#e8eef5]
-                                px-5
-                                py-4
-                                sm:flex-row
-                                sm:items-center
-                                sm:justify-between
-                            "
+                                    flex
+                                    flex-col
+                                    gap-3
+                                    border-b
+                                    border-[#e8eef5]
+                                    px-5
+                                    py-4
+                                    sm:flex-row
+                                    sm:items-center
+                                    sm:justify-between
+                                "
                     >
                         <div>
                             <h2
                                 className="
-                                        text-[14px]
-                                        font-bold
-                                        text-[#172033]
-                                    "
+                                            text-[14px]
+                                            font-bold
+                                            text-[#172033]
+                                        "
                             >
                                 Trainer & Trainee Accounts
                             </h2>
@@ -3073,10 +3215,10 @@ function ManageUsersTable({
 
                             <p
                                 className="
-                                        mt-1
-                                        text-[9px]
-                                        text-[#64748b]
-                                    "
+                                            mt-1
+                                            text-[9px]
+                                            text-[#64748b]
+                                        "
                             >
                                 Manage system access status.
                             </p>
@@ -3085,21 +3227,21 @@ function ManageUsersTable({
 
                         <div
                             className="
-                                    flex
-                                    items-center
-                                    gap-2
-                                "
+                                        flex
+                                        items-center
+                                        gap-2
+                                    "
                         >
                             <span
                                 className="
-                                        rounded-lg
-                                        bg-[#eef5ff]
-                                        px-3
-                                        py-2
-                                        text-[9px]
-                                        font-semibold
-                                        text-[#1769e8]
-                                    "
+                                            rounded-lg
+                                            bg-[#eef5ff]
+                                            px-3
+                                            py-2
+                                            text-[9px]
+                                            font-semibold
+                                            text-[#1769e8]
+                                        "
                             >
                                 {users.length} Users
                             </span>
@@ -3114,19 +3256,19 @@ function ManageUsersTable({
                                     loading
                                 }
                                 className="
-                                        min-h-[36px]
-                                        rounded-lg
-                                        border
-                                        border-[#cbd5e1]
-                                        bg-white
-                                        px-3
-                                        text-[9px]
-                                        font-semibold
-                                        text-[#52627a]
-                                        transition
-                                        hover:bg-[#f8fafc]
-                                        disabled:opacity-50
-                                    "
+                                            min-h-[36px]
+                                            rounded-lg
+                                            border
+                                            border-[#cbd5e1]
+                                            bg-white
+                                            px-3
+                                            text-[9px]
+                                            font-semibold
+                                            text-[#52627a]
+                                            transition
+                                            hover:bg-[#f8fafc]
+                                            disabled:opacity-50
+                                        "
                             >
                                 Refresh
                             </button>
@@ -3138,10 +3280,10 @@ function ManageUsersTable({
 
                     <div
                         className="
-                                border-b
-                                border-[#e8eef5]
-                                p-4
-                            "
+                                    border-b
+                                    border-[#e8eef5]
+                                    p-4
+                                "
                     >
                         <UserFilters
                             searchTerm={
@@ -3171,37 +3313,37 @@ function ManageUsersTable({
                     {loading ? (
                         <div
                             className="
-                                    flex
-                                    min-h-[260px]
-                                    items-center
-                                    justify-center
-                                "
+                                        flex
+                                        min-h-[260px]
+                                        items-center
+                                        justify-center
+                                    "
                         >
                             <div
                                 className="
-                                        text-center
-                                    "
+                                            text-center
+                                        "
                             >
                                 <div
                                     className="
-                                            mx-auto
-                                            h-8
-                                            w-8
-                                            animate-spin
-                                            rounded-full
-                                            border-2
-                                            border-blue-100
-                                            border-t-blue-600
-                                        "
+                                                mx-auto
+                                                h-8
+                                                w-8
+                                                animate-spin
+                                                rounded-full
+                                                border-2
+                                                border-blue-100
+                                                border-t-blue-600
+                                            "
                                 />
 
 
                                 <p
                                     className="
-                                            mt-3
-                                            text-[10px]
-                                            text-[#64748b]
-                                        "
+                                                mt-3
+                                                text-[10px]
+                                                text-[#64748b]
+                                            "
                                 >
                                     Loading users...
                                 </p>
@@ -3211,6 +3353,9 @@ function ManageUsersTable({
                         <UserTable
                             users={
                                 filteredUsers
+                            }
+                            trainingModules={
+                                trainingModules
                             }
                             pendingResetUserIds={
                                 pendingResetUserIds
@@ -3223,6 +3368,9 @@ function ManageUsersTable({
                             }
                             selectedRowRef={
                                 selectedRowRef
+                            }
+                            onManageTraining={
+                                setManageTrainingUser
                             }
                             onEdit={
                                 setEditUser
@@ -3243,6 +3391,42 @@ function ManageUsersTable({
                     )}
                 </section>
             </div>
+
+
+            {/* MANAGE TRAINER MODULES */}
+
+            <ManageTrainerModulesModal
+                key={
+                    manageTrainingUser
+                        ? getUserId(
+                            manageTrainingUser
+                        )
+                        : "closed"
+                }
+                open={
+                    Boolean(
+                        manageTrainingUser
+                    )
+                }
+                user={
+                    manageTrainingUser
+                }
+                loading={
+                    savingTraining
+                }
+                onSave={
+                    handleTrainingSave
+                }
+                onClose={() => {
+                    if (
+                        !savingTraining
+                    ) {
+                        setManageTrainingUser(
+                            null
+                        );
+                    }
+                }}
+            />
 
 
             {/* EDIT USER */}
@@ -3303,21 +3487,21 @@ function Alert({
     return (
         <div
             className={`
-                    flex
-                    items-center
-                    justify-between
-                    gap-3
-                    rounded-lg
-                    border
-                    px-4
-                    py-3
-                    text-[9px]
-    
-                    ${success
+                        flex
+                        items-center
+                        justify-between
+                        gap-3
+                        rounded-lg
+                        border
+                        px-4
+                        py-3
+                        text-[9px]
+        
+                        ${success
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                     : "border-red-200 bg-red-50 text-red-700"
                 }
-                `}
+                    `}
         >
             <span>
                 {text}
@@ -3330,10 +3514,10 @@ function Alert({
                     onClose
                 }
                 className="
-                        shrink-0
-                        text-[14px]
-                        font-bold
-                    "
+                            shrink-0
+                            text-[14px]
+                            font-bold
+                        "
             >
                 ×
             </button>
@@ -3353,23 +3537,23 @@ function CredentialBox({
     return (
         <div
             className="
-                    min-h-[72px]
-                    rounded-xl
-                    border
-                    border-[#d7e5f7]
-                    bg-white
-                    px-4
-                    py-3
-                "
+                        min-h-[72px]
+                        rounded-xl
+                        border
+                        border-[#d7e5f7]
+                        bg-white
+                        px-4
+                        py-3
+                    "
         >
             <p
                 className="
-                        text-[7px]
-                        font-semibold
-                        uppercase
-                        tracking-wide
-                        text-[#8291a8]
-                    "
+                            text-[7px]
+                            font-semibold
+                            uppercase
+                            tracking-wide
+                            text-[#8291a8]
+                        "
             >
                 {label}
             </p>
@@ -3377,12 +3561,12 @@ function CredentialBox({
 
             <p
                 className="
-                        mt-2
-                        break-all
-                        text-[10px]
-                        font-bold
-                        text-[#172033]
-                    "
+                            mt-2
+                            break-all
+                            text-[10px]
+                            font-bold
+                            text-[#172033]
+                        "
             >
                 {value}
             </p>

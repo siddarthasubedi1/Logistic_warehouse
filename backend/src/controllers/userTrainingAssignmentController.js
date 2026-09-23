@@ -95,12 +95,11 @@ const validateTrainingSections = (
 // POST /api/admin/pending-users
 //
 // Trainer:
-// - Manual Handling
-// - Working at Height
-// - Both
+// - Admin can assign one or more currently active modules.
+// - Any combination is allowed and can be changed later.
 //
 // Trainee:
-// - Both automatically
+// - Receives all currently active modules automatically
 // ======================================================
 
 const createPendingUser =
@@ -674,32 +673,93 @@ const updateUserTrainingSections =
             // ==================================================
             // VALIDATE CURRENT DYNAMIC MODULE ASSIGNMENT
             //
-            // Trainer: Admin selects one or more active modules.
-            // Trainee: frontend sends all currently active modules.
-            // This allows newly created Admin modules to be added
-            // to existing trainee accounts from Manage Users too.
+            // Sprint 1 rule:
+            // - Trainer: Admin selects one or more ACTIVE modules.
+            // - Trainee: always receives ALL currently active modules.
+            //
+            // The server is authoritative so a manipulated client cannot
+            // assign an inactive, deleted or unknown module key.
             // ==================================================
 
-            const validation =
-                validateTrainingSections(
-                    trainingSections
-                );
+            const activeModules =
+                await TrainingModule.find({
+                    status:
+                        "active",
+                })
+                    .select(
+                        "key"
+                    )
+                    .lean();
+
+
+            const activeModuleKeys =
+                activeModules
+                    .map(
+                        (
+                            module
+                        ) =>
+                            String(
+                                module.key ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(
+                        Boolean
+                    );
 
 
             if (
-                !validation.valid
+                user.role ===
+                "trainee"
             ) {
-                return res
-                    .status(400)
-                    .json({
-                        message:
-                            validation.message,
-                    });
+                sectionsToSave =
+                    activeModuleKeys;
+
+            } else {
+                const validation =
+                    validateTrainingSections(
+                        trainingSections
+                    );
+
+
+                if (
+                    !validation.valid
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                validation.message,
+                        });
+                }
+
+
+                const invalidModule =
+                    validation.sections.find(
+                        (
+                            moduleKey
+                        ) =>
+                            !activeModuleKeys.includes(
+                                moduleKey
+                            )
+                    );
+
+
+                if (
+                    invalidModule
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            message:
+                                "One or more selected training modules are inactive or do not exist.",
+                        });
+                }
+
+
+                sectionsToSave =
+                    validation.sections;
             }
-
-
-            sectionsToSave =
-                validation.sections;
 
 
             // ==================================================
