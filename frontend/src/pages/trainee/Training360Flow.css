@@ -1511,3 +1511,232 @@
     color: #bfdbfe;
     font-size: 13px;
 }
+
+/* Deferred scenario/assessment feedback: responses are recorded during the
+   attempt and correctness is only shown in the final result review. */
+.immersive-response-recorded {
+    margin-top: 16px;
+    border: 1px solid rgba(96, 165, 250, .35);
+    border-radius: 10px;
+    background: rgba(30, 64, 175, .18);
+    color: #dbeafe;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.immersive-result.submitted {
+    border-color: rgba(96, 165, 250, .4);
+    background: rgba(30, 64, 175, .18);
+}
+
+.immersive-result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.immersive-secondary {
+    border: 1px solid rgba(191, 219, 254, .45);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.immersive-review {
+    display: grid;
+    gap: 18px;
+}
+
+.immersive-review__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border: 1px solid rgba(148, 163, 184, .25);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, .45);
+    padding: 18px;
+}
+
+.immersive-review__summary.passed {
+    border-color: rgba(34, 197, 94, .45);
+}
+
+.immersive-review__summary.failed {
+    border-color: rgba(248, 113, 113, .45);
+}
+
+.immersive-review__summary small {
+    color: #93c5fd;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+.immersive-review__summary h2 {
+    margin: 4px 0 2px;
+}
+
+.immersive-review__summary p {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+.immersive-review__summary>strong {
+    font-size: 30px;
+    color: #fff;
+}
+
+.immersive-review__list {
+    display: grid;
+    gap: 14px;
+}
+
+.immersive-review-card {
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, .42);
+    padding: 16px;
+}
+
+.immersive-review-card.correct {
+    border-left: 4px solid #22c55e;
+}
+
+.immersive-review-card.incorrect {
+    border-left: 4px solid #f87171;
+}
+
+.immersive-review-card>small {
+    color: #93c5fd;
+    font-weight: 800;
+}
+
+.immersive-review-card h3 {
+    margin: 7px 0 10px;
+    font-size: 17px;
+    color: #fff;
+}
+
+.immersive-review-answer {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .06);
+    padding: 10px 12px;
+}
+
+.immersive-review-answer span {
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.immersive-review-answer b {
+    color: #f8fafc;
+    font-size: 14px;
+}
+
+.immersive-review-answer--correct {
+    background: rgba(22, 163, 74, .16);
+    border: 1px solid rgba(34, 197, 94, .3);
+}
+
+.immersive-review-feedback {
+    margin: 10px 0 0;
+    color: #cbd5e1;
+}
+
+@media (max-width: 720px) {
+    .immersive-review__summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* Level-gated trainee flow: locked activities remain visible in the 360 scene
+   but cannot be opened until the current level prerequisite is complete. */
+.immersive-activity.locked,
+.immersive-activity:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+    filter: grayscale(.25);
+}
+
+.immersive-activity.locked:hover,
+.immersive-activity:disabled:hover {
+    transform: translate(-50%, -50%);
+}
+
+.immersive-activity.locked i,
+.immersive-activity:disabled i {
+    background: #475569;
+}
+
+.immersive-assessment-tabs--single button:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+/* 2026-09 level-flow usability fixes */
+.immersive-hotspot {
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    appearance: none;
+}
+
+.immersive-hotspot:disabled,
+.immersive-hotspot.locked {
+    cursor: not-allowed;
+}
+
+/* Keep all assessment/result copy readable on the dark training overlay. */
+.immersive-overlay__single>p,
+.immersive-result,
+.immersive-result p,
+.immersive-result h2,
+.immersive-review,
+.immersive-review h2,
+.immersive-review p {
+    color: #eaf4ff;
+}
+
+.immersive-result h2,
+.immersive-review__summary h2 {
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.immersive-result.submitted p {
+    color: #dbeafe;
+    line-height: 1.6;
+}
+
+/* Result navigation is shown immediately below the score summary. Trainees no
+   longer have to scroll through every reviewed question to find the button for
+   the next level/relearn action. */
+.immersive-result-actions--top {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(96, 165, 250, .28);
+    border-radius: 12px;
+    background: rgba(9, 39, 66, .96);
+}
+
+.immersive-result-actions--top .immersive-primary {
+    margin-top: 0;
+}
+
+@media (min-width: 901px) {
+    .immersive-overlay {
+        max-height: 72%;
+    }
+}

@@ -125,7 +125,7 @@ export default function MyTrainingPage() {
                                     <img className="training360-flow__module-thumb" src={meta.thumb} alt={`${meta.title} training area`} />
                                     <span className="training360-flow__module-copy">
                                         <strong>{meta.title}</strong>
-                                        <small>{group.programmes.length} assigned programme{group.programmes.length === 1 ? "" : "s"} • {meta.description}</small>
+                                        <small>3 training levels • {meta.description}</small>
                                     </span>
                                     <span className="training360-flow__module-arrow">›</span>
                                 </span>

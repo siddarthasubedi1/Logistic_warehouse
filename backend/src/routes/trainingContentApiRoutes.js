@@ -3,10 +3,10 @@ const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
 const active = require('../middleware/checkActiveStatus');
 const upload = require('../middleware/uploadPanorama');
-const c = require('../controllers/sprint2ApiController');
+const c = require('../controllers/trainingContentApiController');
 const programmeController = require('../controllers/trainingProgrammeController');
 const sectionController = require('../controllers/learningSectionController');
-const legacySprint2 = require('../controllers/sprint2Controller');
+const legacySprint2 = require('../controllers/trainingContentController');
 const uploadTrainingImage = require('../middleware/uploadTrainingImage');
 
 const r = express.Router();
@@ -36,6 +36,7 @@ r.post('/programmes/:id/scenarios', authorize('admin', 'trainer'), c.createScena
 r.patch('/scenarios/:scenarioId', authorize('admin', 'trainer'), legacySprint2.updateScenario);
 r.delete('/scenarios/:scenarioId', authorize('admin', 'trainer'), legacySprint2.deleteScenario);
 r.get('/programmes/:id/questions', authorize('admin', 'trainer'), c.manageQuestions);
+r.post('/programmes/:id/questions/ensure-bank', authorize('admin', 'trainer'), c.ensureQuestionBank);
 r.post('/programmes/:id/questions', authorize('admin', 'trainer'), c.createQuestion);
 r.patch('/questions/:questionId', authorize('admin', 'trainer'), c.updateQuestion);
 r.delete('/questions/:questionId', authorize('admin', 'trainer'), legacySprint2.deleteQuestion);
@@ -44,4 +45,7 @@ r.post('/programmes/:id/assessments/:level/questions/:questionId/check', authori
 r.post('/programmes/:id/assessments/:level/submit', authorize('trainee'), (req, res, next) => { req.params.programmeId = req.params.id; next(); }, legacySprint2.submitAssessment);
 r.post('/assessments/:level/submit', authorize('trainee'), (req, res, next) => { req.params.programmeId = req.body.programmeId; if (!req.params.programmeId) return res.status(400).json({ message: 'programmeId is required.' }); next(); }, legacySprint2.submitAssessment);
 r.get('/trainee/results', authorize('admin', 'trainer', 'trainee'), c.results);
+r.get('/attempt-records', authorize('admin', 'trainer'), c.attemptRecords);
+r.get('/attempt-records/:attemptId', authorize('admin', 'trainer'), c.attemptRecordDetail);
+
 module.exports = r;

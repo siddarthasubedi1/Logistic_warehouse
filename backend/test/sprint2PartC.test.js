@@ -23,7 +23,7 @@ async function user(username, role, extra = {}) {
     });
 }
 function tokenFor(user) {
-    // Part C tests exercise protected Sprint 2 endpoints, not the login endpoint.
+    // Part C tests exercise protected Training Content endpoints, not the login endpoint.
     // Using the same production token generator avoids consuming Sprint 1's
     // real login rate limiter across the Jest suite. Authentication itself is
     // already covered by auth.test.js.
@@ -36,14 +36,14 @@ async function fixture() {
     const traineeA = await user('pctraineea', 'trainee', { assignedTrainingSections: ['manual-handling'] });
     const traineeB = await user('pctraineeb', 'trainee', { assignedTrainingSections: ['manual-handling'] });
     await TrainingModule.create({ name: 'Manual Handling', code: 'MH', key: 'manual-handling', description: 'Manual handling module for Part C tests.', status: 'active', createdBy: admin._id });
-    const programme = await TrainingProgramme.create({ programmeType: 'manual-handling', title: 'Manual Handling Safety', description: 'Manual handling programme used for Sprint 2 Part C acceptance testing.', owner: trainerA._id, passMark: 60, status: 'active', createdBy: admin._id });
+    const programme = await TrainingProgramme.create({ programmeType: 'manual-handling', title: 'Manual Handling Safety', description: 'Manual handling programme used for Training Content Part C acceptance testing.', owner: trainerA._id, passMark: 60, status: 'active', createdBy: admin._id });
     return {
         admin, trainerA, trainerB, traineeA, traineeB, programme,
         tokens: { admin: tokenFor(admin), trainerA: tokenFor(trainerA), trainerB: tokenFor(trainerB), traineeA: tokenFor(traineeA), traineeB: tokenFor(traineeB) }
     };
 }
 
-describe('Sprint 2 Part C acceptance/security regression', () => {
+describe('Training Content Part C acceptance/security regression', () => {
     test('T2-02/T2-03/T2-04 ownership and management role enforcement', async () => {
         const f = await fixture();
         const own = await request(app).patch(`/api/programmes/${f.programme._id}`).set(auth(f.tokens.trainerA)).send({ title: 'Updated Manual Handling Safety' });

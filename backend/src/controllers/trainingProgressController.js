@@ -7,6 +7,8 @@ const TrainingProgress =
         "../models/TrainingProgress"
     );
 
+const { getTraineeModuleProgress } = require("../services/traineeLevelProgressService");
+
 
 const isValidTrainingSection = (trainingSection) =>
     typeof trainingSection === "string" &&
@@ -23,163 +25,41 @@ const isValidTrainingSection = (trainingSection) =>
 // /api/users/me/training-progress
 // ======================================================
 
-const getMyTrainingProgress =
-    async (req, res) => {
-        try {
-            const trainee =
-                await User.findById(
-                    req.user.id
-                ).select(
-                    "role status assignedTrainingSections"
-                );
+const getMyTrainingProgress = async (req, res) => {
+    try {
+        const trainee = await User.findById(req.user.id).select("role status");
 
-
-            if (!trainee) {
-                return res
-                    .status(404)
-                    .json({
-                        message:
-                            "Trainee account not found",
-                    });
-            }
-
-
-            if (
-                trainee.role !==
-                "trainee"
-            ) {
-                return res
-                    .status(403)
-                    .json({
-                        message:
-                            "Only Trainees can access training progress",
-                    });
-            }
-
-
-            const assignedSections =
-                Array.isArray(
-                    trainee
-                        .assignedTrainingSections
-                )
-                    ? trainee
-                        .assignedTrainingSections
-                    : [];
-
-
-            const progressRecords =
-                await TrainingProgress.find(
-                    {
-                        trainee:
-                            trainee._id,
-
-                        trainingSection: {
-                            $in:
-                                assignedSections,
-                        },
-                    }
-                )
-                    .sort({
-                        createdAt:
-                            1,
-                    })
-                    .lean();
-
-
-            // ==================================================
-            // RETURN EVERY ASSIGNED MODULE
-            //
-            // If no MongoDB progress record exists,
-            // return NOT STARTED / 0%.
-            // ==================================================
-
-            const trainingProgress =
-                assignedSections.map(
-                    (
-                        trainingSection
-                    ) => {
-                        const existingProgress =
-                            progressRecords.find(
-                                (
-                                    record
-                                ) =>
-                                    record.trainingSection ===
-                                    trainingSection
-                            );
-
-
-                        if (
-                            !existingProgress
-                        ) {
-                            return {
-                                trainingSection,
-
-                                status:
-                                    "not-started",
-
-                                progress:
-                                    0,
-
-                                startedAt:
-                                    null,
-
-                                completedAt:
-                                    null,
-
-                                lastAccessedAt:
-                                    null,
-                            };
-                        }
-
-
-                        return {
-                            id:
-                                existingProgress._id,
-
-                            trainingSection:
-                                existingProgress.trainingSection,
-
-                            status:
-                                existingProgress.status,
-
-                            progress:
-                                existingProgress.progress,
-
-                            startedAt:
-                                existingProgress.startedAt,
-
-                            completedAt:
-                                existingProgress.completedAt,
-
-                            lastAccessedAt:
-                                existingProgress.lastAccessedAt,
-                        };
-                    }
-                );
-
-
-            return res
-                .status(200)
-                .json({
-                    progress:
-                        trainingProgress,
-                });
-
-        } catch (error) {
-            console.error(
-                "Get training progress error:",
-                error
-            );
-
-
-            return res
-                .status(500)
-                .json({
-                    message:
-                        "Unable to load training progress",
-                });
+        if (!trainee) {
+            return res.status(404).json({ message: "Trainee account not found" });
         }
-    };
+
+        if (trainee.role !== "trainee") {
+            return res.status(403).json({ message: "Only Trainees can access training progress" });
+        }
+
+        // Training Content progress is programme-backed, not the old
+        // assignedTrainingSections-only record. Aggregate every active assigned
+        // programme into its module and three-level pathway so Beginner = 33%,
+        // Beginner + Intermediate = 67%, and all three levels = 100%.
+        const trainingProgress = await getTraineeModuleProgress(trainee._id);
+        const average = trainingProgress.length
+            ? Math.round(trainingProgress.reduce((sum, item) => sum + Number(item.progress || 0), 0) / trainingProgress.length)
+            : 0;
+
+        return res.status(200).json({
+            progress: trainingProgress,
+            summary: {
+                overallProgress: average,
+                modulesAssigned: trainingProgress.length,
+                completedModules: trainingProgress.filter((item) => Number(item.progress) >= 100).length,
+                totalAttempts: trainingProgress.reduce((sum, item) => sum + Number(item.attempts || 0), 0),
+            },
+        });
+    } catch (error) {
+        console.error("Get training progress error:", error);
+        return res.status(500).json({ message: "Unable to load training progress" });
+    }
+};
 
 
 // ======================================================

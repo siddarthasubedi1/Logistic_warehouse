@@ -11,7 +11,7 @@ const exactKey = (index, fields) => {
  * Old unique indexes such as trainee+trainingSection treat a missing/null
  * trainingSection as an indexed null value. That means the same trainee can
  * create only one Sprint-2 programme progress row and later programmes fail
- * with E11000. Sprint 2 requires uniqueness by trainee+programme instead.
+ * with E11000. Training Content requires uniqueness by trainee+programme instead.
  */
 const migrateTrainingProgressIndexes = async (collection, logger = console) => {
     let indexes = [];

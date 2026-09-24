@@ -25,9 +25,10 @@ import AuditLogsPage from "./pages/admin/AuditLogsPage";
 import PanoramaManagementPage from "./pages/admin/PanoramaManagementPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
-import Sprint2ManagementPage from "./pages/training/Sprint2ManagementPage";
+import TrainingContentManagementPage from "./pages/training/TrainingContentManagementPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
+import AttemptRecordsPage from "./pages/training/AttemptRecordsPage";
 import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 
@@ -326,8 +327,8 @@ function App() {
 
 
       <Route
-        path="/training-programmes/:programmeId/sprint2-content"
-        element={<ProtectedRoute allowedRoles={["admin", "trainer"]}><Sprint2ManagementPage /></ProtectedRoute>}
+        path="/training-programmes/:programmeId/content-management"
+        element={<ProtectedRoute allowedRoles={["admin", "trainer"]}><TrainingContentManagementPage /></ProtectedRoute>}
       />
 
       {/* ===================================================
@@ -360,6 +361,22 @@ function App() {
             allowedRoles={["admin"]}
           >
             <TrainingAssignmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+
+
+      {/* ===================================================
+          ATTEMPT RECORDS - ADMIN / ASSIGNED TRAINER
+      ==================================================== */}
+
+      <Route
+        path="/attempt-records"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "trainer"]}>
+            <AttemptRecordsPage />
           </ProtectedRoute>
         }
       />

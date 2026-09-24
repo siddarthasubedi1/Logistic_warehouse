@@ -1,5 +1,5 @@
 const express = require("express"); const r = express.Router();
-const authenticate = require("../middleware/authenticate"), authorize = require("../middleware/authorize"), active = require("../middleware/checkActiveStatus"), c = require("../controllers/sprint2Controller");
+const authenticate = require("../middleware/authenticate"), authorize = require("../middleware/authorize"), active = require("../middleware/checkActiveStatus"), c = require("../controllers/trainingContentController");
 r.use(authenticate, active);
 r.get("/programmes/:programmeId/scenarios", authorize("admin", "trainer"), c.listScenarios);
 r.post("/programmes/:programmeId/scenarios", authorize("admin", "trainer"), c.createScenario);
@@ -13,8 +13,10 @@ r.get("/trainee/:programmeId/progress", authorize("trainee"), c.getTraineeProgre
 r.post("/trainee/:programmeId/sections/:sectionId/complete", authorize("trainee"), c.completeSection);
 r.get("/trainee/:programmeId/scenarios", authorize("trainee"), c.getTraineeScenarios);
 r.post("/trainee/:programmeId/scenarios/:scenarioId/submit", authorize("trainee"), c.submitScenario);
+r.get("/trainee/:programmeId/scenario-attempts/:attemptId/result", authorize("trainee"), c.getScenarioAttemptResult);
 r.get("/trainee/:programmeId/assessments/:level", authorize("trainee"), c.getAssessment);
 r.post("/trainee/:programmeId/assessments/:level/questions/:questionId/check", authorize("trainee"), c.checkAssessmentAnswer);
 r.post("/trainee/:programmeId/assessments/:level/submit", authorize("trainee"), c.submitAssessment);
+r.get("/trainee/:programmeId/assessments/:level/attempts/:attemptId/result", authorize("trainee"), c.getAssessmentAttemptResult);
 r.get("/trainee/results", authorize("trainee"), c.getMyResults);
 module.exports = r;

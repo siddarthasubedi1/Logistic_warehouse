@@ -482,7 +482,7 @@ function TraineeLearningPage() {
                                     onClick={async () => {
                                         try {
                                             if (currentSection?._id) {
-                                                await api.post(`/sprint2/trainee/${programmeId}/sections/${currentSection._id}/complete`);
+                                                await api.post(`/training-content/trainee/${programmeId}/sections/${currentSection._id}/complete`);
                                             }
                                             if (hasNext) {
                                                 setCurrentSectionIndex((current) => Math.min(sections.length - 1, current + 1));

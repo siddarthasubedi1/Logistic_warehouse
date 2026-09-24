@@ -165,7 +165,7 @@ function auth(
 ========================================================= */
 
 describe(
-    "Sprint 2 - Training Programme, Learning Section and Assignment",
+    "Training Content - Training Programme, Learning Section and Assignment",
 
     () => {
         test(
@@ -207,10 +207,10 @@ describe(
                             "Admin",
 
                         email:
-                            "sprint2.admin@test.com",
+                            "training-content.admin@test.com",
 
                         username:
-                            "sprint2admin",
+                            "training-contentadmin",
 
                         password:
                             adminPassword,
@@ -282,7 +282,7 @@ describe(
                 /* ==========================================
                    CREATE TRAINEE
 
-                   Trainee is eligible for BOTH Sprint 2
+                   Trainee is eligible for BOTH Training Content
                    programme types.
                 =========================================== */
 
@@ -295,10 +295,10 @@ describe(
                             "Trainee",
 
                         email:
-                            "sprint2.trainee@test.com",
+                            "training-content.trainee@test.com",
 
                         username:
-                            "sprint2trainee",
+                            "training-contenttrainee",
 
                         password:
                             traineePassword,
@@ -316,7 +316,7 @@ describe(
                 /* ==========================================
                    CREATE DATABASE-BACKED TRAINING MODULE
 
-                   Sprint 2 programme creation now validates
+                   Training Content programme creation now validates
                    programmeType against TrainingModule.
                    The test must therefore create the same
                    module relationship used by the real app.
@@ -333,7 +333,7 @@ describe(
                         "manual-handling",
 
                     description:
-                        "Manual handling safety training module used by the Sprint 2 integration test.",
+                        "Manual handling safety training module used by the Training Content integration test.",
 
                     status:
                         "active",
@@ -349,7 +349,7 @@ describe(
 
                 const adminToken =
                     await login(
-                        "sprint2admin",
+                        "training-contentadmin",
                         adminPassword
                     );
 
@@ -370,7 +370,7 @@ describe(
 
                 const traineeToken =
                     await login(
-                        "sprint2trainee",
+                        "training-contenttrainee",
                         traineePassword
                     );
 

@@ -51,8 +51,8 @@ const warehouseTourRoutes =
     );
 
 const panoramaAdminRoutes = require("./src/routes/panoramaAdminRoutes");
-const sprint2Routes = require("./src/routes/sprint2Routes");
-const sprint2ApiRoutes = require("./src/routes/sprint2ApiRoutes");
+const trainingContentRoutes = require("./src/routes/trainingContentRoutes");
+const trainingContentApiRoutes = require("./src/routes/trainingContentApiRoutes");
 
 
 const app =
@@ -233,9 +233,9 @@ app.use(
 
 app.use("/api/admin/panoramas", panoramaAdminRoutes);
 
-// Sprint 2 scenarios, assessments, attempts and progression
-app.use("/api", sprint2ApiRoutes);
-app.use("/api/sprint2", sprint2Routes);
+// Training Content scenarios, assessments, attempts and progression
+app.use("/api", trainingContentApiRoutes);
+app.use("/api/training-content", trainingContentRoutes);
 
 
 // ======================================================

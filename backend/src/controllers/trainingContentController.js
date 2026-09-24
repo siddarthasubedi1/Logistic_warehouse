@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const TrainingProgramme = require("../models/TrainingProgramme");
 const TrainingAssignment = require("../models/TrainingAssignment");
 const LearningSection = require("../models/LearningSection");
@@ -5,8 +6,16 @@ const TrainingProgress = require("../models/TrainingProgress");
 const Scenario = require("../models/Scenario");
 const AssessmentQuestion = require("../models/AssessmentQuestion");
 const AssessmentAttempt = require("../models/AssessmentAttempt");
+const ScenarioAttempt = require("../models/ScenarioAttempt");
 const SectionCompletion = require("../models/SectionCompletion");
 const { getOrCreateProgrammeProgress } = require("../services/trainingProgressService");
+const { ensureAssessmentQuestionBank, MIN_QUESTIONS_PER_LEVEL } = require("../services/assessmentQuestionBank");
+const {
+    getModuleLevelAccess,
+    assessmentLevelForProgramme,
+    normalize,
+    normalizeProgrammeLevel,
+} = require("../services/traineeLevelProgressService");
 
 const allowed = async (req, programmeId) => {
     const p = await TrainingProgramme.findById(programmeId);
@@ -24,9 +33,15 @@ const getProgress = async (req, programmeId, assignment) => {
         assignmentId: assignment._id,
     });
 };
-const updateStage = (p) => {
-    // A failed assessment sends the trainee back through learning + scenario
-    // before another attempt at that same assessment level.
+const updateStage = (p, requiredAssessmentLevel = "basic") => {
+    const passField = {
+        basic: "basicPassed",
+        intermediate: "intermediatePassed",
+        high: "highPassed",
+    }[requiredAssessmentLevel] || "basicPassed";
+
+    // A failed assessment sends the trainee back through the SAME programme
+    // level's learning and scenario before another attempt.
     if (p.retryRequiredLevel) {
         p.status = "in-progress";
         p.completedAt = null;
@@ -39,24 +54,20 @@ const updateStage = (p) => {
             p.progress = Math.max(Number(p.progress || 0), 40);
             return;
         }
-        p.currentStage = p.retryRequiredLevel;
+        p.currentStage = requiredAssessmentLevel;
         p.progress = Math.max(Number(p.progress || 0), 50);
         return;
     }
 
-    if (p.highPassed) {
+    // A programme has one trainee-facing assessment, chosen from its programme
+    // level. Do not progress Basic -> Intermediate -> High inside one programme.
+    if (p[passField]) {
         p.currentStage = "completed";
         p.status = "completed";
         p.progress = 100;
         p.completedAt = p.completedAt || new Date();
-    } else if (p.intermediatePassed) {
-        p.currentStage = "high";
-        p.progress = Math.max(Number(p.progress || 0), 80);
-    } else if (p.basicPassed) {
-        p.currentStage = "intermediate";
-        p.progress = Math.max(Number(p.progress || 0), 65);
     } else if (p.scenarioCompleted) {
-        p.currentStage = "basic";
+        p.currentStage = requiredAssessmentLevel;
         p.progress = Math.max(Number(p.progress || 0), 50);
     } else if (p.learningCompleted) {
         p.currentStage = "scenario";
@@ -75,14 +86,50 @@ const shuffle = (items) => {
     return copy;
 };
 
+const seededShuffle = (items, seedValue) => {
+    const copy = [...items];
+    const hash = crypto.createHash("sha256").update(String(seedValue)).digest();
+    let state = hash.readUInt32LE(0) || 0x9e3779b9;
+    const next = () => {
+        state ^= state << 13;
+        state ^= state >>> 17;
+        state ^= state << 5;
+        return (state >>> 0) / 4294967296;
+    };
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(next() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+};
+
 const ASSESSMENT_QUESTION_LIMIT = 10;
-const normalizeLevel = (value) => String(value || "").toLowerCase();
+const normalizeLevel = normalize;
+
+const traineeProgrammeGate = async (traineeId, programmeId) => {
+    const programme = await TrainingProgramme.findById(programmeId)
+        .select("_id level programmeType passMark")
+        .lean();
+    if (!programme) return { programme: null, unlocked: false, access: null };
+
+    const access = await getModuleLevelAccess(traineeId, programme.programmeType);
+    const programmeLevel = normalizeProgrammeLevel(programme.level);
+    return {
+        programme,
+        access,
+        programmeLevel,
+        requiredAssessmentLevel: assessmentLevelForProgramme(programme),
+        unlocked: !!access[programmeLevel]?.unlocked,
+    };
+};
 
 // SectionCompletion is the source of truth for learning ticks. This prevents
 // stale completedSections arrays from showing sections as complete before the
 // trainee actually presses Mark Complete.
 const syncLearningProgress = async (req, programmeId, assignment, progress = null) => {
     const p = progress || await getProgress(req, programmeId, assignment);
+    const programme = await TrainingProgramme.findById(programmeId).select("level").lean();
+    const requiredAssessmentLevel = assessmentLevelForProgramme(programme);
     const required = await LearningSection.find({ programme: programmeId, status: "active" }).select("_id").lean();
     const requiredIds = required.map(x => x._id);
     const completions = requiredIds.length
@@ -96,7 +143,7 @@ const syncLearningProgress = async (req, programmeId, assignment, progress = nul
     } else if (p.learningCompleted) {
         p.progress = Math.max(Number(p.progress || 0), 40);
     }
-    updateStage(p);
+    updateStage(p, requiredAssessmentLevel);
     await p.save();
     return p;
 };
@@ -115,6 +162,13 @@ exports.completeSection = async (req, res) => {
     try {
         const a = await assigned(req, req.params.programmeId);
         if (!a) return res.status(403).json({ message: "Programme is not assigned to you" });
+        const gate = await traineeProgrammeGate(req.user.id, req.params.programmeId);
+        if (!gate.programme) return res.status(404).json({ message: "Programme not found" });
+        if (!gate.unlocked) return res.status(403).json({
+            code: "PROGRAMME_LEVEL_LOCKED",
+            message: "Complete and pass the previous programme level first.",
+            levelAccess: gate.access,
+        });
 
         const sec = await LearningSection.findOne({
             _id: req.params.sectionId,
@@ -151,20 +205,122 @@ exports.completeSection = async (req, res) => {
         res.status(500).json({ message: "Unable to record section completion" });
     }
 };
-exports.getTraineeProgress = async (req, res) => { try { const a = await assigned(req, req.params.programmeId); if (!a) return res.status(403).json({ message: "Programme is not assigned to you" }); const p = await syncLearningProgress(req, req.params.programmeId, a); res.json({ progress: p }); } catch (e) { console.error("getTraineeProgress failed:", e); res.status(500).json({ message: "Unable to load progress" }); } };
+exports.getTraineeProgress = async (req, res) => {
+    try {
+        const a = await assigned(req, req.params.programmeId);
+        if (!a) return res.status(403).json({ message: "Programme is not assigned to you" });
+        const gate = await traineeProgrammeGate(req.user.id, req.params.programmeId);
+        if (!gate.programme) return res.status(404).json({ message: "Programme not found" });
+        if (!gate.unlocked) return res.status(403).json({
+            code: "PROGRAMME_LEVEL_LOCKED",
+            message: "Complete and pass the previous programme level first.",
+            levelAccess: gate.access,
+        });
+        const p = await syncLearningProgress(req, req.params.programmeId, a);
+        res.json({
+            progress: p,
+            programmeLevel: gate.programmeLevel,
+            assessmentLevel: gate.requiredAssessmentLevel,
+            levelAccess: gate.access,
+        });
+    } catch (e) {
+        console.error("getTraineeProgress failed:", e);
+        res.status(500).json({ message: "Unable to load progress" });
+    }
+};
+
+const createOrResumeScenarioAttempt = async (req, programmeId, assignment, progress) => {
+    let attempt = await ScenarioAttempt.findOne({
+        trainee: req.user.id,
+        programme: programmeId,
+        status: "in-progress",
+    }).sort({ attemptNumber: -1 });
+
+    if (attempt) return attempt;
+
+    // If the current progression already has a completed scenario exercise,
+    // return the latest submitted attempt for review instead of creating a new one.
+    if (progress?.scenarioCompleted) {
+        return ScenarioAttempt.findOne({
+            trainee: req.user.id,
+            programme: programmeId,
+            status: "submitted",
+        }).sort({ attemptNumber: -1 });
+    }
+
+    const scenarioRows = await Scenario.find({
+        programme: programmeId,
+        status: "active",
+    }).sort({ order: 1 }).select("_id").lean();
+    const scenarioIds = scenarioRows.map(row => row._id);
+
+    if (!scenarioIds.length) return null;
+
+    const prior = await ScenarioAttempt.countDocuments({
+        trainee: req.user.id,
+        programme: programmeId,
+        status: "submitted",
+    });
+
+    return ScenarioAttempt.create({
+        trainee: req.user.id,
+        programme: programmeId,
+        assignment: assignment._id,
+        scenarioSet: scenarioIds,
+        responses: [],
+        status: "in-progress",
+        score: 0,
+        totalScenarios: scenarioIds.length,
+        percentage: 0,
+        attemptNumber: prior + 1,
+        submittedAt: null,
+    });
+};
+
 exports.getTraineeScenarios = async (req, res) => {
     try {
         const a = await assigned(req, req.params.programmeId);
         if (!a) return res.status(403).json({ message: "Programme is not assigned to you" });
+        const gate = await traineeProgrammeGate(req.user.id, req.params.programmeId);
+        if (!gate.programme) return res.status(404).json({ message: "Programme not found" });
+        if (!gate.unlocked) return res.status(403).json({
+            code: "PROGRAMME_LEVEL_LOCKED",
+            message: "Complete and pass the previous programme level first.",
+            levelAccess: gate.access,
+        });
+
         const p = await syncLearningProgress(req, req.params.programmeId, a);
         if (!p.learningCompleted) {
-            return res.status(403).json({ code: "LEARNING_INCOMPLETE", message: "Complete all learning sections before starting the exercise." });
+            return res.status(403).json({
+                code: "LEARNING_INCOMPLETE",
+                message: "Complete all learning sections before starting the exercise.",
+            });
         }
-        const scenarios = await Scenario.find({ programme: req.params.programmeId, status: "active" })
+
+        const scenarios = await Scenario.find({
+            programme: req.params.programmeId,
+            status: "active",
+        })
             .sort({ order: 1 })
             .select("title prompt type options order");
-        const attemptedScenarioIds = (p.completedScenarios || []).map(x => String(x));
-        res.json({ scenarios, attemptedScenarioIds, scenarioCompleted: !!p.scenarioCompleted });
+
+        const attempt = scenarios.length
+            ? await createOrResumeScenarioAttempt(req, req.params.programmeId, a, p)
+            : null;
+
+        const attemptedScenarioIds = attempt
+            ? (attempt.responses || []).map(x => String(x.scenario))
+            : (p.completedScenarios || []).map(x => String(x));
+
+        res.json({
+            scenarios,
+            scenarioAttemptId: attempt?._id || null,
+            scenarioAttemptNumber: attempt?.attemptNumber || null,
+            attemptedScenarioIds,
+            scenarioCompleted: !!p.scenarioCompleted,
+            exerciseSubmitted: attempt?.status === "submitted",
+            resultAvailable: !!attempt?._id && attempt?.status === "submitted",
+        });
     } catch (e) {
         console.error("getTraineeScenarios failed:", e);
         res.status(500).json({ message: "Unable to load scenarios" });
@@ -175,9 +331,18 @@ exports.submitScenario = async (req, res) => {
     try {
         const a = await assigned(req, req.params.programmeId);
         if (!a) return res.status(403).json({ message: "Programme is not assigned to you" });
+        const gate = await traineeProgrammeGate(req.user.id, req.params.programmeId);
+        if (!gate.programme) return res.status(404).json({ message: "Programme not found" });
+        if (!gate.unlocked) return res.status(403).json({
+            code: "PROGRAMME_LEVEL_LOCKED",
+            message: "Complete and pass the previous programme level first.",
+            levelAccess: gate.access,
+        });
 
         const p = await syncLearningProgress(req, req.params.programmeId, a);
-        if (!p.learningCompleted) return res.status(403).json({ message: "Complete learning first" });
+        if (!p.learningCompleted) {
+            return res.status(403).json({ message: "Complete learning first" });
+        }
 
         const scenario = await Scenario.findOne({
             _id: req.params.scenarioId,
@@ -186,45 +351,143 @@ exports.submitScenario = async (req, res) => {
         });
         if (!scenario) return res.status(404).json({ message: "Scenario not found" });
 
-        const alreadyAttempted = (p.completedScenarios || []).some(x => String(x) === String(scenario._id));
-        if (alreadyAttempted) {
-            return res.status(409).json({ code: "SCENARIO_ALREADY_ANSWERED", message: "This scenario has already been answered for the current attempt." });
+        const attempt = await ScenarioAttempt.findOne({
+            _id: req.body.attemptId,
+            trainee: req.user.id,
+            programme: req.params.programmeId,
+            status: "in-progress",
+        });
+
+        if (!attempt) {
+            return res.status(404).json({
+                message: "Scenario attempt not found or already finished. Re-open the Scenario Exercise.",
+            });
         }
 
-        const given = (Array.isArray(req.body.responses) ? req.body.responses : [req.body.response])
+        if (!(attempt.scenarioSet || []).some(id => String(id) === String(scenario._id))) {
+            return res.status(400).json({ message: "This scenario is not part of the current exercise attempt." });
+        }
+
+        if ((attempt.responses || []).some(x => String(x.scenario) === String(scenario._id))) {
+            return res.status(409).json({
+                code: "SCENARIO_ALREADY_ANSWERED",
+                message: "This scenario response has already been recorded. Continue to the next scenario.",
+            });
+        }
+
+        const submittedResponses = (Array.isArray(req.body.responses) ? req.body.responses : [req.body.response])
             .filter(Boolean)
+            .map(x => String(x).trim());
+
+        if (!submittedResponses.length) {
+            return res.status(400).json({ message: "Choose a response before submitting." });
+        }
+
+        const normalizedGiven = submittedResponses.map(x => x.toLowerCase()).sort();
+        const normalizedCorrect = (scenario.correctResponses || [])
             .map(x => String(x).trim().toLowerCase())
             .sort();
-        const correct = (scenario.correctResponses || [])
-            .map(x => String(x).trim().toLowerCase())
-            .sort();
-        const ok = given.length === correct.length && given.every((x, i) => x === correct[i]);
 
-        // A scenario question has one attempt only. Correct or incorrect, it is
-        // marked as answered so the trainee moves forward instead of retrying it.
-        const attempted = new Set((p.completedScenarios || []).map(x => String(x)));
-        attempted.add(String(scenario._id));
-        p.completedScenarios = [...attempted];
+        const correct = normalizedGiven.length === normalizedCorrect.length
+            && normalizedGiven.every((x, i) => x === normalizedCorrect[i]);
 
-        const activeScenarioIds = await Scenario.find({
-            programme: req.params.programmeId,
-            status: "active",
-        }).distinct("_id");
-        const activeIds = new Set(activeScenarioIds.map(x => String(x)));
-        p.scenarioCompleted = activeIds.size > 0 && [...activeIds].every(id => attempted.has(id));
+        attempt.responses.push({
+            scenario: scenario._id,
+            responses: submittedResponses,
+            correct,
+            answeredAt: new Date(),
+        });
 
-        updateStage(p);
+        const attemptedIds = new Set((attempt.responses || []).map(x => String(x.scenario)));
+        const exerciseCompleted = (attempt.scenarioSet || []).length > 0
+            && (attempt.scenarioSet || []).every(id => attemptedIds.has(String(id)));
+
+        if (exerciseCompleted) {
+            const score = (attempt.responses || []).filter(x => x.correct).length;
+            const total = attempt.scenarioSet.length;
+            attempt.score = score;
+            attempt.totalScenarios = total;
+            attempt.percentage = total ? Math.round((score / total) * 10000) / 100 : 0;
+            attempt.status = "submitted";
+            attempt.submittedAt = new Date();
+        }
+
+        await attempt.save();
+
+        // Keep TrainingProgress compatible with the existing stage-gating rules.
+        p.completedScenarios = [...attemptedIds];
+        p.scenarioCompleted = exerciseCompleted;
+        updateStage(p, gate.requiredAssessmentLevel);
         await p.save();
 
+        // Intentionally do NOT reveal correctness here. Results are available
+        // only after the entire exercise has been submitted.
         res.json({
-            correct: ok,
-            feedback: ok ? scenario.feedbackCorrect : scenario.feedbackIncorrect,
+            recorded: true,
+            exerciseCompleted,
+            attemptId: attempt._id,
+            attemptNumber: attempt.attemptNumber,
+            answeredCount: attempt.responses.length,
+            totalScenarios: attempt.scenarioSet.length,
             progress: p,
-            scenarioCompleted: p.scenarioCompleted,
         });
     } catch (e) {
         console.error("submitScenario failed:", e);
-        res.status(500).json({ message: "Unable to submit scenario" });
+        res.status(500).json({ message: "Unable to submit scenario response" });
+    }
+};
+
+exports.getScenarioAttemptResult = async (req, res) => {
+    try {
+        const attempt = await ScenarioAttempt.findOne({
+            _id: req.params.attemptId,
+            trainee: req.user.id,
+            programme: req.params.programmeId,
+            status: "submitted",
+        }).lean();
+
+        if (!attempt) {
+            return res.status(404).json({ message: "Completed scenario result not found." });
+        }
+
+        const rows = await Scenario.find({
+            _id: { $in: attempt.scenarioSet || [] },
+            programme: req.params.programmeId,
+        }).select("title prompt options correctResponses feedbackCorrect feedbackIncorrect order").lean();
+
+        const byId = new Map(rows.map(row => [String(row._id), row]));
+        const responseById = new Map((attempt.responses || []).map(row => [String(row.scenario), row]));
+
+        const results = (attempt.scenarioSet || []).map(id => {
+            const scenario = byId.get(String(id));
+            const response = responseById.get(String(id));
+            if (!scenario) return null;
+            return {
+                scenarioId: scenario._id,
+                title: scenario.title,
+                prompt: scenario.prompt,
+                options: scenario.options || [],
+                selectedResponses: response?.responses || [],
+                correctResponses: scenario.correctResponses || [],
+                correct: !!response?.correct,
+                feedback: response?.correct ? scenario.feedbackCorrect : scenario.feedbackIncorrect,
+            };
+        }).filter(Boolean);
+
+        res.json({
+            attempt: {
+                _id: attempt._id,
+                attemptNumber: attempt.attemptNumber,
+                score: attempt.score,
+                totalScenarios: attempt.totalScenarios,
+                percentage: attempt.percentage,
+                submittedAt: attempt.submittedAt,
+            },
+            results,
+        });
+    } catch (e) {
+        console.error("getScenarioAttemptResult failed:", e);
+        res.status(500).json({ message: "Unable to load scenario result." });
     }
 };
 
@@ -232,16 +495,35 @@ const eligible = async (req, programmeId, level) => {
     const normalizedLevel = normalizeLevel(level);
     const a = await assigned(req, programmeId);
     if (!a) return { error: [403, "Programme is not assigned to you"] };
+
+    const gate = await traineeProgrammeGate(req.user.id, programmeId);
+    if (!gate.programme) return { error: [404, "Programme not found"] };
+    if (!gate.unlocked) return { error: [403, "Complete and pass the previous programme level first"] };
+
+    // The trainee can only take the assessment that belongs to the current
+    // programme level. This prevents a Beginner programme from exposing the
+    // Intermediate/High assessment tabs and prevents URL/API bypasses.
+    if (normalizedLevel !== gate.requiredAssessmentLevel) {
+        return {
+            error: [403, `${gate.programmeLevel[0].toUpperCase()}${gate.programmeLevel.slice(1)} training only allows its ${gate.requiredAssessmentLevel} assessment.`],
+        };
+    }
+
     const p = await syncLearningProgress(req, programmeId, a);
 
-    // Every assessment attempt must come after learning. When a trainee fails,
-    // learning/scenario are reset so the same checks force a relearn before retry.
+    // Every assessment attempt must come after THIS programme level's learning
+    // and scenario. A failed attempt resets those two gates before a retry.
     if (!p.learningCompleted) return { error: [403, "Complete all learning sections first"] };
     const sc = await Scenario.countDocuments({ programme: programmeId, status: "active" });
     if (sc > 0 && !p.scenarioCompleted) return { error: [403, "Complete the scenario exercise first"] };
-    if (normalizedLevel === "intermediate" && !p.basicPassed) return { error: [403, "Pass Basic before starting Intermediate"] };
-    if (normalizedLevel === "high" && !p.intermediatePassed) return { error: [403, "Pass Intermediate before starting High"] };
-    return { a, p };
+    return {
+        a,
+        p,
+        programme: gate.programme,
+        programmeLevel: gate.programmeLevel,
+        requiredAssessmentLevel: gate.requiredAssessmentLevel,
+        levelAccess: gate.access,
+    };
 };
 
 const createOrResumeAssessmentAttempt = async (req, programmeId, level, assignment) => {
@@ -253,14 +535,28 @@ const createOrResumeAssessmentAttempt = async (req, programmeId, level, assignme
         status: "in-progress",
     }).sort({ attemptNumber: -1 });
 
-    if (attempt) return attempt;
-
     const pool = await AssessmentQuestion.find({
         programme: programmeId,
         level: normalizedLevel,
         status: "active",
     }).select("_id points").lean();
     if (!pool.length) return null;
+
+    if (attempt) {
+        // Repair an older in-progress attempt that may have been created when
+        // the programme only had a very small question pool. Keep any existing
+        // answers, add new question IDs only, and recalculate the total points.
+        if ((attempt.questionSet || []).length < Math.min(ASSESSMENT_QUESTION_LIMIT, pool.length)) {
+            const currentIds = new Set((attempt.questionSet || []).map(String));
+            const additions = shuffle(pool.filter(q => !currentIds.has(String(q._id))))
+                .slice(0, ASSESSMENT_QUESTION_LIMIT - currentIds.size);
+            attempt.questionSet.push(...additions.map(q => q._id));
+            const pointById = new Map(pool.map(q => [String(q._id), Number(q.points || 1)]));
+            attempt.totalPoints = attempt.questionSet.reduce((sum, id) => sum + (pointById.get(String(id)) || 1), 0);
+            await attempt.save();
+        }
+        return attempt;
+    }
 
     const selected = shuffle(pool).slice(0, Math.min(ASSESSMENT_QUESTION_LIMIT, pool.length));
     const prior = await AssessmentAttempt.countDocuments({
@@ -294,6 +590,13 @@ exports.getAssessment = async (req, res) => {
         const e = await eligible(req, req.params.programmeId, level);
         if (e.error) return res.status(e.error[0]).json({ code: "LEVEL_LOCKED", message: e.error[1] });
 
+        // Top up the active question pool to the required minimum before a
+        // new attempt is generated. Existing admin/trainer questions are kept.
+        const bankProgramme = await TrainingProgramme.findById(req.params.programmeId)
+            .select("_id programmeType level createdBy owner")
+            .lean();
+        if (bankProgramme) await ensureAssessmentQuestionBank(bankProgramme, bankProgramme.createdBy || bankProgramme.owner);
+
         const attempt = await createOrResumeAssessmentAttempt(req, req.params.programmeId, level, e.a);
         if (!attempt) return res.status(404).json({ message: "No active questions are available for this level" });
 
@@ -301,12 +604,19 @@ exports.getAssessment = async (req, res) => {
             .select("question options points order")
             .lean();
         const byId = new Map(rows.map(q => [String(q._id), q]));
-        const questions = attempt.questionSet.map(id => byId.get(String(id))).filter(Boolean);
+        const questions = attempt.questionSet
+            .map(id => byId.get(String(id)))
+            .filter(Boolean)
+            .map(q => ({
+                ...q,
+                // Option order is shuffled for every attempt and stays stable
+                // while that attempt is in progress. The correct answer is
+                // stored as text, so grading is independent of A/B/C/D position.
+                options: seededShuffle(q.options || [], `${attempt._id}:${q._id}`),
+            }));
         const answered = (attempt.answers || []).map(a => ({
             questionId: String(a.question),
             answer: a.answer,
-            correct: !!a.correct,
-            pointsAwarded: Number(a.pointsAwarded || 0),
         }));
 
         res.json({
@@ -314,7 +624,9 @@ exports.getAssessment = async (req, res) => {
             attemptId: attempt._id,
             attemptNumber: attempt.attemptNumber,
             questionLimit: ASSESSMENT_QUESTION_LIMIT,
-            poolRule: `Up to ${ASSESSMENT_QUESTION_LIMIT} questions are randomly selected for each attempt.`,
+            minimumPoolSize: MIN_QUESTIONS_PER_LEVEL,
+            poolSize: await AssessmentQuestion.countDocuments({ programme: req.params.programmeId, level, status: "active" }),
+            poolRule: `${ASSESSMENT_QUESTION_LIMIT} questions are randomly selected from a pool of at least ${MIN_QUESTIONS_PER_LEVEL} active questions for each attempt. Question and option order vary between attempts.`,
             questions,
             answered,
         });
@@ -366,9 +678,11 @@ exports.checkAssessmentAnswer = async (req, res) => {
         });
         await attempt.save();
 
+        // Do not reveal whether the response is correct while the assessment
+        // is still running. Correct answers are released only in the submitted
+        // attempt result view.
         res.json({
-            correct,
-            feedback: q.feedback || (correct ? "Correct response." : "Incorrect. Review the explanation, then continue to the next question."),
+            recorded: true,
             answeredCount: attempt.answers.length,
             totalQuestions: attempt.questionSet.length,
         });
@@ -384,7 +698,7 @@ exports.submitAssessment = async (req, res) => {
         const e = await eligible(req, req.params.programmeId, level);
         if (e.error) return res.status(e.error[0]).json({ code: "LEVEL_LOCKED", message: e.error[1] });
 
-        const programme = await TrainingProgramme.findById(req.params.programmeId);
+        const programme = e.programme;
         const attempt = await AssessmentAttempt.findOne({
             _id: req.body.attemptId,
             trainee: req.user.id,
@@ -406,6 +720,7 @@ exports.submitAssessment = async (req, res) => {
         attempt.score = score;
         attempt.percentage = percentage;
         attempt.passed = passed;
+        attempt.passMark = Number(programme.passMark || 0);
         attempt.status = "submitted";
         attempt.submittedAt = new Date();
         await attempt.save();
@@ -415,7 +730,7 @@ exports.submitAssessment = async (req, res) => {
             if (level === "intermediate") e.p.intermediatePassed = true;
             if (level === "high") e.p.highPassed = true;
             if (e.p.retryRequiredLevel === level) e.p.retryRequiredLevel = null;
-            updateStage(e.p);
+            updateStage(e.p, e.requiredAssessmentLevel);
             await e.p.save();
         } else {
             // Failed attempt: the trainee must relearn the programme and redo
@@ -433,6 +748,10 @@ exports.submitAssessment = async (req, res) => {
             await e.p.save();
         }
 
+        const updatedLevelAccess = passed
+            ? await getModuleLevelAccess(req.user.id, programme.programmeType)
+            : e.levelAccess;
+
         res.status(201).json({
             attempt: {
                 _id: attempt._id,
@@ -443,7 +762,9 @@ exports.submitAssessment = async (req, res) => {
                 passed,
                 attemptNumber: attempt.attemptNumber,
             },
+            programmeLevel: e.programmeLevel,
             progress: e.p,
+            levelAccess: updatedLevelAccess,
             relearnRequired: !passed,
         });
     } catch (err) {
@@ -452,12 +773,77 @@ exports.submitAssessment = async (req, res) => {
     }
 };
 
+
+exports.getAssessmentAttemptResult = async (req, res) => {
+    try {
+        const level = normalizeLevel(req.params.level);
+        const attempt = await AssessmentAttempt.findOne({
+            _id: req.params.attemptId,
+            trainee: req.user.id,
+            programme: req.params.programmeId,
+            level,
+            status: "submitted",
+        }).lean();
+
+        if (!attempt) {
+            return res.status(404).json({ message: "Completed assessment result not found." });
+        }
+
+        const questionIds = (attempt.questionSet || []).length
+            ? attempt.questionSet
+            : (attempt.answers || []).map(row => row.question);
+
+        const rows = await AssessmentQuestion.find({
+            _id: { $in: questionIds },
+            programme: req.params.programmeId,
+            level,
+        }).select("question options correctAnswer feedback points order").lean();
+
+        const byId = new Map(rows.map(row => [String(row._id), row]));
+        const answerById = new Map((attempt.answers || []).map(row => [String(row.question), row]));
+
+        const results = questionIds.map(id => {
+            const question = byId.get(String(id));
+            const answer = answerById.get(String(id));
+            if (!question) return null;
+            return {
+                questionId: question._id,
+                question: question.question,
+                options: question.options || [],
+                selectedAnswer: answer?.answer || "",
+                correctAnswer: question.correctAnswer,
+                correct: !!answer?.correct,
+                pointsAwarded: Number(answer?.pointsAwarded || 0),
+                points: Number(question.points || 1),
+                feedback: question.feedback || "",
+            };
+        }).filter(Boolean);
+
+        res.json({
+            attempt: {
+                _id: attempt._id,
+                level: attempt.level,
+                score: attempt.score,
+                totalPoints: attempt.totalPoints,
+                percentage: attempt.percentage,
+                passed: attempt.passed,
+                attemptNumber: attempt.attemptNumber,
+                submittedAt: attempt.submittedAt,
+            },
+            results,
+        });
+    } catch (e) {
+        console.error("getAssessmentAttemptResult failed:", e);
+        res.status(500).json({ message: "Unable to load assessment result." });
+    }
+};
+
 exports.getMyResults = async (req, res) => {
     try {
         res.json({
             attempts: await AssessmentAttempt.find({ trainee: req.user.id, status: { $ne: "in-progress" } })
-                .populate("programme", "title programmeType")
-                .sort({ submittedAt: -1 }),
+                .populate("programme", "title programmeType level passMark")
+                .sort({ submittedAt: -1, createdAt: -1 }),
         });
     } catch (e) {
         res.status(500).json({ message: "Unable to load results" });

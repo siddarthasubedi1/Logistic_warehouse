@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
-// The old standalone Sprint 2 exercise page duplicated scenario/assessment
+// The old standalone Training Content exercise page duplicated scenario/assessment
 // behaviour. Keep the route for backwards compatibility, but send trainees to
 // the single interactive 360° flow so all modules use the same rules.
 export default function TraineeExercisePage() {

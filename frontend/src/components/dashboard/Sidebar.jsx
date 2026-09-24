@@ -316,6 +316,12 @@ function Sidebar({
         },
 
         {
+            to: "/attempt-records",
+            label: "Attempt Records",
+            icon: "progress",
+        },
+
+        {
             to: "/admin/panoramas",
             label: "Panorama & Scenes",
             icon: "training",
@@ -335,6 +341,12 @@ function Sidebar({
             label: "Dashboard",
             icon: "dashboard",
             end: true,
+        },
+
+        {
+            to: "/attempt-records",
+            label: "Attempt Records",
+            icon: "progress",
         },
 
         {

@@ -18,7 +18,7 @@
 // assignedTrainingSections
 // TrainingProgress
 //
-// Sprint 2:
+// Training Content:
 // TrainingProgramme
 // LearningSection
 // TrainingAssignment
@@ -444,7 +444,7 @@ export const getActiveProgrammes = (
 // ASSIGNABLE TRAINEES
 // ======================================================
 //
-// TrainingAssignment is a Sprint 2 concept.
+// TrainingAssignment is a Training Content concept.
 //
 // An assignable Trainee must:
 //
@@ -597,7 +597,7 @@ export const sortLearningSections = (
 // This is NOT persisted progress.
 //
 // It only describes where the Trainee currently is inside
-// the list of Sprint 2 learning sections.
+// the list of Training Content learning sections.
 //
 // Example:
 //
@@ -817,7 +817,7 @@ export const getApiErrorMessage = (
 //
 // Sprint 1 broad training area helper.
 //
-// Does NOT work with Sprint 2 TrainingAssignments.
+// Does NOT work with Training Content TrainingAssignments.
 //
 // ======================================================
 

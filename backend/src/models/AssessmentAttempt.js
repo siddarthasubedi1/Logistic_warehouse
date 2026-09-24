@@ -23,6 +23,11 @@ const schema = new mongoose.Schema({
     score: { type: Number, required: true, min: 0, default: 0 },
     totalPoints: { type: Number, required: true, min: 0, default: 0 },
     percentage: { type: Number, required: true, min: 0, max: 100, default: 0 },
+    // Snapshot of the programme pass mark at submission time. Keeping this on
+    // the attempt makes historical records auditable even if the programme is
+    // edited later. Older attempts may not have the field and fall back to the
+    // programme's current pass mark in the API.
+    passMark: { type: Number, min: 0, max: 100, default: null },
     passed: { type: Boolean, required: true, default: false, index: true },
     attemptNumber: { type: Number, required: true, min: 1 },
     startedAt: { type: Date, default: Date.now },
@@ -31,5 +36,8 @@ const schema = new mongoose.Schema({
 
 schema.index({ trainee: 1, programme: 1, level: 1, attemptNumber: 1 }, { unique: true });
 schema.index({ trainee: 1, programme: 1, level: 1, status: 1 });
+schema.index({ trainee: 1, submittedAt: -1 });
+schema.index({ programme: 1, level: 1, submittedAt: -1 });
+schema.index({ passed: 1, submittedAt: -1 });
 
 module.exports = mongoose.model("AssessmentAttempt", schema);

@@ -12,7 +12,7 @@ const AssessmentQuestion = require("../models/AssessmentQuestion");
 
 const PASS_MARK = Number(process.env.SPRINT2_PASS_MARK);
 if (!Number.isFinite(PASS_MARK) || PASS_MARK < 0 || PASS_MARK > 100) {
-    throw new Error("Set SPRINT2_PASS_MARK (0-100) before running the Sprint 2 seed. The project specification requires this value to be confirmed rather than hardcoded.");
+    throw new Error("Set SPRINT2_PASS_MARK (0-100) before running the Training Content seed. The project specification requires this value to be confirmed rather than hardcoded.");
 }
 
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -49,7 +49,7 @@ async function run() {
     await mongoose.connect(MONGO_URI);
     const password = process.env.SPRINT2_SEED_PASSWORD || "Sprint2Test123!";
 
-    const admin = await upsertUser({ firstName: "Sprint", lastName: "Admin", email: "sprint2.admin@example.test", username: "sprint2admin", role: "admin", assignedTrainingSections: [] }, password);
+    const admin = await upsertUser({ firstName: "Sprint", lastName: "Admin", email: "training-content.admin@example.test", username: "training-contentadmin", role: "admin", assignedTrainingSections: [] }, password);
     const trainerA = await upsertUser({ firstName: "Trainer", lastName: "Alpha", email: "trainer.alpha@example.test", username: "traineralpha", role: "trainer", age: 25, phoneNumber: "9800000001", address: "Training Office", gender: "female", assignedTrainingSections: modules.map(m => m.key) }, password);
     const trainerB = await upsertUser({ firstName: "Trainer", lastName: "Beta", email: "trainer.beta@example.test", username: "trainerbeta", role: "trainer", age: 26, phoneNumber: "9800000002", address: "Training Office", gender: "male", assignedTrainingSections: [] }, password);
 
@@ -106,8 +106,8 @@ async function run() {
         }
     }
 
-    console.log("Sprint 2 seed complete.");
-    console.log("Users: sprint2admin, traineralpha, trainerbeta, trainee1..trainee4");
+    console.log("Training Content seed complete.");
+    console.log("Users: training-contentadmin, traineralpha, trainerbeta, trainee1..trainee4");
     console.log("Seed password comes from SPRINT2_SEED_PASSWORD (development fallback is documented in this script).");
     await mongoose.disconnect();
 }
