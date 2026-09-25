@@ -396,8 +396,20 @@ describe(
                             title:
                                 "Manual Handling Essentials",
 
+                            shortDescription:
+                                "Core manual handling safety training for warehouse staff.",
+
                             description:
                                 "Safe lifting, carrying and movement techniques for warehouse staff.",
+
+                            learningObjectives:
+                                "Recognise manual handling hazards and apply safe lifting, carrying and movement techniques.",
+
+                            prerequisite:
+                                "",
+
+                            level:
+                                "beginner",
 
                             passMark:
                                 80,
@@ -413,6 +425,9 @@ describe(
                 ).toBe(
                     201
                 );
+
+
+
 
 
                 const programme =
