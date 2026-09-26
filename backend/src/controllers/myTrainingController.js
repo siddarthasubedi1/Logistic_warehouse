@@ -129,6 +129,14 @@ const getActiveAssignment = async (
     programmeId,
     traineeId
 ) => {
+    const programme = await TrainingProgramme.findById(programmeId)
+        .select("programmeType")
+        .lean();
+
+    if (programme?.programmeType) {
+        await syncUnlockedProgressionAssignments(traineeId, programme.programmeType);
+    }
+
     return TrainingAssignment.findOne({
         programme: programmeId,
         trainee: traineeId,

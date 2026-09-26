@@ -15,6 +15,7 @@ const {
     assessmentLevelForProgramme,
     normalize,
     normalizeProgrammeLevel,
+    syncUnlockedProgressionAssignments,
 } = require("../services/traineeLevelProgressService");
 
 const allowed = async (req, programmeId) => {
@@ -25,7 +26,13 @@ const allowed = async (req, programmeId) => {
     if (req.user.role === "trainer" && (String(p.owner) === uid || (p.authorizedTrainers || []).some(x => String(x) === uid))) return p;
     return false;
 };
-const assigned = async (req, programmeId) => TrainingAssignment.findOne({ programme: programmeId, trainee: req.user.id, status: "active" });
+const assigned = async (req, programmeId) => {
+    const programme = await TrainingProgramme.findById(programmeId).select("programmeType").lean();
+    if (programme?.programmeType) {
+        await syncUnlockedProgressionAssignments(req.user.id, programme.programmeType);
+    }
+    return TrainingAssignment.findOne({ programme: programmeId, trainee: req.user.id, status: "active" });
+};
 const getProgress = async (req, programmeId, assignment) => {
     return getOrCreateProgrammeProgress({
         traineeId: req.user.id,

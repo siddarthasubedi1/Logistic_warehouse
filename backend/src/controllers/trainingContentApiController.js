@@ -14,7 +14,7 @@ const AssessmentAttempt = require('../models/AssessmentAttempt');
 const User = require('../models/User');
 const { writeAuditLog } = require('../utils/auditLogger');
 const { getOrCreateProgrammeProgress } = require('../services/trainingProgressService');
-const { getModuleLevelAccess, normalize, normalizeProgrammeLevel } = require('../services/traineeLevelProgressService');
+const { getModuleLevelAccess, normalize, normalizeProgrammeLevel, syncUnlockedProgressionAssignments } = require('../services/traineeLevelProgressService');
 
 const levels = ['basic', 'intermediate', 'high'];
 const oid = v => mongoose.Types.ObjectId.isValid(v);
@@ -27,7 +27,11 @@ const managerProgramme = async (req, id) => {
     if (req.user.role === 'trainer' && (String(p.owner) === uid || (p.authorizedTrainers || []).some(x => String(x) === uid))) return { programme: p };
     return { status: 403, message: 'You are not authorised for this programme.' };
 };
-const activeAssignment = (trainee, programme) => TrainingAssignment.findOne({ trainee, programme, status: 'active' });
+const activeAssignment = async (trainee, programme) => {
+    const row = await TrainingProgramme.findById(programme).select('programmeType').lean();
+    if (row?.programmeType) await syncUnlockedProgressionAssignments(trainee, row.programmeType);
+    return TrainingAssignment.findOne({ trainee, programme, status: 'active' });
+};
 const progressFor = async (trainee, programme, assignment) => getOrCreateProgrammeProgress({ traineeId: trainee, programmeId: programme, assignmentId: assignment._id });
 const traineeProgrammeLevelGate = async (trainee, programmeId) => {
     const programme = await TrainingProgramme.findOne({ _id: programmeId, status: 'active' }).select('_id programmeType level').lean();
@@ -66,7 +70,7 @@ const eligibility = async (trainee, programmeId, level) => {
 };
 
 
-exports.listProgrammes = async (req, res) => { try { if (req.user.role === 'trainee') { const rows = await TrainingAssignment.find({ trainee: req.user.id, status: 'active' }).populate({ path: 'programme', match: { status: 'active' } }); return res.json({ programmes: rows.map(x => x.programme).filter(Boolean) }); } const query = req.user.role === 'admin' ? {} : { $or: [{ owner: req.user.id }, { authorizedTrainers: req.user.id }] }; res.json({ programmes: await TrainingProgramme.find(query).sort({ createdAt: -1 }) }); } catch (e) { res.status(500).json({ message: 'Unable to load programmes.' }); } };
+exports.listProgrammes = async (req, res) => { try { if (req.user.role === 'trainee') { await syncUnlockedProgressionAssignments(req.user.id); const rows = await TrainingAssignment.find({ trainee: req.user.id, status: 'active' }).populate({ path: 'programme', match: { status: 'active' } }); return res.json({ programmes: rows.map(x => x.programme).filter(Boolean) }); } const query = req.user.role === 'admin' ? {} : { $or: [{ owner: req.user.id }, { authorizedTrainers: req.user.id }] }; res.json({ programmes: await TrainingProgramme.find(query).sort({ createdAt: -1 }) }); } catch (e) { res.status(500).json({ message: 'Unable to load programmes.' }); } };
 
 exports.completeSection = async (req, res) => {
     try {
@@ -105,7 +109,7 @@ exports.createAssignment = async (req, res) => {
     } catch (e) { if (e?.code === 11000) return res.status(409).json({ code: 'DUPLICATE_ACTIVE_ASSIGNMENT', message: 'This programme is already actively assigned to this Trainee.' }); res.status(500).json({ message: 'Unable to create assignment.' }); }
 };
 
-exports.traineeTraining = async (req, res) => { try { const assignments = await TrainingAssignment.find({ trainee: req.user.id, status: 'active' }).populate({ path: 'programme', match: { status: 'active' }, select: 'programmeType title description passMark status owner' }).sort({ assignedAt: -1 }); res.json({ assignments: assignments.filter(x => x.programme) }); } catch (e) { res.status(500).json({ message: 'Unable to load assigned training.' }); } };
+exports.traineeTraining = async (req, res) => { try { await syncUnlockedProgressionAssignments(req.user.id); const assignments = await TrainingAssignment.find({ trainee: req.user.id, status: 'active' }).populate({ path: 'programme', match: { status: 'active' }, select: 'programmeType title description passMark level status owner createdAt' }).sort({ assignedAt: -1 }); res.json({ assignments: assignments.filter(x => x.programme) }); } catch (e) { res.status(500).json({ message: 'Unable to load training.' }); } };
 exports.warehouseTour = async (req, res) => { try { const panoramas = await Panorama.find({ type: { $in: ['warehouse_tour', 'warehouse_area'] }, status: 'active' }).select('-createdBy -updatedBy').sort({ type: 1, area: 1, name: 1 }); res.json({ panoramas, fallback: panoramas.length === 0 ? 'Warehouse Tour panorama is not configured yet.' : null }); } catch (e) { res.status(500).json({ message: 'Unable to load Warehouse Tour.' }); } };
 
 const panoramaPayload = async (req, existing = null) => {

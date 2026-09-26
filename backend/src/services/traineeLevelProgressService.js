@@ -1,5 +1,6 @@
 const TrainingAssignment = require("../models/TrainingAssignment");
 const TrainingProgramme = require("../models/TrainingProgramme");
+const TrainingModule = require("../models/TrainingModule");
 const AssessmentAttempt = require("../models/AssessmentAttempt");
 const TrainingProgress = require("../models/TrainingProgress");
 const User = require("../models/User");
@@ -142,20 +143,124 @@ const programmeLevelQueryValues = (canonicalLevel) => ({
 }[canonicalLevel] || [canonicalLevel]);
 
 /**
- * Progression repair / synchronisation.
+ * Keep every active Trainee automatically entitled to every active Training
+ * Module and create one canonical TrainingAssignment for each available level.
  *
- * A trainee can have a valid Beginner assignment and pass history while an
- * Intermediate TrainingAssignment was never created. That left the UI showing
- * the next level as missing even though the prerequisite was already met.
+ * The module catalogue is the source of truth for Trainees. Admins do not need
+ * to manually assign programmes after creating a Trainee. Intermediate and
+ * Advanced assignments may exist from the beginning, but their routes remain
+ * protected by getModuleLevelAccess until the previous level is passed.
  *
- * Once a level is completely passed, this function automatically creates the
- * trainee's assignments for the next active level in the SAME module. It never
- * unlocks the level early, and it never reactivates an assignment that an admin
- * deliberately deactivated.
+ * Historical inactive assignments are respected so an explicitly deactivated
+ * programme is not silently reactivated.
+ */
+const syncAutomaticTraineeAssignments = async (trainee, requestedType = "") => {
+    const activeModules = await TrainingModule.find({ status: "active" })
+        .select("key")
+        .sort({ createdAt: 1, _id: 1 })
+        .lean();
+
+    const activeModuleKeys = [...new Set(
+        activeModules
+            .map((module) => normalize(module.key))
+            .filter(Boolean)
+    )];
+
+    // Keep the legacy entitlement field aligned with the dynamic module list.
+    // Several older screens still read this field even though trainee access is
+    // now programme-backed.
+    const currentKeys = [...new Set((trainee.assignedTrainingSections || []).map(normalize).filter(Boolean))].sort();
+    const nextKeys = [...activeModuleKeys].sort();
+    if (JSON.stringify(currentKeys) !== JSON.stringify(nextKeys)) {
+        await User.updateOne(
+            { _id: trainee._id },
+            { $set: { assignedTrainingSections: activeModuleKeys } }
+        );
+        trainee.assignedTrainingSections = activeModuleKeys;
+    }
+
+    const moduleKeys = requestedType
+        ? activeModuleKeys.filter((key) => key === requestedType)
+        : activeModuleKeys;
+
+    if (!moduleKeys.length) return;
+
+    const programmes = await TrainingProgramme.find({
+        programmeType: { $in: moduleKeys },
+        status: "active",
+        deletedAt: null,
+    })
+        .select("_id title programmeType level passMark status owner createdBy createdAt")
+        .lean();
+
+    const canonicalProgrammes = [];
+    for (const moduleKey of moduleKeys) {
+        const moduleProgrammes = programmes.filter(
+            (programme) => normalize(programme.programmeType) === moduleKey
+        );
+        for (const level of LEVEL_ORDER) {
+            const primary = primaryProgrammeForLevel(moduleProgrammes, level);
+            if (primary) canonicalProgrammes.push(primary);
+        }
+    }
+
+    if (!canonicalProgrammes.length) return;
+
+    const canonicalIds = canonicalProgrammes.map((programme) => programme._id);
+    const history = await TrainingAssignment.find({
+        trainee: trainee._id,
+        programme: { $in: canonicalIds },
+    })
+        .select("programme status")
+        .lean();
+
+    const activeIds = new Set(
+        history
+            .filter((row) => row.status === "active")
+            .map((row) => String(row.programme))
+    );
+    const inactiveIds = new Set(
+        history
+            .filter((row) => row.status === "inactive")
+            .map((row) => String(row.programme))
+    );
+
+    for (const programme of canonicalProgrammes) {
+        const id = String(programme._id);
+        if (activeIds.has(id) || inactiveIds.has(id)) continue;
+
+        const assignedBy = trainee.createdBy || programme.createdBy || programme.owner;
+        if (!assignedBy) continue;
+
+        try {
+            await TrainingAssignment.create({
+                programme: programme._id,
+                trainee: trainee._id,
+                assignedBy,
+                assignedAt: new Date(),
+                status: "active",
+            });
+            activeIds.add(id);
+        } catch (error) {
+            // Concurrent page loads can race to create the same automatic
+            // assignment. The unique active-assignment index makes that safe.
+            if (error?.code !== 11000) throw error;
+            activeIds.add(id);
+        }
+    }
+};
+
+/**
+ * Trainee assignment / progression synchronisation.
  *
- * This also repairs historical trainees such as someone who passed Beginner
- * before this fix: opening My Training / Progress is enough to create the
- * missing next-level assignment.
+ * Every active trainee is first synchronized with the current active module
+ * catalogue so My Training never depends on a manual Admin programme
+ * assignment. All available level programmes can be assigned immediately, while
+ * getModuleLevelAccess still enforces Beginner -> Intermediate -> Advanced.
+ *
+ * The older next-level repair logic below is retained for backward compatibility
+ * with historical databases that may contain only partial assignment records.
+ * Explicitly inactive assignments are never auto-reactivated.
  */
 const syncUnlockedProgressionAssignments = async (traineeId, moduleType = null) => {
     const trainee = await User.findById(traineeId)
@@ -167,6 +272,12 @@ const syncUnlockedProgressionAssignments = async (traineeId, moduleType = null) 
     }
 
     const requestedType = normalize(moduleType);
+
+    // Trainees automatically receive the canonical programme for every level
+    // of every active module. This also repairs existing trainees that were
+    // created before automatic programme assignment was introduced.
+    await syncAutomaticTraineeAssignments(trainee, requestedType);
+
     let rows = await rawActiveAssignmentRows(traineeId, requestedType || null);
     if (!rows.length) return rows;
 

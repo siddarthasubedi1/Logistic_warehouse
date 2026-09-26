@@ -481,7 +481,7 @@ export default function TraineeModuleEnvironment() {
                         : canOpenLevel
                             ? "Ready to open"
                             : !primary
-                                ? `No active ${pretty(level)} training assigned`
+                                ? `No active ${pretty(level)} training available`
                                 : "Pass the previous level to unlock";
                     return <div className="immersive-level" style={levelPositions[level]} key={level}>
                         <button

@@ -24,7 +24,7 @@ export default function MyTrainingPage() {
             const response = await api.get("/my-training");
             setAssignments(parseArrayResponse(response.data, "assignments"));
         } catch (err) {
-            setError(getApiErrorMessage(err, "Unable to load assigned training."));
+            setError(getApiErrorMessage(err, "Unable to load training."));
         } finally {
             setLoading(false);
         }
@@ -141,10 +141,10 @@ export default function MyTrainingPage() {
                     <div className="training360-flow__hint">ⓘ &nbsp; Explore the environment and click a module.</div>
                 </div>
 
-                {loading && <div className="training360-flow__message">Loading your assigned modules…</div>}
+                {loading && <div className="training360-flow__message">Loading your training modules…</div>}
                 {error && <div className="training360-flow__message training360-flow__message--error">{error}</div>}
                 {!loading && !error && groupedModules.length === 0 && (
-                    <div className="training360-flow__message">No training programmes have been assigned to your account yet.</div>
+                    <div className="training360-flow__message">No active training modules are available yet.</div>
                 )}
             </section>
 
