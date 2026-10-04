@@ -1,27 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./Trainee360Environment.css";
 import { getAccessToken } from "../../utils/session";
+import PanoramaCanvas from "../../components/trainee/PanoramaCanvas";
+export { default as PanoramaCanvas } from "../../components/trainee/PanoramaCanvas";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SCENE_PANORAMAS = {
     entrance: "/panoramas/entrance-storage.png",
     security: "/panoramas/entrance-storage.png",
-    receiving: "/panoramas/loading-transition.png",
-    inbound: "/panoramas/loading-transition.png",
-    "main-aisle": "/panoramas/main-logistics.png",
-    "rack-a": "/panoramas/main-logistics.png",
+    receiving: "/panoramas/logistics-indoor-outdoor.png",
+    inbound: "/panoramas/logistics-indoor-outdoor.png",
+    "main-aisle": "/panoramas/logistics-indoor.png",
+    "rack-a": "/panoramas/logistics-indoor.png",
     "rack-b": "/panoramas/logistics-indoor.png",
     "high-rack": "/panoramas/logistics-indoor.png",
-    forklift: "/panoramas/main-logistics.png",
+    forklift: "/panoramas/logistics-indoor.png",
     charging: "/panoramas/logistics-indoor.png",
-    picking: "/panoramas/main-logistics.png",
+    picking: "/panoramas/logistics-indoor.png",
     packing: "/panoramas/logistics-indoor.png",
     quality: "/panoramas/logistics-indoor.png",
     dispatch: "/panoramas/loading-dispatch.png",
     loading: "/panoramas/loading-dispatch.png",
-    manual: "/panoramas/main-logistics.png",
+    manual: "/panoramas/logistics-indoor.png",
     height: "/panoramas/working-height.png",
-    emergency: "/panoramas/loading-transition.png",
+    emergency: "/panoramas/logistics-indoor-outdoor.png",
     office: "/panoramas/site-office.jpg",
     yard: "/panoramas/loading-dispatch.png",
     training: "/panoramas/training-room.jpg",
@@ -29,7 +31,7 @@ const SCENE_PANORAMAS = {
     restroom: "/panoramas/restroom.jpg",
     "first-aid": "/panoramas/first-aid.jpg",
 };
-const localPanoramaFor = (sceneId) => `${SCENE_PANORAMAS[sceneId] || "/panoramas/main-logistics.png"}?v=20260916-multiscene`;
+const localPanoramaFor = (sceneId) => `${SCENE_PANORAMAS[sceneId] || "/panoramas/logistics-indoor.png"}?v=20260916-multiscene`;
 
 // A clean visitor-facing map: only meaningful areas are shown, not every internal checkpoint.
 const MAP_LOCATION_IDS = [
@@ -87,29 +89,7 @@ function projectHotspot(h, yaw, pitch, fov, width, height) {
     return { left: 50 + (dx / hfov) * 100, top: 50 - (dy / Math.max(vfov, 35)) * 100 };
 }
 
-export function PanoramaCanvas({ src, yaw, pitch, fov, onViewChange, onImageError }) {
-    const ref = useRef(null); const drag = useRef(null); const viewRef = useRef({ yaw, pitch, fov });
-    useEffect(() => { viewRef.current = { yaw, pitch, fov }; }, [yaw, pitch, fov]);
-    useEffect(() => {
-        const canvas = ref.current; const gl = canvas?.getContext("webgl", { antialias: true }); if (!gl) return;
-        const vs = `attribute vec2 p; varying vec2 uv; void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}`;
-        const fs = `precision mediump float;varying vec2 uv;uniform sampler2D tex;uniform vec2 res;uniform vec3 view;const float PI=3.14159265359;void main(){float aspect=res.x/res.y;float t=tan(radians(view.z)*.5);vec2 q=(uv*2.-1.);q.x*=aspect*t;q.y*=t;vec3 d=normalize(vec3(q.x,q.y,-1.));float ya=radians(view.x),pa=radians(view.y);mat3 ry=mat3(cos(ya),0.,-sin(ya),0.,1.,0.,sin(ya),0.,cos(ya));mat3 rx=mat3(1.,0.,0.,0.,cos(pa),sin(pa),0.,-sin(pa),cos(pa));d=ry*rx*d;float lon=atan(d.x,-d.z);float lat=asin(clamp(d.y,-1.,1.));vec2 tuv=vec2(fract(lon/(2.*PI)+.5),clamp(.5-lat/PI,0.,1.));gl_FragColor=texture2D(tex,tuv);}`;
-        const shader = (type, source) => { const s = gl.createShader(type); gl.shaderSource(s, source); gl.compileShader(s); return s };
-        const program = gl.createProgram(); gl.attachShader(program, shader(gl.VERTEX_SHADER, vs)); gl.attachShader(program, shader(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(program); gl.useProgram(program);
-        const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW); const loc = gl.getAttribLocation(program, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-        const texture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, texture); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        const img = new Image(); img.onload = () => { gl.bindTexture(gl.TEXTURE_2D, texture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); draw(); }; img.onerror = () => onImageError?.(); img.src = src;
-        const draw = () => { const dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h } gl.viewport(0, 0, w, h); const v = viewRef.current; gl.uniform2f(gl.getUniformLocation(program, "res"), w, h); gl.uniform3f(gl.getUniformLocation(program, "view"), v.yaw, v.pitch, v.fov); gl.drawArrays(gl.TRIANGLES, 0, 6) };
-        const ro = new ResizeObserver(draw); ro.observe(canvas); canvas._draw360 = draw; return () => { ro.disconnect(); delete canvas._draw360; };
-    }, [src]);
-    useEffect(() => { ref.current?._draw360?.(); }, [yaw, pitch, fov]);
-    const down = e => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, yaw, pitch }; };
-    const move = e => { if (!drag.current) return; const dx = e.clientX - drag.current.x, dy = e.clientY - drag.current.y; onViewChange(wrapAngle(drag.current.yaw - dx * .16), Math.max(-75, Math.min(75, drag.current.pitch + dy * .12)), fov) };
-    const up = () => { drag.current = null };
-    return <canvas ref={ref} className="tour360__canvas" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={e => { e.preventDefault(); onViewChange(yaw, pitch, Math.max(45, Math.min(105, fov + e.deltaY * .04))) }} />;
-}
-
-export default function Trainee360Environment({ embedded = false }) {
+export default function Trainee360Environment({ embedded = false, puzzleHazards = [], solvedHazards = [], onHazardSelect, hud }) {
     const [scenes, setScenes] = useState(FALLBACK_SCENES), [sceneId, setSceneId] = useState("entrance"), [yaw, setYaw] = useState(0), [pitch, setPitch] = useState(0), [fov, setFov] = useState(78), [panel, setPanel] = useState(null), [apiNote, setApiNote] = useState(""), [imageFailed, setImageFailed] = useState(false);
     const stageRef = useRef(null); const historyRef = useRef([]); const [size, setSize] = useState({ w: 1200, h: 700 });
     useEffect(() => {
@@ -148,8 +128,8 @@ export default function Trainee360Environment({ embedded = false }) {
         const nextId = current?.connectedLocations?.find(id => id !== historyRef.current.at(-1));
         if (nextId) go(nextId);
     }, [scenes, sceneId, go]);
-    useEffect(() => { const key = e => { if (e.target?.matches?.('input,textarea,select,[contenteditable=true]')) return; const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) e.preventDefault(); if (k === 'arrowup' || k === 'w') goForward(); else if (k === 'arrowdown' || k === 's') goBack(); else if (k === 'arrowleft' || k === 'a') setYaw(v => wrapAngle(v - 18)); else if (k === 'arrowright' || k === 'd') setYaw(v => wrapAngle(v + 18)); }; window.addEventListener('keydown', key, { passive: false }); return () => window.removeEventListener('keydown', key) }, [goForward, goBack]);
-    const visible = (scene?.hotspots || []).map(h => ({ h, pos: projectHotspot(h, yaw, pitch, fov, size.w, size.h) })).filter(x => x.pos);
+    useEffect(() => { const key = e => { if (e.ctrlKey || e.metaKey || e.altKey || panel || !stageRef.current?.contains(document.activeElement) || e.target?.closest?.('input,textarea,select,button,a,[contenteditable=true]')) return; const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) e.preventDefault(); if (k === 'arrowup' || k === 'w') goForward(); else if (k === 'arrowdown' || k === 's') goBack(); else if (k === 'arrowleft' || k === 'a') setYaw(v => wrapAngle(v - 18)); else if (k === 'arrowright' || k === 'd') setYaw(v => wrapAngle(v + 18)); }; window.addEventListener('keydown', key, { passive: false }); return () => window.removeEventListener('keydown', key) }, [goForward, goBack, panel]);
+    const visible = [...(scene?.hotspots || []), ...puzzleHazards.filter(h => h.locationId === scene?.locationId).map(h => ({ ...h, type: "hazard" }))].map(h => ({ h, pos: projectHotspot(h, yaw, pitch, fov, size.w, size.h) })).filter(x => x.pos);
     const toggleFullscreen = () => { if (!document.fullscreenElement) stageRef.current?.requestFullscreen?.(); else document.exitFullscreen?.() };
     const mapScenes = scenes.filter(s => MAP_LOCATION_IDS.includes(s.locationId));
     const mapLines = [];
@@ -163,7 +143,8 @@ export default function Trainee360Environment({ embedded = false }) {
         <main className="tour360__stage" ref={stageRef}>
             <PanoramaCanvas src={scene.panorama} yaw={yaw} pitch={pitch} fov={fov} onImageError={() => setImageFailed(true)} onViewChange={(a, b, c) => { setYaw(a); setPitch(b); setFov(c) }} />
             <div className="tour360__shade" />{imageFailed && <div className="tour360__image-fallback"><strong>Panorama unavailable</strong><span>This checkpoint failed to load. Use ↑ to continue or the map to choose another warehouse area.</span><button onClick={goForward}>Move to next area</button></div>}<div className="tour360__dashboard-badge">LOGI WAREHOUSE <span>TRAINEE DASHBOARD</span></div><div className="tour360__location"><small>Current location</small><strong>{scene.name}</strong></div>
-            {visible.map(({ h, pos }) => <button key={h.id} className="tour360__hotspot tour360__hotspot--navigation" style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={() => go(h.targetLocationId)}><span className="tour360__hotspot-icon">➜</span>{h.label}</button>)}
+            {hud && <div className="absolute right-3 top-3 z-20 rounded-xl bg-[#073763]/95 p-3 text-sm font-bold text-white shadow-lg">{hud}</div>}
+            {visible.map(({ h, pos }) => <button key={h.id} className={`tour360__hotspot ${h.type === 'hazard' ? 'border-amber-300 bg-amber-700 text-white' : 'tour360__hotspot--navigation'}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={() => h.type === 'hazard' ? onHazardSelect?.(h) : go(h.targetLocationId)}><span className="tour360__hotspot-icon">{h.type === 'hazard' ? solvedHazards.includes(h.id) ? '✓' : '⌕' : '➜'}</span>{h.type === 'hazard' ? solvedHazards.includes(h.id) ? `${h.label} · resolved` : h.label : h.label}</button>)}
             <div className="tour360__controls"><button className="tour360__control" title="Return to entrance" onClick={() => go("entrance")}>⌂</button><button className="tour360__control" title="Zoom in" onClick={() => setFov(v => Math.max(45, v - 8))}>+</button><button className="tour360__control" title="Zoom out" onClick={() => setFov(v => Math.min(105, v + 8))}>−</button><button className="tour360__control" title="Fullscreen" onClick={toggleFullscreen}>⛶</button><button className="tour360__control" title="Help" onClick={() => setPanel({ title: "How to use the 360° tour", type: "training", content: "Game-style controls: press ↑ or W repeatedly to continue forward through the warehouse route, ↓ or S to return to the previous checkpoint, and ←/A or →/D to turn. You can also drag to look around, use the mouse wheel to zoom, click blue navigation arrows, or click a point on the warehouse map." })}>?</button></div>
             <div className="tour360__hint">Mouse drag = look • ↑/W = continue forward • ↓/S = move back • ←/A and →/D = turn • Scroll = zoom</div><div className="tour360__gamepad" aria-label="Keyboard navigation"><button title="Move forward (↑ / W)" onClick={goForward}>↑</button><button title="Turn left (← / A)" onClick={() => setYaw(v => wrapAngle(v - 18))}>←</button><button title="Move backward (↓ / S)" onClick={goBack}>↓</button><button title="Turn right (→ / D)" onClick={() => setYaw(v => wrapAngle(v + 18))}>→</button></div>
             <div className="tour360__map"><div className="tour360__map-title">WAREHOUSE MAP</div><div className="tour360__map-box">{mapLines}{mapScenes.map(s => <span key={s.locationId}><button aria-label={`Go to ${s.name}`} title={`Go to ${s.name}`} onClick={() => go(s.locationId)} className={`tour360__map-node ${s.locationId === scene.locationId ? "active" : ""}`} style={{ left: `${s.mapX}%`, top: `${s.mapY}%` }} /><button className={`tour360__map-label ${s.locationId === scene.locationId ? "active" : ""}`} style={{ left: `${s.mapX}%`, top: `${s.mapY}%` }} onClick={() => go(s.locationId)}>{s.locationId === scene.locationId ? `You are here · ${s.name}` : s.name}</button></span>)}</div></div>
@@ -1123,7 +1104,7 @@ export default function Trainee360Environment({ embedded = false }) {
 //         handleKeyDown
 //       );
 //     };
-//   }, [goForward, goBack]);
+//   }, [goForward, goBack, panel]);
 
 //   /* =======================================================
 //      HOTSPOTS CURRENTLY INSIDE CAMERA VIEW

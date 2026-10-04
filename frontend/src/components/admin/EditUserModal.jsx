@@ -1,5 +1,4 @@
 import {
-    useEffect,
     useState,
 } from "react";
 
@@ -39,8 +38,12 @@ function getInitialValues(
 }
 
 
-function EditUserModal({
-    open = false,
+function EditUserModal(props) {
+    if (!props.open || !props.user) return null;
+    return <EditUserForm key={props.user._id || props.user.id} {...props} />;
+}
+
+function EditUserForm({
     user = null,
     loading = false,
     onSave,
@@ -59,39 +62,6 @@ function EditUserModal({
         error,
         setError,
     ] = useState("");
-
-
-    /* =========================================================
-       RESET VALUES WHEN OPENING
-    ========================================================= */
-
-    useEffect(() => {
-        if (
-            open &&
-            user
-        ) {
-            setValues(
-                getInitialValues(
-                    user
-                )
-            );
-
-            setError(
-                ""
-            );
-        }
-    }, [
-        open,
-        user,
-    ]);
-
-
-    if (
-        !open ||
-        !user
-    ) {
-        return null;
-    }
 
 
     /* =========================================================

@@ -1,6 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -189,15 +189,8 @@ function TrainerAssignmentsPanel() {
         );
 
 
-    useEffect(() => {
-        Promise.all([
-            loadTrainingModules(),
-            loadUsers(),
-        ]);
-    }, [
-        loadTrainingModules,
-        loadUsers,
-    ]);
+    const loadInitial = useCallback(() => Promise.all([loadTrainingModules(), loadUsers()]), [loadTrainingModules, loadUsers]);
+    useInitialLoad(loadInitial);
 
 
     /* =========================================================

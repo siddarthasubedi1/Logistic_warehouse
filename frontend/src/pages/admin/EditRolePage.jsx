@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -92,6 +92,11 @@ const ROLE_CONFIG = {
 };
 
 function EditRolePage() {
+    const { roleName } = useParams();
+    return <RoleEditor key={roleName} />;
+}
+
+function RoleEditor() {
     const navigate = useNavigate();
     const { roleName } = useParams();
     const roleKey = String(roleName || "").toLowerCase();
@@ -107,11 +112,7 @@ function EditRolePage() {
     const [search, setSearch] = useState("");
     const [success, setSuccess] = useState("");
 
-    useEffect(() => {
-        setDescription(role?.description || "");
-        setGroups(role ? role.groups.map((group) => ({ ...group, rows: group.rows.map((row) => [...row]) })) : []);
-        setSuccess("");
-    }, [role]);
+
 
     if (!role) {
         return <DashboardLayout role="admin" title="Role Not Found"><div className="admin-page"><section className="designer-card empty-admin-card">Role not found.</section></div></DashboardLayout>;

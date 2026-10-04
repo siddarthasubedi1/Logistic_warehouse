@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import useInitialLoad from "../../hooks/useInitialLoad";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -108,9 +109,7 @@ function RolesPermissionsPage() {
         }
     }, []);
 
-    useEffect(() => {
-        loadUsers();
-    }, [loadUsers]);
+    useInitialLoad(loadUsers);
 
     const counts = useMemo(() => {
         const result = { admin: 0, trainer: 0, trainee: 0 };

@@ -1,6 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -38,11 +38,15 @@ function CreateUserForm() {
     ] = useState(false);
 
     const [
-        formData,
+        formValues,
         setFormData,
     ] = useState(
         initialForm()
     );
+
+    const formData = useMemo(() => formValues.role === "trainee"
+        ? { ...formValues, assignedTrainingSections: TRAINING_SECTIONS.map(item => item.id) }
+        : formValues, [formValues, TRAINING_SECTIONS]);
 
     const [
         pendingUsers,
@@ -181,11 +185,7 @@ function CreateUserForm() {
         );
 
 
-    useEffect(() => {
-        loadPendingUsers();
-    }, [
-        loadPendingUsers,
-    ]);
+    useInitialLoad(loadPendingUsers);
 
     const loadTrainingModules = useCallback(async () => {
         try {
@@ -203,21 +203,7 @@ function CreateUserForm() {
 
     // Load once for the page and refresh again whenever the create-user form is
     // opened. This keeps the selector in sync with modules Admin creates later.
-    useEffect(() => {
-        loadTrainingModules();
-    }, [loadTrainingModules]);
-
-    useEffect(() => {
-        if (showForm) loadTrainingModules();
-    }, [showForm, loadTrainingModules]);
-
-
-
-    useEffect(() => {
-        if (formData.role !== "trainee" || loadingModules) return;
-        const ids = TRAINING_SECTIONS.map((item) => item.id);
-        setFormData((current) => ({ ...current, assignedTrainingSections: ids }));
-    }, [formData.role, loadingModules, TRAINING_SECTIONS]);
+    useInitialLoad(loadTrainingModules);
 
     /* =====================================================
        FORM CHANGE
@@ -743,6 +729,7 @@ function CreateUserForm() {
                     <button
                         type="button"
                         onClick={() => {
+                            if (!showForm) loadTrainingModules();
                             setShowForm((current) => !current);
                             setError("");
                             setSuccess("");

@@ -1,6 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -101,11 +101,7 @@ function AuditLogsPage() {
         );
 
 
-    useEffect(() => {
-        loadLogs();
-    }, [
-        loadLogs,
-    ]);
+    useInitialLoad(loadLogs);
 
 
     const actions =

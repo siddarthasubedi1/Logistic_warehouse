@@ -1,3 +1,4 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
     useEffect,
@@ -141,8 +142,9 @@ function AdminHeader({
         );
 
 
+    useInitialLoad(loadRequests);
+
     useEffect(() => {
-        loadRequests();
 
         const interval =
             window.setInterval(

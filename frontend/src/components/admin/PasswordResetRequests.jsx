@@ -1,6 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useState,
 } from "react";
 
@@ -116,11 +116,7 @@ function PasswordResetRequests({
         );
 
 
-    useEffect(() => {
-        loadRequests();
-    }, [
-        loadRequests,
-    ]);
+    useInitialLoad(loadRequests);
 
 
     const formatDate =

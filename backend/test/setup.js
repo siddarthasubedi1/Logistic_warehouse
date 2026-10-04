@@ -9,7 +9,7 @@ let mongoServer;
 beforeAll(
     async () => {
         mongoServer =
-            await MongoMemoryServer.create();
+            await MongoMemoryServer.create({ instance: { args: ['--nounixsocket'] } });
 
         const mongoUri =
             mongoServer.getUri();
@@ -17,6 +17,12 @@ beforeAll(
         await mongoose.connect(
             mongoUri
         );
+        await require('../src/utils/safetySimulationIndexMigration').migrateSafetySimulationIndexes(mongoose.connection.collection('challenges'));
+        await require('../src/utils/safetySimulationIndexMigration').migratePuzzleStarterIndex(mongoose.connection.collection('puzzles'));
+        await require('../src/models/Puzzle').createIndexes();
+        await require('../src/models/Challenge').createIndexes();
+        await require('../src/models/ChallengeAttempt').init();
+        await require('../src/models/PersonalBest').init();
     }
 );
 

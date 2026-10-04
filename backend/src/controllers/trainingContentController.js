@@ -9,6 +9,7 @@ const AssessmentAttempt = require("../models/AssessmentAttempt");
 const ScenarioAttempt = require("../models/ScenarioAttempt");
 const SectionCompletion = require("../models/SectionCompletion");
 const { getOrCreateProgrammeProgress } = require("../services/trainingProgressService");
+const { passFieldFor, hasProgrammeAssessmentPass, reconcileProgrammeActivityProgress } = require("../services/programmeActivityProgress");
 const { ensureAssessmentQuestionBank, MIN_QUESTIONS_PER_LEVEL } = require("../services/assessmentQuestionBank");
 const {
     getModuleLevelAccess,
@@ -144,6 +145,9 @@ const syncLearningProgress = async (req, programmeId, assignment, progress = nul
         : [];
     p.completedSections = completions.map(x => x.section);
     p.learningCompleted = required.length > 0 && completions.length === required.length;
+    await reconcileProgrammeActivityProgress({
+        traineeId: req.user.id, programmeId, level: requiredAssessmentLevel, progress: p,
+    });
     p.lastAccessedAt = new Date();
     if (!p.learningCompleted && (p.retryRequiredLevel || (!p.scenarioCompleted && !p.basicPassed && !p.intermediatePassed && !p.highPassed))) {
         p.progress = required.length ? Math.round((completions.length / required.length) * 40) : 0;
@@ -237,10 +241,15 @@ exports.getTraineeProgress = async (req, res) => {
 };
 
 const createOrResumeScenarioAttempt = async (req, programmeId, assignment, progress) => {
+    const latestFailure = progress?.retryRequiredLevel ? await AssessmentAttempt.findOne({
+        trainee: req.user.id, programme: programmeId, level: progress.retryRequiredLevel,
+        status: "submitted", passed: false,
+    }).sort({ submittedAt: -1, createdAt: -1 }).select("submittedAt createdAt").lean() : null;
     let attempt = await ScenarioAttempt.findOne({
         trainee: req.user.id,
         programme: programmeId,
         status: "in-progress",
+        ...(latestFailure ? { startedAt: { $gt: latestFailure.submittedAt || latestFailure.createdAt } } : {}),
     }).sort({ attemptNumber: -1 });
 
     if (attempt) return attempt;
@@ -263,11 +272,10 @@ const createOrResumeScenarioAttempt = async (req, programmeId, assignment, progr
 
     if (!scenarioIds.length) return null;
 
-    const prior = await ScenarioAttempt.countDocuments({
+    const prior = await ScenarioAttempt.findOne({
         trainee: req.user.id,
         programme: programmeId,
-        status: "submitted",
-    });
+    }).sort({ attemptNumber: -1 }).select("attemptNumber").lean();
 
     return ScenarioAttempt.create({
         trainee: req.user.id,
@@ -279,7 +287,7 @@ const createOrResumeScenarioAttempt = async (req, programmeId, assignment, progr
         score: 0,
         totalScenarios: scenarioIds.length,
         percentage: 0,
-        attemptNumber: prior + 1,
+        attemptNumber: (prior?.attemptNumber || 0) + 1,
         submittedAt: null,
     });
 };
@@ -297,7 +305,7 @@ exports.getTraineeScenarios = async (req, res) => {
         });
 
         const p = await syncLearningProgress(req, req.params.programmeId, a);
-        if (!p.learningCompleted) {
+        if (!p.learningCompleted && !hasProgrammeAssessmentPass(p, gate.requiredAssessmentLevel)) {
             return res.status(403).json({
                 code: "LEARNING_INCOMPLETE",
                 message: "Complete all learning sections before starting the exercise.",
@@ -325,6 +333,7 @@ exports.getTraineeScenarios = async (req, res) => {
             scenarioAttemptNumber: attempt?.attemptNumber || null,
             attemptedScenarioIds,
             scenarioCompleted: !!p.scenarioCompleted,
+            progress: p,
             exerciseSubmitted: attempt?.status === "submitted",
             resultAvailable: !!attempt?._id && attempt?.status === "submitted",
         });
@@ -517,6 +526,15 @@ const eligible = async (req, programmeId, level) => {
     }
 
     const p = await syncLearningProgress(req, programmeId, a);
+
+    // Keep a previously passed assessment accessible even when a legacy
+    // learning cache is missing ticks or new sections have since been added.
+    if (hasProgrammeAssessmentPass(p, gate.requiredAssessmentLevel)) {
+        return {
+            a, p, programme: gate.programme, programmeLevel: gate.programmeLevel,
+            requiredAssessmentLevel: gate.requiredAssessmentLevel, levelAccess: gate.access
+        };
+    }
 
     // Every assessment attempt must come after THIS programme level's learning
     // and scenario. A failed attempt resets those two gates before a retry.
@@ -747,6 +765,7 @@ exports.submitAssessment = async (req, res) => {
             e.p.learningCompleted = false;
             e.p.completedScenarios = [];
             e.p.scenarioCompleted = false;
+            e.p[passFieldFor(level)] = false;
             e.p.retryRequiredLevel = level;
             e.p.currentStage = "learning";
             e.p.status = "in-progress";

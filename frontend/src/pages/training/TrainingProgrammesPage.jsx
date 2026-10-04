@@ -1,5 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
-    useEffect,
+    useCallback,
     useState,
 } from "react";
 
@@ -39,15 +40,18 @@ export default function TrainingProgrammesPage() {
     // LOAD ADMIN-CREATED MODULES
     // =====================================================
 
-    const loadModules = async () => {
-        const databaseModules = await loadModulesFromDatabase();
-        setModules(databaseModules);
-    };
-
-
-    useEffect(() => {
-        loadModules();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const loadModules = useCallback(async () => {
+        setLoading(true);
+        setError("");
+        try { setModules(await loadModulesFromDatabase()); }
+        catch (err) { setError(err.response?.data?.message || "Unable to load training modules."); }
+        finally { setLoading(false); }
     }, []);
+
+
+    useInitialLoad(loadModules);
 
 
     // =====================================================
@@ -67,7 +71,7 @@ export default function TrainingProgrammesPage() {
 
     const handleManage = (module) => {
         navigate(
-            `/training-programmes/module/${module.id}/programme`
+            `/training-programmes/module/${module.id || module._id}/programme`
         );
     };
 
@@ -78,7 +82,7 @@ export default function TrainingProgrammesPage() {
 
     const handleEdit = (module) => {
         navigate(
-            `/training-programmes/module/${module.id}/edit`
+            `/training-programmes/module/${module.id || module._id}/edit`
         );
     };
 
@@ -256,7 +260,9 @@ export default function TrainingProgrammesPage() {
               EMPTY STATE
           =========================================== */}
 
-                {modules.length === 0 && (
+                {loading && <div className="rounded-xl bg-white p-5" role="status">Loading modules…</div>}
+                {error && <div className="rounded-xl bg-white p-5 text-red-700" role="alert">{error}<button type="button" className="ml-3 underline" onClick={loadModules}>Retry</button></div>}
+                {!loading && !error && modules.length === 0 && (
                     <section
                         className="
                 rounded-xl
@@ -347,7 +353,7 @@ export default function TrainingProgrammesPage() {
                         {modules.map(
                             (module) => (
                                 <article
-                                    key={module.id}
+                                    key={module.id || module._id}
                                     className="
                       overflow-hidden
                       rounded-xl

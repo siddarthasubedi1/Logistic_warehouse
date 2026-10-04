@@ -37,7 +37,9 @@ function LogoutButton() {
                 );
 
                 await api.post(
-                    "/auth/logout"
+                    "/auth/logout",
+                    {},
+                    { timeout: 5000 }
                 );
 
             } catch (

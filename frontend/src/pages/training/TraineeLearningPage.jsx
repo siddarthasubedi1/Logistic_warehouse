@@ -1,6 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -30,6 +30,11 @@ import {
 
 
 function TraineeLearningPage() {
+    const { programmeId } = useParams();
+    return <ProgrammeLearning key={programmeId} />;
+}
+
+function ProgrammeLearning() {
     const navigate =
         useNavigate();
 
@@ -178,11 +183,7 @@ function TraineeLearningPage() {
         );
 
 
-    useEffect(() => {
-        loadLearning();
-    }, [
-        loadLearning,
-    ]);
+    useInitialLoad(loadLearning);
 
 
     const currentSection =

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import OrderingPuzzleExperience from "../../components/trainee/OrderingPuzzleExperience";
+import RoomNavigation from "../../components/trainee/RoomNavigation";
 import { PanoramaCanvas } from "./Trainee360Environment";
 import api, { API_BASE_URL } from "../../services/api";
 import { parseArrayResponse, sortLearningSections } from "../../utils/training";
@@ -31,6 +33,12 @@ const sortProgrammes = (items = []) => [...items].sort((a, b) => {
 
 export default function TraineeModuleEnvironment() {
     const { programmeId, moduleType } = useParams();
+    // Each route owns its progress, overlay and panorama state.
+    return <ModuleEnvironment key={programmeId || moduleType} />;
+}
+
+function ModuleEnvironment() {
+    const { programmeId, moduleType } = useParams();
     const navigate = useNavigate();
     const [programme, setProgramme] = useState(null);
     const [programmes, setProgrammes] = useState([]);
@@ -39,10 +47,23 @@ export default function TraineeModuleEnvironment() {
     const [environmentPanorama, setEnvironmentPanorama] = useState(null);
     const [selectedSection, setSelectedSection] = useState(0);
     const [overlay, setOverlay] = useState(null);
+    useEffect(() => {
+        const scroll = () => document.getElementById('puzzle-studio-scroll')?.scrollTo({ top: 0, behavior: 'instant' });
+        window.addEventListener('puzzle-studio-start', scroll);
+        return () => window.removeEventListener('puzzle-studio-start', scroll);
+    }, []);
+    useEffect(() => {
+        if (overlay !== 'challenge') return undefined;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previous; };
+    }, [overlay]);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [imageFailed, setImageFailed] = useState(false);
     const [yaw, setYaw] = useState(0), [pitch, setPitch] = useState(0), [fov, setFov] = useState(80);
     const [sceneIndex, setSceneIndex] = useState(0);
-    const [showMap, setShowMap] = useState(true);
+    const [showMap, setShowMap] = useState(false);
     const [progress, setProgress] = useState(null);
     const [scenarios, setScenarios] = useState([]);
     const [scenarioIndex, setScenarioIndex] = useState(0);
@@ -69,9 +90,9 @@ export default function TraineeModuleEnvironment() {
         if (programmeId) {
             Promise.all([
                 api.get(`/my-training/${programmeId}`),
-                api.get(`/my-training/${programmeId}/sections`).catch(() => ({ data: { sections: [] } })),
+                api.get(`/my-training/${programmeId}/sections`),
                 api.get(`/programmes/${programmeId}/environment`).catch(() => ({ data: { panorama: null } })),
-                api.get(`/training-content/trainee/${programmeId}/progress`).catch(() => ({ data: { progress: null } })),
+                api.get(`/training-content/trainee/${programmeId}/progress`),
             ]).then(([p, s, e, pr]) => {
                 if (!alive) return;
                 const canonicalProgrammeId = p.data?.canonicalProgrammeId || s.data?.canonicalProgrammeId;
@@ -103,7 +124,8 @@ export default function TraineeModuleEnvironment() {
                 }).catch(() => {
                     setProgrammes(loadedProgramme ? [loadedProgramme] : []);
                 });
-            }).catch(err => alive && setError(err?.response?.data?.message || "Unable to load this training programme."));
+            }).catch(err => alive && setError(err?.response?.data?.message || "Unable to load this training programme."))
+                .finally(() => { if (alive) setLoading(false); });
         } else if (moduleType) {
             api.get("/my-training").then(res => {
                 if (!alive) return;
@@ -113,12 +135,13 @@ export default function TraineeModuleEnvironment() {
                     .filter(p => p && typeof p === "object" && String(p.programmeType).toLowerCase() === String(moduleType).toLowerCase()));
                 setProgrammes(all);
                 setLevelAccess(res.data?.levelAccess?.[String(moduleType || "").trim().toLowerCase()] || {});
-            }).catch(err => alive && setError(err?.response?.data?.message || "Unable to load this module."));
+            }).catch(err => alive && setError(err?.response?.data?.message || "Unable to load this module."))
+                .finally(() => { if (alive) setLoading(false); });
         }
         return () => { alive = false; };
     }, [programmeId, moduleType, navigate]);
 
-    const type = String(programme?.programmeType || moduleType || "manual-handling").toLowerCase();
+    const type = String(programme?.programmeType || moduleType || "training").trim().toLowerCase();
     const metaMap = useMemo(() => ({
         "manual-handling": {
             title: "Manual Handling",
@@ -133,7 +156,7 @@ export default function TraineeModuleEnvironment() {
             scenes: [
                 { name: "Mezzanine & Height Area", panorama: "/panoramas/working-height.png", x: 25, y: 24, note: "Edges, platforms and elevated work" },
                 { name: "Warehouse Access Area", panorama: "/panoramas/logistics-indoor.png", x: 70, y: 30, note: "Access equipment and surrounding hazards" },
-                { name: "Loading Transition Area", panorama: "/panoramas/loading-transition.png", x: 53, y: 72, note: "Vehicle interfaces and elevated access" },
+                { name: "Loading Transition Area", panorama: "/panoramas/logistics-indoor-outdoor.png", x: 53, y: 72, note: "Vehicle interfaces and elevated access" },
             ],
         },
         "cyber-awareness": {
@@ -147,7 +170,7 @@ export default function TraineeModuleEnvironment() {
     }), []);
     const meta = useMemo(() => metaMap[type] || ({
         title: pretty(type),
-        scenes: [{ name: "Training Area", panorama: "/panoramas/training-selection.png", x: 50, y: 50, note: "Training environment" }],
+        scenes: [{ name: "Training Area", panorama: "/panoramas/logistics-indoor.png", x: 50, y: 50, note: "Training environment" }],
     }), [metaMap, type]);
     const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, "");
     const scenes = useMemo(() => {
@@ -157,7 +180,7 @@ export default function TraineeModuleEnvironment() {
         return [{ ...base[0], name: environmentPanorama.name || base[0]?.name || "Training Area", panorama: uploaded }, ...base.slice(1)];
     }, [meta, environmentPanorama, backendOrigin]);
     const scene = scenes[Math.min(sceneIndex, Math.max(0, scenes.length - 1))] || scenes[0];
-    const panorama = scene?.panorama || "/panoramas/training-selection.png";
+    const panorama = scene?.panorama || "/panoramas/logistics-indoor.png";
     const current = sections[selectedSection] || null;
     const completedSectionIds = useMemo(() => new Set((progress?.completedSections || []).map(id => String(id?._id || id))), [progress]);
     const currentCompleted = current?._id ? completedSectionIds.has(String(current._id)) : false;
@@ -170,16 +193,16 @@ export default function TraineeModuleEnvironment() {
         || ASSESSMENT_LEVEL_BY_PROGRAMME_LEVEL[programmeLevel]
         || "basic";
     const requiredPassField = { basic: "basicPassed", intermediate: "intermediatePassed", high: "highPassed" }[requiredAssessmentLevel] || "basicPassed";
-    const currentLevelAssessmentPassed = !!progress?.[requiredPassField];
-    const canOpenScenario = !!progress?.learningCompleted;
-    const canOpenAssessment = !!progress?.learningCompleted && !!progress?.scenarioCompleted;
+    const currentLevelAssessmentPassed = !!progress?.[requiredPassField] && !progress?.retryRequiredLevel;
+    const canOpenScenario = currentLevelAssessmentPassed || !!progress?.learningCompleted;
+    const canOpenAssessment = currentLevelAssessmentPassed || (!!progress?.learningCompleted && !!progress?.scenarioCompleted);
     const nextProgrammeLevel = programmeLevel === "beginner" ? "intermediate" : programmeLevel === "intermediate" ? "advanced" : null;
     const nextProgrammeLevelUnlocked = nextProgrammeLevel ? !!levelAccess?.[nextProgrammeLevel]?.unlocked : false;
 
     const byLevel = LEVELS.map(level => ({ level, items: sortProgrammes(programmes.filter(p => canonicalProgrammeLevel(p.level) === level)), gate: levelAccess[level] || { unlocked: false, completed: false, available: false, assignedCount: 0 } }));
     const levelPositions = { beginner: { left: "19%", top: "52%" }, intermediate: { left: "50%", top: "38%" }, advanced: { left: "80%", top: "55%" } };
     const activityPositions = {
-        learning: { left: "18%", top: "50%" }, scenario: { left: "42%", top: "35%" }, quiz: { left: "68%", top: "46%" }, progress: { left: "84%", top: "66%" }
+        learning: { left: "14%", top: "52%" }, scenario: { left: "34%", top: "34%" }, quiz: { left: "57%", top: "45%" }, challenge: { left: "76%", top: "36%" }, progress: { left: "86%", top: "68%" }, simulation: { left: "51%", top: "73%" }
     };
 
     const refreshProgress = async () => {
@@ -230,6 +253,18 @@ export default function TraineeModuleEnvironment() {
     const openActivity = async (key) => {
         setActivityMessage("");
         if (key === "learning") return setOverlay("learning");
+        if (key === "challenge") {
+            if (!currentLevelAssessmentPassed) {
+                setActivityMessage("Pass this level assessment before opening the optional puzzle challenge.");
+                return;
+            }
+            setActivityMessage("");
+            setYaw(0);
+            setPitch(0);
+            setFov(96);
+            setOverlay("challenge");
+            return;
+        }
         if (key === "progress") { await refreshProgress(); return setOverlay("progress"); }
         if (key === "scenario") {
             setActivityLoading(true);
@@ -242,6 +277,7 @@ export default function TraineeModuleEnvironment() {
                 setScenarioAttemptedIds(attempted);
                 setScenarioAttemptId(r.data?.scenarioAttemptId || null);
                 setScenarioAttemptNumber(r.data?.scenarioAttemptNumber || null);
+                if (r.data?.progress) setProgress(r.data.progress);
                 setScenarioResult(null);
                 setScenarioIndex(firstPending >= 0 ? firstPending : 0);
                 setScenarioResponse("");
@@ -332,6 +368,7 @@ export default function TraineeModuleEnvironment() {
                 `/training-content/trainee/${programmeId}/scenario-attempts/${scenarioAttemptId}/result`
             );
             setScenarioResult(r.data || null);
+            await refreshProgress();
         } catch (e) {
             setActivityMessage(e.response?.data?.message || "Unable to load scenario result.");
         } finally {
@@ -458,69 +495,80 @@ export default function TraineeModuleEnvironment() {
         setActivityMessage("Relearn each section, mark it complete, then repeat the scenario before starting a new quiz attempt.");
     };
 
-    const goScene = (index) => { setSceneIndex(index); setYaw(0); setPitch(0); setFov(80); };
+    const goScene = (index) => { setSceneIndex(index); setYaw(0); setPitch(0); setFov(80); setImageFailed(false); };
     const nextScene = () => goScene((sceneIndex + 1) % scenes.length);
     const prevScene = () => goScene((sceneIndex - 1 + scenes.length) % scenes.length);
 
     return <DashboardLayout role="trainee" title={programmeId ? `${meta.title} — ${pretty(programmeLevel)} Level Training` : `${meta.title} — Training Levels`} subtitle="Move around the environment and discover your training activities.">
-        <section className="training360-flow immersive-module">
-            <div className="training360-flow__viewer training360-flow__viewer--module immersive-module__viewer">
-                <PanoramaCanvas src={panorama} yaw={yaw} pitch={pitch} fov={fov} onViewChange={(y, p, f) => { setYaw(y); setPitch(p); setFov(f); }} />
-                <div className="training360-flow__shade" />
-                <div className="immersive-module__badge"><b>{meta.title}</b><span>{programmeId ? `${pretty(canonicalProgrammeLevel(programme?.level))} Level · ${scene?.name}` : `Choose your training level · ${scene?.name}`}</span></div>
-                {!overlay && <div className="immersive-scene-tools"><button onClick={() => setShowMap(v => !v)}>▣ Map</button><button onClick={prevScene}>← Previous area</button><button onClick={nextScene}>Next area →</button></div>}
-                {!overlay && showMap && <aside className="immersive-map"><div className="immersive-map__head"><b>{meta.title} Map</b><button onClick={() => setShowMap(false)}>×</button></div><div className="immersive-map__floor">{scenes.map((s, i) => <button key={s.name} className={i === sceneIndex ? "active" : ""} style={{ left: `${s.x}%`, top: `${s.y}%` }} onClick={() => goScene(i)}><i></i><span>{s.name}</span></button>)}</div><small>Blue marker = current area · Click any area to move</small></aside>}
-                {!overlay && <button className="immersive-area-hotspot immersive-area-hotspot--left" onClick={prevScene}>← <span>{scenes[(sceneIndex - 1 + scenes.length) % scenes.length]?.name}</span></button>}
-                {!overlay && <button className="immersive-area-hotspot immersive-area-hotspot--right" onClick={nextScene}><span>{scenes[(sceneIndex + 1) % scenes.length]?.name}</span> →</button>}
+        <section className={`training360-flow immersive-module ${overlay === "challenge" ? "training360-flow--puzzle-active" : ""}`}>
+            <div className={`training360-flow__viewer training360-flow__viewer--module immersive-module__viewer ${overlay === "challenge" ? "immersive-module__viewer--puzzle-fullscreen" : ""}`}>
+                <PanoramaCanvas src={panorama} yaw={yaw} pitch={pitch} fov={fov} onImageError={() => setImageFailed(true)} onViewChange={(y, p, f) => { setYaw(y); setPitch(p); setFov(f); }} />
+                <div className={`training360-flow__shade ${overlay === "challenge" ? "training360-flow__shade--puzzle" : ""}`} />
+                {overlay !== "challenge" && <div className="immersive-module__toolbar">
+                    <div className="immersive-module__badge"><b>{meta.title}</b><span>{programmeId ? `${pretty(canonicalProgrammeLevel(programme?.level))} Level · ${scene?.name}` : `Choose your training level · ${scene?.name}`}</span></div>
+                    {!overlay && <div className="immersive-scene-tools"><button type="button" aria-expanded={showMap} aria-controls="training-area-map" onClick={() => setShowMap(v => !v)}>▣ {showMap ? "Hide map" : "Map"}</button></div>}
+                </div>}
+                {!overlay && showMap && <aside className="immersive-map" id="training-area-map"><div className="immersive-map__head"><b>{meta.title} Map</b><button type="button" aria-label="Close map" onClick={() => setShowMap(false)}>×</button></div><div className="immersive-map__floor">{scenes.map((s, i) => <button key={s.name} aria-current={i === sceneIndex ? "location" : undefined} className={i === sceneIndex ? "active" : ""} style={{ left: `${s.x}%`, top: `${s.y}%` }} onClick={() => { goScene(i); setShowMap(false); }}><i></i><span>{s.name}</span></button>)}</div><small>Blue marker = current area · Click any area to move</small></aside>}
+                {!overlay && <RoomNavigation scenes={scenes} sceneIndex={sceneIndex} onPrevious={prevScene} onNext={nextScene} />}
 
-                {!overlay && !programmeId && byLevel.map(({ level, items, gate }) => {
-                    const primary = items[0] || null;
-                    const canOpenLevel = !!gate.unlocked && !!primary;
-                    const levelMessage = gate.completed
-                        ? "Completed"
-                        : canOpenLevel
-                            ? "Ready to open"
-                            : !primary
-                                ? `No active ${pretty(level)} training available`
-                                : "Pass the previous level to unlock";
-                    return <div className="immersive-level" style={levelPositions[level]} key={level}>
+                {!overlay && !loading && !error && <div className={`immersive-stations ${programmeId ? "immersive-stations--activities" : "immersive-stations--levels"}`}>
+
+                    {!programmeId && byLevel.map(({ level, items, gate }) => {
+                        const primary = items[0] || null;
+                        const canOpenLevel = !!gate.unlocked && !!primary;
+                        const levelMessage = gate.completed
+                            ? "Completed"
+                            : canOpenLevel
+                                ? "Ready to open"
+                                : !primary
+                                    ? `No active ${pretty(level)} training available`
+                                    : "Pass the previous level to unlock";
+                        return <div className="immersive-level" style={levelPositions[level]} key={level}>
+                            <button
+                                type="button"
+                                className={`immersive-hotspot ${canOpenLevel ? "" : "locked"}`}
+                                disabled={!canOpenLevel}
+                                onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}
+                                aria-label={canOpenLevel ? `Open ${pretty(level)} level` : `${pretty(level)} level locked`}
+                            >{gate.completed ? "✓" : canOpenLevel ? "→" : "🔒"}</button>
+                            <div className="immersive-card">
+                                <small>{pretty(level)} LEVEL</small><strong>{pretty(level)} Training</strong>
+                                <span>{levelMessage}</span>
+                                {primary && <button disabled={!canOpenLevel} onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}>
+                                    {pretty(level)} Level Training
+                                    <em>{primary.passMark}% overall pass mark</em>
+                                </button>}
+                            </div>
+                        </div>;
+                    })}
+
+                    {programmeId && <>
+                        <button className="immersive-activity" style={activityPositions.learning} onClick={() => openActivity("learning")}><i>▤</i><span><b>{pretty(programmeLevel)} Learning</b><small>{sections.length} sections</small></span></button>
                         <button
-                            type="button"
-                            className={`immersive-hotspot ${canOpenLevel ? "" : "locked"}`}
-                            disabled={!canOpenLevel}
-                            onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}
-                            aria-label={canOpenLevel ? `Open ${pretty(level)} level` : `${pretty(level)} level locked`}
-                        >{gate.completed ? "✓" : canOpenLevel ? "→" : "🔒"}</button>
-                        <div className="immersive-card">
-                            <small>{pretty(level)} LEVEL</small><strong>{pretty(level)} Training</strong>
-                            <span>{levelMessage}</span>
-                            {primary && <button disabled={!canOpenLevel} onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}>
-                                {pretty(level)} Level Training
-                                <em>{primary.passMark}% overall pass mark</em>
-                            </button>}
-                        </div>
-                    </div>;
-                })}
-
-                {!overlay && programmeId && <>
-                    <button className="immersive-activity" style={activityPositions.learning} onClick={() => openActivity("learning")}><i>▤</i><span><b>{pretty(programmeLevel)} Learning</b><small>{sections.length} sections</small></span></button>
-                    <button
-                        className={`immersive-activity ${canOpenScenario ? "" : "locked"}`}
-                        style={activityPositions.scenario}
-                        onClick={() => canOpenScenario && openActivity("scenario")}
-                        disabled={!canOpenScenario}
-                        title={!canOpenScenario ? `Complete all ${pretty(programmeLevel)} learning sections first` : ""}
-                    ><i>{canOpenScenario ? "◎" : "🔒"}</i><span><b>{pretty(programmeLevel)} Scenario</b><small>{canOpenScenario ? "Interactive practice" : "Complete learning first"}</small></span></button>
-                    <button
-                        className={`immersive-activity ${canOpenAssessment ? "" : "locked"}`}
-                        style={activityPositions.quiz}
-                        onClick={() => canOpenAssessment && openActivity("quiz")}
-                        disabled={!canOpenAssessment}
-                        title={!canOpenAssessment ? `Complete the ${pretty(programmeLevel)} scenario first` : ""}
-                    ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete scenario first"}</small></span></button>
-                    <button className="immersive-activity" style={activityPositions.progress} onClick={() => openActivity("progress")}><i>↗</i><span><b>{pretty(programmeLevel)} Progress</b><small>Scores & completion</small></span></button>
-                    <button className="immersive-back" onClick={() => navigate(`/my-training/module/${encodeURIComponent(type)}/environment`)}>← Levels</button>
-                </>}
+                            className={`immersive-activity ${canOpenScenario ? "" : "locked"}`}
+                            style={activityPositions.scenario}
+                            onClick={() => canOpenScenario && openActivity("scenario")}
+                            disabled={!canOpenScenario}
+                            title={!canOpenScenario ? `Complete all ${pretty(programmeLevel)} learning sections first` : ""}
+                        ><i>{canOpenScenario ? "◎" : "🔒"}</i><span><b>{pretty(programmeLevel)} Scenario</b><small>{canOpenScenario ? "Interactive practice" : "Complete learning first"}</small></span></button>
+                        <button
+                            className={`immersive-activity ${canOpenAssessment ? "" : "locked"}`}
+                            style={activityPositions.quiz}
+                            onClick={() => canOpenAssessment && openActivity("quiz")}
+                            disabled={!canOpenAssessment}
+                            title={!canOpenAssessment ? `Complete the ${pretty(programmeLevel)} scenario first` : ""}
+                        ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete scenario first"}</small></span></button>
+                        <button
+                            className={`immersive-activity ${!currentLevelAssessmentPassed ? "immersive-activity--locked" : ""}`}
+                            style={activityPositions.challenge}
+                            onClick={() => currentLevelAssessmentPassed && openActivity("challenge")}
+                            title={!currentLevelAssessmentPassed ? "Pass this level assessment to unlock the optional challenge" : "Open puzzle challenge"}
+                        ><i>★</i><span><b>{pretty(programmeLevel)} Puzzle</b><small>{currentLevelAssessmentPassed ? "360° drag challenge" : "Pass assessment first"}</small></span></button>
+                        <button className={`immersive-activity ${!currentLevelAssessmentPassed ? 'immersive-activity--locked' : ''}`} style={activityPositions.simulation} disabled={!currentLevelAssessmentPassed} onClick={() => navigate(`/my-training/${programmeId}/safety-simulations`)} title={!currentLevelAssessmentPassed ? 'Pass this level assessment to unlock safety missions' : 'Open safety missions'}><i>◎</i><span><b>Safety Missions</b><small>{currentLevelAssessmentPassed ? 'Explore and act' : 'Pass assessment first'}</small></span></button>
+                        <button className="immersive-activity" style={activityPositions.progress} onClick={() => openActivity("progress")}><i>↗</i><span><b>{pretty(programmeLevel)} Progress</b><small>Scores & completion</small></span></button>
+                    </>}
+                </div>}
+                {!overlay && <button type="button" className="immersive-back" onClick={() => navigate(programmeId && programme ? `/my-training/module/${encodeURIComponent(type)}/environment` : "/my-training")}>{programmeId ? "← Levels" : "← Modules"}</button>}
 
                 {overlay === "learning" && <div className="immersive-overlay immersive-overlay--learning">
                     <div className="immersive-overlay__head"><div><small>{pretty(canonicalProgrammeLevel(programme?.level))} LEVEL LEARNING</small><h3>{meta.title}</h3></div><button onClick={() => setOverlay(null)}>×</button></div>
@@ -795,17 +843,24 @@ export default function TraineeModuleEnvironment() {
                                         ? <button className="immersive-primary" onClick={relearnProgramme}>
                                             Relearn {pretty(programmeLevel)} Sections →
                                         </button>
-                                        : <button
-                                            className="immersive-primary"
-                                            onClick={continueToNextLevel}
-                                            disabled={activityLoading}
-                                        >
-                                            {activityLoading
-                                                ? "Opening next level…"
-                                                : nextProgrammeLevel && nextProgrammeLevelUnlocked
-                                                    ? `Continue to ${pretty(nextProgrammeLevel)} Level →`
-                                                    : "Return to Levels →"}
-                                        </button>}
+                                        : <>
+                                            <button
+                                                className="immersive-primary"
+                                                onClick={() => openActivity("challenge")}
+                                            >
+                                                Open {pretty(programmeLevel)} Puzzle in 360° →
+                                            </button>
+                                            <button
+                                                onClick={continueToNextLevel}
+                                                disabled={activityLoading}
+                                            >
+                                                {activityLoading
+                                                    ? "Opening next level…"
+                                                    : nextProgrammeLevel && nextProgrammeLevelUnlocked
+                                                        ? `Skip Challenge & Continue to ${pretty(nextProgrammeLevel)} →`
+                                                        : "Skip Challenge & Return to Levels →"}
+                                            </button>
+                                        </>}
                                 </div>
 
                                 <div className="immersive-review__list">
@@ -834,13 +889,40 @@ export default function TraineeModuleEnvironment() {
                     </div>
                 </div>}
 
+                {overlay === "challenge" && <div className="immersive-puzzle-fullscreen">
+                    <header className="immersive-puzzle-fullscreen__topbar">
+                        <div>
+                            <small>{pretty(programmeLevel)} LEVEL · 360° PUZZLE ENVIRONMENT</small>
+                            <h3>{meta.title} Puzzle Challenge</h3>
+                            <span>{scene?.name} · Drag the panorama in any empty area to look around.</span>
+                        </div>
+                        <div className="immersive-puzzle-fullscreen__actions">
+                            <button type="button" onClick={() => setFov(v => Math.max(60, v - 6))} aria-label="Zoom in" title="Zoom in">＋</button>
+                            <button type="button" onClick={() => setFov(v => Math.min(105, v + 6))} aria-label="Zoom out" title="Zoom out">−</button>
+                            <button type="button" className="immersive-puzzle-reset" onClick={() => { setYaw(0); setPitch(0); setFov(96); }} aria-label="Reset 360 view" title="Reset view">↺</button>
+                            <button type="button" className="immersive-puzzle-exit" onClick={() => setOverlay(null)}>Exit Puzzle ×</button>
+                        </div>
+                    </header>
+                    <div className="immersive-puzzle-fullscreen__stage" id="puzzle-studio-scroll">
+                        <OrderingPuzzleExperience
+                            programmeId={programmeId}
+                            embedded
+                            immersive360
+                            onBack={() => setOverlay(null)}
+                        />
+                    </div>
+                    <div className="immersive-puzzle-fullscreen__hint">360° learning space · drag the background to look around · use the view controls to zoom</div>
+                </div>}
+
                 {overlay === "progress" && <div className="immersive-overlay">
                     <div className="immersive-overlay__head"><div><small>MY PROGRESS</small><h3>{meta.title} · {pretty(programmeLevel)} Level</h3></div><button onClick={() => setOverlay(null)}>×</button></div>
                     <div className="immersive-overlay__single"><div className="immersive-progress-grid"><div><span>Overall</span><b>{progress?.progress || 0}%</b></div><div><span>{pretty(programmeLevel)} Learning</span><b>{progress?.learningCompleted ? "Complete" : "In progress"}</b></div><div><span>{pretty(programmeLevel)} Scenario</span><b>{progress?.scenarioCompleted ? "Complete" : progress?.learningCompleted ? "Ready / pending" : "Locked"}</b></div><div><span>{pretty(programmeLevel)} Assessment</span><b>{currentLevelAssessmentPassed ? "Passed" : progress?.scenarioCompleted ? "Ready / pending" : "Locked"}</b></div></div></div>
                 </div>}
 
-                {!overlay && <div className="training360-flow__controls"><button onClick={() => setFov(v => Math.max(45, v - 8))}>+</button><button onClick={() => setFov(v => Math.min(105, v + 8))}>−</button></div>}
+                {!overlay && <div className="training360-flow__controls"><button type="button" aria-label="Zoom in" onClick={() => setFov(v => Math.max(45, v - 8))}>+</button><button type="button" aria-label="Zoom out" onClick={() => setFov(v => Math.min(105, v + 8))}>−</button></div>}
                 {!overlay && <div className="immersive-hint">Drag left/right to explore • Scroll to zoom • Click a hotspot to open training</div>}
+                {loading && <div className="training360-flow__message training360-flow__message--overlay" role="status">Loading training…</div>}
+                {imageFailed && <div className="immersive-image-notice" role="status">This area image could not load. Choose another area below to continue.</div>}
                 {error && <div className="training360-flow__message training360-flow__message--overlay training360-flow__message--error">{error}</div>}
             </div>
         </section>

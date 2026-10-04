@@ -1,3 +1,4 @@
+import '../components/simulation/SafetySimulation.css';
 import {
     useEffect,
     useMemo,
@@ -525,6 +526,7 @@ function TrainerDashboard() {
             }
         >
 
+            <section className='sim-card sim-section-heading' style={{ marginBottom: 16 }}><div><h2>Safety Simulations</h2><p>Create and preview missions for your assigned programmes.</p></div><button type='button' className='sim-button' onClick={() => navigate('/safety-simulations')}>Manage missions</button></section>
             <TrainerHeader
                 user={
                     user

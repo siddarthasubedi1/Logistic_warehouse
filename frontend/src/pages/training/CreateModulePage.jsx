@@ -31,6 +31,11 @@ const initialForm = {
 
 
 export default function CreateModulePage() {
+    const { moduleId } = useParams();
+    return <ModuleEditor key={moduleId || "create"} />;
+}
+
+function ModuleEditor() {
     const navigate =
         useNavigate();
 
@@ -54,6 +59,9 @@ export default function CreateModulePage() {
         useState("");
 
 
+    const [loading, setLoading] = useState(Boolean(moduleId));
+    const [saving, setSaving] = useState(false);
+
     // =====================================================
     // EDIT EXISTING MODULE
     // =====================================================
@@ -67,7 +75,8 @@ export default function CreateModulePage() {
                 if (!module) { navigate("/training-programmes", { replace: true }); return; }
                 setFormData({ name: module.name || "", code: module.code || "", description: module.description || "", status: module.status || "active", image: module.image || "" });
             })
-            .catch(() => { if (!cancelled) setError("Unable to load module from database."); });
+            .catch(err => { if (!cancelled) setError(err.response?.data?.message || "Unable to load module from database."); })
+            .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
     }, [moduleId, navigate]);
 
@@ -178,6 +187,7 @@ export default function CreateModulePage() {
         event
     ) => {
         event.preventDefault();
+        if (saving || loading) return;
 
         setError("");
 
@@ -229,68 +239,21 @@ export default function CreateModulePage() {
         }
 
 
-        if (editing) {
-            await updateModule(
-                moduleId,
-                {
-                    name:
-                        formData.name.trim(),
-
-                    code:
-                        formData.code.trim(),
-
-                    description:
-                        formData.description.trim(),
-
-                    status:
-                        formData.status,
-
-                    image:
-                        formData.image,
-                }
-            );
-
-            navigate(
-                "/training-programmes"
-            );
-
-            return;
-        }
-
-
-        const createdModule =
-            await createModule({
-                name:
-                    formData.name,
-
-                code:
-                    formData.code,
-
-                description:
-                    formData.description,
-
-                status:
-                    formData.status,
-
-                image:
-                    formData.image,
-            });
-
-
-        /*
-          IMPORTANT:
-    
-          Module has now been created.
-    
-          NOW redirect to the Programme
-          Information page for THAT module.
-        */
-
-        navigate(
-            `/training-programmes/module/${createdModule.id}/programme`
-        );
+        setSaving(true);
+        try {
+            const payload = { ...formData, name: formData.name.trim(), code: formData.code.trim(), description: formData.description.trim() };
+            if (editing) {
+                await updateModule(moduleId, payload);
+                navigate("/training-programmes");
+            } else {
+                const createdModule = await createModule(payload);
+                const id = createdModule?.id || createdModule?._id;
+                navigate(id ? `/training-programmes/module/${id}/programme` : "/training-programmes");
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Unable to save module. Please try again.");
+        } finally { setSaving(false); }
     };
-
 
     return (
         <DashboardLayout
@@ -604,6 +567,7 @@ export default function CreateModulePage() {
 
                         <button
                             type="submit"
+                            disabled={saving || loading}
                             className="
                   rounded-lg
                   bg-[#0b4f87]
@@ -613,11 +577,11 @@ export default function CreateModulePage() {
                   font-semibold
                   text-white
                   hover:bg-[#073763]
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
                 "
                         >
-                            {editing
-                                ? "Update Module"
-                                : "Create Module"}
+                            {loading ? "Loading module…" : saving ? "Saving…" : editing ? "Update Module" : "Create Module"}
                         </button>
                     </div>
                 </form>

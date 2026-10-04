@@ -1,6 +1,7 @@
+import '../components/simulation/SafetySimulation.css';
+import useInitialLoad from "../hooks/useInitialLoad";
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -119,11 +120,7 @@ function AdminDashboard() {
         );
 
 
-    useEffect(() => {
-        loadDashboard();
-    }, [
-        loadDashboard,
-    ]);
+    useInitialLoad(loadDashboard);
 
 
     const statistics =
@@ -225,6 +222,7 @@ function AdminDashboard() {
             role="admin"
             showHeader={false}
         >
+            <section className='sim-card sim-section-heading' style={{ marginBottom: 16 }}><div><h2>Safety Simulations</h2><p>Create, preview and manage safety missions.</p></div><button type='button' className='sim-button' onClick={() => navigate('/safety-simulations')}>Manage missions</button></section>
             <AdminHeader
                 user={
                     sessionUser

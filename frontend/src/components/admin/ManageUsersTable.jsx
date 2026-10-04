@@ -1,3 +1,4 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 // import {
 //     useCallback,
 //     useEffect,
@@ -1532,6 +1533,14 @@ const TEMP_CREDENTIALS_KEY =
     "adminTemporaryCredentials";
 
 
+function readGeneratedCredentials() {
+    try {
+        const parsed = JSON.parse(sessionStorage.getItem(TEMP_CREDENTIALS_KEY) || "null");
+        if (!parsed?.username || !parsed?.password) return null;
+        return { source: "created", name: parsed.name || parsed.username, email: parsed.email || "", role: parsed.role || "", username: parsed.username, password: parsed.password };
+    } catch { return null; }
+}
+
 function ManageUsersTable({
     selectedUserId = null,
     passwordResetRequest = null,
@@ -1564,7 +1573,7 @@ function ManageUsersTable({
     const [
         success,
         setSuccess,
-    ] = useState("");
+    ] = useState(() => readGeneratedCredentials() ? "Account created successfully. Copy the temporary credentials now because the password will not be shown again." : "");
 
     const [
         processingId,
@@ -1623,7 +1632,7 @@ function ManageUsersTable({
     const [
         temporaryCredentials,
         setTemporaryCredentials,
-    ] = useState(null);
+    ] = useState(readGeneratedCredentials);
 
 
     const selectedRowRef =
@@ -1683,93 +1692,9 @@ function ManageUsersTable({
        Display inline credentials card
     ========================================================= */
 
-    useEffect(() => {
-        try {
-            const stored =
-                sessionStorage.getItem(
-                    TEMP_CREDENTIALS_KEY
-                );
-
-
-            if (
-                !stored
-            ) {
-                return;
-            }
-
-
-            const parsed =
-                JSON.parse(
-                    stored
-                );
-
-
-            if (
-                !parsed?.username ||
-                !parsed?.password
-            ) {
-                sessionStorage.removeItem(
-                    TEMP_CREDENTIALS_KEY
-                );
-
-                return;
-            }
-
-
-            setTemporaryCredentials({
-                source:
-                    "created",
-
-                name:
-                    parsed.name ||
-                    parsed.username,
-
-                email:
-                    parsed.email ||
-                    "",
-
-                role:
-                    parsed.role ||
-                    "",
-
-                username:
-                    parsed.username,
-
-                password:
-                    parsed.password,
-            });
-
-
-            setSuccess(
-                "Account created successfully. Copy or send the temporary credentials now because the password will not be shown again."
-            );
-
-
-            /*
-             * Remove storage copy immediately.
-             *
-             * Credentials remain only in React state
-             * until Admin presses Done or Close.
-             */
-
-            sessionStorage.removeItem(
-                TEMP_CREDENTIALS_KEY
-            );
-
-        } catch (
-        error
-        ) {
-            console.error(
-                "Unable to read generated credentials:",
-                error
-            );
-
-
-            sessionStorage.removeItem(
-                TEMP_CREDENTIALS_KEY
-            );
-        }
-    }, []);
+    // Consume the storage copy only after lazy state has committed. Reading is
+    // side-effect-free, so Strict Mode cannot consume the password twice.
+    useEffect(() => { sessionStorage.removeItem(TEMP_CREDENTIALS_KEY); }, []);
 
 
     /* =========================================================
@@ -1963,11 +1888,7 @@ function ManageUsersTable({
         );
 
 
-    useEffect(() => {
-        loadPage();
-    }, [
-        loadPage,
-    ]);
+    useInitialLoad(loadPage);
 
 
     /* =========================================================
@@ -2322,12 +2243,6 @@ function ManageUsersTable({
         async (
             user
         ) => {
-            const name =
-                getUserName(
-                    user
-                );
-
-
             const userId =
                 getUserId(
                     user
@@ -2486,12 +2401,6 @@ function ManageUsersTable({
         async (
             user
         ) => {
-            const name =
-                getUserName(
-                    user
-                );
-
-
             const userId =
                 getUserId(
                     user

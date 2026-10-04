@@ -129,6 +129,7 @@ function TrainingProgrammeSectionsPage() {
                 "
             >
                 <LearningSectionManager
+                    key={programmeId}
                     role={
                         role
                     }

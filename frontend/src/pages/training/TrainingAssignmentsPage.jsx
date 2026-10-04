@@ -1,5 +1,6 @@
+import useInitialLoad from "../../hooks/useInitialLoad";
 import {
-    useEffect,
+    useCallback,
     useMemo,
     useState,
 } from "react";
@@ -123,17 +124,17 @@ function TrainingAssignmentsPage() {
        CLEAR MESSAGES
     ===================================================== */
 
-    const clearFeedback = () => {
+    const clearFeedback = useCallback(() => {
         setErrorMessage("");
         setSuccessMessage("");
-    };
+    }, []);
 
 
     /* =====================================================
        LOAD PROGRAMMES + MODULES
     ===================================================== */
 
-    const loadProgrammes = async () => {
+    const loadProgrammes = useCallback(async () => {
         /*
          * Modules are created through your existing
          * Training Module system.
@@ -171,14 +172,14 @@ function TrainingAssignmentsPage() {
         setProgrammes(
             activeProgrammes
         );
-    };
+    }, []);
 
 
     /* =====================================================
        LOAD TRAINEES
     ===================================================== */
 
-    const loadTrainees = async () => {
+    const loadTrainees = useCallback(async () => {
         const response =
             await api.get(
                 "/admin/users"
@@ -195,14 +196,14 @@ function TrainingAssignmentsPage() {
                 userList
             )
         );
-    };
+    }, []);
 
 
     /* =====================================================
        LOAD ASSIGNMENTS
     ===================================================== */
 
-    const loadAssignments = async () => {
+    const loadAssignments = useCallback(async () => {
         try {
             const response =
                 await api.get(
@@ -226,14 +227,14 @@ function TrainingAssignmentsPage() {
 
             setAssignments([]);
         }
-    };
+    }, []);
 
 
     /* =====================================================
        LOAD PAGE
     ===================================================== */
 
-    const loadPageData = async () => {
+    const loadPageData = useCallback(async () => {
         try {
             setLoading(true);
 
@@ -259,12 +260,10 @@ function TrainingAssignmentsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [clearFeedback, loadProgrammes, loadTrainees, loadAssignments]);
 
 
-    useEffect(() => {
-        loadPageData();
-    }, []);
+    useInitialLoad(loadPageData);
 
 
     /* =====================================================

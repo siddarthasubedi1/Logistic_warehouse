@@ -4,6 +4,10 @@ import {
   Routes,
 } from "react-router-dom";
 
+import SafetySimulationManagementPage from './pages/simulation/SafetySimulationManagementPage';
+import SafetySimulationResultsPage from './pages/simulation/SafetySimulationResultsPage';
+import TraineeSafetySimulationPage from './pages/simulation/TraineeSafetySimulationPage';
+
 import CreateModulePage from "./pages/training/CreateModulePage";
 import ModuleProgrammePage from "./pages/training/ModuleProgrammePage";
 
@@ -25,6 +29,7 @@ import AuditLogsPage from "./pages/admin/AuditLogsPage";
 import PanoramaManagementPage from "./pages/admin/PanoramaManagementPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
+import PuzzleManagementPage from "./pages/training/PuzzleManagementPage";
 import TrainingContentManagementPage from "./pages/training/TrainingContentManagementPage";
 import TrainingProgrammeSectionsPage from "./pages/training/TrainingProgrammeSectionsPage";
 import TrainingAssignmentsPage from "./pages/training/TrainingAssignmentsPage";
@@ -35,6 +40,7 @@ import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 import TraineeUtilityPage from "./pages/trainee/TraineeUtilityPage";
 import TraineeModuleEnvironment from "./pages/trainee/TraineeModuleEnvironment";
 import TraineeExercisePage from "./pages/trainee/TraineeExercisePage";
+import TraineeChallengePage from "./pages/trainee/TraineeChallengePage";
 
 import {
   clearAuthSession,
@@ -111,6 +117,10 @@ function HomeRedirect() {
 function App() {
   return (
     <Routes>
+      <Route path='/safety-simulations' element={<ProtectedRoute allowedRoles={['admin', 'trainer']}><SafetySimulationManagementPage /></ProtectedRoute>} />
+      <Route path='/safety-simulations/results' element={<ProtectedRoute allowedRoles={['admin', 'trainer']}><SafetySimulationResultsPage /></ProtectedRoute>} />
+      <Route path='/my-training/:programmeId/safety-simulations' element={<ProtectedRoute allowedRoles={['trainee']}><TraineeSafetySimulationPage /></ProtectedRoute>} />
+      <Route path='/my-training/:programmeId/safety-simulations/:gameId' element={<ProtectedRoute allowedRoles={['trainee']}><TraineeSafetySimulationPage /></ProtectedRoute>} />
 
       {/* ===================================================
           PUBLIC
@@ -368,6 +378,16 @@ function App() {
 
 
 
+
+      <Route
+        path="/puzzle-management"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "trainer"]}>
+            <PuzzleManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* ===================================================
           ATTEMPT RECORDS - ADMIN / ASSIGNED TRAINER
       ==================================================== */}
@@ -519,6 +539,16 @@ function App() {
         }
       />
 
+
+
+      <Route
+        path="/my-training/:programmeId/challenges"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeChallengePage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ===================================================
           TRAINEE LEARNING

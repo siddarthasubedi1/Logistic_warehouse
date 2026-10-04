@@ -5,6 +5,7 @@ const TrainingProgramme = require("../models/TrainingProgramme");
 const LearningSection = require("../models/LearningSection");
 const { getModuleLevelAccess, normalize, normalizeProgrammeLevel, sortProgrammeCandidates, syncUnlockedProgressionAssignments } = require("../services/traineeLevelProgressService");
 const { ensureStarterTrainingContent } = require("../services/starterTrainingContent");
+const { ensureSprint3StarterForProgramme } = require("../services/starterSprint3Content");
 
 
 // ======================================================
@@ -98,6 +99,7 @@ const ensureCanonicalLevelContentInternal = async (programme) => {
     // multi-row level, the synthesized topic sections already exist, so this
     // only fills a missing Scenario and Assessment without replacing content.
     await ensureStarterTrainingContent(primary, actor);
+    await ensureSprint3StarterForProgramme(primary, actor);
 
     sections = await LearningSection.find({ programme: primary._id, status: "active" })
         .select("_id title content imageUrl imageAltText order status")

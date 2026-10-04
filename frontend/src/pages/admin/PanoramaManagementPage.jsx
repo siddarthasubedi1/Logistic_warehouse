@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import useInitialLoad from "../../hooks/useInitialLoad";
+import { useCallback, useMemo, useState } from "react";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import api, { API_BASE_URL } from "../../services/api";
 
@@ -9,8 +10,8 @@ const blankHotspot = () => ({ label: "", targetPanorama: "", yaw: 0, pitch: -5 }
 
 export default function PanoramaManagementPage() {
     const [items, setItems] = useState([]), [programmes, setProgrammes] = useState([]), [form, setForm] = useState(blank), [hotspots, setHotspots] = useState([]), [file, setFile] = useState(null), [editing, setEditing] = useState(null), [loading, setLoading] = useState(true), [saving, setSaving] = useState(false), [error, setError] = useState(""), [success, setSuccess] = useState("");
-    const load = async () => { setLoading(true); setError(""); try { const [a, b] = await Promise.all([api.get("/panoramas"), api.get("/programmes")]); setItems(a.data?.panoramas || []); setProgrammes(b.data?.programmes || []) } catch (e) { setError(e.response?.data?.message || "Unable to load panorama management data.") } finally { setLoading(false) } };
-    useEffect(() => { load() }, []);
+    const load = useCallback(async () => { setLoading(true); setError(""); try { const [a, b] = await Promise.all([api.get("/panoramas"), api.get("/programmes")]); setItems(a.data?.panoramas || []); setProgrammes(b.data?.programmes || []) } catch (e) { setError(e.response?.data?.message || "Unable to load panorama management data.") } finally { setLoading(false) } }, []);
+    useInitialLoad(load);
     const reset = () => { setEditing(null); setForm(blank); setHotspots([]); setFile(null); setError(""); setSuccess("") };
     const edit = (p) => { setEditing(p); setForm({ type: p.type || "warehouse_tour", programme: p.programme?._id || p.programme || "", area: p.area || "", name: p.name || "", description: p.description || "", status: p.status || "pending" }); setHotspots((p.hotspots || []).map(h => ({ ...h, targetPanorama: h.targetPanorama?._id || h.targetPanorama || "" }))); setFile(null); setError(""); setSuccess("") };
     const validateFile = async (f) => { if (!f) return true; return new Promise(resolve => { const img = new Image(); const object = URL.createObjectURL(f); img.onload = () => { const ok = Math.abs(img.width / img.height - 2) <= 0.01; URL.revokeObjectURL(object); if (!ok) setError(`Panorama must be 2:1. Selected image is ${img.width}×${img.height}.`); resolve(ok) }; img.onerror = () => { URL.revokeObjectURL(object); setError("Unable to read the selected image."); resolve(false) }; img.src = object }) };

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useState } from "react";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import api from "../../services/api";
@@ -104,7 +105,7 @@ export default function AttemptRecordsPage() {
 
     return (
         <DashboardLayout role={role} title="Attempt Records" subtitle={subtitle}>
-            <div className="app-page space-y-4">
+            <div className='app-page space-y-4'><Link to='/safety-simulations/results' className='sim-button sim-button--light'>View safety mission records</Link>
                 {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-700">{error}</div>}
 
                 <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">

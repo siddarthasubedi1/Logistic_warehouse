@@ -6,4 +6,8 @@ module.exports = {
     ],
 
     testTimeout: 30000,
+    moduleNameMapper: {
+        '^.*shared/simulationEngine\\.mjs$': '<rootDir>/test/nativeSimulationEngine.cjs',
+        '^.*shared/simulationTemplates\\.mjs$': '<rootDir>/test/nativeSimulationTemplates.cjs',
+    },
 };

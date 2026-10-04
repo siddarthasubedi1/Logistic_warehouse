@@ -2,7 +2,7 @@ import {
     useNavigate,
 } from "react-router-dom";
 import {
-    clearAuthSession,
+    getSessionUser,
 } from "../utils/session";
 
 
@@ -18,29 +18,7 @@ function Unauthorized() {
     // CURRENT USER
     // ======================================================
 
-    const storedUser =
-        sessionStorage.getItem(
-            "user"
-        );
-
-
-    let user =
-        null;
-
-
-    try {
-        user =
-            storedUser
-                ? JSON.parse(
-                    storedUser
-                )
-                : null;
-
-    } catch {
-        user =
-            null;
-    }
-
+    const user = getSessionUser();
 
     const role =
         user?.role ||

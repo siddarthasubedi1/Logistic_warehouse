@@ -322,6 +322,17 @@ function Sidebar({
         },
 
         {
+            to: '/safety-simulations',
+            label: 'Safety Simulations',
+            icon: 'training',
+        },
+        {
+            to: "/puzzle-management",
+            label: "Puzzle Challenges",
+            icon: "quiz",
+        },
+
+        {
             to: "/admin/panoramas",
             label: "Panorama & Scenes",
             icon: "training",
@@ -347,6 +358,17 @@ function Sidebar({
             to: "/attempt-records",
             label: "Attempt Records",
             icon: "progress",
+        },
+
+        {
+            to: '/safety-simulations',
+            label: 'Safety Simulations',
+            icon: 'training',
+        },
+        {
+            to: "/puzzle-management",
+            label: "Puzzle Challenges",
+            icon: "quiz",
         },
 
         {
@@ -477,17 +499,13 @@ function Sidebar({
                 </div>
 
 
-                <div className="sidebar__divider" />
-
-
-                <LogoutButton />
-
             </nav>
 
 
             {/* ROLE INFORMATION */}
 
             <div className="sidebar__footer">
+                <LogoutButton />
                 {normalizedRole === "trainee" ? (
                     <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.055]">
                         <img

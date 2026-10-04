@@ -8,6 +8,11 @@ const scenarioBlank = { title: "", prompt: "", type: "multiple-choice", options:
 const questionBlank = { level: "basic", question: "", options: "", correctAnswer: "", points: 1, feedback: "", order: 1, status: "pending" };
 const split = v => String(v || "").split("|").map(x => x.trim()).filter(Boolean);
 export default function TrainingContentManagementPage() {
+    const { programmeId } = useParams();
+    return <ProgrammeContent key={programmeId} />;
+}
+
+function ProgrammeContent() {
     const { programmeId } = useParams(), role = String(getSessionUser()?.role || "trainer").toLowerCase();
     const [scenarios, setScenarios] = useState([]), [questions, setQuestions] = useState([]), [questionBank, setQuestionBank] = useState({ requiredLevel: "basic", activeCount: 0, minimumRequired: 30, ready: false }), [s, setS] = useState(scenarioBlank), [q, setQ] = useState(questionBlank), [editS, setEditS] = useState(""), [editQ, setEditQ] = useState(""), [loading, setLoading] = useState(true), [saving, setSaving] = useState(false), [error, setError] = useState(""), [success, setSuccess] = useState("");
     const load = useCallback(async () => { setLoading(true); setError(""); try { const [a, b] = await Promise.all([api.get(`/programmes/${programmeId}/manage/scenarios`), api.get(`/programmes/${programmeId}/questions`)]); setScenarios(a.data?.scenarios || []); setQuestions(b.data?.questions || []); setQuestionBank(b.data?.questionBank || { requiredLevel: "basic", activeCount: 0, minimumRequired: 30, ready: false }) } catch (e) { setError(e.response?.data?.message || "Unable to load programme content.") } finally { setLoading(false) } }, [programmeId]);

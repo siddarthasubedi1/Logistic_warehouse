@@ -19,6 +19,7 @@ const {
 );
 
 const { saveTrainingImage, deleteTrainingImage } = require("../utils/trainingImageStorage");
+const { ensureSprint3StarterForProgramme } = require("../services/starterSprint3Content");
 
 
 // ======================================================
@@ -655,6 +656,10 @@ const createTrainingProgramme = async (
                     req.user.id,
             });
 
+
+        if (programme.status === "active") {
+            await ensureSprint3StarterForProgramme(programme, req.user.id);
+        }
 
         const populatedProgramme =
             await populateProgramme(
