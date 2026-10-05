@@ -513,60 +513,60 @@ function ModuleEnvironment() {
 
                 {!overlay && !loading && !error && <div className={`immersive-stations ${programmeId ? "immersive-stations--activities" : "immersive-stations--levels"}`}>
 
-                    {!programmeId && byLevel.map(({ level, items, gate }) => {
-                        const primary = items[0] || null;
-                        const canOpenLevel = !!gate.unlocked && !!primary;
-                        const levelMessage = gate.completed
-                            ? "Completed"
-                            : canOpenLevel
-                                ? "Ready to open"
-                                : !primary
-                                    ? `No active ${pretty(level)} training available`
-                                    : "Pass the previous level to unlock";
-                        return <div className="immersive-level" style={levelPositions[level]} key={level}>
-                            <button
-                                type="button"
-                                className={`immersive-hotspot ${canOpenLevel ? "" : "locked"}`}
-                                disabled={!canOpenLevel}
-                                onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}
-                                aria-label={canOpenLevel ? `Open ${pretty(level)} level` : `${pretty(level)} level locked`}
-                            >{gate.completed ? "✓" : canOpenLevel ? "→" : "🔒"}</button>
-                            <div className="immersive-card">
-                                <small>{pretty(level)} LEVEL</small><strong>{pretty(level)} Training</strong>
-                                <span>{levelMessage}</span>
-                                {primary && <button disabled={!canOpenLevel} onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}>
-                                    {pretty(level)} Level Training
-                                    <em>{primary.passMark}% overall pass mark</em>
-                                </button>}
-                            </div>
-                        </div>;
-                    })}
+                {!programmeId && byLevel.map(({ level, items, gate }) => {
+                    const primary = items[0] || null;
+                    const canOpenLevel = !!gate.unlocked && !!primary;
+                    const levelMessage = gate.completed
+                        ? "Completed"
+                        : canOpenLevel
+                            ? "Ready to open"
+                            : !primary
+                                ? `No active ${pretty(level)} training available`
+                                : "Pass the previous level to unlock";
+                    return <div className="immersive-level" style={levelPositions[level]} key={level}>
+                        <button
+                            type="button"
+                            className={`immersive-hotspot ${canOpenLevel ? "" : "locked"}`}
+                            disabled={!canOpenLevel}
+                            onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}
+                            aria-label={canOpenLevel ? `Open ${pretty(level)} level` : `${pretty(level)} level locked`}
+                        >{gate.completed ? "✓" : canOpenLevel ? "→" : "🔒"}</button>
+                        <div className="immersive-card">
+                            <small>{pretty(level)} LEVEL</small><strong>{pretty(level)} Training</strong>
+                            <span>{levelMessage}</span>
+                            {primary && <button disabled={!canOpenLevel} onClick={() => canOpenLevel && navigate(`/my-training/${primary._id}/environment`)}>
+                                {pretty(level)} Level Training
+                                <em>{primary.passMark}% overall pass mark</em>
+                            </button>}
+                        </div>
+                    </div>;
+                })}
 
-                    {programmeId && <>
-                        <button className="immersive-activity" style={activityPositions.learning} onClick={() => openActivity("learning")}><i>▤</i><span><b>{pretty(programmeLevel)} Learning</b><small>{sections.length} sections</small></span></button>
-                        <button
-                            className={`immersive-activity ${canOpenScenario ? "" : "locked"}`}
-                            style={activityPositions.scenario}
-                            onClick={() => canOpenScenario && openActivity("scenario")}
-                            disabled={!canOpenScenario}
-                            title={!canOpenScenario ? `Complete all ${pretty(programmeLevel)} learning sections first` : ""}
-                        ><i>{canOpenScenario ? "◎" : "🔒"}</i><span><b>{pretty(programmeLevel)} Scenario</b><small>{canOpenScenario ? "Interactive practice" : "Complete learning first"}</small></span></button>
-                        <button
-                            className={`immersive-activity ${canOpenAssessment ? "" : "locked"}`}
-                            style={activityPositions.quiz}
-                            onClick={() => canOpenAssessment && openActivity("quiz")}
-                            disabled={!canOpenAssessment}
-                            title={!canOpenAssessment ? `Complete the ${pretty(programmeLevel)} scenario first` : ""}
-                        ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete scenario first"}</small></span></button>
-                        <button
-                            className={`immersive-activity ${!currentLevelAssessmentPassed ? "immersive-activity--locked" : ""}`}
-                            style={activityPositions.challenge}
-                            onClick={() => currentLevelAssessmentPassed && openActivity("challenge")}
-                            title={!currentLevelAssessmentPassed ? "Pass this level assessment to unlock the optional challenge" : "Open puzzle challenge"}
-                        ><i>★</i><span><b>{pretty(programmeLevel)} Puzzle</b><small>{currentLevelAssessmentPassed ? "360° drag challenge" : "Pass assessment first"}</small></span></button>
-                        <button className={`immersive-activity ${!currentLevelAssessmentPassed ? 'immersive-activity--locked' : ''}`} style={activityPositions.simulation} disabled={!currentLevelAssessmentPassed} onClick={() => navigate(`/my-training/${programmeId}/safety-simulations`)} title={!currentLevelAssessmentPassed ? 'Pass this level assessment to unlock safety missions' : 'Open safety missions'}><i>◎</i><span><b>Safety Missions</b><small>{currentLevelAssessmentPassed ? 'Explore and act' : 'Pass assessment first'}</small></span></button>
-                        <button className="immersive-activity" style={activityPositions.progress} onClick={() => openActivity("progress")}><i>↗</i><span><b>{pretty(programmeLevel)} Progress</b><small>Scores & completion</small></span></button>
-                    </>}
+                {programmeId && <>
+                    <button className="immersive-activity" style={activityPositions.learning} onClick={() => openActivity("learning")}><i>▤</i><span><b>{pretty(programmeLevel)} Learning</b><small>{sections.length} sections</small></span></button>
+                    <button
+                        className={`immersive-activity ${canOpenScenario ? "" : "locked"}`}
+                        style={activityPositions.scenario}
+                        onClick={() => canOpenScenario && openActivity("scenario")}
+                        disabled={!canOpenScenario}
+                        title={!canOpenScenario ? `Complete all ${pretty(programmeLevel)} learning sections first` : ""}
+                    ><i>{canOpenScenario ? "◎" : "🔒"}</i><span><b>{pretty(programmeLevel)} Scenario</b><small>{canOpenScenario ? "Interactive practice" : "Complete learning first"}</small></span></button>
+                    <button
+                        className={`immersive-activity ${canOpenAssessment ? "" : "locked"}`}
+                        style={activityPositions.quiz}
+                        onClick={() => canOpenAssessment && openActivity("quiz")}
+                        disabled={!canOpenAssessment}
+                        title={!canOpenAssessment ? `Complete the ${pretty(programmeLevel)} scenario first` : ""}
+                    ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete scenario first"}</small></span></button>
+                    <button
+                        className={`immersive-activity ${!currentLevelAssessmentPassed ? "immersive-activity--locked" : ""}`}
+                        style={activityPositions.challenge}
+                        onClick={() => currentLevelAssessmentPassed && openActivity("challenge")}
+                        title={!currentLevelAssessmentPassed ? "Pass this level assessment to unlock the optional challenge" : "Open puzzle challenge"}
+                    ><i>★</i><span><b>{pretty(programmeLevel)} Puzzle</b><small>{currentLevelAssessmentPassed ? "360° drag challenge" : "Pass assessment first"}</small></span></button>
+                    <button className={`immersive-activity ${!currentLevelAssessmentPassed ? 'immersive-activity--locked' : ''}`} style={activityPositions.simulation} disabled={!currentLevelAssessmentPassed} onClick={() => navigate(`/my-training/${programmeId}/safety-simulations`)} title={!currentLevelAssessmentPassed ? 'Pass this level assessment to unlock safety missions' : 'Open safety missions'}><i>◎</i><span><b>Safety Missions</b><small>{currentLevelAssessmentPassed ? 'Explore and act' : 'Pass assessment first'}</small></span></button>
+                    <button className="immersive-activity" style={activityPositions.progress} onClick={() => openActivity("progress")}><i>↗</i><span><b>{pretty(programmeLevel)} Progress</b><small>Scores & completion</small></span></button>
+                </>}
                 </div>}
                 {!overlay && <button type="button" className="immersive-back" onClick={() => navigate(programmeId && programme ? `/my-training/module/${encodeURIComponent(type)}/environment` : "/my-training")}>{programmeId ? "← Levels" : "← Modules"}</button>}
 

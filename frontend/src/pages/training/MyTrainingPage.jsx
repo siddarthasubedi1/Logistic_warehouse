@@ -92,49 +92,49 @@ export default function MyTrainingPage() {
                     </div>
 
                     <div className={`training360-flow__modules ${groupedModules.length > 3 ? "training360-flow__modules--many" : ""}`} >
-                        {groupedModules.map((group, index) => {
-                            const meta = moduleMeta[group.key] || {
-                                title: group.programmes[0]?.programme?.moduleName || group.programmes[0]?.programme?.programmeType || "Training Module",
-                                description: `${group.programmes.length} assigned programme${group.programmes.length === 1 ? "" : "s"}`,
-                                thumb: "/panoramas/training-reference-manual.jpg",
-                                pin: "◆",
-                                className: "",
-                            };
-                            // Keep every module in a predictable area of the 360 scene.
-                            // Do not use array order here because assignments can arrive from the API
-                            // in a different order. This keeps Manual Handling clearly separated from
-                            // Cyber Awareness on every load.
-                            const modulePositions = {
-                                "cyber-awareness": { left: "22%", top: "43%" },
-                                "manual-handling": { left: "78%", top: "43%" },
-                                "working-at-height": { left: "50%", top: "72%" },
-                            };
-                            const position = modulePositions[group.key] || {
-                                left: `${22 + ((index % 3) * 28)}%`,
-                                top: index < 3 ? "43%" : "72%",
-                            };
-                            return (
-                                <button
-                                    type="button"
-                                    key={group.key}
-                                    className={`training360-flow__module ${meta.className}`}
-                                    style={position}
-                                    onClick={() => openModule(group.key)}
-                                    disabled={loading}
-                                    aria-label={`Open ${meta.title} 360 degree module`}
-                                >
-                                    <span className="training360-flow__module-pin training360-flow__module-pin--blue">{meta.pin}</span>
-                                    <span className="training360-flow__module-card">
-                                        <img className="training360-flow__module-thumb" src={meta.thumb} alt={`${meta.title} training area`} />
-                                        <span className="training360-flow__module-copy">
-                                            <strong>{meta.title}</strong>
-                                            <small>{meta.description}</small>
-                                        </span>
-                                        <span className="training360-flow__module-arrow">›</span>
+                    {groupedModules.map((group, index) => {
+                        const meta = moduleMeta[group.key] || {
+                            title: group.programmes[0]?.programme?.moduleName || group.programmes[0]?.programme?.programmeType || "Training Module",
+                            description: `${group.programmes.length} assigned programme${group.programmes.length === 1 ? "" : "s"}`,
+                            thumb: "/panoramas/training-reference-manual.jpg",
+                            pin: "◆",
+                            className: "",
+                        };
+                        // Keep every module in a predictable area of the 360 scene.
+                        // Do not use array order here because assignments can arrive from the API
+                        // in a different order. This keeps Manual Handling clearly separated from
+                        // Cyber Awareness on every load.
+                        const modulePositions = {
+                            "cyber-awareness": { left: "22%", top: "43%" },
+                            "manual-handling": { left: "78%", top: "43%" },
+                            "working-at-height": { left: "50%", top: "72%" },
+                        };
+                        const position = modulePositions[group.key] || {
+                            left: `${22 + ((index % 3) * 28)}%`,
+                            top: index < 3 ? "43%" : "72%",
+                        };
+                        return (
+                            <button
+                                type="button"
+                                key={group.key}
+                                className={`training360-flow__module ${meta.className}`}
+                                style={position}
+                                onClick={() => openModule(group.key)}
+                                disabled={loading}
+                                aria-label={`Open ${meta.title} 360 degree module`}
+                            >
+                                <span className="training360-flow__module-pin training360-flow__module-pin--blue">{meta.pin}</span>
+                                <span className="training360-flow__module-card">
+                                    <img className="training360-flow__module-thumb" src={meta.thumb} alt={`${meta.title} training area`} />
+                                    <span className="training360-flow__module-copy">
+                                        <strong>{meta.title}</strong>
+                                        <small>{meta.description}</small>
                                     </span>
-                                </button>
-                            );
-                        })}
+                                    <span className="training360-flow__module-arrow">›</span>
+                                </span>
+                            </button>
+                        );
+                    })}
                     </div>
 
                     <div className="training360-flow__controls">
