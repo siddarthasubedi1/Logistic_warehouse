@@ -34,8 +34,13 @@ async function fixture() {
     const scenario = await Scenario.create({ programme: programme._id, title: 'Inspect the load', prompt: 'What is the safe first step?', options: ['Assess the load', 'Rush the lift'], correctResponses: ['Assess the load'], status: 'active', createdBy: admin._id });
     return { admin, trainee, programmes, programme, assignment, progress, section, scenario };
 }
-async function learning(f) {
-    await SectionCompletion.create({ trainee: f.trainee._id, programme: f.programme._id, section: f.section._id });
+async function learning(f, completedAt = new Date()) {
+    await SectionCompletion.create({
+        trainee: f.trainee._id,
+        programme: f.programme._id,
+        section: f.section._id,
+        completedAt
+    });
 }
 async function completedScenario(f, times = {}) {
     const startedAt = times.startedAt || new Date(Date.now() - 2000);
@@ -78,16 +83,69 @@ describe('assessment progression and module-specific games', () => {
         expect(result.status).toBe(403);
     });
     test('a newer failed assessment requires relearning but never requires the optional scenario', async () => {
-        const f = await fixture(); await learning(f);
-        await completedScenario(f, { startedAt: new Date(Date.now() - 12000), submittedAt: new Date(Date.now() - 10000) });
+        const f = await fixture();
+
+        const initialLearningAt = new Date(Date.now() - 15000);
         const failedAt = new Date(Date.now() - 5000);
+        const relearnedAt = new Date(failedAt.getTime() + 1000);
+
+        // First learning happened BEFORE the failed assessment.
+        await learning(f, initialLearningAt);
+
+        await completedScenario(f, {
+            startedAt: new Date(Date.now() - 12000),
+            submittedAt: new Date(Date.now() - 10000)
+        });
+
+        // Trainee fails after completing the old learning.
         await assessment(f, false, failedAt);
-        await TrainingProgress.updateOne({ _id: f.progress._id }, { basicPassed: true, scenarioCompleted: true });
-        const result = await request(app).get(`${endpoint(f)}/progress`).set(header(f.trainee));
-        expect(result.body.progress.basicPassed).toBe(false); expect(result.body.progress.retryRequiredLevel).toBe('basic');
-        expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(403);
-        await SectionCompletion.updateOne({ trainee: f.trainee._id, section: f.section._id }, { $set: { completedAt: new Date() } });
-        expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(200);
+
+        await TrainingProgress.updateOne(
+            { _id: f.progress._id },
+            {
+                basicPassed: true,
+                scenarioCompleted: true
+            }
+        );
+
+        const result = await request(app)
+            .get(`${endpoint(f)}/progress`)
+            .set(header(f.trainee));
+
+        expect(result.body.progress.basicPassed).toBe(false);
+        expect(result.body.progress.retryRequiredLevel).toBe('basic');
+
+        // Because the trainee failed after their learning,
+        // relearning is required first.
+        expect(
+            (
+                await request(app)
+                    .get(`${endpoint(f)}/assessments/basic`)
+                    .set(header(f.trainee))
+            ).status
+        ).toBe(403);
+
+        // Trainee completes learning again AFTER the failed attempt.
+        await SectionCompletion.updateOne(
+            {
+                trainee: f.trainee._id,
+                section: f.section._id
+            },
+            {
+                $set: {
+                    completedAt: relearnedAt
+                }
+            }
+        );
+
+        // Assessment becomes available again.
+        expect(
+            (
+                await request(app)
+                    .get(`${endpoint(f)}/assessments/basic`)
+                    .set(header(f.trainee))
+            ).status
+        ).toBe(200);
     });
     test('scenario evidence from any module is optional and does not affect assessment access', async () => {
         const f = await fixture(); await learning(f);

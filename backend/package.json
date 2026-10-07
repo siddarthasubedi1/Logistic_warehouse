@@ -17,7 +17,11 @@
     "test:safety-simulations": "jest --runInBand test/safetySimulations.test.js",
     "setup:sprint4": "node src/scripts/setupSprint4.js",
     "create:admin": "node src/scripts/createAdmin.js",
-    "test:sprint4": "jest --runInBand test/sprint4.test.js",
+    "test:sprint1": "jest --runInBand test/auth.test.js test/accessControl.test.js test/userProfile.test.js",
+    "test:sprint2": "jest --runInBand test/sprint2Training.test.js test/sprint2PartC.test.js test/automaticTraineeAccess.test.js",
+    "test:sprint3": "jest --runInBand test/sprint3Challenges.test.js test/safetySimulations.test.js test/moduleGamesProgress.test.js",
+    "test:sprint4": "jest --runInBand test/sprint4.test.js test/certificates.test.js test/moduleGamesProgress.test.js test/safetySimulations.test.js",
+    "test:all-sprints": "jest --runInBand",
     "test:report": "jest --runInBand --json --outputFile=docs/test-results.json",
     "check:production": "node checks/productionSmoke.cjs",
     "check:progress-performance": "node checks/benchmarkProgress.cjs"
