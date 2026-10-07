@@ -1,3 +1,4 @@
+const AssessmentAttempt = require('../src/models/AssessmentAttempt');
 const request = require('supertest');
 const app = require('../app');
 const User = require('../src/models/User');
@@ -28,6 +29,7 @@ async function fixture() {
     for (const player of [trainee, other]) {
       const assignment = await TrainingAssignment.create({ trainee: player._id, programme: programme._id, assignedBy: admin._id });
       await TrainingProgress.create({ trainee: player._id, programme: programme._id, assignment: assignment._id, learningCompleted: true, scenarioCompleted: true, basicPassed: true, currentStage: 'intermediate', progress: 65 });
+      await AssessmentAttempt.create({ trainee: player._id, programme: programme._id, assignment: assignment._id, level: 'basic', status: 'submitted', score: 1, totalPoints: 1, percentage: 100, passed: true, attemptNumber: 1, submittedAt: new Date() });
     }
   }
   return { admin, trainer, cyberTrainer, otherTrainer, trainee, other, outsider, programmes };
@@ -118,6 +120,7 @@ describe('Configurable Safety Simulation Missions', () => {
   });
   test('existing assessment gate applies before starting a mission', async () => {
     const f = await fixture(), game = await create(f);
+    await AssessmentAttempt.deleteMany({ trainee: f.trainee._id, programme: game.programme });
     await TrainingProgress.updateOne({ trainee: f.trainee._id, programme: game.programme }, { basicPassed: false });
     const response = await start(f, game); expect(response.status).toBe(403); expect(response.body.code).toBe('ASSESSMENT_NOT_PASSED');
   });
@@ -171,6 +174,20 @@ describe('Configurable Safety Simulation Missions', () => {
     await ChallengeAttempt.findByIdAndUpdate(begun.body.attempt._id, { startedAt: new Date(Date.now() - (game.timeLimitSeconds + 5) * 1000) });
     const response = await interact(f, game, begun.body.attempt._id, { actionId: 'assess-load', durationSeconds: 1 });
     expect(response.body.attempt.result).toBe('timeout'); expect(response.body.attempt.durationSeconds).toBeGreaterThanOrEqual(game.timeLimitSeconds); expect(response.body.attempt.finishedAt).toBeTruthy(); expect(await PersonalBest.countDocuments()).toBe(0);
+  });
+  test('S4-S04 a fully answered timeout with earned points cannot become a personal best', async () => {
+    const f = await fixture(), game = await create(f), begun = await start(f, game), id = begun.body.attempt._id;
+    for (const step of sequences[game.moduleKey]) {
+      const response = await interact(f, game, id, step.startsWith('@') ? { kind: 'move', locationId: step.slice(1) } : { actionId: step });
+      expect(response.status).toBe(200);
+    }
+    await ChallengeAttempt.findByIdAndUpdate(id, { startedAt: new Date(Date.now() - (game.timeLimitSeconds + 5) * 1000) });
+    const response = await request(app).post(`/api/safety-simulations/${game._id}/attempts/${id}/complete`).set(header(f.trainee)).send({});
+    expect(response.body.attempt.result).toBe('timeout'); expect(response.body.attempt.accuracy).toBe(1); expect(response.body.attempt.score).toBeGreaterThan(0);
+    const { maybeUpdatePersonalBest } = require('../src/services/challengeScoreService');
+    const update = await maybeUpdatePersonalBest(await ChallengeAttempt.findById(id), game);
+    expect(update.updated).toBe(false); expect(await PersonalBest.countDocuments()).toBe(0);
+    expect((await request(app).get(`/api/safety-simulations/${game._id}/leaderboard`).set(header(f.trainee))).body.entries).toHaveLength(0);
   });
   test('attempt configuration is frozen and restart preserves the previous attempt', async () => {
     const f = await fixture(), game = await create(f), begun = await start(f, game);

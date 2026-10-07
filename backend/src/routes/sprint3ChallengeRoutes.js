@@ -22,4 +22,6 @@ r.get('/trainee/personal-bests', authorize('trainee'), c.myPersonalBests);
 r.get('/trainee/puzzle-scores', authorize('trainee'), c.totalScores);
 r.get('/programmes/:id/challenge-results', authorize('admin', 'trainer'), c.challengeResults);
 
+require("../middleware/validateRequest").configureRouter(r);
+
 module.exports = r;

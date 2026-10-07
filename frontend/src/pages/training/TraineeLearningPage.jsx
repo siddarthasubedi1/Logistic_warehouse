@@ -245,6 +245,8 @@ function ProgrammeLearning() {
             <div
                 className="
                     app-page
+                    trainee-page
+                    trainee-learning-page
                     space-y-5
                 "
             >

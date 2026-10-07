@@ -96,6 +96,7 @@ const getManageableProgramme = async (
         user.role ===
         "trainer"
     ) {
+        query.programmeType = { $in: user.assignedTrainingSections || [] };
         query.$or = [
             {
                 owner:
@@ -1961,6 +1962,9 @@ const reorderLearningSections = async (
             status:
                 "success",
 
+            targetType: 'TrainingProgramme', targetId: programme._id,
+            before: programmeSections.map(section => ({ id: section._id, order: section.order })),
+            after: reorderedSections.map(section => ({ id: section._id, order: section.order })),
             details: {
                 programmeId:
                     programme._id

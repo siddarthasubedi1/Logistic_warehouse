@@ -162,9 +162,8 @@ function ModuleEnvironment() {
         "cyber-awareness": {
             title: "Cyber Awareness",
             scenes: [
-                { name: "Cyber Office", panorama: "/panoramas/cyber-awareness.png", x: 25, y: 58, note: "Phishing, passwords, USB and workstation security" },
-                { name: "Office & Access Control", panorama: "/panoramas/site-office.jpg", x: 72, y: 58, note: "Secure access, devices and information handling" },
-                { name: "Training & Response Room", panorama: "/panoramas/training-room.jpg", x: 50, y: 24, note: "Awareness, reporting and secure working" },
+                { name: "Cyber Office", panorama: "/panoramas/cyber-awareness.png", x: 32, y: 60, note: "Phishing, passwords, USB and workstation security" },
+                { name: "Training & Response Room", panorama: "/panoramas/training-room.jpg", x: 68, y: 38, note: "Awareness, reporting and secure working" },
             ],
         },
     }), []);
@@ -195,7 +194,7 @@ function ModuleEnvironment() {
     const requiredPassField = { basic: "basicPassed", intermediate: "intermediatePassed", high: "highPassed" }[requiredAssessmentLevel] || "basicPassed";
     const currentLevelAssessmentPassed = !!progress?.[requiredPassField] && !progress?.retryRequiredLevel;
     const canOpenScenario = currentLevelAssessmentPassed || !!progress?.learningCompleted;
-    const canOpenAssessment = currentLevelAssessmentPassed || (!!progress?.learningCompleted && !!progress?.scenarioCompleted);
+    const canOpenAssessment = currentLevelAssessmentPassed || !!progress?.learningCompleted;
     const nextProgrammeLevel = programmeLevel === "beginner" ? "intermediate" : programmeLevel === "intermediate" ? "advanced" : null;
     const nextProgrammeLevelUnlocked = nextProgrammeLevel ? !!levelAccess?.[nextProgrammeLevel]?.unlocked : false;
 
@@ -309,7 +308,7 @@ function ModuleEnvironment() {
 
             if (updatedProgress?.learningCompleted) {
                 setActivityMessage("");
-                await openActivity("scenario");
+                await openActivity("quiz");
             } else {
                 setActivityMessage("Section completed. Your progress has been saved.");
                 if (selectedSection < sections.length - 1) setSelectedSection(v => v + 1);
@@ -492,7 +491,7 @@ function ModuleEnvironment() {
         setAssessmentAnsweredIds([]);
         setSelectedSection(0);
         setOverlay("learning");
-        setActivityMessage("Relearn each section, mark it complete, then repeat the scenario before starting a new quiz attempt.");
+        setActivityMessage("Relearn each required section, mark it complete, then start a new assessment attempt.");
     };
 
     const goScene = (index) => { setSceneIndex(index); setYaw(0); setPitch(0); setFov(80); setImageFailed(false); };
@@ -556,8 +555,8 @@ function ModuleEnvironment() {
                         style={activityPositions.quiz}
                         onClick={() => canOpenAssessment && openActivity("quiz")}
                         disabled={!canOpenAssessment}
-                        title={!canOpenAssessment ? `Complete the ${pretty(programmeLevel)} scenario first` : ""}
-                    ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete scenario first"}</small></span></button>
+                        title={!canOpenAssessment ? `Complete all ${pretty(programmeLevel)} learning sections first` : ""}
+                    ><i>{canOpenAssessment ? "?" : "🔒"}</i><span><b>{pretty(programmeLevel)} Assessment</b><small>{currentLevelAssessmentPassed ? "Passed" : canOpenAssessment ? `Pass mark ${programme?.passMark}%` : "Complete learning first"}</small></span></button>
                     <button
                         className={`immersive-activity ${!currentLevelAssessmentPassed ? "immersive-activity--locked" : ""}`}
                         style={activityPositions.challenge}
@@ -574,7 +573,7 @@ function ModuleEnvironment() {
                     <div className="immersive-overlay__head"><div><small>{pretty(canonicalProgrammeLevel(programme?.level))} LEVEL LEARNING</small><h3>{meta.title}</h3></div><button onClick={() => setOverlay(null)}>×</button></div>
                     <div className="immersive-overlay__body">
                         <nav>{sections.map((s, i) => { const done = completedSectionIds.has(String(s._id)); const unlocked = canOpenSection(i); return <button disabled={!unlocked} className={`${i === selectedSection ? "active" : ""} ${done ? "completed" : ""} ${!unlocked ? "locked" : ""}`} key={s._id || i} onClick={() => unlocked && setSelectedSection(i)}><b>{done ? "✓" : i + 1}</b><span>{s.title}</span></button>; })}</nav>
-                        <article>{current ? <><small>SECTION {selectedSection + 1} OF {sections.length}</small><h2>{current.title}</h2>{String(current.content || "No content added yet.").split(/\n+/).map((x, i) => <p key={i}>{x}</p>)}<div className="immersive-overlay__nav"><button disabled={!selectedSection} onClick={() => setSelectedSection(v => v - 1)}>← Previous</button><button className={currentCompleted ? "section-complete" : ""} onClick={completeLearningSection} disabled={activityLoading || currentCompleted}>{activityLoading ? "Saving…" : currentCompleted ? "✓ Completed" : "Mark Complete"}</button>{selectedSection < sections.length - 1 ? <button disabled={!currentCompleted} title={!currentCompleted ? "Mark this section complete first" : ""} onClick={() => currentCompleted && setSelectedSection(v => v + 1)}>Next →</button> : progress?.learningCompleted ? <button className="immersive-primary" onClick={() => openActivity("scenario")}>Continue to Scenario →</button> : <button disabled>Complete this section first</button>}</div>{activityMessage && <p className="immersive-status">{activityMessage}</p>}</> : <p>No active learning sections are available.</p>}</article>
+                        <article>{current ? <><small>SECTION {selectedSection + 1} OF {sections.length}</small><h2>{current.title}</h2>{String(current.content || "No content added yet.").split(/\n+/).map((x, i) => <p key={i}>{x}</p>)}<div className="immersive-overlay__nav"><button disabled={!selectedSection} onClick={() => setSelectedSection(v => v - 1)}>← Previous</button><button className={currentCompleted ? "section-complete" : ""} onClick={completeLearningSection} disabled={activityLoading || currentCompleted}>{activityLoading ? "Saving…" : currentCompleted ? "✓ Completed" : "Mark Complete"}</button>{selectedSection < sections.length - 1 ? <button disabled={!currentCompleted} title={!currentCompleted ? "Mark this section complete first" : ""} onClick={() => currentCompleted && setSelectedSection(v => v + 1)}>Next →</button> : progress?.learningCompleted ? <button className="immersive-primary" onClick={() => openActivity("quiz")}>Continue to Assessment →</button> : <button disabled>Complete this section first</button>}</div>{activityMessage && <p className="immersive-status">{activityMessage}</p>}</> : <p>No active learning sections are available.</p>}</article>
                     </div>
                 </div>}
 
@@ -916,11 +915,10 @@ function ModuleEnvironment() {
 
                 {overlay === "progress" && <div className="immersive-overlay">
                     <div className="immersive-overlay__head"><div><small>MY PROGRESS</small><h3>{meta.title} · {pretty(programmeLevel)} Level</h3></div><button onClick={() => setOverlay(null)}>×</button></div>
-                    <div className="immersive-overlay__single"><div className="immersive-progress-grid"><div><span>Overall</span><b>{progress?.progress || 0}%</b></div><div><span>{pretty(programmeLevel)} Learning</span><b>{progress?.learningCompleted ? "Complete" : "In progress"}</b></div><div><span>{pretty(programmeLevel)} Scenario</span><b>{progress?.scenarioCompleted ? "Complete" : progress?.learningCompleted ? "Ready / pending" : "Locked"}</b></div><div><span>{pretty(programmeLevel)} Assessment</span><b>{currentLevelAssessmentPassed ? "Passed" : progress?.scenarioCompleted ? "Ready / pending" : "Locked"}</b></div></div></div>
+                    <div className="immersive-overlay__single"><div className="immersive-progress-grid"><div><span>Overall</span><b>{progress?.progress || 0}%</b></div><div><span>{pretty(programmeLevel)} Learning</span><b>{progress?.learningCompleted ? "Complete" : "In progress"}</b></div><div><span>{pretty(programmeLevel)} Scenario</span><b>{progress?.scenarioCompleted ? "Optional · completed" : progress?.learningCompleted ? "Optional practice" : "Available after learning"}</b></div><div><span>{pretty(programmeLevel)} Assessment</span><b>{currentLevelAssessmentPassed ? "Passed" : progress?.learningCompleted ? "Ready" : "Locked"}</b></div></div></div>
                 </div>}
 
                 {!overlay && <div className="training360-flow__controls"><button type="button" aria-label="Zoom in" onClick={() => setFov(v => Math.max(45, v - 8))}>+</button><button type="button" aria-label="Zoom out" onClick={() => setFov(v => Math.min(105, v + 8))}>−</button></div>}
-                {!overlay && <div className="immersive-hint">Drag left/right to explore • Scroll to zoom • Click a hotspot to open training</div>}
                 {loading && <div className="training360-flow__message training360-flow__message--overlay" role="status">Loading training…</div>}
                 {imageFailed && <div className="immersive-image-notice" role="status">This area image could not load. Choose another area below to continue.</div>}
                 {error && <div className="training360-flow__message training360-flow__message--overlay training360-flow__message--error">{error}</div>}

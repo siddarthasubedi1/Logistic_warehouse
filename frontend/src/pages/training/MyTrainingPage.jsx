@@ -65,7 +65,7 @@ export default function MyTrainingPage() {
         <DashboardLayout
             role="trainee"
             title="My Training – 360° Module Selection"
-            subtitle="Select a module by exploring the 360° environment. Click on a highlighted area to enter."
+            subtitle="Explore the 360° workspace and select an assigned module to begin."
         >
             <section className="training360-flow">
                 <div className="training360-flow__viewer training360-flow__viewer--selection">
@@ -88,7 +88,7 @@ export default function MyTrainingPage() {
 
                     <div className="training360-flow__intro">
                         <strong>⌖ &nbsp; My Training</strong>
-                        <span>Select a module by exploring the 360° environment. Click on a highlighted area to enter.</span>
+                        <span>Explore the 360° workspace and select an assigned module to begin.</span>
                     </div>
 
                     <div className={`training360-flow__modules ${groupedModules.length > 3 ? "training360-flow__modules--many" : ""}`} >
@@ -142,7 +142,6 @@ export default function MyTrainingPage() {
                         <button type="button" aria-label="Zoom out" onClick={() => setFov((value) => Math.min(105, value + 8))}>−</button>
                     </div>
 
-                    <div className="training360-flow__hint">ⓘ &nbsp; Explore the environment and click a module.</div>
                 </div>
 
                 {loading && <div className="training360-flow__message">Loading your training modules…</div>}

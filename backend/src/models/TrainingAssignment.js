@@ -55,6 +55,9 @@ trainingAssignmentSchema.index(
     }
 );
 
+trainingAssignmentSchema.plugin(require("../utils/auditPlugin"), { targetType: "TrainingAssignment" });
+
+trainingAssignmentSchema.index({ trainee: 1, status: 1, programme: 1 });
 module.exports = mongoose.model(
     "TrainingAssignment",
     trainingAssignmentSchema

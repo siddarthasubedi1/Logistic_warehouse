@@ -128,5 +128,7 @@ router.post(
 // EXPORT ROUTER
 // ======================================================
 
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports =
     router;

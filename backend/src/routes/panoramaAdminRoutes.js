@@ -10,4 +10,6 @@ router.get('/', controller.listLocations);
 router.post('/', uploadPanorama.single('panorama'), controller.createLocation);
 router.patch('/:id', uploadPanorama.single('panorama'), controller.updateLocation);
 router.delete('/:id', controller.deleteLocation);
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports = router;

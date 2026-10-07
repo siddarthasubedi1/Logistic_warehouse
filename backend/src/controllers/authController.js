@@ -1,3 +1,4 @@
+const refreshDigest = token => require('node:crypto').createHash('sha256').update(token).digest('hex');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -265,7 +266,7 @@ const login = async (req, res) => {
 
         user.refreshTokenHash =
             await bcrypt.hash(
-                refreshToken,
+                refreshDigest(refreshToken),
                 12
             );
 
@@ -371,6 +372,9 @@ const login = async (req, res) => {
 
                     status:
                         user.status,
+
+                    displayMode:
+                        user.displayMode || "light",
 
                     mustChangePassword:
                         passwordChangeRequired,
@@ -752,8 +756,7 @@ const refreshAccessToken =
                         refreshToken,
 
                         process.env
-                            .JWT_REFRESH_SECRET
-                    );
+                            .JWT_REFRESH_SECRET, { algorithms: ["HS256"] });
 
             } catch {
                 return res
@@ -827,7 +830,7 @@ const refreshAccessToken =
 
             const refreshTokenMatches =
                 await bcrypt.compare(
-                    refreshToken,
+                    refreshDigest(refreshToken),
                     user.refreshTokenHash
                 );
 
@@ -928,6 +931,7 @@ const logout =
                     null;
 
 
+                user.authVersion = (user.authVersion || 0) + 1;
                 await user.save();
 
 

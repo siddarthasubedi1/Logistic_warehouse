@@ -1,4 +1,3 @@
-import '../components/simulation/SafetySimulation.css';
 import {
     useEffect,
     useMemo,
@@ -134,6 +133,11 @@ function TrainerDashboard() {
         setModules,
     ] = useState([]);
 
+    const [
+        monitoring,
+        setMonitoring,
+    ] = useState([]);
+
 
     const [
         loading,
@@ -172,6 +176,7 @@ function TrainerDashboard() {
                         profileResult,
                         programmeResult,
                         moduleResult,
+                        monitoringResult,
                     ] =
                         await Promise.allSettled([
                             api.get(
@@ -183,6 +188,11 @@ function TrainerDashboard() {
                             ),
 
                             loadModulesFromDatabase(),
+
+                            api.get(
+                                "/trainer/monitoring",
+                                { params: { limit: 100 } }
+                            ),
                         ]);
 
 
@@ -251,6 +261,17 @@ function TrainerDashboard() {
                         setModules(
                             Array.isArray(moduleResult.value)
                                 ? moduleResult.value
+                                : []
+                        );
+                    }
+
+                    if (
+                        monitoringResult.status ===
+                        "fulfilled"
+                    ) {
+                        setMonitoring(
+                            Array.isArray(monitoringResult.value.data?.trainees)
+                                ? monitoringResult.value.data.trainees
                                 : []
                         );
                     }
@@ -474,6 +495,73 @@ function TrainerDashboard() {
         );
 
 
+    const monitoringProgrammes =
+        useMemo(
+            () =>
+                monitoring.flatMap((row) =>
+                    (Array.isArray(row.programmes) ? row.programmes : []).map((programme) => ({
+                        ...programme,
+                        trainee: row.trainee,
+                    }))
+                ),
+            [monitoring]
+        );
+
+    const monitoringStats =
+        useMemo(
+            () => {
+                const completed = monitoringProgrammes.filter((row) => row.status === "completed").length;
+                const inProgress = monitoringProgrammes.filter((row) => row.status === "in-progress").length;
+                const notStarted = monitoringProgrammes.filter((row) => row.status === "not-started").length;
+                const averageProgress = monitoring.length
+                    ? Math.round(monitoring.reduce((sum, row) => sum + Number(row.summary?.overallProgress ?? row.summary?.progress ?? 0), 0) / monitoring.length)
+                    : 0;
+                return {
+                    completed,
+                    inProgress,
+                    notStarted,
+                    averageProgress,
+                    pending: inProgress + notStarted,
+                };
+            },
+            [monitoring, monitoringProgrammes]
+        );
+
+    const scoreRows =
+        useMemo(
+            () =>
+                monitoringProgrammes
+                    .filter((row) => row.assessment?.latestScore !== null && row.assessment?.latestScore !== undefined)
+                    .sort((a, b) => new Date(b.assessment?.latestSubmittedAt || 0) - new Date(a.assessment?.latestSubmittedAt || 0))
+                    .slice(0, 5),
+            [monitoringProgrammes]
+        );
+
+    const taskRows =
+        useMemo(
+            () =>
+                monitoringProgrammes
+                    .filter((row) => row.status !== "completed")
+                    .sort((a, b) => Number(b.progress || 0) - Number(a.progress || 0))
+                    .slice(0, 5),
+            [monitoringProgrammes]
+        );
+
+    const recentActivity =
+        useMemo(
+            () =>
+                monitoringProgrammes
+                    .map((row) => ({
+                        ...row,
+                        activityAt: row.assessment?.latestSubmittedAt || row.completedAt || row.startedAt || row.assignedAt || null,
+                    }))
+                    .filter((row) => row.activityAt)
+                    .sort((a, b) => new Date(b.activityAt) - new Date(a.activityAt))
+                    .slice(0, 5),
+            [monitoringProgrammes]
+        );
+
+
     /* =====================================================
        LOADING
     ===================================================== */
@@ -525,8 +613,6 @@ function TrainerDashboard() {
                 false
             }
         >
-
-            <section className='sim-card sim-section-heading' style={{ marginBottom: 16 }}><div><h2>Safety Simulations</h2><p>Create and preview missions for your assigned programmes.</p></div><button type='button' className='sim-button' onClick={() => navigate('/safety-simulations')}>Manage missions</button></section>
             <TrainerHeader
                 user={
                     user
@@ -829,16 +915,16 @@ function TrainerDashboard() {
 
                     <TrainerStat
                         title="Trainees"
-                        value="0"
-                        subtitle="No trainer trainee endpoint yet"
+                        value={monitoring.length}
+                        subtitle="Authorised trainee records"
                         type="progress"
                     />
 
 
                     <TrainerStat
                         title="Pending Tasks"
-                        value="0"
-                        subtitle="No task data available yet"
+                        value={monitoringStats.pending}
+                        subtitle="Programmes still to complete"
                         type="empty"
                     />
 
@@ -860,9 +946,21 @@ function TrainerDashboard() {
                         subtitle="Trainee activity within your assigned training section."
                     >
 
-                        <EmptyPanel
-                            message="No trainee task data is available yet."
-                        />
+                        {taskRows.length ? (
+                            <div className="space-y-2">
+                                {taskRows.map((row) => (
+                                    <MonitoringRow
+                                        key={`${row.trainee?._id || row.trainee?.id}-${row.programmeId}`}
+                                        title={traineeName(row.trainee)}
+                                        subtitle={`${row.title} • ${formatTrainingLabel(row.statusLabel || row.status)}`}
+                                        value={`${Number(row.progress || 0)}%`}
+                                    />
+                                ))}
+                                <button type="button" onClick={() => navigate("/trainer/monitoring")} className="mt-2 text-[10px] font-semibold text-blue-700 hover:underline">View all monitoring</button>
+                            </div>
+                        ) : (
+                            <EmptyPanel message="No pending trainee programme tasks in your authorised scope." />
+                        )}
 
                     </DashboardPanel>
 
@@ -872,9 +970,20 @@ function TrainerDashboard() {
                         subtitle="Latest quiz scores in your assigned training section."
                     >
 
-                        <EmptyPanel
-                            message="No trainee scores are available yet."
-                        />
+                        {scoreRows.length ? (
+                            <div className="space-y-2">
+                                {scoreRows.map((row) => (
+                                    <MonitoringRow
+                                        key={`${row.trainee?._id || row.trainee?.id}-${row.programmeId}-score`}
+                                        title={traineeName(row.trainee)}
+                                        subtitle={row.title}
+                                        value={`${Number(row.assessment?.latestScore || 0)}%`}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyPanel message="No submitted trainee assessment scores are available yet." />
+                        )}
 
                     </DashboardPanel>
 
@@ -908,7 +1017,7 @@ function TrainerDashboard() {
                                     trainer-progress-ring
                                 "
                             >
-                                0%
+                                {monitoringStats.averageProgress}%
                             </div>
 
 
@@ -926,7 +1035,7 @@ function TrainerDashboard() {
                                     Completed
 
                                     <strong>
-                                        0
+                                        {monitoringStats.completed}
                                     </strong>
 
                                 </p>
@@ -944,7 +1053,7 @@ function TrainerDashboard() {
                                     In Progress
 
                                     <strong>
-                                        0
+                                        {monitoringStats.inProgress}
                                     </strong>
 
                                 </p>
@@ -962,7 +1071,7 @@ function TrainerDashboard() {
                                     Not Started
 
                                     <strong>
-                                        0
+                                        {monitoringStats.notStarted}
                                     </strong>
 
                                 </p>
@@ -979,9 +1088,20 @@ function TrainerDashboard() {
                         subtitle="Latest training activity."
                     >
 
-                        <EmptyPanel
-                            message="No recent trainee activity is available yet."
-                        />
+                        {recentActivity.length ? (
+                            <div className="space-y-2">
+                                {recentActivity.map((row) => (
+                                    <MonitoringRow
+                                        key={`${row.trainee?._id || row.trainee?.id}-${row.programmeId}-activity`}
+                                        title={traineeName(row.trainee)}
+                                        subtitle={`${row.title} • ${formatTrainingDate(row.activityAt)}`}
+                                        value={`${Number(row.progress || 0)}%`}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyPanel message="No trainee activity has been recorded in your authorised scope yet." />
+                        )}
 
                     </DashboardPanel>
 
@@ -1146,6 +1266,33 @@ function StatIcon({
             <path d="M12 16h.01" />
         </svg>
     );
+}
+
+
+function MonitoringRow({ title, subtitle, value }) {
+    return (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-[#e8eef5] bg-[#f8fafc] px-3 py-2.5">
+            <div className="min-w-0">
+                <p className="truncate text-[10px] font-semibold text-[#172033]">{title}</p>
+                <p className="mt-0.5 truncate text-[9px] text-[#64748b]">{subtitle}</p>
+            </div>
+            <strong className="shrink-0 text-[11px] text-blue-700">{value}</strong>
+        </div>
+    );
+}
+
+function traineeName(trainee) {
+    return `${trainee?.firstName || ""} ${trainee?.lastName || ""}`.trim() || trainee?.username || "Trainee";
+}
+
+function formatTrainingLabel(value) {
+    return String(value || "").replace(/[-_]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatTrainingDate(value) {
+    if (!value) return "Date unavailable";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Date unavailable" : date.toLocaleDateString();
 }
 
 

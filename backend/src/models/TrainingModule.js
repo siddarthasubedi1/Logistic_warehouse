@@ -11,4 +11,6 @@ const trainingModuleSchema = new mongoose.Schema({
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
 }, { timestamps: true });
 
+trainingModuleSchema.plugin(require("../utils/auditPlugin"), { targetType: "TrainingModule" });
+
 module.exports = mongoose.model("TrainingModule", trainingModuleSchema);

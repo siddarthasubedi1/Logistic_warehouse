@@ -22,10 +22,7 @@ const {
 const allowed = async (req, programmeId) => {
     const p = await TrainingProgramme.findById(programmeId);
     if (!p) return null;
-    if (req.user.role === "admin") return p;
-    const uid = String(req.user.id);
-    if (req.user.role === "trainer" && (String(p.owner) === uid || (p.authorizedTrainers || []).some(x => String(x) === uid))) return p;
-    return false;
+    return await require('../services/trainingAccessService').canManageProgramme(req.user, p) ? p : false;
 };
 const assigned = async (req, programmeId) => {
     const programme = await TrainingProgramme.findById(programmeId).select("programmeType").lean();
@@ -48,18 +45,14 @@ const updateStage = (p, requiredAssessmentLevel = "basic") => {
         high: "highPassed",
     }[requiredAssessmentLevel] || "basicPassed";
 
-    // A failed assessment sends the trainee back through the SAME programme
-    // level's learning and scenario before another attempt.
+    // Core progression requires learning sections and the assessment only.
+    // Scenario exercises and games remain optional practice and never block
+    // assessment access, programme completion or certificate eligibility.
     if (p.retryRequiredLevel) {
         p.status = "in-progress";
         p.completedAt = null;
         if (!p.learningCompleted) {
             p.currentStage = "learning";
-            return;
-        }
-        if (!p.scenarioCompleted) {
-            p.currentStage = "scenario";
-            p.progress = Math.max(Number(p.progress || 0), 40);
             return;
         }
         p.currentStage = requiredAssessmentLevel;
@@ -74,12 +67,9 @@ const updateStage = (p, requiredAssessmentLevel = "basic") => {
         p.status = "completed";
         p.progress = 100;
         p.completedAt = p.completedAt || new Date();
-    } else if (p.scenarioCompleted) {
+    } else if (p.learningCompleted) {
         p.currentStage = requiredAssessmentLevel;
         p.progress = Math.max(Number(p.progress || 0), 50);
-    } else if (p.learningCompleted) {
-        p.currentStage = "scenario";
-        p.progress = Math.max(Number(p.progress || 0), 40);
     } else {
         p.currentStage = "learning";
     }
@@ -134,29 +124,9 @@ const traineeProgrammeGate = async (traineeId, programmeId) => {
 // SectionCompletion is the source of truth for learning ticks. This prevents
 // stale completedSections arrays from showing sections as complete before the
 // trainee actually presses Mark Complete.
-const syncLearningProgress = async (req, programmeId, assignment, progress = null) => {
-    const p = progress || await getProgress(req, programmeId, assignment);
-    const programme = await TrainingProgramme.findById(programmeId).select("level").lean();
-    const requiredAssessmentLevel = assessmentLevelForProgramme(programme);
-    const required = await LearningSection.find({ programme: programmeId, status: "active" }).select("_id").lean();
-    const requiredIds = required.map(x => x._id);
-    const completions = requiredIds.length
-        ? await SectionCompletion.find({ trainee: req.user.id, programme: programmeId, section: { $in: requiredIds } }).select("section").lean()
-        : [];
-    p.completedSections = completions.map(x => x.section);
-    p.learningCompleted = required.length > 0 && completions.length === required.length;
-    await reconcileProgrammeActivityProgress({
-        traineeId: req.user.id, programmeId, level: requiredAssessmentLevel, progress: p,
-    });
-    p.lastAccessedAt = new Date();
-    if (!p.learningCompleted && (p.retryRequiredLevel || (!p.scenarioCompleted && !p.basicPassed && !p.intermediatePassed && !p.highPassed))) {
-        p.progress = required.length ? Math.round((completions.length / required.length) * 40) : 0;
-    } else if (p.learningCompleted) {
-        p.progress = Math.max(Number(p.progress || 0), 40);
-    }
-    updateStage(p, requiredAssessmentLevel);
-    await p.save();
-    return p;
+const syncLearningProgress = async (req, programmeId, assignment) => {
+    const result = await require('../services/trainingProgressService').refreshProgrammeProgress({ traineeId: req.user.id, programmeId, assignmentId: assignment._id, emitEvents: true });
+    return result.progress;
 };
 
 exports.listScenarios = async (req, res) => { try { const p = await allowed(req, req.params.programmeId); if (p === null) return res.status(404).json({ message: "Programme not found" }); if (!p) return res.status(403).json({ message: "Not authorised for this programme" }); res.json({ scenarios: await Scenario.find({ programme: p._id }).sort({ order: 1 }) }); } catch (e) { res.status(500).json({ message: "Unable to load scenarios" }); } };
@@ -210,6 +180,11 @@ exports.completeSection = async (req, res) => {
         }
 
         const p = await syncLearningProgress(req, req.params.programmeId, a);
+        if (p.basicPassed || p.intermediatePassed || p.highPassed) {
+            await require('../services/certificateService')
+                .reconcileCertificateEligibility(req.user.id)
+                .catch(error => console.error('Certificate eligibility check failed:', error));
+        }
         res.json({ message: "Section completion recorded", progress: p });
     } catch (e) {
         console.error("completeSection failed:", e);
@@ -434,7 +409,7 @@ exports.submitScenario = async (req, res) => {
         p.completedScenarios = [...attemptedIds];
         p.scenarioCompleted = exerciseCompleted;
         updateStage(p, gate.requiredAssessmentLevel);
-        await p.save();
+        const reconciled = await syncLearningProgress(req, req.params.programmeId, a);
 
         // Intentionally do NOT reveal correctness here. Results are available
         // only after the entire exercise has been submitted.
@@ -445,7 +420,7 @@ exports.submitScenario = async (req, res) => {
             attemptNumber: attempt.attemptNumber,
             answeredCount: attempt.responses.length,
             totalScenarios: attempt.scenarioSet.length,
-            progress: p,
+            progress: reconciled,
         });
     } catch (e) {
         console.error("submitScenario failed:", e);
@@ -536,11 +511,9 @@ const eligible = async (req, programmeId, level) => {
         };
     }
 
-    // Every assessment attempt must come after THIS programme level's learning
-    // and scenario. A failed attempt resets those two gates before a retry.
+    // Assessment access is based on learning completion only. Scenarios,
+    // puzzles and safety simulations are optional enrichment activities.
     if (!p.learningCompleted) return { error: [403, "Complete all learning sections first"] };
-    const sc = await Scenario.countDocuments({ programme: programmeId, status: "active" });
-    if (sc > 0 && !p.scenarioCompleted) return { error: [403, "Complete the scenario exercise first"] };
     return {
         a,
         p,
@@ -620,7 +593,7 @@ exports.getAssessment = async (req, res) => {
         const bankProgramme = await TrainingProgramme.findById(req.params.programmeId)
             .select("_id programmeType level createdBy owner")
             .lean();
-        if (bankProgramme) await ensureAssessmentQuestionBank(bankProgramme, bankProgramme.createdBy || bankProgramme.owner);
+        if (bankProgramme && (process.env.NODE_ENV !== 'production' || process.env.SEED_STARTER_CONTENT === 'true')) await ensureAssessmentQuestionBank(bankProgramme, bankProgramme.createdBy || bankProgramme.owner);
 
         const attempt = await createOrResumeAssessmentAttempt(req, req.params.programmeId, level, e.a);
         if (!attempt) return res.status(404).json({ message: "No active questions are available for this level" });
@@ -758,13 +731,12 @@ exports.submitAssessment = async (req, res) => {
             updateStage(e.p, e.requiredAssessmentLevel);
             await e.p.save();
         } else {
-            // Failed attempt: the trainee must relearn the programme and redo
-            // its scenario exercise before another randomized quiz attempt.
+            // Failed attempt: relearn the required learning sections before
+            // another randomized assessment attempt. Optional scenario/game
+            // progress is retained and does not block the retry.
             await SectionCompletion.deleteMany({ trainee: req.user.id, programme: req.params.programmeId });
             e.p.completedSections = [];
             e.p.learningCompleted = false;
-            e.p.completedScenarios = [];
-            e.p.scenarioCompleted = false;
             e.p[passFieldFor(level)] = false;
             e.p.retryRequiredLevel = level;
             e.p.currentStage = "learning";
@@ -774,9 +746,20 @@ exports.submitAssessment = async (req, res) => {
             await e.p.save();
         }
 
+        const finalProgress = await syncLearningProgress(req, req.params.programmeId, e.a);
         const updatedLevelAccess = passed
             ? await getModuleLevelAccess(req.user.id, programme.programmeType)
             : e.levelAccess;
+
+        // A passing assessment can be the final requirement across the three
+        // core modules. Reconcile certificate eligibility immediately so every
+        // active Administrator receives an in-app notification without waiting
+        // for the trainee or admin to open another page.
+        if (passed) {
+            await require('../services/certificateService')
+                .reconcileCertificateEligibility(req.user.id)
+                .catch(error => console.error('Certificate eligibility check failed:', error));
+        }
 
         res.status(201).json({
             attempt: {
@@ -789,7 +772,7 @@ exports.submitAssessment = async (req, res) => {
                 attemptNumber: attempt.attemptNumber,
             },
             programmeLevel: e.programmeLevel,
-            progress: e.p,
+            progress: finalProgress,
             levelAccess: updatedLevelAccess,
             relearnRequired: !passed,
         });

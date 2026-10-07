@@ -1,199 +1,30 @@
-const AuditLog =
-    require("../models/AuditLog");
-
-
-// ======================================================
-// GET CLIENT IP ADDRESS
-// ======================================================
-
-const getClientIp = (req) => {
-    const forwardedFor =
-        req.headers[
-        "x-forwarded-for"
-        ];
-
-
-    if (forwardedFor) {
-        return String(
-            forwardedFor
-        )
-            .split(",")[0]
-            .trim();
+const AuditLog = require('../models/AuditLog');
+const sensitive = /passwordHash|refreshTokenHash|password$|secret|token$|authorization|cookie|api.?key/i;
+const privateField = /^(email|phoneNumber|address|age|gender)$/;
+function redact(value, depth = 0) {
+    if (value == null) return value;
+    if (depth > 10) return '[truncated]';
+    if (value instanceof Date) return value;
+    if (value?._bsontype === 'ObjectId') return String(value);
+    if (Array.isArray(value)) return value.slice(0, 200).map(v => redact(v, depth + 1));
+    if (typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([key]) => !sensitive.test(key) && !privateField.test(key)).map(([key, v]) => [key, redact(v, depth + 1)]));
+    if (typeof value === 'string') return value.slice(0, 3000);
+    return value;
+}
+async function writeAuditLog({ req, user = null, username = '', role = 'unknown', action, status, targetUser = null, targetType = '', targetId = null, before = null, after = null, details = {} }) {
+    const safeDetails = redact(details);
+    if (targetUser) {
+        safeDetails.targetUser = { id: String(targetUser._id || targetUser.id), firstName: targetUser.firstName || '', lastName: targetUser.lastName || '', fullName: `${targetUser.firstName || ''} ${targetUser.lastName || ''}`.trim(), username: targetUser.username || '', role: targetUser.role, status: targetUser.status, accountStatus: targetUser.accountStatus };
+        targetType = targetType || 'User'; targetId = targetId || targetUser._id || targetUser.id;
     }
-
-
-    return (
-        req.ip ||
-        req.socket
-            ?.remoteAddress ||
-        ""
-    );
-};
-
-
-// ======================================================
-// CREATE SAFE TARGET USER DATA
-//
-// Never save passwords or password hashes.
-// ======================================================
-
-const buildTargetUserDetails = (
-    targetUser
-) => {
-    if (!targetUser) {
-        return null;
-    }
-
-
-    return {
-        id:
-            targetUser._id
-                ?.toString?.() ||
-            targetUser.id ||
-            null,
-
-        firstName:
-            targetUser.firstName ||
-            "",
-
-        lastName:
-            targetUser.lastName ||
-            "",
-
-        fullName:
-            `${targetUser.firstName || ""} ${targetUser.lastName || ""}`
-                .trim(),
-
-        username:
-            targetUser.username ||
-            "",
-
-        email:
-            targetUser.email ||
-            "",
-
-        role:
-            targetUser.role ||
-            "",
-
-        status:
-            targetUser.status ||
-            "",
-
-        accountStatus:
-            targetUser.accountStatus ||
-            "",
-    };
-};
-
-
-// ======================================================
-// WRITE AUDIT LOG
-//
-// user = person performing the operation
-// targetUser = person affected by the operation
-// ======================================================
-
-const writeAuditLog = async ({
-    req,
-
-    user = null,
-
-    username = "",
-
-    role = "unknown",
-
-    action,
-
-    status,
-
-    targetUser = null,
-
-    details = {},
-}) => {
-    try {
-        const safeDetails = {
-            ...details,
-        };
-
-
-        // ==================================================
-        // ADD TARGET USER INFORMATION
-        // ==================================================
-
-        const targetDetails =
-            buildTargetUserDetails(
-                targetUser
-            );
-
-
-        if (targetDetails) {
-            safeDetails.targetUser =
-                targetDetails;
-        }
-
-
-        // ==================================================
-        // CREATE LOG
-        // ==================================================
-
-        await AuditLog.create({
-            // Person who performed action
-            user:
-                user?._id ||
-                user?.id ||
-                null,
-
-            username:
-                String(
-                    user?.username ||
-                    username ||
-                    ""
-                )
-                    .trim()
-                    .toLowerCase(),
-
-            role:
-                user?.role ||
-                role ||
-                "unknown",
-
-            action,
-
-            status,
-
-            ipAddress:
-                getClientIp(
-                    req
-                ),
-
-            userAgent:
-                req.get(
-                    "user-agent"
-                ) || "",
-
-            details:
-                safeDetails,
-        });
-
-    } catch (error) {
-        /*
-            Audit logging should never break
-            the main application operation.
-        */
-
-        console.error(
-            "Audit log write error:",
-            error.message
-        );
-    }
-};
-
-
-// ======================================================
-// EXPORTS
-// ======================================================
-
-module.exports = {
-    writeAuditLog,
-};
+    // Persist actual server actions and let a failure remain observable.
+    return AuditLog.create({
+        user: user?._id || user?.id || null,
+        username: String(user?.username || username || '').trim().toLowerCase(),
+        role: user?.role || role || 'unknown', action, status,
+        ipAddress: req?.ip || req?.socket?.remoteAddress || '',
+        userAgent: String(req?.get?.('user-agent') || '').slice(0, 500),
+        targetType, targetId, before: redact(before), after: redact(after), details: safeDetails,
+    });
+}
+module.exports = { writeAuditLog, redact };

@@ -32,12 +32,14 @@ const schema = new mongoose.Schema({
     attemptNumber: { type: Number, required: true, min: 1 },
     startedAt: { type: Date, default: Date.now },
     submittedAt: { type: Date, default: null },
-}, { timestamps: true });
+}, { timestamps: true, optimisticConcurrency: true });
 
 schema.index({ trainee: 1, programme: 1, level: 1, attemptNumber: 1 }, { unique: true });
 schema.index({ trainee: 1, programme: 1, level: 1, status: 1 });
 schema.index({ trainee: 1, submittedAt: -1 });
 schema.index({ programme: 1, level: 1, submittedAt: -1 });
 schema.index({ passed: 1, submittedAt: -1 });
+
+schema.plugin(require("../utils/attemptEventPlugin"), { targetType: "AssessmentAttempt" });
 
 module.exports = mongoose.model("AssessmentAttempt", schema);

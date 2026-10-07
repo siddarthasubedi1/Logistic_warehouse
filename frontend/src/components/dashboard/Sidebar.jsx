@@ -200,6 +200,27 @@ function Icon({
             );
 
 
+        case "report":
+            return (
+                <svg {...props}>
+                    <path d="M5 19V9" />
+                    <path d="M10 19V5" />
+                    <path d="M15 19v-7" />
+                    <path d="M20 19V8" />
+                </svg>
+            );
+
+
+        case "badge":
+            return (
+                <svg {...props}>
+                    <circle cx="12" cy="9" r="5" />
+                    <path d="m9 14-1 7 4-2 4 2-1-7" />
+                    <path d="m10.5 9 1 1 2-2" />
+                </svg>
+            );
+
+
         case "profile":
             return (
                 <svg {...props}>
@@ -339,6 +360,24 @@ function Sidebar({
         },
 
         {
+            to: "/admin/reports",
+            label: "Reports & Analytics",
+            icon: "report",
+        },
+
+        {
+            to: "/admin/certificates",
+            label: "Certificates",
+            icon: "badge",
+        },
+
+        {
+            to: "/admin/notifications",
+            label: "Notifications",
+            icon: "bell",
+        },
+
+        {
             to: "/admin/audit-logs",
             label: "Audit Logs",
             icon: "audit",
@@ -352,6 +391,12 @@ function Sidebar({
             label: "Dashboard",
             icon: "dashboard",
             end: true,
+        },
+
+        {
+            to: "/trainer/monitoring",
+            label: "Trainee Monitoring",
+            icon: "report",
         },
 
         {
@@ -369,6 +414,12 @@ function Sidebar({
             to: "/puzzle-management",
             label: "Puzzle Challenges",
             icon: "quiz",
+        },
+
+        {
+            to: "/trainer/notifications",
+            label: "Notifications",
+            icon: "bell",
         },
 
         {
@@ -399,6 +450,12 @@ function Sidebar({
             icon: "progress",
         },
 
+
+        {
+            to: "/trainee/badges",
+            label: "My Badges",
+            icon: "badge",
+        },
 
         {
             to: "/trainee/quizzes",

@@ -11,6 +11,7 @@ const schema = new mongoose.Schema({
     currentStage: { type: String, enum: ["learning", "scenario", "basic", "intermediate", "high", "completed"], default: "learning" },
     status: { type: String, enum: ["not-started", "in-progress", "completed"], default: "not-started" }, progress: { type: Number, default: 0, min: 0, max: 100 },
     startedAt: { type: Date, default: null }, completedAt: { type: Date, default: null }, lastAccessedAt: { type: Date, default: null },
+    calculatedAt: { type: Date, default: null },
     trainingSection: { type: String, trim: true, default: undefined } // legacy Sprint-1 field only; Sprint-2 uses programme-scoped fields above
 }, { timestamps: true });
 schema.index({ trainee: 1, programme: 1 }, { unique: true, partialFilterExpression: { programme: { $type: "objectId" } } });

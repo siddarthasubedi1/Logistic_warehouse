@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-function AdminQuickActions({ pendingUsers = 0 }) {
+function AdminQuickActions({ pendingUsers = 0, pendingCertificates = 0 }) {
     const navigate = useNavigate();
     const actions = [
         {
@@ -16,6 +16,12 @@ function AdminQuickActions({ pendingUsers = 0 }) {
             icon: "♟",
         },
         {
+            title: "Send Certificates",
+            description: `${pendingCertificates} ${pendingCertificates === 1 ? "certificate" : "certificates"} ready to email`,
+            action: () => navigate("/admin/certificates"),
+            icon: "✓",
+        },
+        {
             title: "Access Control",
             description: "Admin roles are protected by role-based access control",
             action: () => navigate("/admin/roles"),
@@ -28,7 +34,7 @@ function AdminQuickActions({ pendingUsers = 0 }) {
         <section className="designer-card admin-quick-actions-card">
             <div className="admin-card-heading">
                 <h2>Quick Actions</h2>
-                <p>Common Sprint 1 administrative tasks.</p>
+                <p>Common administrative tasks and completion actions.</p>
             </div>
             <div className="admin-quick-actions-list">
                 {actions.map((action) => (

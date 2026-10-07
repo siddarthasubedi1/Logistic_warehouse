@@ -39,4 +39,6 @@ puzzleSchema.index({ programme: 1, status: 1 });
 puzzleSchema.index({ moduleKey: 1, status: 1 });
 puzzleSchema.index({ programme: 1, starterKey: 1 }, { unique: true, partialFilterExpression: { starterKey: { $type: 'string' } } });
 
+puzzleSchema.plugin(require("../utils/auditPlugin"), { targetType: "Puzzle" });
+
 module.exports = mongoose.model('Puzzle', puzzleSchema);

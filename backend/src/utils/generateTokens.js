@@ -43,6 +43,7 @@ const generateRefreshToken = (
         process.env.JWT_REFRESH_SECRET,
 
         {
+            jwtid: require('node:crypto').randomUUID(),
             expiresIn:
                 process.env
                     .REFRESH_TOKEN_EXPIRES_IN ||

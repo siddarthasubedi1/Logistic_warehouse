@@ -37,4 +37,6 @@ challengeSchema.index({ type: 1, programme: 1, status: 1 });
 // Keep repeated or simultaneous sample imports from duplicating missions.
 challengeSchema.index({ programme: 1, sampleKey: 1 }, { unique: true, partialFilterExpression: { type: 'safety_simulation', sampleKey: { $type: 'string' }, archivedAt: null } });
 
+challengeSchema.plugin(require("../utils/auditPlugin"), { targetType: "Challenge" });
+
 module.exports = mongoose.model('Challenge', challengeSchema);

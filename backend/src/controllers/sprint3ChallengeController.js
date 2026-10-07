@@ -19,10 +19,7 @@ async function managerProgramme(req, programmeId) {
   const programme = await TrainingProgramme.findById(programmeId);
   if (!programme) return { status: 404, message: 'Programme not found.' };
   if (req.user.role === 'admin') return { programme };
-  const uid = String(req.user.id);
-  const allowed = req.user.role === 'trainer' && (
-    String(programme.owner) === uid || (programme.authorizedTrainers || []).some(id => String(id) === uid)
-  );
+  const allowed = await require('../services/trainingAccessService').canManageProgramme(req.user, programme);
   return allowed ? { programme } : { status: 403, message: 'You are not authorised for this programme.' };
 }
 
@@ -33,8 +30,10 @@ async function traineeProgramme(req, programmeId, { requireAssessmentPass = fals
   await syncUnlockedProgressionAssignments(req.user.id, programme.programmeType);
   const assignment = await TrainingAssignment.findOne({ trainee: req.user.id, programme: programmeId, status: 'active' });
   if (!assignment) return { status: 403, code: 'TRAINING_NOT_ASSIGNED', message: 'This programme is not assigned to you.' };
-  const progress = await TrainingProgress.findOne({ trainee: req.user.id, programme: programmeId }).lean();
+  const access = await require('../services/traineeLevelProgressService').getModuleLevelAccess(req.user.id, programme.programmeType);
   const level = normalizeProgrammeLevel(programme.level);
+  if (!access[level]?.unlocked) return { status: 403, code: 'PROGRAMME_LEVEL_LOCKED', message: 'Complete the previous training level first.' };
+  const { progress } = await require('../services/trainingProgressService').refreshProgrammeProgress({ traineeId: req.user.id, programmeId, assignmentId: assignment._id });
   const passField = level === 'intermediate' ? 'intermediatePassed' : level === 'advanced' ? 'highPassed' : 'basicPassed';
   const assessmentPassed = !!progress?.[passField];
   if (requireAssessmentPass && !assessmentPassed) {
@@ -226,7 +225,7 @@ exports.listPuzzles = async (req, res) => {
   try {
     const query = {};
     if (req.user.role === 'trainer') {
-      const programmes = await TrainingProgramme.find({ $or: [{ owner: req.user.id }, { authorizedTrainers: req.user.id }] }).select('_id').lean();
+      const programmes = await TrainingProgramme.find(await require('../services/trainingAccessService').trainerProgrammeFilter(req.user)).select('_id').lean();
       query.programme = { $in: programmes.map(p => p._id) };
     }
     if (req.query.programmeId) {
@@ -372,8 +371,10 @@ exports.startChallenge = async (req, res) => {
 exports.useHint = async (req, res) => {
   try {
     if (!oid(req.params.attemptId)) return res.status(400).json({ message: 'Invalid attempt id.' });
-    const attempt = await ChallengeAttempt.findOne({ _id: req.params.attemptId, trainee: req.user.id, result: 'in-progress' }).populate('puzzle', 'hint type');
+    const attempt = await ChallengeAttempt.findOne({ _id: req.params.attemptId, trainee: req.user.id, result: 'in-progress' }).populate('puzzle', 'hint type programme');
     if (!attempt) return res.status(409).json({ message: 'This challenge attempt is no longer active.' });
+    const access = await traineeProgramme(req, attempt.programme, { requireAssessmentPass: true });
+    if (access.status) return res.status(access.status).json({ code: access.code, message: access.message });
     if (Date.now() - attempt.startedAt.getTime() >= (await Challenge.findById(attempt.challenge)).timeLimitSeconds * 1000) return res.status(409).json({ message: 'Time limit expired.' });
     if (attempt.puzzle?.type === 'environmental-hazard') return res.status(400).json({ message: 'Select a hazard for a hint.' });
     attempt.hintsUsed += 1;

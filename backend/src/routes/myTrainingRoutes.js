@@ -65,4 +65,6 @@ router.get(
 );
 
 
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports = router;

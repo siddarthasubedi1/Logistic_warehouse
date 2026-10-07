@@ -65,45 +65,19 @@ const rawActiveAssignmentRows = async (traineeId, moduleType = null) => {
 };
 
 const getPassedProgrammeIds = async (traineeId, programmes) => {
-    const programmeIds = programmes.map((programme) => programme._id);
+    const programmeIds = programmes.map(programme => programme._id);
     if (!programmeIds.length) return new Set();
-
-    const [passedAttempts, progressRows] = await Promise.all([
-        AssessmentAttempt.find({
-            trainee: traineeId,
-            programme: { $in: programmeIds },
-            passed: true,
-            status: "submitted",
-        }).select("programme level").lean(),
-        TrainingProgress.find({
-            trainee: traineeId,
-            programme: { $in: programmeIds },
-        }).select("programme basicPassed intermediatePassed highPassed").lean(),
-    ]);
-
-    const programmeById = new Map(programmes.map((programme) => [String(programme._id), programme]));
-    const passedProgrammeIds = new Set(
-        passedAttempts
-            .filter((attempt) => {
-                const programme = programmeById.get(String(attempt.programme));
-                return programme && normalize(attempt.level) === assessmentLevelForProgramme(programme);
-            })
-            .map((attempt) => String(attempt.programme))
-    );
-
-    for (const row of progressRows) {
-        const programme = programmeById.get(String(row.programme));
-        if (!programme) continue;
-        const assessmentLevel = assessmentLevelForProgramme(programme);
-        const passField = {
-            basic: "basicPassed",
-            intermediate: "intermediatePassed",
-            high: "highPassed",
-        }[assessmentLevel];
-        if (passField && row[passField]) passedProgrammeIds.add(String(row.programme));
+    const attempts = await AssessmentAttempt.find({ trainee: traineeId, programme: { $in: programmeIds }, status: 'submitted' })
+        .sort({ submittedAt: -1, createdAt: -1, attemptNumber: -1 }).select('programme level passed totalPoints').lean();
+    const byId = new Map(programmes.map(programme => [String(programme._id), programme]));
+    const seen = new Set(), passed = new Set();
+    for (const attempt of attempts) {
+        const id = String(attempt.programme), programme = byId.get(id);
+        if (!programme || attempt.level !== assessmentLevelForProgramme(programme) || seen.has(id)) continue;
+        seen.add(id);
+        if (attempt.passed && attempt.totalPoints > 0) passed.add(id);
     }
-
-    return passedProgrammeIds;
+    return passed;
 };
 
 const buildLevelStats = (programmes, passedProgrammeIds) => {
@@ -429,146 +403,7 @@ const getModuleLevelAccess = async (traineeId, moduleType, suppliedProgrammes = 
 
 const clampPercentage = (value) => Math.max(0, Math.min(100, Number(value || 0)));
 
-const getTraineeModuleProgress = async (traineeId) => {
-    const programmes = await getActiveAssignedProgrammes(traineeId);
-    const programmeIds = programmes.map((programme) => programme._id);
-
-    const [progressRows, attempts] = await Promise.all([
-        programmeIds.length
-            ? TrainingProgress.find({ trainee: traineeId, programme: { $in: programmeIds } }).lean()
-            : [],
-        programmeIds.length
-            ? AssessmentAttempt.find({
-                trainee: traineeId,
-                programme: { $in: programmeIds },
-                status: "submitted",
-            })
-                .select("programme level score totalPoints percentage passed attemptNumber submittedAt createdAt")
-                .sort({ submittedAt: -1, createdAt: -1 })
-                .lean()
-            : [],
-    ]);
-
-    const progressByProgramme = new Map(progressRows.map((row) => [String(row.programme), row]));
-    const attemptsByProgramme = new Map();
-    for (const attempt of attempts) {
-        const key = String(attempt.programme);
-        if (!attemptsByProgramme.has(key)) attemptsByProgramme.set(key, []);
-        attemptsByProgramme.get(key).push(attempt);
-    }
-
-    const groups = new Map();
-    for (const programme of programmes) {
-        const moduleType = normalize(programme.programmeType) || "other";
-        if (!groups.has(moduleType)) groups.set(moduleType, []);
-        groups.get(moduleType).push(programme);
-    }
-
-    const modules = [];
-    for (const [moduleType, moduleProgrammes] of groups.entries()) {
-        const access = await getModuleLevelAccess(traineeId, moduleType, moduleProgrammes);
-        const levelRows = LEVEL_ORDER.map((level) => {
-            const levelProgrammes = moduleProgrammes.filter(
-                (programme) => normalizeProgrammeLevel(programme.level) === level
-            );
-
-            const programmeRows = levelProgrammes.map((programme) => {
-                const id = String(programme._id);
-                const requiredAssessmentLevel = assessmentLevelForProgramme(programme);
-                const programmeAttempts = (attemptsByProgramme.get(id) || [])
-                    .filter((attempt) => normalize(attempt.level) === requiredAssessmentLevel);
-                const progressRow = progressByProgramme.get(id);
-                const legacyPassField = {
-                    basic: "basicPassed",
-                    intermediate: "intermediatePassed",
-                    high: "highPassed",
-                }[requiredAssessmentLevel];
-                const passed = programmeAttempts.some((attempt) => attempt.passed) || !!progressRow?.[legacyPassField];
-                const latestAttempt = programmeAttempts[0] || null;
-                const bestPercentage = programmeAttempts.length
-                    ? Math.max(...programmeAttempts.map((attempt) => Number(attempt.percentage || 0)))
-                    : null;
-
-                return {
-                    programmeId: programme._id,
-                    title: programme.title,
-                    passMark: programme.passMark,
-                    programmeLevel: normalizeProgrammeLevel(programme.level),
-                    assessmentLevel: requiredAssessmentLevel,
-                    progress: passed ? 100 : clampPercentage(progressRow?.progress),
-                    passed,
-                    attemptCount: programmeAttempts.length,
-                    latestPercentage: latestAttempt ? Number(latestAttempt.percentage || 0) : null,
-                    bestPercentage,
-                    latestPassed: latestAttempt ? !!latestAttempt.passed : null,
-                    latestAttemptNumber: latestAttempt ? Number(latestAttempt.attemptNumber || 0) : null,
-                };
-            });
-
-            const completed = !!access[level]?.completed;
-            const levelProgress = completed
-                ? 100
-                : (programmeRows.length ? Math.max(...programmeRows.map((row) => Number(row.progress || 0))) : 0);
-            const levelAttempts = programmeRows.reduce((sum, row) => sum + row.attemptCount, 0);
-            const percentages = programmeRows
-                .map((row) => row.bestPercentage)
-                .filter((value) => value !== null);
-            const primaryProgramme = primaryProgrammeForLevel(moduleProgrammes, level);
-            const primaryRow = primaryProgramme
-                ? programmeRows.find((row) => String(row.programmeId) === String(primaryProgramme._id))
-                : null;
-
-            return {
-                level,
-                progress: levelProgress,
-                assignedCount: access[level]?.available ? 1 : 0,
-                completedCount: completed ? 1 : 0,
-                completed,
-                unlocked: access[level]?.unlocked || false,
-                prerequisiteMet: access[level]?.prerequisiteMet || false,
-                attempts: levelAttempts,
-                bestPercentage: percentages.length ? Math.max(...percentages) : null,
-                programmes: primaryRow ? [primaryRow] : [],
-            };
-        });
-
-        const moduleProgress = Math.round(
-            levelRows.reduce((sum, level) => sum + level.progress, 0) / LEVEL_ORDER.length
-        );
-        const moduleAttempts = moduleProgrammes.flatMap((programme) => attemptsByProgramme.get(String(programme._id)) || []);
-        const latestAttempt = moduleAttempts
-            .slice()
-            .sort((a, b) => new Date(b.submittedAt || b.createdAt || 0) - new Date(a.submittedAt || a.createdAt || 0))[0] || null;
-        const bestPercentage = moduleAttempts.length
-            ? Math.max(...moduleAttempts.map((attempt) => Number(attempt.percentage || 0)))
-            : null;
-        const completedLevels = levelRows.filter((level) => level.completed).length;
-        const currentLevel = LEVEL_ORDER.find((level) => {
-            const row = levelRows.find((item) => item.level === level);
-            return row?.assignedCount > 0 && !row.completed && row.unlocked;
-        }) || (completedLevels === LEVEL_ORDER.length ? "completed" : null);
-
-        modules.push({
-            trainingSection: moduleType,
-            moduleType,
-            status: moduleProgress >= 100 ? "completed" : moduleProgress > 0 ? "in-progress" : "not-started",
-            progress: moduleProgress,
-            completedLevels,
-            totalLevels: LEVEL_ORDER.length,
-            currentLevel,
-            attempts: moduleAttempts.length,
-            bestPercentage,
-            latestPercentage: latestAttempt ? Number(latestAttempt.percentage || 0) : null,
-            latestPassed: latestAttempt ? !!latestAttempt.passed : null,
-            latestAttemptNumber: latestAttempt ? Number(latestAttempt.attemptNumber || 0) : null,
-            levels: levelRows,
-            levelAccess: access,
-        });
-    }
-
-    modules.sort((a, b) => a.moduleType.localeCompare(b.moduleType));
-    return modules;
-};
+const getTraineeModuleProgress = async (traineeId) => (await require('./progressOverviewService').ownOverview(traineeId)).progress;
 
 module.exports = {
     LEVEL_ORDER,

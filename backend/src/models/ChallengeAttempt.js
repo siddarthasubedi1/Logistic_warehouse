@@ -34,4 +34,7 @@ challengeAttemptSchema.index({ challenge: 1, programme: 1, result: 1, validitySt
 
 challengeAttemptSchema.index({ trainee: 1, challenge: 1 }, { name: 'active_simulation_attempt', unique: true, partialFilterExpression: { type: 'safety_simulation', result: 'in-progress' } });
 
+challengeAttemptSchema.plugin(require("../utils/attemptEventPlugin"), { targetType: "ChallengeAttempt" });
+
+challengeAttemptSchema.index({ programme: 1, trainee: 1, finishedAt: -1 });
 module.exports = mongoose.model('ChallengeAttempt', challengeAttemptSchema);

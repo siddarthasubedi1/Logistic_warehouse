@@ -21,7 +21,6 @@ const TITLES = {
     progress: ["My Progress", "Track completion, levels, attempts and assessment marks across your assigned modules."],
     scenarios: ["Panoramic Scenarios", "Practice recognising workplace hazards in realistic warehouse environments."],
     quizzes: ["Quizzes", "Review your submitted assessment attempts and marks across assigned training modules."],
-    notifications: ["Notifications", "View training updates and account messages."],
     help: ["Help Support", "Find guidance for using the UK LogiWare safety training system."],
 };
 
@@ -94,14 +93,14 @@ function TraineeUtilityPage({ type }) {
     if (loading) {
         return (
             <DashboardLayout role="trainee" title={title} subtitle={subtitle}>
-                <div className="app-page"><LoadingCard message="Loading..." /></div>
+                <div className="app-page trainee-page trainee-utility-page"><LoadingCard message="Loading..." /></div>
             </DashboardLayout>
         );
     }
 
     return (
         <DashboardLayout role="trainee" title={title} subtitle={subtitle}>
-            <div className="app-page space-y-5">
+            <div className={`app-page trainee-page trainee-utility-page trainee-utility-page--${type} space-y-5`}>
                 <FeedbackAlert type="error" message={error} onClose={() => setError("")} />
 
                 {type === "progress" && (
@@ -123,7 +122,7 @@ function TraineeUtilityPage({ type }) {
                             <div>
                                 <h2 className="text-[14px] font-bold text-[#172033]">Training Progress</h2>
                                 <p className="mt-1 text-[11px] text-[#64748b]">
-                                    Each module has three levels. Completing Beginner gives about 33%, Beginner + Intermediate about 67%, and all three levels 100%.
+                                    Progress is calculated from verified learning-section completions and submitted assessment results. Scenarios, puzzles and safety simulations are optional practice and do not block completion or certificate eligibility.
                                 </p>
                             </div>
 
@@ -218,7 +217,6 @@ function TraineeUtilityPage({ type }) {
                     </>
                 )}
 
-                {type === "notifications" && <EmptyCard title="Training available" text="Your assigned training modules are ready to continue." />}
                 {type === "help" && <HelpCard />}
             </div>
         </DashboardLayout>
@@ -227,6 +225,7 @@ function TraineeUtilityPage({ type }) {
 
 function ModuleProgressCard({ item }) {
     const levels = Array.isArray(item.levels) ? item.levels : [];
+    const programmes = Array.isArray(item.programmes) ? item.programmes : [];
     const currentLabel = item.currentLevel === "completed"
         ? "All levels complete"
         : item.currentLevel
@@ -282,7 +281,54 @@ function ModuleProgressCard({ item }) {
                     <span><b>Latest result:</b> {item.latestPassed ? "Passed" : "Not Passed"}</span>
                 )}
             </div>
+
+            {programmes.length > 0 && (
+                <div className="mt-4 space-y-2">
+                    {programmes.map((programme) => (
+                        <details key={programme.programmeId} className="rounded-lg border border-[#e2e8f0] bg-white p-3">
+                            <summary className="cursor-pointer list-none">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-[#172033]">{programme.title}</p>
+                                        <p className="mt-1 text-[9px] text-[#64748b]">{LEVEL_LABELS[programme.programmeLevel] || formatSection(programme.programmeLevel)} • {programme.statusLabel || formatSection(programme.status)}</p>
+                                    </div>
+                                    <strong className="text-[11px] text-blue-700">{Number(programme.progress || 0)}%</strong>
+                                </div>
+                            </summary>
+
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                                <ProgressDetail label="Learning" value={`${Number(programme.learning?.completed || 0)}/${Number(programme.learning?.required || 0)}`} />
+                                <ProgressDetail label="Scenarios" value={`${Number(programme.sceneActivities?.completed || 0)}/${Number(programme.sceneActivities?.required || 0)}`} />
+                                <ProgressDetail label="Hazards" value={`${Number(programme.hazards?.completed || 0)}/${Number(programme.hazards?.required || 0)}`} />
+                                <ProgressDetail label="Quiz Attempts" value={Number(programme.assessment?.attempts || 0)} />
+                                <ProgressDetail label="Latest Mark" value={programme.assessment?.latestScore === null || programme.assessment?.latestScore === undefined ? "—" : `${formatPercent(programme.assessment.latestScore)}%`} />
+                                <ProgressDetail label="Best Mark" value={programme.assessment?.bestScore === null || programme.assessment?.bestScore === undefined ? "—" : `${formatPercent(programme.assessment.bestScore)}%`} />
+                                <ProgressDetail label="Latest Result" value={programme.assessment?.passed === null || programme.assessment?.passed === undefined ? "—" : programme.assessment.passed ? "Passed" : "Not Passed"} />
+                                <ProgressDetail label="Assigned" value={formatDate(programme.assignedAt)} />
+                                <ProgressDetail label="Started" value={formatDate(programme.startedAt)} />
+                                <ProgressDetail label="Latest Assessment" value={formatDate(programme.assessment?.latestSubmittedAt)} />
+                                <ProgressDetail label="Completed" value={formatDate(programme.completedAt)} />
+                            </div>
+
+                            {Array.isArray(programme.configurationIssues) && programme.configurationIssues.length > 0 && (
+                                <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[9px] text-amber-800">
+                                    Training configuration needs attention: {programme.configurationIssues.map(formatSection).join(", ")}.
+                                </p>
+                            )}
+                        </details>
+                    ))}
+                </div>
+            )}
         </article>
+    );
+}
+
+function ProgressDetail({ label, value }) {
+    return (
+        <div className="rounded-lg bg-[#f8fafc] px-3 py-2">
+            <p className="text-[8px] text-[#64748b]">{label}</p>
+            <strong className="mt-1 block text-[10px] text-[#172033]">{value}</strong>
+        </div>
     );
 }
 

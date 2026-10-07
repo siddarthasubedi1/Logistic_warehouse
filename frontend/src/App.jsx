@@ -27,6 +27,8 @@ import RoleDetailsPage from "./pages/admin/RoleDetailsPage";
 import EditRolePage from "./pages/admin/EditRolePage";
 import AuditLogsPage from "./pages/admin/AuditLogsPage";
 import PanoramaManagementPage from "./pages/admin/PanoramaManagementPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import CertificateManagementPage from "./pages/admin/CertificateManagementPage";
 
 import TrainingProgrammesPage from "./pages/training/TrainingProgrammesPage";
 import PuzzleManagementPage from "./pages/training/PuzzleManagementPage";
@@ -38,6 +40,9 @@ import MyTrainingPage from "./pages/training/MyTrainingPage";
 import TraineeLearningPage from "./pages/training/TraineeLearningPage";
 
 import TraineeUtilityPage from "./pages/trainee/TraineeUtilityPage";
+import TraineeBadgesPage from "./pages/trainee/TraineeBadgesPage";
+import TrainerMonitoringPage from "./pages/trainer/TrainerMonitoringPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import TraineeModuleEnvironment from "./pages/trainee/TraineeModuleEnvironment";
 import TraineeExercisePage from "./pages/trainee/TraineeExercisePage";
 import TraineeChallengePage from "./pages/trainee/TraineeChallengePage";
@@ -245,6 +250,39 @@ function App() {
 
 
       {/* ===================================================
+          ADMIN REPORTS + NOTIFICATIONS
+      ==================================================== */}
+
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminReportsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/certificates"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <CertificateManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/notifications"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <NotificationsPage role="admin" />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
           ADMIN PANORAMA MANAGEMENT
       ==================================================== */}
 
@@ -413,6 +451,29 @@ function App() {
             allowedRoles={["trainer"]}
           >
             <TrainerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
+          TRAINER MONITORING + NOTIFICATIONS
+      ==================================================== */}
+
+      <Route
+        path="/trainer/monitoring"
+        element={
+          <ProtectedRoute allowedRoles={["trainer"]}>
+            <TrainerMonitoringPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainer/notifications"
+        element={
+          <ProtectedRoute allowedRoles={["trainer"]}>
+            <NotificationsPage role="trainer" />
           </ProtectedRoute>
         }
       />
@@ -633,6 +694,20 @@ function App() {
 
 
       {/* ===================================================
+          TRAINEE BADGES
+      ==================================================== */}
+
+      <Route
+        path="/trainee/badges"
+        element={
+          <ProtectedRoute allowedRoles={["trainee"]}>
+            <TraineeBadgesPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* ===================================================
           TRAINEE QUIZZES
       ==================================================== */}
 
@@ -660,9 +735,7 @@ function App() {
           <ProtectedRoute
             allowedRoles={["trainee"]}
           >
-            <TraineeUtilityPage
-              type="notifications"
-            />
+            <NotificationsPage role="trainee" />
           </ProtectedRoute>
         }
       />

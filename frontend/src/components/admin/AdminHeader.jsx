@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 
 import api from "../../services/api";
+import ThemeToggle from "../dashboard/ThemeToggle";
 
 
 function AdminHeader({
@@ -276,12 +277,15 @@ function AdminHeader({
 
             <div
                 className="
+                    admin-dashboard-header__actions
                     flex
                     shrink-0
                     items-center
                     gap-3
                 "
             >
+                <ThemeToggle />
+
                 {/* NOTIFICATION */}
 
                 <div

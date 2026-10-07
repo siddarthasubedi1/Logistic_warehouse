@@ -86,6 +86,7 @@ function ProfileHeaderButton({
             }
             title="View profile"
             className="
+                profile-header-button
                 group
                 flex
                 max-w-full

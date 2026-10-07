@@ -60,6 +60,25 @@ const app =
     express();
 
 
+app.disable('x-powered-by');
+const trustedProxy = Number(process.env.TRUST_PROXY || 0);
+if (Number.isInteger(trustedProxy) && trustedProxy > 0 && trustedProxy <= 5) app.set('trust proxy', trustedProxy);
+app.use((req, res, next) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Referrer-Policy', 'no-referrer');
+    const json = res.json.bind(res);
+    res.json = body => {
+        if (res.statusCode >= 500) return json({ code: 'INTERNAL_ERROR', message: 'Unable to process this request.' });
+        if (res.statusCode >= 400 && /Cast to|validation failed|E11000|BSON|passwordHash|refreshTokenHash/.test(body?.message || '')) return json({ code: 'INVALID_INPUT', message: 'Invalid request data.' });
+        return json(body);
+    };
+    next();
+});
+app.get('/api/health', (req, res) => {
+    const ready = require('mongoose').connection.readyState === 1;
+    res.status(ready ? 200 : 503).json({ status: ready ? 'ok' : 'unavailable', database: ready ? 'connected' : 'disconnected' });
+});
+
 // ======================================================
 // CORS
 // ======================================================
@@ -97,6 +116,8 @@ app.use(
     cookieParser()
 );
 
+
+app.use(require("./src/middleware/validateRequest").inputGuard);
 
 // ======================================================
 // STATIC PROFILE IMAGES
@@ -239,6 +260,7 @@ app.use("/api", trainingContentApiRoutes);
 app.use("/api", sprint3ChallengeRoutes);
 app.use("/api/safety-simulations", require("./src/routes/safetySimulationRoutes"));
 app.use("/api/training-content", trainingContentRoutes);
+app.use("/api", require("./src/routes/sprint4Routes"));
 
 
 // ======================================================
@@ -344,6 +366,12 @@ app.use(
 // ======================================================
 // EXPORT
 // ======================================================
+
+app.use((req, res) => res.status(404).json({ code: 'NOT_FOUND', message: 'API endpoint not found.' }));
+app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+    return require('./src/utils/apiValidation').safeError(error, res);
+});
 
 module.exports =
     app;

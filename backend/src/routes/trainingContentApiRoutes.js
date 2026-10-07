@@ -48,4 +48,6 @@ r.get('/trainee/results', authorize('admin', 'trainer', 'trainee'), c.results);
 r.get('/attempt-records', authorize('admin', 'trainer'), c.attemptRecords);
 r.get('/attempt-records/:attemptId', authorize('admin', 'trainer'), c.attemptRecordDetail);
 
+require("../middleware/validateRequest").configureRouter(r);
+
 module.exports = r;

@@ -25,6 +25,7 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
   const [size, setSize] = useState({ width: 1000, height: 580 });
   const [scores, setScores] = useState(null);
   const [bestUpdated, setBestUpdated] = useState(false);
+  const [actionNotice, setActionNotice] = useState(null);
   const imageDialogRef = useRef(null);
   const stageRef = useRef(null), lastControlRef = useRef(null), gameRef = useRef(null);
   const previewRef = useRef(previewGame);
@@ -84,9 +85,14 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
     lastControlRef.current?.focus();
     return () => { if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, [selectedId]);
+  useEffect(() => {
+    if (!actionNotice) return undefined;
+    const timer = window.setTimeout(() => setActionNotice(null), 5200);
+    return () => window.clearTimeout(timer);
+  }, [actionNotice]);
 
   const start = async (restart = false) => {
-    setBusy(true); setError(''); setObjectId(''); setScores(null); setPaused(false); setView({ yaw: 0, pitch: 0, fov: 78 });
+    setBusy(true); setError(''); setActionNotice(null); setObjectId(''); setScores(null); setPaused(false); setView({ yaw: 0, pitch: 0, fov: 78 });
     try {
       if (previewGame) {
         const draft = { ...previewGame, simulation: validateSimulation(previewGame.simulation) }; previewRef.current = draft;
@@ -99,13 +105,36 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
   const interact = async (body, complete = false) => {
     if (busy || !running) return;
     setBusy(true); setError('');
+    if (body.kind === 'move' || complete) setActionNotice(null);
+
+    const readActionResult = nextAttempt => {
+      if (complete || body.kind === 'move' || !body.actionId) return;
+      const events = nextAttempt?.simulationState?.actions || [];
+      const event = [...events].reverse().find(row => row.actionId === body.actionId);
+      if (!event) return;
+      if (event.safe === false) {
+        setActionNotice({
+          type: 'error',
+          actionId: body.actionId,
+          title: 'Unsafe choice',
+          message: event.feedback || 'That action is unsafe. Review the object and choose a safer response.',
+        });
+      } else {
+        setActionNotice(null);
+      }
+    };
+
     try {
       if (previewGame) {
         const draft = previewRef.current, at = new Date().toISOString();
         const next = complete ? finishMission(draft.simulation, state, rulesFor(draft), at, Math.floor(elapsed)) : body.kind === 'move' ? moveMission(draft.simulation, state, body.locationId, at) : applyInteraction(draft.simulation, state, body.actionId, rulesFor(draft), at);
-        accept({ game: publicMission(draft, next), attempt: { ...attempt, simulationState: next, result: next.result, score: next.score, ...(next.finishedAt ? { finishedAt: next.finishedAt, durationSeconds: Math.floor(elapsed) } : {}) }, serverNow: at });
+        const nextAttempt = { ...attempt, simulationState: next, result: next.result, score: next.score, ...(next.finishedAt ? { finishedAt: next.finishedAt, durationSeconds: Math.floor(elapsed) } : {}) };
+        readActionResult(nextAttempt);
+        accept({ game: publicMission(draft, next), attempt: nextAttempt, serverNow: at });
       } else {
-        const { data } = await api.post(`/safety-simulations/${gameId}/attempts/${attempt._id}/${complete ? 'complete' : 'action'}`, body); accept(data);
+        const { data } = await api.post(`/safety-simulations/${gameId}/attempts/${attempt._id}/${complete ? 'complete' : 'action'}`, body);
+        readActionResult(data.attempt);
+        accept(data);
       }
       if (body.kind === 'move') { setObjectId(''); setView({ yaw: 0, pitch: 0, fov: 78 }); }
     } catch (e) {
@@ -133,6 +162,7 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
       <button className='sim-button' disabled={busy || game.locked} onClick={() => start()}>{busy ? 'Starting…' : 'Start mission'}</button></div>
     </div> : <>
       <div className='sim-hud'><span aria-live='off'>Time remaining <strong>{duration(remaining)}</strong></span><span>Score <strong>{attempt.score} / {game.maxScore}</strong></span><span>Objectives <strong>{state.completedObjectives.length} / {game.objectives.length}</strong></span><span>Mistakes <strong>{state.mistakes}</strong></span><div className='sim-controls'>{running && <button className='sim-button sim-button--light' onClick={() => { setObjectId(''); setPaused(v => !v); }}>{paused ? 'Resume view' : 'Pause view'}</button>}<button className='sim-button sim-button--light' disabled={busy} onClick={() => start(true)}>Restart</button></div></div>
+      {actionNotice?.type === 'error' && <div className='sim-action-notice sim-action-notice--error' role='alert' aria-live='assertive'><span className='sim-action-notice__icon' aria-hidden='true'>!</span><div><strong>{actionNotice.title}</strong><p>{actionNotice.message}</p></div><button type='button' aria-label='Dismiss message' onClick={() => setActionNotice(null)}>×</button></div>}
       {running ? <div className='sim-play-layout'>
         <div className='sim-environment-column'>
           <div className='sim-stage' ref={stageRef} aria-label={`Environment: ${room?.name}`}>
@@ -164,7 +194,7 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
               <figure className='sim-object-figure'><button type='button' className='sim-image-inspect' aria-label={`Enlarge image of ${selected.name}`} onClick={() => imageDialogRef.current?.showModal()}><SimulationImage className='sim-object-image' src={selectedVisual.src} fallback={selectedVisual.fallback} alt={selectedVisual.alt} /><span>Enlarge image ↗</span></button><figcaption>{selected.imageUrl ? 'Object reference image' : 'Training illustration'} · {selected.name}</figcaption></figure>
               <div className='sim-object-content'><p>{selected.description}</p>
                 {['workstation', 'email', 'file', 'device'].includes(selected.type) && <span className='sim-digital-label'>Simulated device · all interactions stay inside the mission</span>}
-                <span className='sim-eyebrow'>Choose your action</span><div className='sim-action-list'>{selectedActions.map(action => <div className='sim-action-option' key={action.id}><button type='button' className='sim-button' disabled={busy || !action.allowed} title={action.reason || ''} onClick={() => interact({ actionId: action.id })}>{state.completedActions.includes(action.id) ? '✓ ' : ''}{action.label}</button>{!action.allowed && !state.completedActions.includes(action.id) && action.reason && <small>{action.reason}</small>}</div>)}</div>
+                <span className='sim-eyebrow'>Choose your action</span><div className='sim-action-list'>{selectedActions.map(action => <div className='sim-action-option' key={action.id}><button type='button' className={`sim-button sim-action-button ${actionNotice?.actionId === action.id ? 'sim-action-button--wrong' : ''}`} disabled={busy || !action.allowed} title={action.reason || ''} onClick={() => interact({ actionId: action.id })}>{state.completedActions.includes(action.id) ? '✓ ' : ''}{action.label}</button>{!action.allowed && !state.completedActions.includes(action.id) && action.reason && <small>{action.reason}</small>}</div>)}</div>
               </div>
             </div>
             <dialog key={selected.id} ref={imageDialogRef} className='sim-image-dialog' aria-label={`${selected.name} image viewer`} onKeyDown={event => { if (event.key === 'Escape') event.stopPropagation(); }}><div className='sim-interaction-heading'><h2>{selected.name}</h2><button type='button' className='sim-button sim-button--light' autoFocus onClick={() => imageDialogRef.current?.close()} aria-label='Close enlarged image'>×</button></div><SimulationImage src={selectedVisual.src} fallback={selectedVisual.fallback} alt={selectedVisual.alt} /><p className='sim-help'>Press Escape or close the viewer to return to the mission. The timer continues.</p></dialog>
@@ -177,7 +207,7 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
         </aside>
       </div> : <section className='sim-result sim-card' aria-live='polite'><span className='sim-eyebrow'>Mission result</span><h2>{attempt.result === 'completed' ? 'Mission successful' : attempt.result === 'timeout' ? 'Time limit reached' : 'Mission ended'}</h2><p>{state.feedback}</p><div className='sim-metrics'><span>Score <strong>{attempt.score}</strong></span><span>Duration <strong>{duration(attempt.durationSeconds)}</strong></span><span>Completed objectives <strong>{state.completedObjectives.length}</strong></span><span>Mistakes <strong>{state.mistakes}</strong></span></div><p>Started: {date(attempt.startedAt)}<br />Finished: {date(attempt.finishedAt)}</p>{bestUpdated && <p className='sim-state-note'>Your personal best improved.</p>}<div className='sim-actions'><button className='sim-button' disabled={busy} onClick={() => start(true)}>Play again</button>{!previewGame && <button className='sim-button sim-button--light' disabled={busy} onClick={leaderboard}>View mission scores</button>}</div>
       </section>}
-      {scores && <section className='sim-card'><h2>Mission scores</h2><p>Rank and score are shared with trainees.</p>{scores.length ? <table className='sim-table'><thead><tr><th>Rank</th><th>Score</th></tr></thead><tbody>{scores.map((row, index) => <tr key={index}><td>{row.rank}</td><td>{row.score}</td></tr>)}</tbody></table> : <p>No successful scores yet.</p>}</section>}
+      {scores && <section className='sim-card'><h2>Mission scores</h2><p>Rank and score are shared with trainees.</p>{scores.length ? <div className='sim-table-scroll'><table className='sim-table'><thead><tr><th>Rank</th><th>Score</th></tr></thead><tbody>{scores.map((row, index) => <tr key={index}><td>{row.rank}</td><td>{row.score}</td></tr>)}</tbody></table></div> : <p>No successful scores yet.</p>}</section>}
     </>}
   </section>;
 }

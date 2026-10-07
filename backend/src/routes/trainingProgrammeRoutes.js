@@ -363,5 +363,7 @@ router.patch(
 // EXPORT
 // ======================================================
 
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports =
     router;

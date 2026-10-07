@@ -67,7 +67,7 @@ async function run() {
 
         const programme = await TrainingProgramme.findOneAndUpdate(
             { programmeType: moduleData.key, title: `${moduleData.name} Safety Programme` },
-            { $set: { description: `${moduleData.description} Complete the ordered learning, scenario and progressive assessments.`, owner: trainerA._id, authorizedTrainers: [trainerA._id], passMark: PASS_MARK, status: "active", createdBy: admin._id, updatedBy: admin._id } },
+            { $set: { description: `${moduleData.description} Complete the ordered learning and progressive assessments. Scenario practice is optional.`, owner: trainerA._id, authorizedTrainers: [trainerA._id], passMark: PASS_MARK, status: "active", createdBy: admin._id, updatedBy: admin._id } },
             { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
         );
 

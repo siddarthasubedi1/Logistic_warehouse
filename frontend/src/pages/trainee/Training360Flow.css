@@ -2295,3 +2295,129 @@
     .training360-flow__modules,
     .immersive-stations { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Refinements for module area navigation and cleaner immersive chrome */
+.immersive-module .immersive-hint { display: none; }
+.immersive-room-navigation {
+    inset: auto 28px 92px;
+    align-items: stretch;
+}
+.immersive-room-link {
+    flex: 1 1 0;
+    max-width: min(360px, calc(50% - 8px));
+    min-height: 72px;
+    backdrop-filter: blur(10px);
+}
+.immersive-room-link--next { margin-left: auto; }
+.immersive-room-link__copy b {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+@media (max-width: 760px) {
+    .immersive-room-navigation { inset: auto 12px 88px; gap: 10px; }
+    .immersive-room-link {
+        min-height: 64px;
+        max-width: calc(50% - 5px);
+    }
+    .immersive-room-link__copy b { font-size: 11px; }
+}
+@media (max-width: 520px) {
+    .immersive-room-navigation {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        inset: auto 12px 88px;
+    }
+    .immersive-room-link,
+    .immersive-room-link--next {
+        max-width: none;
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+/* =========================================================
+   FINAL IMMERSIVE NAVIGATION CLEANUP
+   Keep navigation, zoom and back controls from overlapping.
+========================================================= */
+.immersive-module .training360-flow__controls {
+    top: 94px;
+    right: 24px;
+    bottom: auto;
+    z-index: 8;
+    gap: 8px;
+}
+
+.immersive-module .training360-flow__controls button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(191, 219, 254, .55);
+    background: rgba(7, 31, 53, .94);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .22);
+    backdrop-filter: blur(10px);
+}
+
+.immersive-room-navigation--single {
+    justify-content: flex-end;
+}
+
+.immersive-room-navigation--single .immersive-room-link--switch {
+    max-width: 340px;
+    margin-left: auto;
+}
+
+.immersive-back {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(191, 219, 254, .45);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+}
+
+.immersive-back:hover {
+    background: #0b4f87;
+}
+
+/* The compact room navigator remains above the back button, never on top of it. */
+.immersive-room-navigation {
+    bottom: 92px;
+}
+
+@media (max-width: 760px) {
+    .immersive-module .training360-flow__controls {
+        top: 92px;
+        right: 12px;
+        bottom: auto;
+    }
+
+    .immersive-room-navigation--single {
+        left: 12px;
+        right: 12px;
+        bottom: 72px;
+    }
+
+    .immersive-room-navigation--single .immersive-room-link--switch {
+        max-width: min(100%, 330px);
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .immersive-module .training360-flow__controls {
+        top: 100px;
+        flex-direction: row;
+    }
+
+    .immersive-room-navigation--single {
+        display: flex;
+    }
+
+    .immersive-room-navigation--single .immersive-room-link--switch {
+        width: 100%;
+        max-width: 100%;
+    }
+}

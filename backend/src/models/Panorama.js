@@ -55,7 +55,7 @@ const panoramaSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-panoramaSchema.pre("validate", function validatePanorama(next) {
+panoramaSchema.pre("validate", function validatePanorama() {
     const hasProgramme = Boolean(this.programme);
     const hasArea = Boolean(this.area && this.area.trim());
 
@@ -78,7 +78,6 @@ panoramaSchema.pre("validate", function validatePanorama(next) {
             this.invalidate("imageWidth", "Panorama image must use a 2:1 equirectangular aspect ratio");
         }
     }
-    next();
 });
 
 // Only one active module panorama per programme. Warehouse-tour/area records
@@ -96,5 +95,7 @@ panoramaSchema.index(
 );
 
 panoramaSchema.index({ type: 1, area: 1, status: 1 });
+
+panoramaSchema.plugin(require("../utils/auditPlugin"), { targetType: "Panorama" });
 
 module.exports = mongoose.model("Panorama", panoramaSchema);

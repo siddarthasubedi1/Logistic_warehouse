@@ -1,121 +1,18 @@
-const AuditLog =
-    require("../models/AuditLog");
-
-
-const getAuditLogs =
-    async (req, res) => {
-        try {
-            const page =
-                Math.max(
-                    Number.parseInt(
-                        req.query.page,
-                        10
-                    ) || 1,
-                    1
-                );
-
-
-            const limit =
-                Math.min(
-                    Math.max(
-                        Number.parseInt(
-                            req.query.limit,
-                            10
-                        ) || 50,
-                        1
-                    ),
-                    100
-                );
-
-
-            const filter = {};
-
-
-            if (
-                req.query.action
-            ) {
-                filter.action =
-                    req.query.action;
-            }
-
-
-            if (
-                req.query.status
-            ) {
-                filter.status =
-                    req.query.status;
-            }
-
-
-            if (
-                req.query.role
-            ) {
-                filter.role =
-                    req.query.role;
-            }
-
-
-            const [
-                logs,
-                total,
-            ] =
-                await Promise.all([
-                    AuditLog.find(
-                        filter
-                    )
-                        .sort({
-                            createdAt: -1,
-                        })
-                        .skip(
-                            (page - 1) *
-                            limit
-                        )
-                        .limit(
-                            limit
-                        )
-                        .lean(),
-
-                    AuditLog.countDocuments(
-                        filter
-                    ),
-                ]);
-
-
-            return res
-                .status(200)
-                .json({
-                    logs,
-
-                    pagination: {
-                        page,
-                        limit,
-                        total,
-
-                        totalPages:
-                            Math.ceil(
-                                total /
-                                limit
-                            ),
-                    },
-                });
-
-        } catch (error) {
-            console.error(
-                "Get audit logs error:",
-                error.message
-            );
-
-
-            return res
-                .status(500)
-                .json({
-                    message:
-                        "Unable to load audit logs",
-                });
-        }
-    };
-
-
-module.exports = {
-    getAuditLogs,
-};
+const AuditLog = require('../models/AuditLog');
+const { endpoint, pagination, enumValue, dateRange, scalar, objectId, onlyQuery } = require('../utils/apiValidation');
+const getAuditLogs = endpoint(async (req, res) => {
+    onlyQuery(req.query, ['page', 'limit', 'action', 'status', 'role', 'targetType', 'targetId', 'from', 'to']);
+    const { page, limit, skip } = pagination(req.query, 50);
+    const filter = {};
+    if (req.query.action) filter.action = scalar(req.query.action, 'action', 100);
+    if (req.query.targetType) filter.targetType = scalar(req.query.targetType, 'targetType', 60);
+    if (req.query.targetId) filter.targetId = objectId(req.query.targetId, 'targetId');
+    const status = enumValue(req.query.status, ['success', 'failure'], 'status');
+    const role = enumValue(req.query.role, ['admin', 'trainer', 'trainee', 'unknown'], 'role');
+    if (status) filter.status = status;
+    if (role) filter.role = role;
+    const range = dateRange(req.query); if (range) filter.createdAt = range;
+    const [logs, total] = await Promise.all([AuditLog.find(filter).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit).lean(), AuditLog.countDocuments(filter)]);
+    res.json({ logs, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+});
+module.exports = { getAuditLogs };

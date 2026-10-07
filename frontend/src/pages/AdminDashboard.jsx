@@ -1,4 +1,3 @@
-import '../components/simulation/SafetySimulation.css';
 import useInitialLoad from "../hooks/useInitialLoad";
 import {
     useCallback,
@@ -42,6 +41,11 @@ function AdminDashboard() {
     ] = useState([]);
 
     const [
+        pendingCertificates,
+        setPendingCertificates,
+    ] = useState(0);
+
+    const [
         loading,
         setLoading,
     ] = useState(true);
@@ -62,6 +66,7 @@ function AdminDashboard() {
                     const [
                         usersResponse,
                         pendingResponse,
+                        certificatesResponse,
                     ] =
                         await Promise.all([
                             api.get(
@@ -70,6 +75,10 @@ function AdminDashboard() {
 
                             api.get(
                                 "/admin/pending-users"
+                            ),
+
+                            api.get(
+                                "/admin/certificates"
                             ),
                         ]);
 
@@ -99,6 +108,10 @@ function AdminDashboard() {
 
                     setPendingUsers(
                         pendingList
+                    );
+
+                    setPendingCertificates(
+                        Number(certificatesResponse.data?.summary?.pending || 0)
                     );
 
                 } catch (error) {
@@ -222,7 +235,6 @@ function AdminDashboard() {
             role="admin"
             showHeader={false}
         >
-            <section className='sim-card sim-section-heading' style={{ marginBottom: 16 }}><div><h2>Safety Simulations</h2><p>Create, preview and manage safety missions.</p></div><button type='button' className='sim-button' onClick={() => navigate('/safety-simulations')}>Manage missions</button></section>
                     <AdminHeader
                 user={
                     sessionUser
@@ -333,6 +345,9 @@ function AdminDashboard() {
                     <AdminQuickActions
                         pendingUsers={
                             statistics.pending
+                        }
+                        pendingCertificates={
+                            pendingCertificates
                         }
                     />
                 </div>

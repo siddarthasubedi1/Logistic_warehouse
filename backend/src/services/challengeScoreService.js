@@ -2,9 +2,9 @@ const PersonalBest = require('../models/PersonalBest');
 const ChallengeAttempt = require('../models/ChallengeAttempt');
 
 async function maybeUpdatePersonalBest(attempt, challenge) {
-  // A personal best exists only for a fully correct solution. Partial or
-  // incorrect arrangements are still kept as attempts, but never as scores.
-  if (attempt.validityStatus !== 'valid' || Number(attempt.accuracy) !== 1 || Number(attempt.score) <= 0) return { updated: false, personalBest: null };
+  // Completion is required even when a timeout retained earned points and all
+  // objectives were answered. Use the same qualification rule as the leaderboard.
+  if (attempt.result !== 'completed' || attempt.validityStatus !== 'valid' || Number(attempt.accuracy) !== 1 || Number(attempt.score) <= 0) return { updated: false, personalBest: null };
   const current = await PersonalBest.findOne({ trainee: attempt.trainee, challenge: attempt.challenge });
   if (current && Number(current.score) >= Number(attempt.score)) return { updated: false, personalBest: current };
   const alternatives = [{ score: { $lt: attempt.score } }];

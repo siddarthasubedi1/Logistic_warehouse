@@ -12,11 +12,11 @@ const creationSteps = [
   'Set Scoring and Completion and failure rules. A completion threshold of 1 requires every compulsory objective. The required final location and state flags must also be satisfied.',
   'Select Save draft, then Preview current draft. Start the preview and complete the whole mission to check objects, actions, movement and the ending.',
   'Return from preview and select Save and activate. Draft or inactive games remain unavailable to trainees.',
-  'Ensure the active programme is assigned to the trainee through Training Assignments. The trainee must complete learning, submit the whole scenario exercise and pass this level assessment before playing.',
+  'Ensure the active programme is assigned to the trainee through Training Assignments. The trainee must complete learning and pass this level assessment before playing. Scenario practice is optional.',
 ];
 const playSteps = [
   'Sign in as a Trainee. Open My Training, select your module and enter an unlocked training level.',
-  'Complete each Learning section with Mark Complete. Submit every Scenario response, then pass the assessment for that same level.',
+  'Complete each required Learning section with Mark Complete, then pass the assessment for that same level. Scenario practice is optional.',
   'Select Safety Missions in the 360° environment, choose a mission and open its briefing.',
   'Read the mission, instructions, time limit and objective list. Select Start mission; Full screen is optional.',
   'Drag to look around or use the arrow and zoom controls. Select an object hotspot or an illustrated object card below the scene.',

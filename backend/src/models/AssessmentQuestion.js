@@ -12,4 +12,6 @@ const schema = new mongoose.Schema({
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
 }, { timestamps: true });
 schema.index({ programme: 1, level: 1, order: 1 }, { unique: true });
+schema.plugin(require("../utils/auditPlugin"), { targetType: "AssessmentQuestion" });
+
 module.exports = mongoose.model("AssessmentQuestion", schema);

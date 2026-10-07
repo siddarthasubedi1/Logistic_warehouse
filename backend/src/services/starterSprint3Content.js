@@ -239,6 +239,7 @@ async function ensureChallenge(puzzle, actor, level) {
 }
 
 async function ensureSprint3StarterForProgramme(programme, actorOverride = null) {
+  if (process.env.NODE_ENV === "production" && process.env.SEED_STARTER_CONTENT !== "true") return [];
   if (!programme?._id) return [];
   const moduleKey = String(programme.programmeType || '').trim().toLowerCase();
   const level = normalizeLevel(programme.level);

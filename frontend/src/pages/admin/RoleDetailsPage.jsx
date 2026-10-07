@@ -98,7 +98,7 @@ const ROLE_DETAILS = {
                 tone: "green",
                 permissions: [
                     ["View Assigned Training", "Access assigned training modules", true, false, false, false],
-                    ["Complete Training", "Complete quizzes and scenarios", true, false, true, false],
+                    ["Complete Training", "Complete learning and assessments", true, false, true, false],
                     ["View Own Progress", "View personal progress and scores", true, false, false, false],
                 ],
             },

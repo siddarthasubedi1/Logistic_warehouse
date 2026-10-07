@@ -30,4 +30,6 @@ router.get("/panorama/:sceneId", async (req, res) => {
     res.set("Cross-Origin-Resource-Policy", "cross-origin");
     return res.sendFile(file);
 });
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports = router;

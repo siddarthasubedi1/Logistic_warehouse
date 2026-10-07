@@ -77,6 +77,13 @@ router.use(
 // GET /api/admin/audit-logs
 // ======================================================
 
+router.get('/reports', require('../controllers/reportController').summary);
+
+// Certificate review and email delivery
+router.get('/certificates', require('../controllers/certificateController').list);
+router.post('/certificates/:id/send', require('../controllers/certificateController').send);
+router.get('/certificates/:id/download', require('../controllers/certificateController').download);
+
 router.get(
     "/audit-logs",
     getAuditLogs
@@ -236,6 +243,8 @@ router.delete(
 // ======================================================
 // EXPORT
 // ======================================================
+
+require("../middleware/validateRequest").configureRouter(router);
 
 module.exports =
     router;

@@ -19,4 +19,6 @@ r.post("/trainee/:programmeId/assessments/:level/questions/:questionId/check", a
 r.post("/trainee/:programmeId/assessments/:level/submit", authorize("trainee"), c.submitAssessment);
 r.get("/trainee/:programmeId/assessments/:level/attempts/:attemptId/result", authorize("trainee"), c.getAssessmentAttemptResult);
 r.get("/trainee/results", authorize("trainee"), c.getMyResults);
+require("../middleware/validateRequest").configureRouter(r);
+
 module.exports = r;

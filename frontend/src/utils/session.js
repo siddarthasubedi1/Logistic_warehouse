@@ -1,3 +1,5 @@
+import { rememberDisplayMode } from "./theme";
+
 const ACCESS_TOKEN_KEY =
     "accessToken";
 
@@ -233,6 +235,10 @@ export function saveAuthSession({
                 user
             )
         );
+
+        rememberDisplayMode(
+            user.displayMode || "light"
+        );
     }
 
 
@@ -281,6 +287,10 @@ export function updateSessionUser(
         JSON.stringify(
             user
         )
+    );
+
+    rememberDisplayMode(
+        user.displayMode || "light"
     );
 
 

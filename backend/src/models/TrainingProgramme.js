@@ -182,6 +182,9 @@ trainingProgrammeSchema.index({
     status: 1,
 });
 
+trainingProgrammeSchema.plugin(require("../utils/auditPlugin"), { targetType: "TrainingProgramme" });
+
+trainingProgrammeSchema.index({ owner: 1, programmeType: 1, deletedAt: 1 });
 module.exports = mongoose.model(
     "TrainingProgramme",
     trainingProgrammeSchema

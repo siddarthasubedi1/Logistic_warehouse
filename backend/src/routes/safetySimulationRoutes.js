@@ -23,4 +23,6 @@ router.post('/:id/attempts/start', players, limiter, c.start);
 router.get('/:id/attempts/:attemptId', players, c.attempt);
 router.post('/:id/attempts/:attemptId/action', players, limiter, c.action);
 router.post('/:id/attempts/:attemptId/complete', players, limiter, c.complete);
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports = router;

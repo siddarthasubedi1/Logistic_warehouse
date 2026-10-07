@@ -66,7 +66,8 @@ const authenticate = async (
                 token,
 
                 process.env
-                    .JWT_ACCESS_SECRET
+                    .JWT_ACCESS_SECRET,
+                { algorithms: ["HS256"] }
             );
 
 
@@ -91,7 +92,7 @@ const authenticate = async (
             await User.findById(
                 decoded.id
             ).select(
-                "_id username role status mustChangePassword authVersion"
+                "_id username role status mustChangePassword authVersion assignedTrainingSections"
             );
 
 
@@ -163,6 +164,7 @@ const authenticate = async (
         // ==================================================
 
         req.user = {
+            assignedTrainingSections: user.assignedTrainingSections || [],
             id:
                 user._id
                     .toString(),
@@ -242,7 +244,8 @@ const authenticate = async (
         }
 
 
-        next();
+        if (!require("./validateRequest").authoritativeGuard(req, res)) return;
+        require("../utils/auditContext").run({ req, user: req.user }, next);
 
     } catch (error) {
         // ==================================================

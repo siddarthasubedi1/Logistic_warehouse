@@ -10,4 +10,6 @@ router.get("/:id", authorize("admin", "trainer", "trainee"), c.getTrainingModule
 router.post("/", authorize("admin"), c.createTrainingModule);
 router.patch("/:id", authorize("admin"), c.updateTrainingModule);
 router.delete("/:id", authorize("admin"), c.deleteTrainingModule);
+require("../middleware/validateRequest").configureRouter(router);
+
 module.exports = router;

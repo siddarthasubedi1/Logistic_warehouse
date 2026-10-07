@@ -30,6 +30,7 @@ const {
     getMyProfile,
     updateProfileImage,
     deleteProfileImage,
+    updateDisplayMode,
 } = require(
     "../controllers/userController"
 );
@@ -42,6 +43,8 @@ const {
     "../controllers/trainingProgressController"
 );
 
+
+const sprint4Progress = require("../controllers/sprint4ProgressController");
 
 const router =
     express.Router();
@@ -89,9 +92,12 @@ router.get(
 
     checkActiveStatus,
 
-    getMyTrainingProgress
+    sprint4Progress.me
 );
 
+
+router.get('/me/training-progress/modules/:moduleId', authenticate, authorize('trainee'), sprint4Progress.module);
+router.get('/me/training-progress/programmes/:programmeId', authenticate, authorize('trainee'), sprint4Progress.programme);
 
 // ======================================================
 // START / CONTINUE TRAINING MODULE
@@ -115,6 +121,29 @@ router.post(
     checkActiveStatus,
 
     startTrainingModule
+);
+
+
+// ======================================================
+// SAVE OWN DISPLAY MODE
+//
+// PATCH /api/users/me/display-mode
+// ======================================================
+
+router.patch(
+    "/me/display-mode",
+
+    authenticate,
+
+    authorize(
+        "admin",
+        "trainer",
+        "trainee"
+    ),
+
+    checkActiveStatus,
+
+    updateDisplayMode
 );
 
 
@@ -169,6 +198,8 @@ router.delete(
 // ======================================================
 // EXPORT
 // ======================================================
+
+require("../middleware/validateRequest").configureRouter(router);
 
 module.exports =
     router;

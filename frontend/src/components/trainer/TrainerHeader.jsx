@@ -1,14 +1,16 @@
+import { useNavigate } from "react-router-dom";
 import ProfileHeaderButton from "../account/ProfileHeaderButton";
 
 
 function TrainerHeader({ user }) {
+    const navigate = useNavigate();
     const name =
         `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
         user?.username ||
         "Trainer";
 
     return (
-        <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#dbe4ef] bg-white px-5 py-3 lg:px-7">
+        <header className="trainer-dashboard-header flex min-h-[72px] items-center justify-between gap-4 border-b border-[#dbe4ef] bg-white px-5 py-3 lg:px-7">
 
             <div className="min-w-0">
 
@@ -31,6 +33,7 @@ function TrainerHeader({ user }) {
                 <button
                     type="button"
                     aria-label="Notifications"
+                    onClick={() => navigate("/trainer/notifications")}
                     className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#dbe4ef] bg-white text-[#52627a]"
                 >
                     <svg

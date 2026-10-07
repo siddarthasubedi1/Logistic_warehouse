@@ -1,0 +1,2130 @@
+/* =========================================================
+   UX / RESPONSIVE / THEME POLISH
+   Loaded last so it can correct legacy pixel sizing and
+   hard-coded light-only colours without changing behaviour.
+========================================================= */
+
+:root {
+    --ui-bg: #f5f7fb;
+    --ui-bg-top: #f8fafc;
+    --ui-surface: #ffffff;
+    --ui-surface-soft: #f8fafc;
+    --ui-surface-raised: #ffffff;
+    --ui-text: #172033;
+    --ui-text-strong: #0f1f35;
+    --ui-text-muted: #5f7087;
+    --ui-text-subtle: #7b8ca4;
+    --ui-border: #d7e0eb;
+    --ui-border-strong: #c2cedd;
+    --ui-primary: #0b4f87;
+    --ui-primary-strong: #073763;
+    --ui-link: #1769e8;
+    --ui-focus: #3b82f6;
+    --ui-success: #15803d;
+    --ui-warning: #b45309;
+    --ui-danger: #b91c1c;
+    --ui-info-bg: #eff6ff;
+    --ui-success-bg: #ecfdf5;
+    --ui-warning-bg: #fffbeb;
+    --ui-danger-bg: #fef2f2;
+    --ui-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 4px 14px rgba(15, 23, 42, .05);
+}
+
+html[data-theme="dark"] {
+    --ui-bg: #0b1220;
+    --ui-bg-top: #0f172a;
+    --ui-surface: #111827;
+    --ui-surface-soft: #172033;
+    --ui-surface-raised: #182235;
+    --ui-text: #e8eef8;
+    --ui-text-strong: #f5f8ff;
+    --ui-text-muted: #bdc8d8;
+    --ui-text-subtle: #9eacc0;
+    --ui-border: #334155;
+    --ui-border-strong: #475569;
+    --ui-primary: #60a5fa;
+    --ui-primary-strong: #93c5fd;
+    --ui-link: #93c5fd;
+    --ui-focus: #60a5fa;
+    --ui-success: #86efac;
+    --ui-warning: #fcd34d;
+    --ui-danger: #fca5a5;
+    --ui-info-bg: #10233c;
+    --ui-success-bg: #0f2d25;
+    --ui-warning-bg: #352a13;
+    --ui-danger-bg: #351b23;
+    --ui-shadow: 0 1px 2px rgba(0, 0, 0, .22), 0 8px 22px rgba(0, 0, 0, .18);
+}
+
+html,
+body,
+#root,
+.app-shell,
+.app-main,
+.app-content {
+    max-width: 100%;
+}
+
+body {
+    color: var(--ui-text);
+    background: linear-gradient(180deg, var(--ui-bg-top), var(--ui-bg));
+}
+
+.app-content {
+    color: var(--ui-text);
+    background: linear-gradient(180deg, var(--ui-bg-top), var(--ui-bg));
+    overflow-x: clip;
+}
+
+.app-content :where(p, li, dd, dt, label, small, span, strong, b, td, th) {
+    overflow-wrap: anywhere;
+}
+
+.app-content :where(button, a, input, select, textarea, summary) {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-content :where(button, [role="button"], input, select, textarea) {
+    min-width: 0;
+}
+
+.app-content :where(input, select, textarea) {
+    color: var(--ui-text);
+    border-color: var(--ui-border-strong);
+    background: var(--ui-surface);
+}
+
+.app-content :where(input, select, textarea):focus {
+    border-color: var(--ui-focus) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-focus) 18%, transparent) !important;
+}
+
+.app-content :where(input, textarea)::placeholder {
+    color: var(--ui-text-subtle);
+    opacity: 1;
+}
+
+/* Keep keyboard navigation visible on every theme. */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--ui-focus) !important;
+    outline-offset: 2px;
+}
+
+/* Comfortable hit targets without changing compact inline controls. */
+.app-content :where(button, a[class*="button"], a[class*="btn"]) {
+    min-height: 40px;
+}
+
+/* =========================================================
+   DASHBOARD SHELL / HEADER
+========================================================= */
+
+.app-page-header,
+.app-mobile-header {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background: color-mix(in srgb, var(--ui-surface) 96%, transparent);
+}
+
+.app-page-header__title,
+.app-mobile-header__title {
+    color: var(--ui-text-strong);
+}
+
+.app-page-header__subtitle,
+.app-mobile-header__subtitle {
+    color: var(--ui-text-muted);
+}
+
+.app-mobile-header {
+    backdrop-filter: blur(12px);
+}
+
+.app-mobile-header__avatar,
+.app-page-header__admin-avatar {
+    color: var(--ui-link);
+    background: var(--ui-info-bg);
+}
+
+.app-page-header__bell {
+    color: var(--ui-text-muted);
+    border-color: var(--ui-border);
+    background: var(--ui-surface);
+}
+
+.app-page-header__bell:hover {
+    color: var(--ui-link);
+    border-color: color-mix(in srgb, var(--ui-focus) 55%, var(--ui-border));
+    background: var(--ui-info-bg);
+}
+
+.app-theme-toggle {
+    min-height: 42px;
+    padding: 9px 12px;
+    color: var(--ui-text);
+    border-color: var(--ui-border-strong);
+    background: color-mix(in srgb, var(--ui-surface) 96%, transparent);
+    box-shadow: var(--ui-shadow);
+    font-size: 12px;
+}
+
+.app-theme-toggle__icon {
+    color: var(--ui-primary);
+    background: var(--ui-info-bg);
+}
+
+/* =========================================================
+   LIGHT/DARK COLOUR NORMALISATION FOR TAILWIND UTILITIES
+========================================================= */
+
+html[data-theme="dark"] .app-content [class*="bg-white"],
+html[data-theme="dark"] .app-content [class*="bg-[#ffffff]"],
+html[data-theme="dark"] .app-content [class*="bg-[#fff]"],
+html[data-theme="dark"] .app-content [class*="bg-[#f8fafc]"],
+html[data-theme="dark"] .app-content [class*="bg-[#f5f7fb]"] {
+    background-color: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="bg-slate-50"],
+html[data-theme="dark"] .app-content [class*="bg-slate-100"],
+html[data-theme="dark"] .app-content [class*="bg-gray-50"],
+html[data-theme="dark"] .app-content [class*="bg-gray-100"] {
+    background-color: var(--ui-surface-soft) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="bg-blue-50"],
+html[data-theme="dark"] .app-content [class*="bg-sky-50"] {
+    background-color: var(--ui-info-bg) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="bg-emerald-50"],
+html[data-theme="dark"] .app-content [class*="bg-green-50"] {
+    background-color: var(--ui-success-bg) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="bg-amber-50"],
+html[data-theme="dark"] .app-content [class*="bg-yellow-50"] {
+    background-color: var(--ui-warning-bg) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="bg-red-50"],
+html[data-theme="dark"] .app-content [class*="bg-rose-50"] {
+    background-color: var(--ui-danger-bg) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-[#172033]"],
+html[data-theme="dark"] .app-content [class*="text-[#101828]"],
+html[data-theme="dark"] .app-content [class*="text-[#111827]"],
+html[data-theme="dark"] .app-content [class*="text-[#0f1f35]"],
+html[data-theme="dark"] .app-content [class*="text-[#26364a]"],
+html[data-theme="dark"] .app-content [class*="text-[#26364c]"],
+html[data-theme="dark"] .app-content [class*="text-[#334155]"],
+html[data-theme="dark"] .app-content [class*="text-[#35455c]"],
+html[data-theme="dark"] .app-content [class*="text-[#073763]"],
+html[data-theme="dark"] .app-content [class*="text-slate-900"],
+html[data-theme="dark"] .app-content [class*="text-slate-800"],
+html[data-theme="dark"] .app-content [class*="text-slate-700"],
+html[data-theme="dark"] .app-content [class*="text-gray-900"],
+html[data-theme="dark"] .app-content [class*="text-gray-800"],
+html[data-theme="dark"] .app-content [class*="text-gray-700"] {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-[#52627a]"],
+html[data-theme="dark"] .app-content [class*="text-[#64748b]"],
+html[data-theme="dark"] .app-content [class*="text-[#6f7f94]"],
+html[data-theme="dark"] .app-content [class*="text-[#7b8aa0]"],
+html[data-theme="dark"] .app-content [class*="text-[#7b8b9f]"],
+html[data-theme="dark"] .app-content [class*="text-[#8494a9]"],
+html[data-theme="dark"] .app-content [class*="text-[#8797ab]"],
+html[data-theme="dark"] .app-content [class*="text-[#8a98aa]"],
+html[data-theme="dark"] .app-content [class*="text-[#8b9aae]"],
+html[data-theme="dark"] .app-content [class*="text-[#94a3b8]"],
+html[data-theme="dark"] .app-content [class*="text-slate-600"],
+html[data-theme="dark"] .app-content [class*="text-slate-500"],
+html[data-theme="dark"] .app-content [class*="text-slate-400"],
+html[data-theme="dark"] .app-content [class*="text-gray-600"],
+html[data-theme="dark"] .app-content [class*="text-gray-500"],
+html[data-theme="dark"] .app-content [class*="text-gray-400"] {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-blue-700"],
+html[data-theme="dark"] .app-content [class*="text-blue-600"],
+html[data-theme="dark"] .app-content [class*="text-sky-700"],
+html[data-theme="dark"] .app-content [class*="text-sky-600"] {
+    color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-emerald-700"],
+html[data-theme="dark"] .app-content [class*="text-green-700"],
+html[data-theme="dark"] .app-content [class*="text-green-600"] {
+    color: #86efac !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-amber-700"],
+html[data-theme="dark"] .app-content [class*="text-yellow-700"] {
+    color: #fcd34d !important;
+}
+
+html[data-theme="dark"] .app-content [class*="text-red-700"],
+html[data-theme="dark"] .app-content [class*="text-red-600"],
+html[data-theme="dark"] .app-content [class*="text-rose-700"] {
+    color: #fca5a5 !important;
+}
+
+html[data-theme="dark"] .app-content [class*="border-slate-"],
+html[data-theme="dark"] .app-content [class*="border-gray-"],
+html[data-theme="dark"] .app-content [class*="border-[#cbd5e1]"],
+html[data-theme="dark"] .app-content [class*="border-[#cfd9e6]"],
+html[data-theme="dark"] .app-content [class*="border-[#d5dfeb]"],
+html[data-theme="dark"] .app-content [class*="border-[#d7e0eb]"],
+html[data-theme="dark"] .app-content [class*="border-[#dbe4ef]"],
+html[data-theme="dark"] .app-content [class*="border-[#e2e8f0]"],
+html[data-theme="dark"] .app-content [class*="border-[#e3eaf3]"],
+html[data-theme="dark"] .app-content [class*="border-[#e7edf4]"],
+html[data-theme="dark"] .app-content [class*="border-[#e8eef5]"],
+html[data-theme="dark"] .app-content [class*="border-[#edf1f5]"] {
+    border-color: var(--ui-border) !important;
+}
+
+/* =========================================================
+   COMMON CUSTOM SURFACES
+========================================================= */
+
+.app-card,
+.dashboard-card,
+.section-card,
+.content-card,
+.trainer-account-card,
+.trainer-module-section,
+.trainer-module-row,
+.trainer-stat-card,
+.trainer-panel,
+.trainer-panel-empty,
+.trainee-account-card,
+.trainee-card-shell,
+.profile-topbar,
+.profile-details-card,
+.profile-password-card,
+.designer-card,
+.role-info-card,
+.role-permissions-card,
+.role-history-card,
+.edit-role-info-card,
+.edit-role-permissions-card,
+.permissions-overview-card,
+.roles-system-card,
+.sim-card,
+.sim-game-card,
+.sim-builder-item,
+.sim-reference-field,
+.sim-image-dialog {
+    border-color: var(--ui-border);
+    background-color: var(--ui-surface);
+    box-shadow: var(--ui-shadow);
+}
+
+html[data-theme="dark"] :where(
+    .trainer-account-card,
+    .trainer-module-section,
+    .trainer-module-row,
+    .trainer-stat-card,
+    .trainer-panel,
+    .trainer-panel-empty,
+    .trainee-account-card,
+    .trainee-card-shell,
+    .profile-topbar,
+    .profile-details-card,
+    .profile-password-card,
+    .designer-card,
+    .role-info-card,
+    .role-permissions-card,
+    .role-history-card,
+    .edit-role-info-card,
+    .edit-role-permissions-card,
+    .permissions-overview-card,
+    .roles-system-card,
+    .sim-card,
+    .sim-game-card,
+    .sim-builder-item,
+    .sim-reference-field,
+    .sim-image-dialog
+) {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-account-card,
+    .trainer-module-section,
+    .trainer-module-row,
+    .trainer-stat-card,
+    .trainer-panel,
+    .trainee-account-card,
+    .trainee-card-shell,
+    .profile-topbar,
+    .profile-details-card,
+    .profile-password-card,
+    .designer-card,
+    .role-info-card,
+    .role-permissions-card,
+    .role-history-card,
+    .edit-role-info-card,
+    .edit-role-permissions-card,
+    .sim-card,
+    .sim-game-card
+) :where(p, small, label, li, dd) {
+    color: var(--ui-text-muted);
+}
+
+html[data-theme="dark"] :where(
+    .trainer-account-card,
+    .trainer-module-section,
+    .trainer-module-row,
+    .trainer-stat-card,
+    .trainer-panel,
+    .trainee-account-card,
+    .trainee-card-shell,
+    .profile-topbar,
+    .profile-details-card,
+    .profile-password-card,
+    .designer-card,
+    .role-info-card,
+    .role-permissions-card,
+    .role-history-card,
+    .edit-role-info-card,
+    .edit-role-permissions-card,
+    .sim-card,
+    .sim-game-card
+) :where(h1, h2, h3, h4, strong, b) {
+    color: var(--ui-text-strong);
+}
+
+/* =========================================================
+   ADMIN READABILITY — replaces the 6–10px mock-up scale
+   with usable production UI sizing.
+========================================================= */
+
+.app-shell--admin {
+    --sidebar-width: 220px !important;
+}
+
+.app-shell--admin .sidebar__logo {
+    padding: 20px 18px 18px;
+}
+
+.app-shell--admin .sidebar__nav {
+    padding: 16px 12px;
+}
+
+.app-shell--admin .sidebar-link {
+    min-height: 44px;
+    padding: 10px 12px;
+    gap: 11px;
+    border-radius: 8px;
+    font-size: 13px !important;
+    line-height: 1.35;
+    font-weight: 600;
+}
+
+.app-shell--admin .sidebar-role-card {
+    padding: 14px;
+}
+
+.app-shell--admin .sidebar-role-card__title {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .sidebar-role-card__description {
+    font-size: 11.5px !important;
+    line-height: 1.5;
+}
+
+.app-shell--admin .app-page-header {
+    min-height: 76px;
+    padding: 14px 24px;
+}
+
+.app-shell--admin .app-page-header__title {
+    font-size: 22px !important;
+    line-height: 1.2;
+}
+
+.app-shell--admin .app-page-header__subtitle {
+    margin-top: 4px;
+    font-size: 13px !important;
+    line-height: 1.45;
+}
+
+.app-shell--admin .app-page-header__admin-copy strong {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .app-page-header__admin-copy span {
+    font-size: 11.5px !important;
+}
+
+.app-shell--admin .app-page-header__admin-avatar,
+.app-shell--admin .app-page-header__bell {
+    width: 40px;
+    height: 40px;
+}
+
+.app-shell--admin .admin-page,
+.app-shell--admin .admin-dashboard,
+.app-shell--admin .admin-create-user,
+.app-shell--admin .admin-manage-users,
+.app-shell--admin .app-page {
+    padding: 24px clamp(18px, 2vw, 30px) 36px;
+}
+
+.app-shell--admin .app-content :where(p, li, dd, label, small, span) {
+    line-height: 1.5;
+}
+
+/* Tailwind arbitrary sizes used heavily in admin screens. */
+.app-shell--admin .app-content [class*="text-[6px]"],
+.app-shell--admin .app-content [class*="text-[7px]"],
+.app-shell--admin .app-content [class*="text-[8px]"],
+.app-shell--admin .app-content [class*="text-[9px]"] {
+    font-size: 12.5px !important;
+}
+
+.app-shell--admin .app-content [class*="text-[10px]"],
+.app-shell--admin .app-content [class*="text-[11px]"],
+.app-shell--admin .app-content [class*="text-[12px]"] {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .app-content [class*="text-[13px]"] {
+    font-size: 15px !important;
+}
+
+.app-shell--admin .app-content :where(input, select, textarea) {
+    min-height: 44px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    font-size: 14px !important;
+    line-height: 1.4;
+}
+
+.app-shell--admin .app-content textarea {
+    min-height: 96px;
+}
+
+.app-shell--admin .app-content :where(button, a[class*="button"]) {
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.app-shell--admin .app-content table th {
+    padding: 12px 14px !important;
+    font-size: 12px !important;
+    line-height: 1.35;
+}
+
+.app-shell--admin .app-content table td {
+    padding: 13px 14px !important;
+    font-size: 13px !important;
+    line-height: 1.45;
+}
+
+.app-shell--admin .admin-card-heading h2,
+.app-shell--admin .designer-section-head h2,
+.app-shell--admin .designer-section-title-wrap h2,
+.app-shell--admin .role-history-title h2 {
+    font-size: 17px !important;
+    line-height: 1.3;
+}
+
+.app-shell--admin .admin-card-heading p,
+.app-shell--admin .designer-section-head p,
+.app-shell--admin .designer-section-title-wrap p {
+    font-size: 12.5px !important;
+    line-height: 1.5;
+}
+
+.app-shell--admin .designer-primary-button,
+.app-shell--admin .designer-outline-button,
+.app-shell--admin .designer-role-card__button {
+    min-height: 42px;
+    padding: 9px 14px;
+    font-size: 13px !important;
+}
+
+.app-shell--admin .admin-quick-action {
+    min-height: 64px;
+    padding: 12px 14px;
+}
+
+.app-shell--admin .admin-quick-action__copy strong {
+    font-size: 14px !important;
+}
+
+.app-shell--admin .admin-quick-action__copy span,
+.app-shell--admin .admin-quick-action__copy p {
+    font-size: 12px !important;
+}
+
+.app-shell--admin .designer-role-card__name-line strong,
+.app-shell--admin .role-identity-title h3 {
+    font-size: 15px !important;
+}
+
+.app-shell--admin .designer-role-card__copy p,
+.app-shell--admin .role-identity-row p,
+.app-shell--admin .designer-role-meta,
+.app-shell--admin .role-stat-item span,
+.app-shell--admin .role-history-item p {
+    font-size: 12px !important;
+}
+
+.app-shell--admin .role-stat-item strong {
+    font-size: 15px !important;
+}
+
+.app-shell--admin .role-history-item strong,
+.app-shell--admin .role-history-item b {
+    font-size: 12.5px !important;
+}
+
+.app-shell--admin .designer-search-box--small {
+    min-height: 40px;
+    min-width: 190px;
+}
+
+.app-shell--admin .designer-search-box input,
+.app-shell--admin .designer-search-box span {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .edit-role-form-grid label > span,
+.app-shell--admin .edit-role-side-fields label > span,
+.app-shell--admin .designer-toggle,
+.app-shell--admin .designer-success-alert {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .edit-role-form-grid input,
+.app-shell--admin .edit-role-form-grid textarea,
+.app-shell--admin .edit-role-form-grid select {
+    min-height: 44px;
+    padding: 9px 11px;
+    font-size: 14px !important;
+}
+
+.app-shell--admin .permission-data-row td,
+.app-shell--admin .permission-group-row td,
+.app-shell--admin .permissions-overview-table th,
+.app-shell--admin .role-permission-table th,
+.app-shell--admin .edit-role-permission-table th {
+    font-size: 12.5px !important;
+}
+
+.app-shell--admin .permission-state {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+}
+
+.app-shell--admin .permission-row-icon {
+    font-size: 12px;
+}
+
+/* =========================================================
+   ADMIN DARK MODE
+========================================================= */
+
+html[data-theme="dark"] .app-shell--admin,
+html[data-theme="dark"] .app-shell--admin .app-content {
+    background: var(--ui-bg) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .app-page-header {
+    background: var(--ui-surface) !important;
+    border-color: var(--ui-border) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin :where(
+    .designer-card,
+    .role-info-card,
+    .role-permissions-card,
+    .role-history-card,
+    .edit-role-info-card,
+    .edit-role-permissions-card,
+    .permissions-overview-card,
+    .roles-system-card,
+    .designer-search-box
+) {
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin :where(
+    .admin-card-heading h2,
+    .designer-section-head h2,
+    .designer-section-title-wrap h2,
+    .role-identity-title h3,
+    .role-stat-item strong,
+    .admin-quick-action__copy strong
+) {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin :where(
+    .admin-card-heading p,
+    .designer-section-head p,
+    .designer-section-title-wrap p,
+    .designer-role-card__copy p,
+    .designer-role-meta,
+    .role-identity-row p,
+    .role-stat-item span,
+    .role-history-item p
+) {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin :where(
+    .permissions-overview-table,
+    .role-permission-table,
+    .edit-role-permission-table
+) :where(th, td) {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--blue td {
+    color: #93c5fd !important;
+    background: #10233c !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--green td {
+    color: #86efac !important;
+    background: #0f2d25 !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--violet td {
+    color: #c4b5fd !important;
+    background: #231a3b !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--orange td {
+    color: #fdba74 !important;
+    background: #352313 !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--cyan td {
+    color: #67e8f9 !important;
+    background: #10303a !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .permission-group-row--slate td {
+    color: #cbd5e1 !important;
+    background: #172033 !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .admin-page table tbody tr:hover,
+html[data-theme="dark"] .app-shell--admin .admin-manage-users table tbody tr:hover {
+    background: #182235 !important;
+}
+
+html[data-theme="dark"] .app-shell--admin .designer-success-alert {
+    color: #86efac;
+    border-color: #166534;
+    background: #0f2d25;
+}
+
+/* =========================================================
+   TRAINER / TRAINEE / PROFILE / TRAINING DARK MODE
+========================================================= */
+
+html[data-theme="dark"] :where(
+    .trainer-account-card,
+    .trainer-module-section,
+    .trainer-module-row,
+    .trainer-stat-card,
+    .trainer-panel,
+    .trainee-account-card,
+    .trainee-card-shell,
+    .profile-topbar,
+    .profile-details-card,
+    .profile-password-card
+) {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-section-heading,
+    .trainer-panel-heading,
+    .trainee-section-heading,
+    .profile-details-heading,
+    .profile-password-heading,
+    .profile-name-line
+) :where(h1, h2, h3, h4, strong) {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-section-heading,
+    .trainer-panel-heading,
+    .trainee-section-heading,
+    .profile-details-heading,
+    .profile-password-heading,
+    .profile-name-line,
+    .profile-user-strip
+) :where(p, small, span) {
+    color: var(--ui-text-muted);
+}
+
+/* =========================================================
+   SAFETY SIMULATION + PUZZLE THEMING
+========================================================= */
+
+html[data-theme="dark"] :where(
+    .sim-management,
+    .sim-author-form,
+    .sim-result,
+    .puzzle-studio,
+    .ordering-puzzle-experience
+) {
+    color: var(--ui-text);
+}
+
+html[data-theme="dark"] :where(.sim-card, .sim-game-card, .sim-builder-item, .sim-reference-field, .sim-image-dialog) {
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] :where(.sim-card, .sim-game-card, .sim-builder-item, .sim-reference-field) :where(h1, h2, h3, h4, strong, b, dt) {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] :where(.sim-card, .sim-game-card, .sim-builder-item, .sim-reference-field) :where(p, small, dd, label) {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .sim-table th {
+    color: #cbd5e1 !important;
+    background: var(--ui-surface-soft) !important;
+}
+
+html[data-theme="dark"] .sim-table td {
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border) !important;
+}
+
+html[data-theme="dark"] .sim-field :where(input, select, textarea),
+html[data-theme="dark"] .sim-builder-item-heading > div button,
+html[data-theme="dark"] .sim-image-inspect {
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface-soft) !important;
+}
+
+html[data-theme="dark"] .sim-object-card {
+    color: var(--ui-text-strong);
+    border-color: var(--ui-border);
+    background: var(--ui-surface);
+}
+
+html[data-theme="dark"] .sim-object-card--selected {
+    border-color: #60a5fa;
+    background: #10233c;
+}
+
+html[data-theme="dark"] .sim-status {
+    color: #cbd5e1;
+    background: #263449;
+}
+
+html[data-theme="dark"] .sim-status--active {
+    color: #86efac;
+    background: #0f2d25;
+}
+
+html[data-theme="dark"] .sim-status--draft {
+    color: #fcd34d;
+    background: #352a13;
+}
+
+html[data-theme="dark"] .puzzle-studio :where(
+    .studio-welcome,
+    .studio-activity-card,
+    .scoreboard-card,
+    .scoreboard-personal,
+    .scoreboard-rule,
+    .puzzle360-history
+) {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .puzzle-studio :where(p, small, span) {
+    color: var(--ui-text-muted);
+}
+
+html[data-theme="dark"] .puzzle-studio :where(h1, h2, h3, h4, strong, b) {
+    color: var(--ui-text-strong);
+}
+
+html[data-theme="dark"] .scoreboard-table :where(th, td) {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background: var(--ui-surface);
+}
+
+/* =========================================================
+   LOGIN — prevents a remembered dark mode from creating a
+   half-light/half-dark login screen.
+========================================================= */
+
+html[data-theme="dark"] .figma-login-page,
+html[data-theme="dark"] .figma-login-layout,
+html[data-theme="dark"] .figma-login-right {
+    color: var(--ui-text);
+    background: var(--ui-bg);
+}
+
+html[data-theme="dark"] .figma-login-form-container,
+html[data-theme="dark"] .figma-login-form {
+    color: var(--ui-text);
+}
+
+html[data-theme="dark"] .figma-login-heading,
+html[data-theme="dark"] .figma-login-field label {
+    color: var(--ui-text-strong);
+}
+
+html[data-theme="dark"] .figma-login-input {
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border-strong) !important;
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .figma-login-help,
+html[data-theme="dark"] .figma-login-divider,
+html[data-theme="dark"] .figma-forgot-row,
+html[data-theme="dark"] .figma-login-form :where(p, small) {
+    color: var(--ui-text-muted);
+}
+
+/* =========================================================
+   TABLE / OVERFLOW SAFETY
+========================================================= */
+
+.app-table-wrapper,
+.table-scroll,
+.designer-table-scroll,
+.sim-table-scroll,
+.scoreboard-table-scroll,
+.app-content .overflow-x-auto {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.designer-table-scroll,
+.sim-table-scroll,
+.scoreboard-table-scroll {
+    scrollbar-gutter: stable;
+}
+
+.app-content table {
+    max-width: 100%;
+}
+
+.scoreboard-table {
+    width: 100%;
+    min-width: 560px;
+}
+
+.sim-table {
+    min-width: 620px;
+}
+
+/* =========================================================
+   GENERAL RESPONSIVE LAYOUT
+========================================================= */
+
+.app-page,
+.admin-page,
+.admin-dashboard,
+.admin-create-user,
+.admin-manage-users,
+.trainer-dashboard-figma,
+.trainee-dashboard-figma,
+.profile-figma-page,
+.training-management-shell,
+.sim-management {
+    width: 100%;
+    max-width: 100%;
+}
+
+.app-content :where(section, article, form, div) {
+    min-width: 0;
+}
+
+@media (max-width: 1199px) {
+    .app-shell--admin {
+        --sidebar-width: 208px !important;
+    }
+
+    .app-shell--admin .sidebar-link {
+        font-size: 12.5px !important;
+    }
+
+    .role-details-grid,
+    .roles-system-card,
+    .admin-dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    .app-shell--admin {
+        --sidebar-width: 0px !important;
+    }
+
+    .app-theme-toolbar,
+    .app-shell--admin .app-theme-toolbar {
+        top: 11px;
+        right: 58px;
+    }
+
+    .app-theme-toggle {
+        width: 40px;
+        min-height: 40px;
+        padding: 7px;
+        justify-content: center;
+    }
+
+    .app-theme-toggle__label {
+        display: none;
+    }
+
+    .app-mobile-header {
+        min-height: 64px;
+    }
+
+    .app-mobile-header__title {
+        font-size: 15px;
+    }
+
+    .app-mobile-header__subtitle {
+        font-size: 11px;
+    }
+
+    .app-mobile-drawer__panel {
+        width: min(310px, 88vw);
+    }
+
+    .app-mobile-drawer .sidebar-link {
+        min-height: 46px;
+        font-size: 13.5px !important;
+    }
+
+    .app-mobile-drawer .sidebar-role-card__title {
+        font-size: 13px !important;
+    }
+
+    .app-mobile-drawer .sidebar-role-card__description {
+        font-size: 11.5px !important;
+    }
+
+    .role-stat-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .edit-role-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .edit-role-description {
+        grid-row: auto !important;
+    }
+}
+
+@media (max-width: 767px) {
+    body {
+        font-size: 14px;
+    }
+
+    .app-page,
+    .admin-page,
+    .admin-dashboard,
+    .admin-create-user,
+    .admin-manage-users,
+    .trainer-dashboard-figma,
+    .trainee-dashboard-figma,
+    .profile-figma-page,
+    .training-management-shell,
+    .sim-management,
+    .app-shell--admin .app-page,
+    .app-shell--admin .admin-page,
+    .app-shell--admin .admin-dashboard,
+    .app-shell--admin .admin-create-user,
+    .app-shell--admin .admin-manage-users {
+        padding: 14px 12px 24px !important;
+    }
+
+    .app-content :where(input, select, textarea) {
+        font-size: 16px !important;
+    }
+
+    .app-content :where(button, a[class*="button"], a[class*="btn"]) {
+        min-height: 44px;
+    }
+
+    .app-shell--admin .app-content table th {
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
+
+    .app-shell--admin .app-content table td {
+        font-size: 13px !important;
+    }
+
+    .app-shell--admin .designer-card,
+    .app-shell--admin .role-info-card,
+    .app-shell--admin .role-history-card,
+    .app-shell--admin .role-permissions-card,
+    .app-shell--admin .edit-role-info-card,
+    .app-shell--admin .edit-role-permissions-card {
+        padding: 14px !important;
+    }
+
+    .role-info-card__header,
+    .designer-section-head,
+    .sim-section-heading,
+    .profile-topbar,
+    .trainer-section-heading,
+    .trainee-section-heading {
+        align-items: flex-start !important;
+        flex-direction: column;
+    }
+
+    .role-info-actions,
+    .edit-role-actions,
+    .edit-permission-toolbar,
+    .sim-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .role-info-actions > *,
+    .edit-role-actions > *,
+    .sim-actions > * {
+        flex: 1 1 150px;
+    }
+
+    .role-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .role-stat-item {
+        min-height: 68px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--ui-border);
+    }
+
+    .designer-search-box--small {
+        width: 100%;
+        min-width: 0 !important;
+    }
+
+    .sim-form-grid,
+    .sim-object-detail,
+    .sim-briefing,
+    .sim-play-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sim-stage {
+        min-height: 340px;
+        height: min(58vh, 520px);
+    }
+
+    .sim-image-dialog {
+        width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        max-height: calc(100dvh - 20px);
+        padding: 14px;
+    }
+
+    .scoreboard-table-scroll,
+    .sim-table-scroll,
+    .designer-table-scroll,
+    .app-content .overflow-x-auto {
+        margin-inline: -2px;
+        padding-bottom: 4px;
+    }
+}
+
+@media (max-width: 560px) {
+    .app-mobile-header {
+        padding: 9px 10px;
+    }
+
+    .app-mobile-header__avatar {
+        display: none;
+    }
+
+    .app-theme-toolbar,
+    .app-shell--admin .app-theme-toolbar {
+        right: 10px;
+    }
+
+    .app-mobile-header__text {
+        padding-right: 46px;
+    }
+
+    .role-stat-strip {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-dashboard-header,
+    .create-user-banner,
+    .profile-security-banner {
+        padding: 16px !important;
+    }
+
+    .admin-dashboard-header :where(h1, h2),
+    .create-user-banner :where(h1, h2) {
+        font-size: 20px !important;
+    }
+
+    .app-shell--admin .app-content [class*="grid-cols-2"],
+    .app-shell--admin .app-content [class*="grid-cols-3"],
+    .app-shell--admin .app-content [class*="grid-cols-4"],
+    .app-shell--admin .app-content [class*="grid-cols-5"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .app-shell--admin .app-content [class*="flex"]:has(> button + button) {
+        flex-wrap: wrap;
+    }
+
+    .sim-object-shelf {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .sim-stage {
+        min-height: 300px;
+        height: 48vh;
+    }
+
+    .scoreboard-table {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 420px) {
+    .app-mobile-drawer__panel {
+        width: 90vw;
+    }
+
+    .app-mobile-header__title {
+        font-size: 14px;
+    }
+
+    .app-mobile-header__subtitle {
+        display: none;
+    }
+
+    .sim-object-shelf {
+        grid-template-columns: 1fr;
+    }
+
+    .app-shell--admin .app-content :where(button, a[class*="button"]) {
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* Login theme control remains reachable before authentication. */
+.login-theme-toolbar {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 80;
+}
+
+@media (max-width: 820px) {
+    .login-theme-toolbar {
+        top: 12px;
+        right: 12px;
+    }
+
+    .login-theme-toolbar .app-theme-toggle {
+        width: 40px;
+        min-height: 40px;
+        padding: 7px;
+        justify-content: center;
+    }
+
+    .login-theme-toolbar .app-theme-toggle__label {
+        display: none;
+    }
+}
+
+/* =========================================================
+   360 / IMMERSIVE PANELS — theme-aware chrome while the
+   panorama itself intentionally stays image/dark based.
+========================================================= */
+
+html[data-theme="dark"] .tour360__top {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background: var(--ui-surface);
+}
+
+html[data-theme="dark"] .tour360__title {
+    color: var(--ui-text-strong);
+}
+
+html[data-theme="dark"] .tour360__subtitle,
+html[data-theme="dark"] .tour360__legend {
+    color: var(--ui-text-muted);
+}
+
+html[data-theme="dark"] .tour360__panel-head {
+    border-color: var(--ui-border);
+}
+
+html[data-theme="dark"] .tour360__panel p {
+    color: var(--ui-text-muted);
+}
+
+html[data-theme="dark"] .tour360__close {
+    color: var(--ui-text);
+    background: var(--ui-surface-soft);
+}
+
+html[data-theme="dark"] .training360-flow__message,
+html[data-theme="dark"] .exercise360__panel,
+html[data-theme="dark"] .training360-learning__content {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .exercise360__panel h2,
+html[data-theme="dark"] .training360-learning__content h4 {
+    color: var(--ui-text-strong);
+}
+
+html[data-theme="dark"] .exercise360__panel p,
+html[data-theme="dark"] .training360-learning__content p {
+    color: var(--ui-text-muted);
+}
+
+html[data-theme="dark"] .exercise360__progress {
+    background: #334155;
+}
+
+html[data-theme="dark"] .training360-learning__content > small,
+html[data-theme="dark"] .exercise360__panel > span {
+    color: #93c5fd;
+}
+
+/* Preserve high contrast on image overlays in BOTH themes. */
+:where(.tour360__location, .tour360__hotspot, .tour360__hint,
+       .training360-flow__intro, .training360-flow__module,
+       .training360-flow__learn, .training360-flow__hint,
+       .immersive-overlay, .immersive-question, .immersive-question--single) {
+    color: #ffffff;
+}
+
+:where(.tour360__location, .tour360__hotspot,
+       .training360-flow__intro, .training360-flow__module,
+       .training360-flow__learn) :where(strong, b) {
+    color: #ffffff;
+}
+
+@media (max-width: 800px) {
+    .tour360 {
+        min-height: 100dvh;
+        height: 100dvh;
+    }
+
+    .tour360__top {
+        min-height: 64px;
+        height: auto;
+        padding: 10px 12px;
+        flex-wrap: wrap;
+    }
+
+    .tour360__title {
+        font-size: 16px;
+    }
+
+    .tour360__subtitle {
+        font-size: 11px;
+    }
+
+    .tour360__legend {
+        width: 100%;
+        gap: 10px;
+        font-size: 11px;
+    }
+
+    .tour360__map {
+        width: min(210px, calc(100vw - 32px));
+    }
+
+    .tour360__panel {
+        width: min(420px, 100vw);
+        padding: 18px;
+    }
+
+    .training360-flow,
+    .exercise360 {
+        padding: 10px;
+    }
+
+    .training360-flow__viewer {
+        height: calc(100dvh - 92px);
+        min-height: 480px;
+        border-radius: 12px;
+    }
+
+    .exercise360 {
+        grid-template-columns: 1fr;
+    }
+
+    .exercise360__scene {
+        height: min(62dvh, 560px);
+        min-height: 360px;
+    }
+
+    .exercise360__panel {
+        padding: 18px;
+    }
+}
+
+@media (max-width: 520px) {
+    .tour360__legend {
+        display: none;
+    }
+
+    .tour360__map {
+        right: 10px;
+        bottom: 10px;
+        width: 170px;
+    }
+
+    .tour360__location {
+        left: 10px;
+        top: 10px;
+        max-width: calc(100% - 80px);
+    }
+
+    .tour360__controls {
+        right: 10px;
+        top: 10px;
+    }
+
+    .tour360__hint {
+        bottom: 10px;
+        max-width: calc(100% - 200px);
+        white-space: normal;
+        text-align: center;
+    }
+
+    .training360-flow__viewer {
+        min-height: 420px;
+    }
+
+    .training360-flow__intro {
+        left: 12px;
+        right: 64px;
+        top: 12px;
+        padding: 10px 12px;
+    }
+
+    .training360-flow__controls {
+        right: 10px;
+        bottom: 64px;
+    }
+
+    .training360-flow__hint {
+        left: 12px;
+        right: 62px;
+        bottom: 12px;
+        font-size: 10px;
+    }
+
+    .exercise360__scene {
+        min-height: 320px;
+        height: 52dvh;
+    }
+}
+
+/* Final admin type floor: legacy designer CSS used screenshot-scale 6–11px text. */
+.app-shell--admin .app-content :where(p, label, legend, summary) {
+    font-size: 13px !important;
+}
+
+.app-shell--admin .app-content small {
+    font-size: 12px !important;
+}
+
+.app-shell--admin .app-content h1 {
+    font-size: 24px !important;
+    line-height: 1.2;
+}
+
+.app-shell--admin .app-content h2 {
+    font-size: 18px !important;
+    line-height: 1.3;
+}
+
+.app-shell--admin .app-content h3 {
+    font-size: 16px !important;
+    line-height: 1.35;
+}
+
+.app-shell--admin .app-content h4 {
+    font-size: 14px !important;
+    line-height: 1.4;
+}
+
+.app-shell--admin .app-content button {
+    font-size: 13px !important;
+}
+
+html[data-theme="dark"] .app-content table {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .app-content table td {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background-color: transparent;
+}
+
+html[data-theme="dark"] .app-content table th {
+    color: #cbd5e1;
+    border-color: var(--ui-border);
+    background: var(--ui-surface-soft) !important;
+}
+
+/* =========================================================
+   FINAL UI CONSISTENCY PASS
+   Appearance controls now live only on the Admin Dashboard
+   and Trainer/Trainee Profile pages. Ordinary pages no longer
+   use a floating theme button.
+========================================================= */
+
+.app-theme-toolbar,
+.login-theme-toolbar,
+.tour360__theme-toggle {
+    display: none !important;
+}
+
+.app-theme-toggle {
+    position: static !important;
+    min-width: 118px;
+    min-height: 40px;
+    padding: 8px 12px;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--ui-border-strong);
+    border-radius: 9px;
+    color: var(--ui-text-strong);
+    background: var(--ui-surface);
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.app-theme-toggle:hover:not(:disabled) {
+    color: var(--ui-link);
+    border-color: color-mix(in srgb, var(--ui-focus) 55%, var(--ui-border));
+    background: var(--ui-info-bg);
+}
+
+.app-theme-toggle__icon {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
+    font-size: 14px;
+}
+
+.app-theme-toggle__icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.admin-dashboard-header {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.admin-dashboard-header__actions {
+    min-width: 0;
+}
+
+html[data-theme="dark"] .admin-dashboard-header :where(h1, strong) {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] .admin-dashboard-header > div:first-child > p {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .admin-dashboard-header > div:first-child p span {
+    color: var(--ui-link) !important;
+}
+
+html[data-theme="dark"] .admin-dashboard-header button:not(.app-theme-toggle) {
+    border-color: var(--ui-border) !important;
+    background-color: var(--ui-surface) !important;
+}
+
+.trainer-dashboard-header,
+.trainee-dashboard-header {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.trainer-dashboard-header > div:first-child > p,
+.trainee-dashboard-header > div:first-child > p {
+    font-size: 13px !important;
+    line-height: 1.45;
+}
+
+.profile-header-button {
+    min-height: 44px;
+    border: 1px solid transparent;
+}
+
+.profile-header-button:hover {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-soft) !important;
+}
+
+.profile-header-button p:first-of-type {
+    font-size: 13px !important;
+    color: var(--ui-text-strong) !important;
+}
+
+.profile-header-button p:last-of-type {
+    font-size: 11.5px !important;
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .trainer-dashboard-header button,
+html[data-theme="dark"] .trainee-dashboard-header button {
+    color: var(--ui-text-muted) !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+/* =========================================================
+   PROFILE READABILITY + DARK MODE
+========================================================= */
+
+.profile-figma-page {
+    color: var(--ui-text);
+    background: linear-gradient(180deg, var(--ui-bg-top), var(--ui-bg)) !important;
+}
+
+.profile-topbar {
+    align-items: center;
+    min-height: 78px;
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none;
+}
+
+.profile-topbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+}
+
+.profile-eyebrow {
+    margin-bottom: 5px;
+    font-size: 11px !important;
+    line-height: 1.3;
+}
+
+.profile-topbar h1 {
+    color: var(--ui-text-strong) !important;
+    font-size: 26px !important;
+    line-height: 1.15;
+}
+
+.profile-topbar > div:first-child > span {
+    margin-top: 6px;
+    color: var(--ui-text-muted) !important;
+    font-size: 13px !important;
+    line-height: 1.45;
+}
+
+.profile-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--ui-border-strong) !important;
+    border-radius: 9px !important;
+    color: var(--ui-text) !important;
+    background: var(--ui-surface) !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    line-height: 1.2;
+}
+
+.profile-back-button:hover {
+    color: var(--ui-link) !important;
+    border-color: color-mix(in srgb, var(--ui-focus) 55%, var(--ui-border)) !important;
+    background: var(--ui-info-bg) !important;
+}
+
+.profile-back-button > span {
+    color: inherit !important;
+    font-size: 18px !important;
+    line-height: 1;
+}
+
+.profile-security-banner {
+    min-height: 132px;
+    padding: 24px 26px;
+}
+
+.profile-security-banner p {
+    font-size: 10.5px !important;
+    line-height: 1.35;
+}
+
+.profile-security-banner h2 {
+    margin-top: 8px;
+    font-size: 20px !important;
+    line-height: 1.3;
+}
+
+.profile-security-banner > div:first-child > span {
+    max-width: 720px;
+    margin-top: 7px;
+    color: #e5f0ff !important;
+    font-size: 12.5px !important;
+    line-height: 1.5;
+}
+
+.profile-role-pill {
+    min-width: 150px;
+}
+
+.profile-role-pill small { font-size: 10px !important; }
+.profile-role-pill strong { font-size: 12px !important; }
+
+.profile-details-card,
+.profile-password-card {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.profile-user-strip,
+.profile-details-heading,
+.profile-password-heading {
+    border-color: var(--ui-border) !important;
+}
+
+.profile-name-line h2 {
+    color: var(--ui-text-strong) !important;
+    font-size: 17px !important;
+}
+
+.profile-name-line span {
+    font-size: 11px !important;
+    line-height: 1.25;
+}
+
+.profile-user-strip p {
+    color: var(--ui-text-muted) !important;
+    font-size: 12.5px !important;
+}
+
+.profile-user-strip small {
+    color: var(--ui-text-subtle) !important;
+    font-size: 11.5px !important;
+    line-height: 1.55;
+}
+
+.profile-details-heading h3 {
+    color: var(--ui-text-strong) !important;
+    font-size: 15px !important;
+}
+
+.profile-details-heading p {
+    color: var(--ui-text-muted) !important;
+    font-size: 12px !important;
+}
+
+.profile-details-heading > span {
+    color: var(--ui-text-muted) !important;
+    background: var(--ui-surface-soft) !important;
+    font-size: 11px !important;
+}
+
+.profile-password-heading p { font-size: 10.5px !important; }
+.profile-password-heading h2 {
+    color: var(--ui-text-strong) !important;
+    font-size: 15px !important;
+}
+.profile-password-heading span {
+    color: var(--ui-text-muted) !important;
+    font-size: 11.5px !important;
+}
+
+.profile-figma-page [class*="text-[6px]"],
+.profile-figma-page [class*="text-[7px]"],
+.profile-figma-page [class*="text-[8px]"],
+.profile-figma-page [class*="text-[9px]"],
+.profile-figma-page [class*="text-[10px]"] {
+    font-size: 12px !important;
+}
+
+.profile-figma-page [class*="text-[11px]"],
+.profile-figma-page [class*="text-[12px]"] {
+    font-size: 13px !important;
+}
+
+.profile-figma-page :where(input, select, textarea) {
+    min-height: 44px;
+    color: var(--ui-text) !important;
+    border-color: var(--ui-border-strong) !important;
+    background: var(--ui-surface) !important;
+    font-size: 14px !important;
+}
+
+html[data-theme="dark"] .profile-avatar-fallback,
+html[data-theme="dark"] .profile-lock-icon {
+    color: #93c5fd;
+    background: #10233c;
+}
+
+html[data-theme="dark"] .profile-name-line span {
+    color: #86efac !important;
+    background: #0f2d25 !important;
+}
+
+html[data-theme="dark"] .profile-figma-page [class*="bg-white"] {
+    background-color: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] .profile-figma-page [class*="bg-[#f8fafc]"],
+html[data-theme="dark"] .profile-figma-page [class*="bg-slate-50"] {
+    background-color: var(--ui-surface-soft) !important;
+}
+
+html[data-theme="dark"] .profile-figma-page [class*="text-[#334155]"],
+html[data-theme="dark"] .profile-figma-page [class*="text-[#172033]"] {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] .profile-figma-page [class*="text-[#64748b]"],
+html[data-theme="dark"] .profile-figma-page [class*="text-[#94a3b8]"] {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .profile-figma-page [class*="border-[#e2e8f0]"],
+html[data-theme="dark"] .profile-figma-page [class*="border-[#dbe4ef]"],
+html[data-theme="dark"] .profile-figma-page [class*="border-[#e8eef5]"] {
+    border-color: var(--ui-border) !important;
+}
+
+/* =========================================================
+   TRAINER / TRAINEE READABILITY
+========================================================= */
+
+.trainer-dashboard-figma,
+.trainee-dashboard-figma {
+    color: var(--ui-text);
+    background: linear-gradient(180deg, var(--ui-bg-top), var(--ui-bg)) !important;
+}
+
+.trainer-eyebrow,
+.trainee-eyebrow { font-size: 11px !important; }
+
+.trainer-account-card h2,
+.trainee-account-card h2 {
+    font-size: 18px !important;
+    color: var(--ui-text-strong) !important;
+}
+
+.trainer-account-card > div:first-child > p:last-child,
+.trainee-account-card > div:first-child > p:last-child {
+    color: var(--ui-text-muted) !important;
+    font-size: 12.5px !important;
+}
+
+.trainer-account-badges span,
+.trainee-account-badges span,
+.trainer-section-heading > span,
+.trainee-section-heading > span { font-size: 11px !important; }
+
+.trainer-section-heading h3,
+.trainer-panel-heading h3,
+.trainee-section-heading h3 {
+    color: var(--ui-text-strong) !important;
+    font-size: 15px !important;
+}
+
+.trainer-section-heading p,
+.trainer-panel-heading p,
+.trainee-section-heading p {
+    color: var(--ui-text-muted) !important;
+    font-size: 12px !important;
+    line-height: 1.45;
+}
+
+.trainer-module-copy h4,
+.trainee-module-copy h4,
+.scenario-copy h4,
+.rail-card h3 {
+    color: var(--ui-text-strong) !important;
+    font-size: 14px !important;
+}
+
+.trainer-module-detail p,
+.trainee-module-copy > p,
+.scenario-copy p,
+.progress-numbers p,
+.training-status-item p,
+.notification-row p,
+.achievement-empty p {
+    color: var(--ui-text-muted) !important;
+    font-size: 12px !important;
+    line-height: 1.5;
+}
+
+.trainer-module-detail span,
+.module-status,
+.training-status-item > div:first-child span,
+.notification-row span { font-size: 10.5px !important; }
+
+.trainer-module-actions button,
+.trainer-panel-heading button,
+.trainee-section-heading button,
+.trainee-module-copy button,
+.scenario-copy button,
+.rail-card-heading button,
+.progress-card > button { font-size: 12px !important; }
+
+.trainer-module-actions small,
+.trainer-stat-card small {
+    color: var(--ui-text-subtle) !important;
+    font-size: 11px !important;
+}
+
+.trainer-stat-card p,
+.training-status-item strong,
+.notification-row strong,
+.achievement-empty strong {
+    color: var(--ui-text) !important;
+    font-size: 12px !important;
+}
+
+.trainer-stat-card strong { color: var(--ui-text-strong) !important; }
+.quiz-table-head,
+.quiz-table-empty { font-size: 11.5px !important; }
+
+.app-shell--trainer .app-content [class*="text-[6px]"],
+.app-shell--trainer .app-content [class*="text-[7px]"],
+.app-shell--trainer .app-content [class*="text-[8px]"],
+.app-shell--trainer .app-content [class*="text-[9px]"],
+.app-shell--trainee .app-content [class*="text-[6px]"],
+.app-shell--trainee .app-content [class*="text-[7px]"],
+.app-shell--trainee .app-content [class*="text-[8px]"],
+.app-shell--trainee .app-content [class*="text-[9px]"] {
+    font-size: 12px !important;
+}
+
+.app-shell--trainer .app-content [class*="text-[10px]"],
+.app-shell--trainer .app-content [class*="text-[11px]"],
+.app-shell--trainee .app-content [class*="text-[10px]"],
+.app-shell--trainee .app-content [class*="text-[11px]"] {
+    font-size: 12.5px !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-module-row,
+    .trainee-module-card,
+    .scenario-card,
+    .rail-card,
+    .training-status-item,
+    .profile-details-card [class*="rounded-xl"]
+) {
+    color: var(--ui-text);
+    border-color: var(--ui-border) !important;
+    background-color: var(--ui-surface) !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-module-row,
+    .trainee-module-card,
+    .scenario-card,
+    .rail-card,
+    .training-status-item
+) :where(h1, h2, h3, h4, strong, b) {
+    color: var(--ui-text-strong) !important;
+}
+
+html[data-theme="dark"] :where(
+    .trainer-module-row,
+    .trainee-module-card,
+    .scenario-card,
+    .rail-card,
+    .training-status-item
+) :where(p, small, label) {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .module-progress-track { background: #334155; }
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --ui-text-muted: #c3cede;
+    --ui-text-subtle: #a9b7cb;
+}
+
+/* =========================================================
+   RESPONSIVE CLEAN-UP
+========================================================= */
+
+@media (max-width: 1023px) {
+    .admin-dashboard-header .app-theme-toggle,
+    .profile-topbar .app-theme-toggle {
+        width: auto;
+        min-width: 110px;
+        min-height: 40px;
+        padding: 8px 10px;
+    }
+
+    .admin-dashboard-header .app-theme-toggle__label,
+    .profile-topbar .app-theme-toggle__label { display: inline; }
+}
+
+@media (max-width: 767px) {
+    .admin-dashboard-header {
+        align-items: flex-start !important;
+        flex-direction: column;
+    }
+
+    .admin-dashboard-header__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .profile-topbar {
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .profile-topbar-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .profile-security-banner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profile-role-pill {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .profile-main-grid { grid-template-columns: 1fr !important; }
+
+    .trainer-module-row,
+    .trainee-account-card,
+    .trainer-account-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .trainer-module-actions {
+        width: 100%;
+        flex: 0 0 auto;
+        text-align: left;
+    }
+
+    .trainer-module-actions button { width: 100%; }
+    .trainer-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .trainee-dashboard-grid,
+    .trainer-two-column { grid-template-columns: 1fr !important; }
+    .trainee-module-grid,
+    .trainee-scenario-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 560px) {
+    .app-theme-toggle {
+        min-width: 0 !important;
+        min-height: 40px;
+    }
+
+    .admin-dashboard-header .app-theme-toggle,
+    .profile-topbar .app-theme-toggle,
+    .profile-back-button { flex: 1 1 auto; }
+
+    .admin-dashboard-header__actions,
+    .profile-topbar-actions { gap: 8px; }
+
+    .profile-topbar h1 { font-size: 23px !important; }
+    .profile-security-banner h2 { font-size: 18px !important; }
+
+    .profile-user-strip {
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .profile-avatar-wrap {
+        width: 56px;
+        height: 56px;
+        flex-basis: 56px;
+    }
+
+    .trainer-stat-grid { grid-template-columns: 1fr !important; }
+}

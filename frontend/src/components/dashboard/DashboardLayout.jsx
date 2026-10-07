@@ -3,6 +3,8 @@ import {
     useState,
 } from "react";
 
+import { Link } from "react-router-dom";
+
 import Sidebar from "./Sidebar";
 
 import {
@@ -128,6 +130,7 @@ function DashboardLayout({
 
                 <div className="app-main">
 
+
                     {/* MOBILE HEADER */}
 
                     <header className="app-mobile-header">
@@ -197,12 +200,12 @@ function DashboardLayout({
 
                                 {displayRole === "admin" && (
                                     <div className="app-page-header__admin-meta">
-                                        <button type="button" className="app-page-header__bell" aria-label="Notifications">
+                                        <Link to="/admin/notifications" className="app-page-header__bell" aria-label="Notifications" title="Notifications">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                                                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
                                                 <path d="M10 19h4" />
                                             </svg>
-                                        </button>
+                                        </Link>
                                         <div className="app-page-header__admin-avatar">{initial}</div>
                                         <div className="app-page-header__admin-copy">
                                             <strong>{currentUser?.firstName || currentUser?.username || "Administrator"}</strong>

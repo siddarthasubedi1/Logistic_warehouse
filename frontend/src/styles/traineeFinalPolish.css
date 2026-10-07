@@ -1,0 +1,630 @@
+/* =========================================================
+   TRAINEE FINAL UI / UX PASS
+   Keeps existing functionality while normalising readability,
+   dark-mode contrast and responsive behaviour across trainee pages.
+========================================================= */
+
+.app-shell--trainee .trainee-page {
+    width: min(100%, 1440px);
+    margin-inline: auto;
+    padding: clamp(16px, 2vw, 26px);
+}
+
+.app-shell--trainee .trainee-page :where(h2, h3, h4, strong, b) {
+    color: var(--ui-text-strong);
+}
+
+.app-shell--trainee .trainee-page :where(p, small, label, td, dd) {
+    color: var(--ui-text-muted);
+}
+
+.app-shell--trainee .trainee-page :where(button, summary, a) {
+    font-size: 13px;
+}
+
+.app-shell--trainee .trainee-page :where(button, a, summary) {
+    border-radius: 10px;
+}
+
+.app-shell--trainee .trainee-page :where(button, a):not(:disabled) {
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.app-shell--trainee .trainee-page :where(button, a):not(:disabled):active {
+    transform: translateY(1px);
+}
+
+/* Shared card treatment for utility pages only. */
+.app-shell--trainee .trainee-page :where(section, article, details)[class*="border"] {
+    border-color: var(--ui-border) !important;
+}
+
+.app-shell--trainee .trainee-page :where(section, article, details)[class*="bg-white"],
+.app-shell--trainee .trainee-page :where(div)[class*="bg-white"] {
+    background-color: var(--ui-surface) !important;
+}
+
+.app-shell--trainee .trainee-page [class*="shadow-sm"] {
+    box-shadow: var(--ui-shadow) !important;
+}
+
+/* ---------------------------------------------------------
+   Notifications
+--------------------------------------------------------- */
+.trainee-notifications-page > section:first-of-type article {
+    min-height: 116px;
+    display: grid;
+    align-content: center;
+}
+
+.trainee-notifications-page > section:first-of-type article p {
+    font-size: 12px !important;
+}
+
+.trainee-notifications-page > section:first-of-type article strong {
+    font-size: 30px !important;
+    line-height: 1;
+}
+
+.trainee-notifications-page > section:last-of-type {
+    overflow: hidden;
+    border-radius: 16px !important;
+}
+
+.trainee-notifications-page > section:last-of-type > div:first-child {
+    background: var(--ui-surface-soft);
+}
+
+.trainee-notifications-page article[class*="sm:flex-row"] {
+    padding: 18px 20px !important;
+}
+
+.trainee-notifications-page article[class*="sm:flex-row"] p[class*="leading-5"] {
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+    color: var(--ui-text) !important;
+}
+
+.trainee-notifications-page article[class*="sm:flex-row"] p[class*="mt-1"] {
+    font-size: 11.5px !important;
+}
+
+.trainee-notifications-page article[class*="sm:flex-row"] > div span {
+    font-size: 10.5px !important;
+}
+
+html[data-theme="dark"] .trainee-notifications-page article[class*="bg-blue-50"] {
+    background: color-mix(in srgb, var(--ui-info-bg) 76%, var(--ui-surface)) !important;
+}
+
+/* ---------------------------------------------------------
+   Badges
+--------------------------------------------------------- */
+.trainee-badges-page > section:first-of-type article {
+    min-height: 116px;
+    display: grid;
+    align-content: center;
+}
+
+.trainee-badges-page > section:first-of-type article p {
+    font-size: 12px !important;
+}
+
+.trainee-badges-page > section:first-of-type article strong {
+    font-size: 27px !important;
+}
+
+.trainee-badges-page > section:nth-of-type(2) article {
+    position: relative;
+    overflow: hidden;
+    min-height: 270px;
+    border-radius: 16px !important;
+}
+
+.trainee-badges-page > section:nth-of-type(2) article h2 {
+    font-size: 16px !important;
+    line-height: 1.35;
+}
+
+.trainee-badges-page > section:nth-of-type(2) article p {
+    font-size: 12.5px !important;
+    line-height: 1.55 !important;
+}
+
+.trainee-badges-page > section:nth-of-type(2) article span[class*="rounded-full"] {
+    font-size: 10.5px !important;
+}
+
+html[data-theme="dark"] .trainee-badges-page [class*="bg-slate-50"],
+html[data-theme="dark"] .trainee-badges-page [class*="bg-slate-200"] {
+    background-color: var(--ui-surface-soft) !important;
+}
+
+/* ---------------------------------------------------------
+   Progress / quizzes / help
+--------------------------------------------------------- */
+.trainee-utility-page > section.grid > article {
+    min-height: 116px;
+    display: grid;
+    align-content: center;
+}
+
+.trainee-utility-page > section.grid > article p {
+    font-size: 12px !important;
+}
+
+.trainee-utility-page > section.grid > article strong {
+    font-size: 28px !important;
+}
+
+.trainee-utility-page--progress > section:last-of-type,
+.trainee-utility-page--quizzes > section:last-of-type,
+.trainee-utility-page--help > section:last-of-type {
+    border-radius: 16px !important;
+}
+
+.trainee-utility-page--progress > section:last-of-type > div:first-child h2,
+.trainee-utility-page--quizzes > section:last-of-type > div:first-child h2,
+.trainee-utility-page--help h2 {
+    font-size: 16px !important;
+}
+
+.trainee-utility-page--progress > section:last-of-type > div:first-child p,
+.trainee-utility-page--quizzes > section:last-of-type > div:first-child p,
+.trainee-utility-page--help p {
+    font-size: 12.5px !important;
+    line-height: 1.6 !important;
+}
+
+.trainee-utility-page--progress article[class*="border-[#e2e8f0]"] {
+    border-radius: 14px !important;
+    padding: 18px !important;
+}
+
+.trainee-utility-page--progress article[class*="border-[#e2e8f0]"] > div:first-child strong {
+    font-size: 15px !important;
+}
+
+.trainee-utility-page--progress article[class*="border-[#e2e8f0]"] details {
+    border-radius: 12px !important;
+    background: var(--ui-surface-soft) !important;
+}
+
+.trainee-utility-page--progress details summary {
+    min-height: 44px;
+    display: grid;
+    align-items: center;
+}
+
+.trainee-utility-page--progress details summary p,
+.trainee-utility-page--progress details summary strong {
+    font-size: 12px !important;
+}
+
+.trainee-utility-page--progress details [class*="bg-[#f8fafc]"] p,
+.trainee-utility-page--progress details [class*="bg-[#f8fafc]"] strong {
+    font-size: 11.5px !important;
+}
+
+.trainee-utility-page--quizzes table {
+    min-width: 760px;
+    font-size: 12.5px !important;
+}
+
+.trainee-utility-page--quizzes th {
+    color: var(--ui-text-muted) !important;
+    background: var(--ui-surface-soft) !important;
+    font-size: 11.5px !important;
+    white-space: nowrap;
+}
+
+.trainee-utility-page--quizzes td {
+    color: var(--ui-text) !important;
+    font-size: 12.5px !important;
+}
+
+/* ---------------------------------------------------------
+   Learning page
+--------------------------------------------------------- */
+.trainee-learning-page > button:first-of-type {
+    min-height: 42px !important;
+    font-size: 12.5px !important;
+    color: var(--ui-text-muted) !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.trainee-learning-page > section {
+    align-items: start;
+}
+
+.trainee-learning-page > section > div:first-child {
+    border-radius: 16px !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.trainee-learning-page > section > div:first-child h2 {
+    font-size: 15px !important;
+}
+
+.trainee-learning-page > section > div:first-child p {
+    font-size: 12px !important;
+}
+
+.trainee-learning-page > section > div:last-child > div:last-child {
+    border-radius: 14px !important;
+    border-color: var(--ui-border) !important;
+    background: var(--ui-surface) !important;
+}
+
+.trainee-learning-page > section > div:last-child > div:last-child button {
+    min-height: 44px !important;
+    font-size: 12.5px !important;
+}
+
+.trainee-learning-page > section > div:last-child > div:last-child p {
+    font-size: 11.5px !important;
+}
+
+/* ---------------------------------------------------------
+   360 trainee environments
+--------------------------------------------------------- */
+.app-shell--trainee .training360-flow {
+    padding: clamp(10px, 1.5vw, 20px);
+}
+
+.app-shell--trainee .training360-flow__viewer {
+    border: 1px solid color-mix(in srgb, var(--ui-border) 70%, transparent);
+}
+
+.app-shell--trainee .training360-flow__intro {
+    max-width: min(420px, calc(100% - 120px));
+    border: 1px solid rgba(191, 219, 254, .25);
+}
+
+.app-shell--trainee .training360-flow__intro strong {
+    font-size: 17px;
+}
+
+.app-shell--trainee .training360-flow__intro span {
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.app-shell--trainee .training360-flow__controls button,
+.app-shell--trainee .tour360__control,
+.app-shell--trainee .tour360__gamepad button {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.app-shell--trainee .tour360__hint {
+    max-width: min(620px, calc(100% - 210px));
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.app-shell--trainee .tour360__hotspot {
+    min-height: 42px;
+    font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   General dark-mode clarity on trainee content
+--------------------------------------------------------- */
+html[data-theme="dark"] .app-shell--trainee .trainee-page :where(
+    [class*="text-[#172033]"],
+    [class*="text-[#334155]"],
+    [class*="text-slate-600"],
+    [class*="text-slate-700"]
+) {
+    color: var(--ui-text) !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee .trainee-page :where(
+    [class*="text-[#64748b]"],
+    [class*="text-[#8492a6]"],
+    [class*="text-[#94a3b8]"],
+    [class*="text-slate-500"]
+) {
+    color: var(--ui-text-muted) !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee .trainee-page :where(
+    [class*="border-[#dbe4ef]"],
+    [class*="border-[#e2e8f0]"],
+    [class*="border-[#e8eef5]"],
+    [class*="border-[#cbd5e1]"]
+) {
+    border-color: var(--ui-border) !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee .trainee-page :where(
+    [class*="bg-blue-50"],
+    [class*="bg-blue-50/50"]
+) {
+    background-color: var(--ui-info-bg) !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee .trainee-page :where(
+    [class*="bg-slate-50"],
+    [class*="bg-slate-100"],
+    [class*="bg-[#f8fafc]"]
+) {
+    background-color: var(--ui-surface-soft) !important;
+}
+
+/* ---------------------------------------------------------
+   Responsive trainee pages
+--------------------------------------------------------- */
+@media (max-width: 1023px) {
+    .app-shell--trainee .trainee-page {
+        padding: 16px;
+    }
+
+    .trainee-learning-page > section {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .trainee-learning-page > section > div:first-child {
+        position: static !important;
+    }
+
+    .app-shell--trainee .training360-flow__viewer {
+        height: min(780px, calc(100dvh - 90px));
+        min-height: 620px;
+    }
+}
+
+@media (max-width: 700px) {
+    .app-shell--trainee .trainee-page {
+        padding: 12px;
+    }
+
+    .trainee-notifications-page article[class*="sm:flex-row"] {
+        padding: 15px !important;
+    }
+
+    .trainee-badges-page > section:nth-of-type(2) article {
+        min-height: 0;
+    }
+
+    .trainee-utility-page--quizzes table {
+        min-width: 680px;
+    }
+
+    .trainee-learning-page > section > div:last-child > div:last-child {
+        gap: 12px !important;
+    }
+
+    .trainee-learning-page > section > div:last-child > div:last-child button {
+        width: 100%;
+    }
+
+    .app-shell--trainee .training360-flow__intro {
+        left: 12px;
+        top: 12px;
+        max-width: calc(100% - 74px);
+        padding: 10px 12px;
+    }
+
+    .app-shell--trainee .training360-flow__intro strong {
+        font-size: 15px;
+    }
+
+    .app-shell--trainee .training360-flow__intro span {
+        font-size: 11px;
+    }
+
+    .app-shell--trainee .tour360__hint {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-shell--trainee .trainee-page {
+        padding: 10px;
+    }
+
+    .trainee-notifications-page > section:first-of-type,
+    .trainee-badges-page > section:first-of-type,
+    .trainee-utility-page > section.grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .app-shell--trainee .training360-flow__viewer {
+        min-height: 680px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-shell--trainee .trainee-page *,
+    .app-shell--trainee .training360-flow * {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* =========================================================
+   FINAL LIGHT / DARK CONTRAST PASS
+   Explicitly theme trainee utility/profile content so switching
+   mode never leaves light text on light surfaces or vice versa.
+========================================================= */
+html:not([data-theme="dark"]) .app-shell--trainee :where(.trainee-page, .profile-figma-page) {
+    color: #172033;
+}
+
+html:not([data-theme="dark"]) .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="bg-white"],
+    [class*="bg-[#ffffff]"],
+    [class*="bg-[#f8fafc]"]
+) {
+    background-color: #ffffff !important;
+}
+
+html:not([data-theme="dark"]) .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-[#172033]"],
+    [class*="text-[#334155]"],
+    [class*="text-slate-900"],
+    [class*="text-slate-800"],
+    [class*="text-slate-700"]
+) {
+    color: #172033 !important;
+}
+
+html:not([data-theme="dark"]) .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-[#64748b]"],
+    [class*="text-[#8492a6]"],
+    [class*="text-[#94a3b8]"],
+    [class*="text-slate-600"],
+    [class*="text-slate-500"]
+) {
+    color: #5f7087 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) {
+    color: #e8eef8;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    h1, h2, h3, h4, h5, h6, strong, b
+) {
+    color: #f5f8ff !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    p, li, dd, label, small
+) {
+    color: #bdc8d8;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="bg-white"],
+    [class*="bg-[#ffffff]"],
+    [class*="bg-[#fff]"]
+) {
+    color: #e8eef8 !important;
+    background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="bg-[#f8fafc]"],
+    [class*="bg-[#f5f7fb]"],
+    [class*="bg-slate-50"],
+    [class*="bg-slate-100"]
+) {
+    color: #e8eef8 !important;
+    background-color: #172033 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-[#172033]"],
+    [class*="text-[#334155]"],
+    [class*="text-[#073763]"],
+    [class*="text-slate-900"],
+    [class*="text-slate-800"],
+    [class*="text-slate-700"]
+) {
+    color: #f5f8ff !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-[#52627a]"],
+    [class*="text-[#64748b]"],
+    [class*="text-[#8492a6]"],
+    [class*="text-[#94a3b8]"],
+    [class*="text-slate-600"],
+    [class*="text-slate-500"],
+    [class*="text-slate-400"]
+) {
+    color: #bdc8d8 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="border-[#cbd5e1]"],
+    [class*="border-[#d7e0eb]"],
+    [class*="border-[#dbe4ef]"],
+    [class*="border-[#e2e8f0]"],
+    [class*="border-[#e8eef5]"]
+) {
+    border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    input, select, textarea
+) {
+    color: #f5f8ff !important;
+    background: #0f172a !important;
+    border-color: #475569 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    input, textarea
+)::placeholder {
+    color: #9eacc0 !important;
+}
+
+html[data-theme="dark"] .profile-topbar {
+    color: #e8eef8;
+    background: #0f172a;
+    border-color: #334155;
+}
+
+html[data-theme="dark"] .profile-topbar h1,
+html[data-theme="dark"] .profile-topbar .profile-eyebrow {
+    color: #f5f8ff !important;
+}
+
+html[data-theme="dark"] .profile-topbar > div:first-child > span {
+    color: #bdc8d8 !important;
+}
+
+html[data-theme="dark"] .profile-back-button {
+    color: #e8eef8;
+    background: #172033;
+    border-color: #475569;
+}
+
+html[data-theme="dark"] .profile-back-button:hover {
+    background: #21314a;
+    border-color: #60a5fa;
+}
+
+html[data-theme="dark"] .profile-details-card,
+html[data-theme="dark"] .profile-password-card {
+    color: #e8eef8;
+    background: #111827 !important;
+    border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .profile-details-grid > div,
+html[data-theme="dark"] .profile-password-card [class*="rounded"] {
+    color: #e8eef8;
+    background: #172033 !important;
+    border-color: #334155 !important;
+}
+
+/* Keep status/success text legible in dark mode without turning it white. */
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-green-"],
+    [class*="text-emerald-"]
+) {
+    color: #86efac !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-red-"],
+    [class*="text-rose-"]
+) {
+    color: #fca5a5 !important;
+}
+
+html[data-theme="dark"] .app-shell--trainee :where(.trainee-page, .profile-figma-page) :where(
+    [class*="text-blue-"],
+    [class*="text-sky-"]
+) {
+    color: #93c5fd !important;
+}

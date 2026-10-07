@@ -54,16 +54,17 @@ describe('assessment progression and module-specific games', () => {
         expect(result.body.progress.scenarioCompleted).toBe(true); expect(result.body.progress.basicPassed).toBe(false);
         expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(200);
     });
-    test('partial scenario responses never unlock the assessment', async () => {
+    test('scenario completion is optional and learning alone unlocks the assessment', async () => {
         const f = await fixture(); await learning(f);
         await ScenarioAttempt.create({ trainee: f.trainee._id, programme: f.programme._id, assignment: f.assignment._id, scenarioSet: [f.scenario._id], responses: [], status: 'in-progress', attemptNumber: 1 });
         const result = await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee));
-        expect(result.status).toBe(403); expect(result.body.message).toContain('scenario');
+        expect(result.status).toBe(200);
     });
     test('passed assessment evidence restores progress and keeps its assessment and missions accessible with legacy missing learning ticks', async () => {
         const f = await fixture(); await assessment(f, true);
         const result = await request(app).get(`${endpoint(f)}/progress`).set(header(f.trainee));
-        expect(result.body.progress.basicPassed).toBe(true); expect(result.body.progress.scenarioCompleted).toBe(true);
+        expect(result.body.progress.basicPassed).toBe(true); expect(result.body.progress.scenarioCompleted).toBe(false);
+        expect(result.body.progress.status).toBe('in-progress');
         expect(result.body.progress.completedSections).toHaveLength(0);
         expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(200);
         const created = await request(app).post('/api/safety-simulations').set(header(f.admin)).send({ ...simulationTemplate(keys[0]), programmeId: String(f.programme._id), status: 'active' });
@@ -71,27 +72,27 @@ describe('assessment progression and module-specific games', () => {
         const begun = await request(app).post(`/api/safety-simulations/${created.body.game._id}/attempts/start`).set(header(f.trainee)).send({});
         expect(begun.status).toBe(201);
     });
-    test('a cached legacy pass also keeps the assessment accessible', async () => {
+    test('a cached legacy pass without an attempt is rejected', async () => {
         const f = await fixture(); await TrainingProgress.updateOne({ _id: f.progress._id }, { basicPassed: true, scenarioCompleted: false });
         const result = await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee));
-        expect(result.status).toBe(200);
+        expect(result.status).toBe(403);
     });
-    test('a newer failed assessment rejects old scenario evidence and clears a stale pass', async () => {
+    test('a newer failed assessment requires relearning but never requires the optional scenario', async () => {
         const f = await fixture(); await learning(f);
         await completedScenario(f, { startedAt: new Date(Date.now() - 12000), submittedAt: new Date(Date.now() - 10000) });
-        await assessment(f, false, new Date(Date.now() - 5000));
+        const failedAt = new Date(Date.now() - 5000);
+        await assessment(f, false, failedAt);
         await TrainingProgress.updateOne({ _id: f.progress._id }, { basicPassed: true, scenarioCompleted: true });
         const result = await request(app).get(`${endpoint(f)}/progress`).set(header(f.trainee));
         expect(result.body.progress.basicPassed).toBe(false); expect(result.body.progress.retryRequiredLevel).toBe('basic');
-        expect(result.body.progress.scenarioCompleted).toBe(false);
         expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(403);
-        await completedScenario(f, { startedAt: new Date(Date.now() - 3000), submittedAt: new Date(), attemptNumber: 2 });
+        await SectionCompletion.updateOne({ trainee: f.trainee._id, section: f.section._id }, { $set: { completedAt: new Date() } });
         expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(200);
     });
-    test('scenario evidence for another module cannot unlock this assessment', async () => {
+    test('scenario evidence from any module is optional and does not affect assessment access', async () => {
         const f = await fixture(); await learning(f);
         await ScenarioAttempt.create({ trainee: f.trainee._id, programme: f.programmes[keys[2]]._id, assignment: f.assignment._id, scenarioSet: [f.scenario._id], responses: [{ scenario: f.scenario._id, responses: ['Assess the load'], correct: true }], status: 'submitted', attemptNumber: 1, submittedAt: new Date() });
-        expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(403);
+        expect((await request(app).get(`${endpoint(f)}/assessments/basic`).set(header(f.trainee))).status).toBe(200);
     });
     test.each(keys)('selecting %s produces matching title, scenes, objects and actions', key => {
         const draft = simulationDraftForProgramme({ _id: 'programme-id', programmeType: key, level: 'medium' });

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import ThemeToggle from "../components/dashboard/ThemeToggle";
 import ProfileDetails from "../components/account/ProfileDetails";
 import ChangePasswordForm from "../components/account/ChangePasswordForm";
 import FeedbackAlert from "../components/ui/FeedbackAlert";
@@ -216,19 +217,25 @@ function ProfilePage({
                     </div>
 
 
-                    <button
-                        type="button"
-                        onClick={() =>
-                            navigate(
-                                normalizedRole ===
-                                    "trainer"
-                                    ? "/trainer"
-                                    : "/trainee"
-                            )
-                        }
-                    >
-                        ‹ &nbsp; Back to Dashboard
-                    </button>
+                    <div className="profile-topbar-actions">
+                        <ThemeToggle />
+
+                        <button
+                            type="button"
+                            className="profile-back-button"
+                            onClick={() =>
+                                navigate(
+                                    normalizedRole ===
+                                        "trainer"
+                                        ? "/trainer"
+                                        : "/trainee"
+                                )
+                            }
+                        >
+                            <span aria-hidden="true">‹</span>
+                            Back to Dashboard
+                        </button>
+                    </div>
 
                 </div>
 

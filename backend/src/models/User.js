@@ -97,6 +97,15 @@ const userSchema = new mongoose.Schema(
             default: "",
         },
 
+        displayMode: {
+            type: String,
+            enum: [
+                "light",
+                "dark",
+            ],
+            default: "light",
+        },
+
         role: {
             type: String,
 
@@ -179,6 +188,9 @@ const userSchema = new mongoose.Schema(
     }
 );
 
+userSchema.plugin(require("../utils/auditPlugin"), { targetType: "User" });
+
+userSchema.index({ role: 1, status: 1, accountStatus: 1 });
 module.exports =
     mongoose.model(
         "User",

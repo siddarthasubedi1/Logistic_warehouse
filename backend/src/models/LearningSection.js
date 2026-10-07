@@ -292,6 +292,8 @@ learningSectionSchema.index({
 // MODEL
 // ======================================================
 
+learningSectionSchema.plugin(require("../utils/auditPlugin"), { targetType: "LearningSection" });
+
 module.exports =
     mongoose.model(
         "LearningSection",

@@ -521,6 +521,54 @@ const deleteProfileImage = async (
 
 
 // ======================================================
+// UPDATE OWN DISPLAY MODE
+// Admin, Trainer and Trainee
+// ======================================================
+
+const updateDisplayMode = async (req, res) => {
+    try {
+        const displayMode =
+            String(req.body?.displayMode || "")
+                .trim()
+                .toLowerCase();
+
+        if (!["light", "dark"].includes(displayMode)) {
+            return res.status(400).json({
+                code: "INVALID_DISPLAY_MODE",
+                message: "Display mode must be light or dark.",
+            });
+        }
+
+        const user = await User.findOneAndUpdate(
+            { _id: req.user.id, status: "active" },
+            { $set: { displayMode } },
+            { returnDocument: "after", runValidators: true }
+        ).select("_id username firstName lastName role status mustChangePassword profileImage displayMode assignedTrainingSections");
+
+        if (!user) {
+            return res.status(404).json({
+                code: "USER_NOT_FOUND",
+                message: "User account was not found.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Display preference saved.",
+            displayMode: user.displayMode,
+            user,
+        });
+    } catch (error) {
+        console.error("Update display mode error:", error.message);
+
+        return res.status(500).json({
+            code: "DISPLAY_MODE_UPDATE_FAILED",
+            message: "Unable to save display preference.",
+        });
+    }
+};
+
+
+// ======================================================
 // EXPORT CONTROLLERS
 // ======================================================
 
@@ -528,4 +576,5 @@ module.exports = {
     getMyProfile,
     updateProfileImage,
     deleteProfileImage,
+    updateDisplayMode,
 };

@@ -1,3 +1,4 @@
+const AssessmentAttempt = require('../src/models/AssessmentAttempt');
 const request = require('supertest');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
@@ -41,6 +42,7 @@ async function fixture() {
   for (const trainee of [traineeA, traineeB]) {
     const assignment = await TrainingAssignment.create({ programme: programme._id, trainee: trainee._id, assignedBy: admin._id, status: 'active' });
     await TrainingProgress.create({ trainee: trainee._id, programme: programme._id, assignment: assignment._id, learningCompleted: true, scenarioCompleted: true, basicPassed: true, currentStage: 'intermediate', progress: 65, status: 'in-progress' });
+    await AssessmentAttempt.create({ trainee: trainee._id, programme: programme._id, assignment: assignment._id, level: 'basic', status: 'submitted', score: 1, totalPoints: 1, percentage: 100, passed: true, attemptNumber: 1, submittedAt: new Date() });
   }
   const puzzle = await Puzzle.create({
     programme: programme._id, moduleKey: 'manual-handling', title: 'Safe Lifting Sequence', instructions: 'Arrange the safe lifting steps in the approved order.', type: 'sequence',

@@ -25,4 +25,6 @@ const warehouseLocationSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
 }, { timestamps: true });
 
+warehouseLocationSchema.plugin(require("../utils/auditPlugin"), { targetType: "WarehouseLocation" });
+
 module.exports = mongoose.model("WarehouseLocation", warehouseLocationSchema);

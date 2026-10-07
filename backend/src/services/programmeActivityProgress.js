@@ -5,8 +5,8 @@ const passFieldFor = level => ({ basic: 'basicPassed', intermediate: 'intermedia
 const hasProgrammeAssessmentPass = (progress, level) => !!progress?.[passFieldFor(level)] && !progress?.retryRequiredLevel;
 
 // Attempts are durable evidence. Progress flags are a cache and older versions
-// can leave them out of sync. A failed assessment starts a new learning cycle;
-// a scenario completed before that failure must never unlock the retry.
+// can leave them out of sync. Assessments require learning only; scenarios are
+// optional practice and are tracked strictly from real scenario-attempt evidence.
 async function reconcileProgrammeActivityProgress({ traineeId, programmeId, level, progress }) {
     const [assessment, scenario] = await Promise.all([
         AssessmentAttempt.findOne({ trainee: traineeId, programme: programmeId, level, status: 'submitted' })
@@ -24,8 +24,9 @@ async function reconcileProgrammeActivityProgress({ traineeId, programmeId, leve
     } else if (assessment) {
         progress[passField] = false;
         progress.retryRequiredLevel = level;
-    } else if (progress.retryRequiredLevel) {
+    } else {
         progress[passField] = false;
+        progress.retryRequiredLevel = null;
     }
 
     const resetAt = assessment && !assessment.passed
@@ -39,14 +40,11 @@ async function reconcileProgrammeActivityProgress({ traineeId, programmeId, leve
         && new Date(scenario?.submittedAt).getTime() > resetAt
     );
 
-    if (hasProgrammeAssessmentPass(progress, level)) {
-        // A passed assessment proves its scenario prerequisite was satisfied.
-        // Do not invent individual learning-section ticks for legacy records.
-        progress.scenarioCompleted = true;
-    } else if (completeExercise && inCurrentCycle) {
+    if (completeExercise && inCurrentCycle) {
         progress.completedScenarios = scenario.scenarioSet;
         progress.scenarioCompleted = true;
-    } else if (resetAt !== null) {
+    } else {
+        progress.completedScenarios = [];
         progress.scenarioCompleted = false;
     }
     return progress;

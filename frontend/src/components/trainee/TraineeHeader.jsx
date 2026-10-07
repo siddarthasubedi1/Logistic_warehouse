@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import ProfileHeaderButton from "../account/ProfileHeaderButton";
 
 
 function TraineeHeader({ user }) {
+    const navigate = useNavigate();
     const firstName =
         user?.firstName ||
         user?.username ||
@@ -9,7 +11,7 @@ function TraineeHeader({ user }) {
 
 
     return (
-        <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#dbe4ef] bg-white px-5 py-3 lg:px-7">
+        <header className="trainee-dashboard-header flex min-h-[72px] items-center justify-between gap-4 border-b border-[#dbe4ef] bg-white px-5 py-3 lg:px-7">
 
             <div className="min-w-0">
 
@@ -33,6 +35,7 @@ function TraineeHeader({ user }) {
                 <button
                     type="button"
                     aria-label="Notifications"
+                    onClick={() => navigate("/trainee/notifications")}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-[#52627a] transition hover:bg-slate-50"
                 >
                     <svg

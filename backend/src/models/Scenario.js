@@ -14,4 +14,6 @@ const scenarioSchema = new mongoose.Schema({
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
 }, { timestamps: true });
 scenarioSchema.index({ programme: 1, order: 1 }, { unique: true });
+scenarioSchema.plugin(require("../utils/auditPlugin"), { targetType: "Scenario" });
+
 module.exports = mongoose.model("Scenario", scenarioSchema);

@@ -95,6 +95,7 @@ const buildManagerQuery = (
 
     return {
         ...extraQuery,
+        $and: [{ programmeType: { $in: user.assignedTrainingSections || [] } }],
 
         $or: [
             {
@@ -1868,6 +1869,7 @@ const reactivateTrainingProgramme = async (
             req.user.role ===
             "trainer"
         ) {
+            query.programmeType = { $in: req.user.assignedTrainingSections || [] };
             query.$or = [
                 {
                     owner:

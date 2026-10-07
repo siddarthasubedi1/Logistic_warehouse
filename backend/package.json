@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "node --watch server.js",
     "start": "node server.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
@@ -14,7 +14,13 @@
     "seed:safety-simulations": "node src/seeds/safetySimulationSeed.js",
     "repair:module-games": "node src/scripts/repairModuleSimulationContent.js",
     "migrate:safety-simulations": "node src/scripts/migrateSafetySimulationIndexes.js",
-    "test:safety-simulations": "jest --runInBand test/safetySimulations.test.js"
+    "test:safety-simulations": "jest --runInBand test/safetySimulations.test.js",
+    "setup:sprint4": "node src/scripts/setupSprint4.js",
+    "create:admin": "node src/scripts/createAdmin.js",
+    "test:sprint4": "jest --runInBand test/sprint4.test.js",
+    "test:report": "jest --runInBand --json --outputFile=docs/test-results.json",
+    "check:production": "node checks/productionSmoke.cjs",
+    "check:progress-performance": "node checks/benchmarkProgress.cjs"
   },
   "keywords": [],
   "author": "",
@@ -35,7 +41,6 @@
   "devDependencies": {
     "jest": "^30.5.1",
     "mongodb-memory-server": "^11.2.0",
-    "nodemon": "^3.1.14",
     "supertest": "^7.2.2"
   },
   "engines": {
