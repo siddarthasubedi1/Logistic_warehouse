@@ -199,6 +199,38 @@ router.delete(
 // EXPORT
 // ======================================================
 
+
+// Trainees may only access their own latest eligible cumulative certificate.
+const CertificateRequest = require('../models/CertificateRequest');
+const { CERTIFICATE_KEY_PREFIX, reconcileCertificateEligibility, buildSentCertificatePdf } = require('../services/certificateService');
+const myCertificate = async (req, res, pdfMode = false) => {
+    try {
+        await reconcileCertificateEligibility(req.user.id);
+        const rows = await CertificateRequest.find({
+            trainee: req.user.id,
+            certificateKey: new RegExp(`^${CERTIFICATE_KEY_PREFIX}:`),
+            status: { $in: ['pending', 'sent', 'failed'] }
+        }).sort({ eligibleAt: -1 }).lean();
+        const current = rows.sort((a,b) => (b.moduleKeys?.length || 0) - (a.moduleKeys?.length || 0))[0];
+        if (!current) return res.status(404).json({ message: 'No completed training certificates are available yet.' });
+        if (!pdfMode) return res.json({ certificate: {
+            id: current._id, certificateNumber: current.certificateNumber,
+            modules: current.eligibilitySnapshot?.modules || [],
+            eligibleAt: current.eligibleAt,
+        }});
+        const { pdf, filename } = await buildSentCertificatePdf(current._id);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+        res.setHeader('Cache-Control', 'private, no-store');
+        return res.send(pdf);
+    } catch (error) {
+        console.error('trainee certificate access failed:', error);
+        return res.status(500).json({ message: 'Unable to load your certificate.' });
+    }
+};
+router.get('/me/certificate', authenticate, authorize('trainee'), checkActiveStatus, (req,res) => myCertificate(req,res));
+router.get('/me/certificate/pdf', authenticate, authorize('trainee'), checkActiveStatus, (req,res) => myCertificate(req,res,true));
+
 require("../middleware/validateRequest").configureRouter(router);
 
 module.exports =

@@ -141,7 +141,8 @@ describe('cumulative certificate workflow', () => {
       expect(list.body.certificates[0].modules).toHaveLength(2);
       expect(list.body.certificates[0].downloadAvailable).toBe(false);
       const downloadBeforeSend = await request(app).get(`/api/admin/certificates/${list.body.certificates[0]._id}/download`).set(header(admin));
-      expect(downloadBeforeSend.status).toBe(409);
+      expect(downloadBeforeSend.status).toBe(200);
+      expect(downloadBeforeSend.headers["content-type"]).toMatch(/application\/pdf/);
     } finally {
       process.env.SMTP_HOST = old.host;
       process.env.SMTP_USER = old.user;

@@ -31,6 +31,11 @@ UK LogiWare provides role-based training management, structured learning program
 21. [Troubleshooting](#troubleshooting)
 22. [Team – Bug Busters](#team--bug-busters)
 23. [Repository](#repository)
+24. [End-to-End Workflows](#end-to-end-workflows)
+25. [Certificate API and Data Flow](#certificate-api-and-data-flow)
+26. [Test Suite Reference](#test-suite-reference)
+27. [Deployment, Data and Security Checklist](#deployment-data-and-security-checklist)
+28. [Codebase Reference: Key Application Areas](#codebase-reference-key-application-areas)
 
 ---
 
@@ -714,30 +719,38 @@ Badges provide a gamification layer to encourage engagement with training activi
 
 # Certificate System
 
-Sprint 4 includes certificate generation and management.
+Sprint 4 includes cumulative training certificates, performance ratings, PDF generation, and administrator notification management.
 
-Certificate functionality includes:
+## Certificate eligibility and progression
 
-- Training eligibility checking
-- Certificate requests
-- Unique certificate numbers
-- Performance rating
-- Certificate PDF generation
-- Administrator certificate review
-- Certificate download
-- Certificate email delivery
-- Certificate status tracking
+- Certificate eligibility is calculated from training-module completion and required assessments, not from arbitrary game points.
+- The configured certificate modules are selected using `CERTIFICATE_MODULE_KEYS` (default: `manual-handling,working-at-height,cyber-awareness`).
+- An eligible trainee can receive a **cumulative certificate** showing modules completed so far. As further required modules are completed, a new cumulative stage can be prepared.
+- The service uses deterministic certificate identifiers and stores a certificate request/history record in MongoDB.
+- Older *unsent* pending stages can be marked `superseded` when a newer cumulative stage becomes eligible.
+- Performance ratings and module information are included in the generated PDF.
 
-Certificate statuses can include:
+## Administrator certificate management
 
-- Pending
-- Sent
-- Failed
-- Superseded
+1. Open **Admin → Certificates** to inspect pending certificate notifications.
+2. Review the trainee, registered email, completed modules and performance information.
+3. The admin can **Download PDF** even when the certificate is still pending. An HTTP `200` with `application/pdf` is expected for an eligible download; downloading does **not** mark the certificate as sent.
+4. The **Send Certificate** action opens a pre-addressed **Gmail compose window** containing a notification that the trainee's PDF is available inside UK LogiWare. The admin must actually send the message in Gmail.
+5. After sending, return to the application and choose **Confirm Sent**. This records `sent` and the confirmation timestamp in MongoDB.
+6. **History** in the current admin UI displays confirmed certificates that are also marked `isLatest`. Older issued records may exist in the database but may not appear in this particular history view.
 
-Certificate eligibility is based primarily on completion of required learning and successful assessments.
+**Important limitation:** Clicking **Confirm Sent** is an administrative acknowledgement, **not evidence that Gmail delivered the message**. Opening Gmail does not send anything automatically. The Gmail notification is distinct from the PDF itself: the current compose message directs trainees to log in to retrieve their certificate.
 
-Puzzles, scenarios and safety simulations provide useful enrichment but do not unnecessarily block core module completion.
+## Certificate statuses
+
+| Status | Meaning |
+|---|---|
+| `pending` | A cumulative certificate is eligible, but its notification has not been confirmed |
+| `sent` | An administrator confirmed sending the notification |
+| `failed` | A delivery attempt encountered a failure, where applicable |
+| `superseded` | An older pending cumulative stage was replaced by a newer one |
+
+The backend also includes an SMTP-based certificate service and corresponding environment settings. **Do not confuse that service with the present admin-page Gmail/manual-confirmation flow.** Configure and test SMTP separately if using automatic PDF delivery.
 
 ---
 
@@ -2241,6 +2254,133 @@ GitHub repository:
 ```text
 https://github.com/siddarthasubedi1/Logistic_warehouse.git
 ```
+
+---
+
+# End-to-End Workflows
+
+## Administrator onboarding workflow
+
+1. Set up and bootstrap the initial administrator account.
+2. Log in to the administrator dashboard.
+3. Approve or create users and issue temporary credentials.
+4. Assign authorised training modules to trainers, and manage programme content and account permissions.
+5. Review training activity, reports, certificate requests and audit records.
+
+## Trainer workflow
+
+1. Sign in with the issued account and complete any mandatory first-login password change.
+2. Open the assigned modules/programmes; trainer privileges are subject to backend authorisation checks.
+3. Manage learning content, puzzles and/or safety simulations within authorised areas.
+4. Review learner attempts, progress and monitoring dashboards.
+
+## Trainee workflow
+
+1. Sign in and update any temporary password.
+2. Open **My Training** and the currently available programmes.
+3. Read ordered learning sections and use the warehouse panoramas, hazards, puzzles and simulations where available.
+4. Complete the required assessments, view feedback and review progress and badges.
+5. After meeting certificate requirements, retrieve the PDF using the applicable trainee certificate flow; admins manage notification status.
+
+---
+
+# Certificate API and Data Flow
+
+The certificate features are implemented primarily in these files:
+
+```text
+backend/src/models/CertificateRequest.js
+backend/src/controllers/certificateController.js
+backend/src/services/certificateService.js
+backend/src/services/certificatePdfService.js
+backend/src/routes/adminRoutes.js
+backend/test/certificates.test.js
+frontend/src/pages/admin/CertificateManagementPage.jsx
+frontend/src/styles/certificateManagement.css
+```
+
+### Admin actions
+
+| Request | Purpose |
+|---|---|
+| `GET /api/admin/certificates` | List certificate requests and metadata |
+| `GET /api/admin/certificates/:id/download` | Generate/download an eligible certificate PDF |
+| `POST /api/admin/certificates/:id/confirm-notification` | Record manual admin confirmation of a notification |
+| `POST /api/admin/certificates/:id/send` | Backend certificate sending endpoint; requires supported mail setup |
+| `GET /api/admin/certificates/:id/link` | Create a certificate access link where authorised |
+
+All administrative endpoints require authentication and appropriate authorisation. These endpoints are not public document URLs.
+
+### Certificate quality checks
+
+- Verify that incomplete trainees do not become eligible prematurely.
+- Verify that completion of a second/third required module produces the correct cumulative stage.
+- Verify that generated PDFs contain the proper recipient and modules.
+- Verify that pre-send PDF download returns an allowed response without changing notification status.
+- Verify pending, superseded and confirmed records independently.
+- Verify that Gmail notifications use the registered email address; manual confirmation must not be treated as verified email delivery.
+
+---
+
+# Test Suite Reference
+
+The backend contains the following automated test files (run from `backend/`):
+
+| Test file | Functional area |
+|---|---|
+| `test/auth.test.js` | Authentication |
+| `test/accessControl.test.js` | Authorisation and access control |
+| `test/userProfile.test.js` | User profiles |
+| `test/sprint2Training.test.js` | Programme and learning functionality |
+| `test/sprint2PartC.test.js` | Additional Sprint 2 training features |
+| `test/automaticTraineeAccess.test.js` | Automatic training access |
+| `test/sprint3Challenges.test.js` | Challenges and puzzles |
+| `test/safetySimulations.test.js` | Safety simulation behaviour |
+| `test/moduleGamesProgress.test.js` | Module games and progress tracking |
+| `test/sprint4.test.js` | Sprint 4 reporting/progress features |
+| `test/certificates.test.js` | Certificate eligibility and management |
+
+```bash
+cd backend
+npm test
+```
+
+The test setup launches an isolated MongoDB test database (and may use a locally installed `mongod` binary). Do not point automated tests at live production data. A previously reported local run had 138 passing and one failing certificate assertion; that assertion was subsequently updated to reflect download-before-send behaviour. **A successful full-suite run on the final repository checkout should be captured separately rather than presumed.**
+
+---
+
+# Deployment, Data and Security Checklist
+
+Before publishing or deploying the application:
+
+- Never commit real `.env` secrets, administrative bootstrap passwords, SMTP credentials or database connection credentials.
+- If credentials were ever included in a shared ZIP or Git history, revoke/rotate them and remove the exposed values from distributable artifacts.
+- Reinstall dependencies with npm on the target platform; copied `node_modules` folders may include incompatible binaries.
+- Configure MongoDB backups, persistence, indexes and least-privilege access for production.
+- Configure HTTPS, CORS, cookie settings, frontend API URL and a reverse proxy appropriate to the deployment environment.
+- Confirm that public uploads and file-serving endpoints enforce type, size, ownership and access restrictions.
+- Run backend tests, frontend lint/build, and manual role-based regression checks.
+- Check all three roles on desktop and mobile widths, including light/dark themes.
+- Verify certificate generation, notification flow and audit logging with test accounts before production release.
+- Review the missing `backend/src/scripts/setupSprint4.js` target before using `npm run setup:sprint4`.
+- Treat development seed content and test usernames as demonstration data, not production accounts.
+
+---
+
+# Codebase Reference: Key Application Areas
+
+| Area | Main implementation locations |
+|---|---|
+| Backend startup and middleware | `backend/app.js`, `backend/server.js`, `backend/src/middleware/` |
+| Authentication and account management | `backend/src/controllers/`, `backend/src/routes/`, `backend/src/models/User.js` |
+| Programmes, learning and assessments | `backend/src/controllers/`, `backend/src/models/`, `frontend/src/pages/training/` |
+| Warehouse panoramas | `frontend/public/panoramas/`, `frontend/src/components/`, `backend/src/controllers/` |
+| Puzzles and challenges | `backend/src/models/`, `backend/src/services/`, `frontend/src/pages/` |
+| Simulation engine and templates | `shared/simulationEngine.mjs`, `shared/simulationTemplates.mjs` |
+| Trainer/admin analytics | `frontend/src/pages/trainer/`, `frontend/src/pages/admin/`, `backend/src/controllers/` |
+| Notifications and badges | `backend/src/controllers/notificationController.js`, `backend/src/controllers/badgeController.js` |
+| Certificate requests and PDF generation | `backend/src/controllers/certificateController.js`, `backend/src/services/certificatePdfService.js` |
+| Verification and maintenance | `backend/test/`, `backend/checks/`, `backend/src/scripts/` |
 
 ---
 

@@ -260,6 +260,8 @@ app.use("/api", trainingContentApiRoutes);
 app.use("/api", sprint3ChallengeRoutes);
 app.use("/api/safety-simulations", require("./src/routes/safetySimulationRoutes"));
 app.use("/api/training-content", trainingContentRoutes);
+// Public, cryptographically signed certificate PDF links (no session required).
+app.get('/api/certificate-links/:id/pdf', require('./src/controllers/certificateController').publicPdf);
 app.use("/api", require("./src/routes/sprint4Routes"));
 
 

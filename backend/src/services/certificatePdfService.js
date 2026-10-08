@@ -3,7 +3,7 @@ const path = require('path');
 
 const PAGE_W = 842;
 const PAGE_H = 595;
-const LOGO_PATH = path.join(__dirname, '..', 'assets', 'bug-busters-logo.jpg');
+const LOGO_PATH = path.join(__dirname, '..', 'assets', 'logiware-company-logo.jpg');
 
 function ascii(value) {
     return String(value || '').normalize('NFKD').replace(/[^\x20-\x7E]/g, '').replace(/[()\\]/g, m => `\\${m}`);
@@ -125,8 +125,8 @@ function generateCertificatePdf({ traineeName, certificateNumber, issuedAt, modu
     stream += 'q 62 0 0 62 62 472 cm /Im1 Do Q\n';
     stream += text(142, 510, 17, 'UK LogiWare Safety Training', 'F2');
     stream += text(142, 487, 10, 'Workplace learning and assessment certification');
-    stream += text(665, 510, 8.5, 'DESIGNED BY', 'F2');
-    stream += text(665, 491, 12, 'BUG BUSTERS', 'F2');
+    stream += text(665, 510, 8.5, 'ISSUED BY', 'F2');
+    stream += text(665, 491, 12, 'LOGIWARE', 'F2');
 
     stream += text(centerX('CERTIFICATE OF COMPLETION', 28, 0.55), 431, 28, 'CERTIFICATE OF COMPLETION', 'F2');
     stream += text(centerX('This certificate is proudly presented to', 12), 400, 12, 'This certificate is proudly presented to');
@@ -167,7 +167,7 @@ function generateCertificatePdf({ traineeName, certificateNumber, issuedAt, modu
     stream += text(466, 91, fitText(issuedBy, 280, 10, 8.5), issuedBy);
     stream += text(466, 76, 8.5, `${completedModules.length} completed module${completedModules.length === 1 ? '' : 's'} listed above`);
 
-    stream += text(centerX('Designed by Bug Busters', 10), 52, 10, 'Designed by Bug Busters', 'F2');
+    stream += text(centerX('LogiWare Company', 10), 52, 10, 'LogiWare Company', 'F2');
     stream += text(centerX('Learning sections and assessments determine certification; games and simulations are optional.', 7.2), 39, 7.2, 'Learning sections and assessments determine certification; games and simulations are optional.');
 
     const content = Buffer.from(stream, 'ascii');

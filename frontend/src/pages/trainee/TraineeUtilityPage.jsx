@@ -40,6 +40,9 @@ function TraineeUtilityPage({ type }) {
     const [attempts, setAttempts] = useState([]);
     const [loading, setLoading] = useState(type === "progress" || type === "quizzes");
     const [error, setError] = useState("");
+    const [certificate, setCertificate] = useState(null);
+    const [certificateBusy, setCertificateBusy] = useState(false);
+    const [certificateMessage, setCertificateMessage] = useState("");
 
     const [title, subtitle] = TITLES[type] || ["Trainee", "Safety training."];
 
@@ -78,6 +81,31 @@ function TraineeUtilityPage({ type }) {
         return () => { mounted = false; };
     }, [type]);
 
+    useEffect(() => {
+        if (type !== 'progress') return undefined;
+        let active = true;
+        api.get('/users/me/certificate')
+            .then(({ data }) => { if (active) setCertificate(data.certificate || null); })
+            .catch(() => { if (active) setCertificate(null); });
+        return () => { active = false; };
+    }, [type]);
+
+    const viewCertificate = async () => {
+        const tab = window.open('about:blank', '_blank');
+        if (!tab) { setCertificateMessage('Allow pop-ups to view your PDF.'); return; }
+        try {
+            setCertificateBusy(true);
+            setCertificateMessage('');
+            const response = await api.get('/users/me/certificate/pdf', { responseType: 'blob' });
+            const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            tab.location.replace(url);
+            window.setTimeout(() => URL.revokeObjectURL(url), 120000);
+        } catch (err) {
+            tab.close();
+            setCertificateMessage(getApiErrorMessage(err, 'Unable to view your certificate.'));
+        } finally { setCertificateBusy(false); }
+    };
+
     const average = useMemo(() => {
         if (progressSummary?.overallProgress !== undefined) return Number(progressSummary.overallProgress || 0);
         if (!progress.length) return 0;
@@ -105,6 +133,15 @@ function TraineeUtilityPage({ type }) {
 
                 {type === "progress" && (
                     <>
+                        <section className="rounded-xl border border-[#cbd5e1] bg-white p-5 shadow-sm">
+                            <h2 className="text-[16px] font-bold text-[#172033]">My Certificate</h2>
+                            {certificate ? <>
+                                <p className="mt-2 text-sm text-[#475569]">Certificate {certificate.certificateNumber} · {certificate.modules?.length || 0} completed module(s)</p>
+                                <p className="mt-1 text-sm text-[#475569]">{certificate.modules?.map(m => m.name || m.key).join(', ')}</p>
+                                <button type="button" onClick={viewCertificate} disabled={certificateBusy} className="mt-4 rounded-lg bg-[#0b4f87] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{certificateBusy ? 'Opening PDF...' : 'View / Download Certificate PDF'}</button>
+                            </> : <p className="mt-2 text-sm text-[#64748b]">Your certificate will appear here after you complete the required learning and pass an assessment.</p>}
+                            {certificateMessage && <p role="alert" className="mt-2 text-sm text-red-600">{certificateMessage}</p>}
+                        </section>
                         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                             <Summary label="Overall Progress" value={`${average}%`} />
                             <Summary label="Modules Assigned" value={progressSummary?.modulesAssigned ?? progress.length} />

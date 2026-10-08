@@ -378,8 +378,8 @@ async function sendCertificate(requestId, adminId) {
         await sendMail({
             to: recipient,
             subject: `Your UK LogiWare Training Certificate - ${currentModules.length} Module${currentModules.length === 1 ? '' : 's'} Completed`,
-            text: `Hello ${traineeName},\n\nCongratulations. Your updated certificate is attached as a PDF. It includes every training module you have completed so far.\n\nCompleted modules:\n${moduleListText(currentModules)}\n\nCertificate number: ${request.certificateNumber}\nIssued by: ${adminName}\n\nDesigned by Bug Busters\nUK LogiWare Safety Training`,
-            html: `<p>Hello <strong>${escapeHtml(traineeName)}</strong>,</p><p>Congratulations. Your updated certificate is attached as a PDF. It includes every training module you have completed so far.</p><p><strong>Completed modules and performance ratings:</strong></p>${moduleListHtml(currentModules)}<p><strong>Certificate number:</strong> ${escapeHtml(request.certificateNumber)}<br><strong>Issued by:</strong> ${escapeHtml(adminName)}</p><p><strong>Designed by Bug Busters</strong><br>UK LogiWare Safety Training</p>`,
+            text: `Hello ${traineeName},\n\nCongratulations. Your updated certificate is attached as a PDF. It includes every training module you have completed so far.\n\nCompleted modules:\n${moduleListText(currentModules)}\n\nCertificate number: ${request.certificateNumber}\nIssued by: ${adminName}\n\nLogiWare Company\nUK LogiWare Safety Training`,
+            html: `<p>Hello <strong>${escapeHtml(traineeName)}</strong>,</p><p>Congratulations. Your updated certificate is attached as a PDF. It includes every training module you have completed so far.</p><p><strong>Completed modules and performance ratings:</strong></p>${moduleListHtml(currentModules)}<p><strong>Certificate number:</strong> ${escapeHtml(request.certificateNumber)}<br><strong>Issued by:</strong> ${escapeHtml(adminName)}</p><p><strong>LogiWare Company</strong><br>UK LogiWare Safety Training</p>`,
             attachments: [{ filename: `${request.certificateNumber}.pdf`, contentType: 'application/pdf', content: pdf }],
         });
         request.status = 'sent';
@@ -412,10 +412,21 @@ async function buildSentCertificatePdf(requestId) {
         error.code = 'CERTIFICATE_NOT_FOUND';
         throw error;
     }
-    if (request.status !== 'sent') {
-        const error = new Error('The PDF becomes available for download after the certificate email has been sent successfully.');
-        error.code = 'CERTIFICATE_NOT_SENT';
+    if (request.status === 'superseded') {
+        const error = new Error('A newer cumulative certificate is available. Refresh the page and download that version.');
+        error.code = 'CERTIFICATE_SUPERSEDED';
         throw error;
+    }
+    // Manual Gmail compose workflow: download is permitted for an eligible
+    // certificate even before email is sent. Download does not mark it sent.
+    if (request.status !== 'sent') {
+        const eligibility = await eligibilityForTrainee(request.trainee?._id);
+        const keys = eligibility.eligibleModules.map(m => m.key);
+        if (!keys.length || !sameKeySet(keys, request.moduleKeys)) {
+            const error = new Error('Certificate completion changed. Refresh the page to get the latest eligible certificate.');
+            error.code = 'CERTIFICATE_NOT_ELIGIBLE';
+            throw error;
+        }
     }
     const modules = Array.isArray(request.eligibilitySnapshot?.modules) ? request.eligibilitySnapshot.modules : [];
     if (!modules.length) {

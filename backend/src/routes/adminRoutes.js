@@ -82,6 +82,8 @@ router.get('/reports', require('../controllers/reportController').summary);
 // Certificate review and email delivery
 router.get('/certificates', require('../controllers/certificateController').list);
 router.post('/certificates/:id/send', require('../controllers/certificateController').send);
+router.post('/certificates/:id/confirm-notification', require('../controllers/certificateController').confirmNotification);
+router.get('/certificates/:id/link', require('../controllers/certificateController').createLink);
 router.get('/certificates/:id/download', require('../controllers/certificateController').download);
 
 router.get(

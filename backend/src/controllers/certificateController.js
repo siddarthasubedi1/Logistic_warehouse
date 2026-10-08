@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const CertificateRequest = require('../models/CertificateRequest');
 const {
     CERTIFICATE_KEY_PREFIX,
@@ -125,6 +126,27 @@ exports.send = async (req, res) => {
     }
 };
 
+// Gmail compose cannot prove delivery. Admin explicitly confirms after pressing Send in Gmail.
+exports.confirmNotification = async (req, res) => {
+    try {
+        const request = await CertificateRequest.findById(req.params.id);
+        if (!request) return res.status(404).json({ message: 'Certificate not found.' });
+        if (request.status === 'superseded') return res.status(409).json({ message: 'This certificate has been replaced by a newer one.' });
+        if (request.status !== 'sent') {
+            request.status = 'sent';
+            request.sentAt = new Date();
+            request.sentBy = req.user.id;
+            request.recipientEmail = request.recipientEmail || (await require('../models/User').findById(request.trainee).select('email').lean())?.email || '';
+            await request.save();
+            await writeAuditLog({ req, user: req.user, action: 'CONFIRM_CERTIFICATE_NOTIFICATION', status: 'success', targetType: 'CertificateRequest', targetId: request._id, details: { certificateNumber: request.certificateNumber, recipientEmail: request.recipientEmail, confirmedAt: request.sentAt, method: 'gmail_manual_confirmation' } });
+        }
+        res.json({ message: 'Notification recorded in certificate history.', certificate: { _id: request._id, status: request.status, sentAt: request.sentAt } });
+    } catch (error) {
+        console.error('confirm certificate notification failed:', error);
+        res.status(500).json({ message: 'Could not record certificate notification.' });
+    }
+};
+
 exports.download = async (req, res) => {
     try {
         const { request, pdf, filename } = await buildSentCertificatePdf(req.params.id);
@@ -145,8 +167,47 @@ exports.download = async (req, res) => {
     } catch (error) {
         console.error('download certificate failed:', error);
         const status = error.code === 'CERTIFICATE_NOT_FOUND' ? 404
-            : error.code === 'CERTIFICATE_NOT_SENT' ? 409
+            : ['CERTIFICATE_NOT_ELIGIBLE', 'CERTIFICATE_SUPERSEDED'].includes(error.code) ? 409
                 : error.code === 'CERTIFICATE_DATA_MISSING' ? 422 : 500;
         res.status(status).json({ code: error.code || 'CERTIFICATE_DOWNLOAD_FAILED', message: error.message || 'Unable to download certificate PDF.' });
+    }
+};
+
+// Short-lived, tamper-proof public links; do not require the trainee to share admin credentials.
+const linkSecret = () => process.env.CERTIFICATE_LINK_SECRET || process.env.JWT_REFRESH_SECRET;
+const signatureFor = (id, expiry) => crypto.createHmac('sha256', linkSecret()).update(`${id}.${expiry}`).digest('hex');
+
+exports.createLink = async (req, res) => {
+    try {
+        const { request } = await buildSentCertificatePdf(req.params.id);
+        const expiry = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+        const signature = signatureFor(String(request._id), expiry);
+        const base = (process.env.PUBLIC_API_URL || '').trim().replace(/\/$/, '');
+        if (!/^https:\/\/[^\s/]+(?::\d+)?$/i.test(base) || /^(?:https:\/\/)(?:localhost|127\.0\.0\.1|0\.0\.0\.0|(?:192\.168|10)\.\d+\.\d+\.\d+)(?::|$)/i.test(base)) {
+            return res.status(422).json({ message: 'A working public HTTPS backend address is required. Deploy the backend or create an HTTPS tunnel, then set PUBLIC_API_URL in backend/.env. Localhost links cannot be opened by trainees.' });
+        }
+        const link = `${base}/api/certificate-links/${request._id}/pdf?expires=${expiry}&signature=${signature}`;
+        res.json({ link, expiresAt: new Date(expiry * 1000).toISOString() });
+    } catch (error) {
+        res.status(error.code === 'CERTIFICATE_NOT_FOUND' ? 404 : 409).json({ message: error.message });
+    }
+};
+
+exports.publicPdf = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const expiry = Number(req.query.expires);
+        const signature = String(req.query.signature || '');
+        if (!/^[a-f0-9]{24}$/i.test(id) || !Number.isSafeInteger(expiry) || expiry < Math.floor(Date.now() / 1000) || expiry > Math.floor(Date.now() / 1000) + 31 * 86400 || !/^[a-f0-9]{64}$/.test(signature)) return res.status(403).send('Invalid or expired certificate link.');
+        const expected = signatureFor(id, expiry);
+        if (!crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex'))) return res.status(403).send('Invalid certificate link.');
+        const { pdf, filename } = await buildSentCertificatePdf(id);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.setHeader('Referrer-Policy', 'no-referrer');
+        return res.send(pdf);
+    } catch (error) {
+        return res.status(error.code === 'CERTIFICATE_NOT_FOUND' ? 404 : 410).send('This certificate is no longer available.');
     }
 };

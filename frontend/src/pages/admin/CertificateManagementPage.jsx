@@ -5,7 +5,6 @@ import LoadingCard from '../../components/ui/LoadingCard';
 import api from '../../services/api';
 import { getApiErrorMessage } from '../../utils/training';
 
-const statusLabel = value => ({ pending: 'Ready to send', sent: 'Sent', failed: 'Send failed' }[value] || value);
 const date = value => value ? new Date(value).toLocaleString() : '—';
 const pretty = value => String(value || '').replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 const duration = seconds => {
@@ -47,14 +46,12 @@ function ModulePerformance({ module }) {
 
 export default function CertificateManagementPage() {
   const [rows, setRows] = useState([]);
-  const [summary, setSummary] = useState({ pending: 0, sent: 0, failed: 0 });
-  const [emailConfigured, setEmailConfigured] = useState(false);
   const [requiredModuleKeys, setRequiredModuleKeys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [view, setView] = useState('pending');
 
   const load = useCallback(async () => {
     try {
@@ -62,8 +59,6 @@ export default function CertificateManagementPage() {
       setError('');
       const { data } = await api.get('/admin/certificates');
       setRows(Array.isArray(data.certificates) ? data.certificates : []);
-      setSummary(data.summary || { pending: 0, sent: 0, failed: 0 });
-      setEmailConfigured(Boolean(data.emailConfigured));
       setRequiredModuleKeys(Array.isArray(data.requiredModuleKeys) ? data.requiredModuleKeys : []);
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, 'Unable to load certificate requests.'));
@@ -74,61 +69,59 @@ export default function CertificateManagementPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const shown = useMemo(() => filter === 'all' ? rows : rows.filter(row => row.status === filter), [rows, filter]);
+  // Keep one current cumulative certificate per trainee; older issued versions remain in the database.
+  const shown = useMemo(() => rows.filter(row => row.isLatest && (view === 'history' ? row.status === 'sent' : row.status !== 'sent')), [rows, view]);
+  const pendingCount = rows.filter(row => row.isLatest && row.status !== 'sent').length;
+  const sentCount = rows.filter(row => row.isLatest && row.status === 'sent').length;
 
-  const send = async row => {
-    if (!row?._id || busyKey) return;
-    try {
-      setBusyKey(`${row._id}:send`);
-      setError('');
-      setMessage('');
-      const { data } = await api.post(`/admin/certificates/${row._id}/send`);
-      setMessage(data.message || `Certificate emailed to ${row.trainee?.email || row.recipientEmail}.`);
-      await load();
-    } catch (requestError) {
-      setError(getApiErrorMessage(requestError, 'Unable to send the certificate email.'));
-    } finally {
-      setBusyKey('');
-    }
+  const savePdf = async row => {
+    const response = await api.get(`/admin/certificates/${row._id}/download`, { responseType: 'blob' });
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${row.certificateNumber || 'training-certificate'}.pdf`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 2000);
   };
 
   const download = async row => {
-    if (!row?._id || row.status !== 'sent' || busyKey) return;
-    try {
-      setBusyKey(`${row._id}:download`);
-      setError('');
-      const response = await api.get(`/admin/certificates/${row._id}/download`, { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `${row.certificateNumber || 'training-certificate'}.pdf`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
-      setMessage('Certificate PDF downloaded successfully.');
-    } catch (requestError) {
-      setError(getApiErrorMessage(requestError, 'Unable to download the certificate PDF.'));
-    } finally {
-      setBusyKey('');
-    }
+    try { setBusyKey(`${row._id}:download`); setError(''); await savePdf(row); }
+    catch (e) { setError(getApiErrorMessage(e, 'Could not download certificate.')); }
+    finally { setBusyKey(''); }
   };
 
-  return <DashboardLayout role='admin' title='Certificates' subtitle='Send an updated cumulative certificate whenever a trainee completes another training module.'>
+  const confirmSent = async row => {
+    try {
+      setBusyKey(`${row._id}:confirm`); setError('');
+      await api.post(`/admin/certificates/${row._id}/confirm-notification`);
+      setMessage('Certificate notification recorded with the date and Admin account.');
+      await load();
+    } catch (e) { setError(getApiErrorMessage(e, 'Unable to record certificate notification.')); }
+    finally { setBusyKey(''); }
+  };
+
+  // Local assignment workflow: Gmail notifies the trainee to log in and retrieve their own PDF.
+  const send = async row => {
+    const recipient = row.trainee?.email || row.recipientEmail;
+    if (!recipient) { setError('The trainee does not have a registered email address.'); return; }
+    const modules = Array.isArray(row.modules) ? row.modules : [];
+    const name = [row.trainee?.firstName, row.trainee?.lastName].filter(Boolean).join(' ') || row.trainee?.username || 'Trainee';
+    const subject = `UK LogiWare Training Certificate - ${modules.length} Module${modules.length === 1 ? '' : 's'} Completed`;
+    const moduleList = modules.map(m => `- ${m.name || pretty(m.key)}: ${m.rating?.stars ?? 'N/A'}/5 stars`).join('\n');
+    const body = `Hello ${name},\n\nCongratulations on completing your training!\n\nYour certificate PDF is available inside your UK LogiWare trainee account.\n\nSign in to UK LogiWare, open My Progress, and select View / Download Certificate PDF.\n\nCertificate number: ${row.certificateNumber}\nCompleted modules:\n${moduleList}\n\nKind regards,\nUK LogiWare Safety Training`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const opened = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    if (!opened) { setError('Please allow pop-ups to open Gmail.'); return; }
+    setMessage('Gmail compose opened. After actually clicking Send in Gmail, return here and click Confirm Sent to save the record.');
+  };
+
+  return <DashboardLayout role='admin' title='Certificates' subtitle='Notify trainees when their certificate is available in My Progress.'>
     <div className='app-page certificate-admin-page'>
       <FeedbackAlert type='error' message={error} onClose={() => setError('')} />
       <FeedbackAlert type='success' message={message} onClose={() => setMessage('')} />
-
-      {!emailConfigured && <section className='certificate-config-warning' role='status'>
-        <div><strong>Email delivery needs configuration</strong><p>Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and CERTIFICATE_FROM_EMAIL to <code>backend/.env</code>. Certificate requests still appear here, but email sending remains disabled until SMTP is configured.</p></div>
-      </section>}
-
-      <section className='certificate-summary-grid' aria-label='Certificate status summary'>
-        <Summary label='Ready to send' value={summary.pending} note='Latest cumulative certificates waiting for Admin action.' />
-        <Summary label='Sent' value={summary.sent} note='Certificates already emailed and available for PDF download.' />
-        <Summary label='Send failed' value={summary.failed} note='Retry after checking the email configuration.' />
-      </section>
 
       <section className='certificate-policy-card'>
         <div>
@@ -142,12 +135,10 @@ export default function CertificateManagementPage() {
 
       <section className='certificate-list-card'>
         <header className='certificate-list-head'>
-          <div><span className='certificate-eyebrow'>Certificate queue</span><h2>Completed training certificates</h2><p>Every row shows exactly which modules will appear on that PDF. The recipient is always the trainee’s registered email.</p></div>
-          <div className='certificate-filter-row' aria-label='Certificate filters'>
-            {[['all', 'All'], ['pending', 'Ready'], ['sent', 'Sent'], ['failed', 'Failed']].map(([value, label]) => <button key={value} type='button' className={filter === value ? 'active' : ''} onClick={() => setFilter(value)}>{label}</button>)}
-          </div>
+          <div><span className='certificate-eyebrow'>Certificate management</span><h2>Certificate notifications</h2><p>Pending certificates are listed until you confirm sending the Gmail notification. Confirmed notifications are saved in History as evidence of Admin confirmation (not proof of Gmail delivery).</p></div>
         </header>
 
+        <div className='certificate-history-tabs'><button className={view === 'pending' ? 'active' : ''} onClick={() => setView('pending')}>Pending ({pendingCount})</button><button className={view === 'history' ? 'active' : ''} onClick={() => setView('history')}>Notification history ({sentCount})</button></div>
         {loading ? <LoadingCard message='Checking completed modules and certificate eligibility...' /> : shown.length ? <div className='certificate-cards'>
           {shown.map(row => {
             const modules = Array.isArray(row.modules) ? row.modules : [];
@@ -163,31 +154,30 @@ export default function CertificateManagementPage() {
                   <p>@{row.trainee?.username} · <span className='certificate-email'>{row.trainee?.email || row.recipientEmail}</span></p>
                 </div>
                 <div className='certificate-record__status'>
-                  <span className={`certificate-status certificate-status--${row.status}`}>{statusLabel(row.status)}</span>
-                  <small>{row.sentAt ? `Sent ${date(row.sentAt)}` : `Eligible ${date(row.eligibleAt)}`}</small>
+                  {row.status === 'sent' && <span className='certificate-status certificate-status--sent'>Admin confirmed sent</span>}
+                  <small>{row.sentAt ? `Confirmed ${date(row.sentAt)}` : `Eligible ${date(row.eligibleAt)}`}</small>
                 </div>
               </header>
 
               <div className='certificate-record__summary'>
                 <div><span>Certificate includes</span><strong>{row.completionCount || modules.length} completed module{Number(row.completionCount || modules.length) === 1 ? '' : 's'}</strong></div>
                 <div><span>Certificate number</span><strong>{row.certificateNumber}</strong></div>
-                <div><span>Issued by</span><strong>{row.sentBy ? `${row.sentBy.firstName || ''} ${row.sentBy.lastName || row.sentBy.username || ''}`.trim() : 'Not issued yet'}</strong></div>
+                <div><span>Confirmed by</span><strong>{row.sentBy ? `${row.sentBy.firstName || ''} ${row.sentBy.lastName || row.sentBy.username || ''}`.trim() : 'Awaiting confirmation'}</strong></div>
               </div>
 
               <div className='certificate-module-list'>
                 {modules.map(module => <ModulePerformance key={module.key} module={module} />)}
               </div>
 
-              {row.status === 'failed' && row.lastEmailError && <p className='certificate-error'>{row.lastEmailError}</p>}
 
               <footer className='certificate-record__actions'>
-                {row.status !== 'sent' && <button type='button' className='certificate-send-button' disabled={!emailConfigured || !!busyKey} onClick={() => send(row)}>{sendBusy ? 'Sending…' : row.status === 'failed' ? 'Retry email' : 'Send certificate'}</button>}
-                {row.status === 'sent' && <button type='button' className='certificate-download-button' disabled={!!busyKey} onClick={() => download(row)}>{downloadBusy ? 'Preparing PDF…' : 'Download PDF'}</button>}
-                {row.status === 'sent' && <span className='certificate-sent-note'>The PDF is the same certificate version that was emailed to the trainee.</span>}
+                {row.status !== 'sent' && <><button type='button' className='certificate-send-button' disabled={!!busyKey} onClick={() => send(row)}>Send Certificate</button><button type='button' className='certificate-send-button' disabled={!!busyKey} onClick={() => confirmSent(row)}>{busyKey === `${row._id}:confirm` ? 'Saving…' : 'Confirm Sent'}</button></>}
+                <button type='button' className='certificate-download-button' disabled={!!busyKey} onClick={() => download(row)}>{downloadBusy ? 'Preparing PDF…' : 'Download PDF'}</button>
+                <span className='certificate-sent-note'>{row.status === 'sent' ? `Recorded ${date(row.sentAt)}. This is Admin confirmation, not verified Gmail delivery.` : 'Open Gmail, send the message, then select Confirm Sent. The trainee accesses the PDF from My Progress.'}</span>
               </footer>
             </article>;
           })}
-        </div> : <div className='certificate-empty'><strong>No certificate requests in this view</strong><p>When a trainee completes a module, the system creates or updates the cumulative certificate automatically.</p></div>}
+        </div> : <div className='certificate-empty'><strong>{view === 'pending' ? 'No pending certifications' : 'No confirmed notifications yet'}</strong><p>{view === 'pending' ? 'All current eligible certificate notifications are confirmed. Check Notification history for saved records.' : 'After sending a Gmail notification, confirm it from the Pending tab to save the record.'}</p></div>}
       </section>
     </div>
   </DashboardLayout>;
