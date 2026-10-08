@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 const path = require('path');
 
@@ -116,59 +117,109 @@ function generateCertificatePdf({ traineeName, certificateNumber, issuedAt, modu
     const logoSize = jpegSize(logo);
 
     let stream = '';
-    // Framing and header band.
-    stream += '0.03 0.22 0.39 RG 3 w 24 24 794 547 re S\n';
-    stream += '0.10 0.42 0.67 RG 1.2 w 34 34 774 527 re S\n';
-    stream += '0.96 0.98 1 rg 46 466 750 74 re f\n';
-    stream += '0.03 0.22 0.39 RG 0.8 w 46 466 750 74 re S\n';
+    const navy = '0.027 0.133 0.275';
+    const darkBlue = '0.027 0.22 0.39';
+    const blue = '0.035 0.40 0.74';
+    const brightBlue = '0.09 0.58 0.96';
+    const white = '1 1 1';
+    const softBlue = '0.95 0.977 1';
+    const borderBlue = '0.72 0.85 0.97';
+    const ink = '0.09 0.14 0.23';
+    const rect = (x, y, w, h, fill, border = null, line = 0.7) => {
+        let cmd = `${fill} rg ${x} ${y} ${w} ${h} re f\n`;
+        if (border) cmd += `${border} RG ${line} w ${x} ${y} ${w} ${h} re S\n`;
+        return cmd;
+    };
+    const line = (x1, y1, x2, y2, color = blue, width = 1) => `${color} RG ${width} w ${x1} ${y1} m ${x2} ${y2} l S\n`;
+    const polygon = (points, fill) => `${fill} rg ${points.map((p, i) => `${p[0]} ${p[1]} ${i ? 'l' : 'm'}`).join(' ')} h f\n`;
 
-    stream += 'q 62 0 0 62 62 472 cm /Im1 Do Q\n';
-    stream += text(142, 510, 17, 'UK LogiWare Safety Training', 'F2');
-    stream += text(142, 487, 10, 'Workplace learning and assessment certification');
-    stream += text(665, 510, 8.5, 'ISSUED BY', 'F2');
-    stream += text(665, 491, 12, 'LOGIWARE', 'F2');
+    // Brand palette follows the project frontend: #073763, #0b4f87 and bright blue accents.
+    stream += rect(0, 0, PAGE_W, PAGE_H, white);
+    stream += rect(13, 13, 816, 569, blue);
+    stream += rect(18, 18, 806, 559, white);
+    stream += rect(27, 27, 788, 541, white, darkBlue, 0.9);
+    stream += polygon([[680, 568], [815, 568], [815, 480]], navy);
+    stream += polygon([[699, 568], [815, 568], [815, 497]], blue);
+    stream += polygon([[733, 568], [815, 568], [815, 519]], brightBlue);
+    stream += polygon([[27, 27], [27, 125], [130, 27]], navy);
+    stream += polygon([[27, 27], [27, 89], [93, 27]], blue);
+    stream += polygon([[27, 27], [27, 58], [60, 27]], brightBlue);
 
-    stream += text(centerX('CERTIFICATE OF COMPLETION', 28, 0.55), 431, 28, 'CERTIFICATE OF COMPLETION', 'F2');
-    stream += text(centerX('This certificate is proudly presented to', 12), 400, 12, 'This certificate is proudly presented to');
-    stream += text(centerX(traineeName, nameSize, 0.54), 361, nameSize, traineeName, 'F2');
-    stream += '0.10 0.42 0.67 RG 1 w 190 349 m 652 349 l S\n';
-    stream += text(centerX('for successfully completing the required learning sections and assessments for', 11), 326, 11, 'for successfully completing the required learning sections and assessments for');
-    stream += text(centerX(`${completedModules.length} training module${completedModules.length === 1 ? '' : 's'}`, 15), 304, 15, `${completedModules.length} training module${completedModules.length === 1 ? '' : 's'}`, 'F2');
+    // Large light-blue header band and original company logo.
+    stream += rect(40, 461, 762, 89, softBlue);
+    stream += 'q 58 0 0 58 61 474 cm /Im1 Do Q\n';
+    stream += text(135, 509, 17, 'UK LogiWare Safety Training', 'F2', navy);
+    stream += text(135, 488, 9.5, 'Workplace learning and assessment certification', 'F1', ink);
+    stream += line(634, 479, 634, 526, borderBlue, 1);
+    stream += text(652, 513, 8.5, 'ISSUED BY', 'F2', ink);
+    stream += text(652, 493, 13, 'LOGIWARE', 'F2', navy);
 
-    stream += text(72, 278, 9.5, 'COMPLETED TRAINING MODULES', 'F2', '0.03 0.22 0.39');
-    stream += text(370, 278, 9.5, 'PERFORMANCE RATING', 'F2', '0.03 0.22 0.39');
-    stream += text(604, 278, 9.5, 'ASSESSMENT EVIDENCE', 'F2', '0.03 0.22 0.39');
+    const heading = 'CERTIFICATE OF COMPLETION';
+    const headingSize = fitText(heading, 720, 27, 21, 0.58);
+    stream += text(centerX(heading, headingSize, 0.58), 427, headingSize, heading, 'F2', navy);
+    stream += line(250, 412, 391, 412, blue, 1.5);
+    stream += line(451, 412, 592, 412, blue, 1.5);
 
-    const rowYs = [244, 196, 148];
+    // Blue verification shield mark below certificate heading.
+    stream += polygon([[421, 424], [433, 418], [431, 402], [421, 395], [411, 402], [409, 418]], blue);
+    stream += line(415, 411, 420, 406, white, 2.2);
+    stream += line(420, 406, 428, 417, white, 2.2);
+    stream += text(centerX('This certificate is proudly presented to', 11), 375, 11, 'This certificate is proudly presented to', 'F1', ink);
+    stream += text(centerX(traineeName, nameSize, 0.54), 337, nameSize, traineeName, 'F2', navy);
+    stream += line(241, 324, 601, 324, blue, 1.2);
+    const contextLine = 'for successfully completing the required learning sections and assessments for';
+    stream += text(centerX(contextLine, 10.5), 301, 10.5, contextLine, 'F1', ink);
+    const moduleCountLabel = `${completedModules.length} training module${completedModules.length === 1 ? '' : 's'}`;
+    stream += text(centerX(moduleCountLabel, 14), 279, 14, moduleCountLabel, 'F2', blue);
+
+    // One to three real completed modules, each with its own performance evidence.
+    const tableLeft = 48;
+    const tableWidth = 746;
+    const rowHeight = completedModules.length === 3 ? 30 : 39;
+    const topY = 260;
+    stream += rect(tableLeft, topY - 31, tableWidth, 31, darkBlue);
+    stream += rect(48, topY - 31, 288, 31, navy);
+    stream += rect(336, topY - 31, 228, 31, blue);
+    stream += text(65, topY - 20, 9.5, 'COMPLETED TRAINING MODULES', 'F2', white);
+    stream += text(350, topY - 20, 9.5, 'PERFORMANCE RATING', 'F2', white);
+    stream += text(580, topY - 20, 9.5, 'ASSESSMENT EVIDENCE', 'F2', white);
+
     completedModules.forEach((module, index) => {
-        const y = rowYs[index];
+        const yTop = topY - 31 - index * rowHeight;
+        const yBottom = yTop - rowHeight;
         const ratingValue = Math.max(1, Math.min(5, Number(module.rating?.stars || 1)));
         const moduleTitle = String(module.name || module.key || 'Training Module');
-        const moduleSize = fitText(moduleTitle, 260, 14, 10.5, 0.53);
+        const moduleSize = fitText(moduleTitle, 252, 12.5, 9.5, 0.55);
         const attempts = Number(module.rating?.assessmentAttempts || 1);
         const evidence = `${attempts} attempt${attempts === 1 ? '' : 's'} - ${formatDuration(module.rating?.totalAssessmentSeconds)}`;
-
-        stream += index % 2 === 0 ? `0.97 0.985 1 rg 58 ${y - 18} 726 42 re f\n` : `0.94 0.97 1 rg 58 ${y - 18} 726 42 re f\n`;
-        stream += `0.82 0.88 0.94 RG 0.6 w 58 ${y - 18} 726 42 re S\n`;
-        stream += text(74, y + 3, 8, `MODULE ${index + 1}`, 'F2', '0.10 0.42 0.67');
-        stream += text(74, y - 10, moduleSize, moduleTitle, 'F2');
-        stream += starsGraphic(ratingValue, 386, y - 1, 21);
-        stream += text(500, y - 5, 11, `${ratingValue.toFixed(ratingValue % 1 ? 1 : 0)}/5`, 'F2');
-        stream += text(604, y - 5, fitText(evidence, 165, 10, 8.5), evidence);
+        stream += rect(tableLeft, yBottom, tableWidth, rowHeight, index % 2 ? '0.98 0.991 1' : softBlue, borderBlue, 0.4);
+        stream += line(336, yBottom + 2, 336, yTop - 2, borderBlue, 0.5);
+        stream += line(564, yBottom + 2, 564, yTop - 2, borderBlue, 0.5);
+        stream += text(65, yBottom + rowHeight - 12, 7.5, `MODULE ${index + 1}`, 'F2', blue);
+        stream += text(65, yBottom + 6, moduleSize, moduleTitle, 'F2', navy);
+        stream += starsGraphic(ratingValue, 352, yBottom + rowHeight / 2, 19);
+        stream += text(458, yBottom + rowHeight / 2 - 4, 11, `${ratingValue.toFixed(ratingValue % 1 ? 1 : 0)}/5`, 'F2', navy);
+        stream += text(581, yBottom + rowHeight / 2 - 3, fitText(evidence, 197, 10, 8.5), evidence, 'F1', ink);
     });
 
-    // Certificate details below the module rows.
-    stream += '0.96 0.98 1 rg 58 70 334 58 re f 0.78 0.86 0.94 RG 0.7 w 58 70 334 58 re S\n';
-    stream += text(74, 109, 8.5, 'CERTIFICATE DETAILS', 'F2');
-    stream += text(74, 91, 8.5, `Certificate No: ${certificateNumber}`);
-    stream += text(74, 76, 8.5, `Issue date: ${dateLabel}`);
-    stream += '0.96 0.98 1 rg 450 70 334 58 re f 0.78 0.86 0.94 RG 0.7 w 450 70 334 58 re S\n';
-    stream += text(466, 109, 8.5, 'ISSUED BY', 'F2');
-    stream += text(466, 91, fitText(issuedBy, 280, 10, 8.5), issuedBy);
-    stream += text(466, 76, 8.5, `${completedModules.length} completed module${completedModules.length === 1 ? '' : 's'} listed above`);
-
-    stream += text(centerX('LogiWare Company', 10), 52, 10, 'LogiWare Company', 'F2');
-    stream += text(centerX('Learning sections and assessments determine certification; games and simulations are optional.', 7.2), 39, 7.2, 'Learning sections and assessments determine certification; games and simulations are optional.');
+    // The details row is below even the 3-module certificate table.
+    stream += rect(62, 68, 346, 51, softBlue, borderBlue, 0.7);
+    stream += rect(434, 68, 346, 51, softBlue, borderBlue, 0.7);
+    stream += rect(72, 81, 27, 27, white, borderBlue, 0.6);
+    stream += rect(444, 81, 27, 27, white, borderBlue, 0.6);
+    stream += text(80, 90, 15, '#', 'F2', blue);
+    stream += text(452, 90, 13, '*', 'F2', blue);
+    stream += text(110, 104, 9, 'CERTIFICATE DETAILS', 'F2', blue);
+    stream += text(110, 88, fitText(`Certificate No: ${certificateNumber}`, 284, 8.6, 7), `Certificate No: ${certificateNumber}`, 'F1', ink);
+    stream += text(110, 75, 8.5, `Issue date: ${dateLabel}`, 'F1', ink);
+    stream += text(481, 104, 9, 'ISSUED BY', 'F2', blue);
+    stream += text(481, 88, fitText(issuedBy, 278, 9.5, 8), issuedBy, 'F1', ink);
+    stream += text(481, 75, 8.5, `${completedModules.length} completed module${completedModules.length === 1 ? '' : 's'} listed above`, 'F1', ink);
+    stream += line(219, 53, 357, 53, borderBlue, 0.8);
+    stream += text(centerX('LogiWare Company', 10.5), 49, 10.5, 'LogiWare Company', 'F2', navy);
+    stream += line(485, 53, 623, 53, borderBlue, 0.8);
+    const disclaimer = 'Learning sections and assessments determine certification; games and simulations are optional.';
+    stream += text(centerX(disclaimer, 7.2), 35, 7.2, disclaimer, 'F1', ink);
 
     const content = Buffer.from(stream, 'ascii');
     const imageObject = Buffer.concat([
