@@ -1,0 +1,27 @@
+/* Light theme: neutral black/charcoal typography, not navy or blue-grey.
+   The branding, semantic statuses, 360 map and photographic overlays are preserved. */
+html:not([data-theme="dark"]) {
+  --text-main:#171717;
+  --text-secondary:#303030;
+  --text-muted:#484848;
+  --ui-text:#171717;
+  --ui-text-strong:#111111;
+  --ui-text-muted:#303030;
+  --ui-text-subtle:#454545;
+  --ux-readable:#222222;
+  --ux-subtle:#404040;
+  --readable-secondary:#303030;
+  --readable-muted:#484848;
+  --final-text-main:#171717;
+  --final-text-strong:#111111;
+  --final-text-soft:#303030;
+  --final-text-muted:#454545;
+  --final-text-placeholder:#575757;
+}
+html:not([data-theme="dark"]) .app-shell :is(.app-page-header__title,.app-mobile-header__title) {color:#111111;}
+html:not([data-theme="dark"]) .app-shell :is(.app-page-header__subtitle,.app-mobile-header__subtitle,.app-section-description,.app-page-header__admin-copy span) {color:#383838;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(input,textarea)::placeholder {color:#575757;opacity:1;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(input,select,textarea) {color:#171717;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-slate-600,.text-gray-600) {color:#414141 !important;}
+/* Explicitly avoid recoloring light text that belongs on navy/photo widgets. */
+html:not([data-theme="dark"]) .app-shell .app-content :is(.tour360,.tour360--embedded,.profile-security-banner,.immersive-card,.immersive-activity,.immersive-overlay,.training360-flow__module,.training360-flow__learn) :is(h1,h2,h3,h4,p,small,strong,span) {color:inherit;}

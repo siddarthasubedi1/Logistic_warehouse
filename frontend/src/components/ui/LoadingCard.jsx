@@ -41,7 +41,7 @@ function LoadingCard({
                 <p
                     className="
                         mt-4
-                        text-[9px]
+                        text-base
                         font-medium
                         text-slate-600
                     "

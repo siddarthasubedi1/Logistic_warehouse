@@ -1,0 +1,206 @@
+/* UK LogiWare: role-wide final UI layer. This comes LAST to protect small
+   navigation icons, panoramic controls and map markers from global button rules. */
+:root,
+html[data-theme="light"] {
+  --motion-accent:#087e88;
+  --motion-accent-bright:#08a6a6;
+  --motion-warm:#c48a24;
+  --motion-purple:#7157c3;
+  --motion-glow:rgba(8,126,136,.22);
+  --motion-tint:#e5f8f5;
+  --motion-elevated:#ffffff;
+  --motion-readable:#2c425e;
+  --motion-strong:#13243b;
+  --motion-separator:#c9d6e5;
+}
+html[data-theme="dark"] {
+  --motion-accent:#49dfce;
+  --motion-accent-bright:#71f3e4;
+  --motion-warm:#f8c977;
+  --motion-purple:#bea9ff;
+  --motion-glow:rgba(73,223,206,.21);
+  --motion-tint:#203d48;
+  --motion-elevated:#20334a;
+  --motion-readable:#cbddee;
+  --motion-strong:#f4f8ff;
+  --motion-separator:#4a6481;
+}
+
+/* Sidebar uses its original compact type size. Enlarge content, not navigation. */
+.app-shell .sidebar-link {font-size:14px !important;line-height:1.4 !important;min-height:44px;}
+.app-shell .sidebar-role-card__title {font-size:14px !important;}
+.app-shell .sidebar-role-card__description {font-size:12px !important;}
+.app-shell .app-sidebar-desktop__logo :where(small,span) {line-height:1.3;}
+
+/* Supporting copy should be legible. Apply on content surfaces only; no blanket
+   recoloring of photographic overlays, danger/success chips or nav graphics. */
+html[data-theme="light"] .app-content :where(.app-section-description,.app-page-header__subtitle,.profile-topbar>div:first-child>span,.profile-user-strip small,.profile-details-heading p,.profile-user-strip p) {color:var(--motion-readable) !important;}
+html[data-theme="dark"] .app-content :where(.app-section-description,.app-page-header__subtitle,.profile-topbar>div:first-child>span,.profile-user-strip small,.profile-details-heading p,.profile-user-strip p) {color:var(--motion-readable) !important;}
+.app-content :where(.profile-topbar,.profile-details-heading,.profile-user-strip) :where(h1,h2,h3) {color:var(--motion-strong);}
+.app-content :where(.profile-user-strip small) {font-size:13px;line-height:1.6;}
+.app-content :where(.profile-details-heading p) {font-size:14px;}
+
+/* Precise photo upload: the avatar actually opens the file picker; loading and
+   remove actions are independently clickable. */
+.profile-photo-controls {display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 90px;min-width:90px;}
+.profile-photo-file-input {position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;opacity:0;overflow:hidden;clip-path:inset(50%);pointer-events:none;}
+.app-shell .app-content .profile-avatar-button {
+  position:relative;display:grid;place-items:center;
+  width:76px !important;height:76px !important;min-width:76px;min-height:76px !important;
+  flex:0 0 76px;overflow:visible;padding:0 !important;
+  border:3px solid var(--motion-elevated);border-radius:50%;
+  box-shadow:0 0 0 2px var(--motion-accent),0 4px 16px rgba(11,35,59,.12);
+  background:#e4f3f1;color:#12364a;cursor:pointer;
+}
+.profile-avatar-button img,.profile-avatar-button .profile-avatar-fallback {
+  width:100% !important;height:100% !important;object-fit:cover;border-radius:50%;
+  margin:0;display:flex;align-items:center;justify-content:center;font-size:24px;
+}
+.profile-avatar-button img {position:absolute;inset:0;}
+.app-shell .app-content .profile-avatar-button .profile-avatar-edit {
+  position:absolute;right:-6px;bottom:0;z-index:1;
+  width:28px;height:28px;display:grid;place-items:center;
+  border:2px solid var(--motion-elevated);border-radius:50%;
+  background:var(--motion-accent);color:#fff;font-size:14px;
+}
+.app-shell .app-content .profile-photo-actions {display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;}
+.app-shell .app-content .profile-photo-actions button {
+  min-height:30px !important;padding:4px 8px;border-radius:7px;
+  font-size:12px !important;line-height:1.3;font-weight:750;white-space:nowrap;
+}
+.app-shell .app-content .profile-photo-change {border:1px solid var(--motion-accent);background:var(--motion-tint);color:var(--motion-strong);}
+.app-shell .app-content .profile-photo-remove {border:1px solid transparent;background:transparent;color:#ab3245;}
+html[data-theme="dark"] .app-shell .app-content .profile-photo-remove {color:#ffa5b7;}
+.profile-photo-success {margin:0 0 16px;padding:11px 14px;border:1px solid #7bcfb3;border-radius:10px;background:#ebfbf5;color:#125a43;font-size:14px;font-weight:650;}
+html[data-theme="dark"] .profile-photo-success {border-color:#369d82;background:#123a32;color:#aef2dc;}
+.profile-avatar-button:disabled,.profile-photo-actions button:disabled {opacity:.6;cursor:wait !important;}
+@media(max-width:480px){.profile-photo-controls {flex-basis:82px;min-width:82px;}.profile-user-strip {align-items:flex-start;gap:12px;}.app-shell .app-content .profile-avatar-button {width:68px !important;height:68px !important;min-height:68px !important;min-width:68px;}}
+
+/* Restore clean, small DOT map markers: legacy generic min-height(42px)
+   was enlarging each marker into a vertical oval. No giant labels on the map. */
+.tour360 .tour360__map,
+.tour360--embedded .tour360__map {
+  width:264px !important;max-width:calc(100vw - 36px);
+  right:12px !important;top:12px !important;bottom:auto !important;
+  padding:12px !important;z-index:12;border-radius:13px;
+  background:rgba(250,253,255,.97) !important;
+  border:1px solid #c9d7e7 !important;
+  box-shadow:0 12px 32px rgba(5,25,44,.25);
+  backdrop-filter:blur(14px);
+}
+.tour360 .tour360__map-title {display:flex;align-items:center;justify-content:space-between;gap:10px;line-height:1.3;margin-bottom:8px;color:#123253 !important;font-size:12px !important;font-weight:850;}
+.tour360 .tour360__map-title small {font-size:10px !important;font-weight:600;color:#54718a !important;text-transform:none;}
+.tour360 .tour360__map-box,.tour360--embedded .tour360__map-box {
+  width:100% !important;height:150px !important;overflow:hidden !important;
+  border:1px solid #b9c9d9 !important;border-radius:9px !important;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 28px,rgba(106,146,176,.1) 29px),repeating-linear-gradient(90deg,transparent 0,transparent 29px,rgba(106,146,176,.1) 30px),#edf4f9 !important;
+}
+.tour360 .tour360__map-line {height:2px !important;opacity:.47 !important;background:#668ca9 !important;z-index:1 !important;}
+.tour360 .tour360__map-box .tour360__map-node,
+.tour360--embedded .tour360__map-box .tour360__map-node {
+  display:block !important;position:absolute !important;box-sizing:border-box !important;
+  min-height:0 !important;min-width:0 !important;
+  width:12px !important;height:12px !important;max-width:12px !important;max-height:12px !important;
+  padding:0 !important;margin:0 !important;border:2px solid #fff !important;
+  border-radius:50% !important;background:#3e729a !important;
+  box-shadow:0 1px 4px rgba(0,0,0,.24);opacity:1 !important;
+  transform:translate(-50%,-50%) !important;
+  z-index:8;cursor:pointer;pointer-events:auto;
+  font-size:0 !important;line-height:0 !important;
+}
+.tour360 .tour360__map-box .tour360__map-node.active {
+  width:17px !important;height:17px !important;max-width:17px !important;max-height:17px !important;
+  background:#e4a82e !important;border:3px solid #fff !important;
+  box-shadow:0 0 0 3px rgba(228,168,46,.28),0 3px 7px rgba(0,0,0,.27);
+}
+.tour360 .tour360__map-box .tour360__map-node:is(:hover,:focus-visible) {
+  transform:translate(-50%,-50%) scale(1.45) !important;
+  background:#008c91 !important;box-shadow:0 0 0 5px rgba(0,156,153,.16);
+  outline:2px solid #0c737b;outline-offset:3px;
+}
+.tour360 .tour360__map-box .tour360__map-node::after {
+  content:attr(data-label);position:absolute;bottom:calc(100% + 9px);left:50%;
+  width:max-content;max-width:142px;padding:5px 8px;transform:translateX(-50%);
+  color:#fff;background:#102e49;box-shadow:0 4px 10px rgba(0,0,0,.24);
+  border-radius:6px;font-size:10px !important;line-height:1.35 !important;
+  opacity:0;visibility:hidden;pointer-events:none;white-space:normal;
+}
+.tour360 .tour360__map-box .tour360__map-node:is(:hover,:focus-visible)::after {opacity:1;visibility:visible;}
+.tour360 .tour360__map-label {display:none !important;}
+.tour360 .tour360__map-current {display:flex;align-items:center;gap:7px;min-height:25px;margin-top:8px;color:#1a3d5c;font-size:12px !important;font-weight:750;line-height:1.3;}
+.tour360 .tour360__map-pulse {width:8px;height:8px;border-radius:50%;background:#d79b21;box-shadow:0 0 0 3px rgba(215,155,33,.15);flex-shrink:0;}
+html[data-theme="dark"] .tour360 .tour360__map {background:rgba(17,33,50,.96) !important;border-color:#46637a !important;}
+html[data-theme="dark"] .tour360 .tour360__map-title {color:#ecf7ff !important;}
+html[data-theme="dark"] .tour360 .tour360__map-title small {color:#c5d8eb !important;}
+html[data-theme="dark"] .tour360 .tour360__map-box {background:repeating-linear-gradient(0deg,transparent 0,transparent 28px,rgba(145,182,214,.09) 29px),repeating-linear-gradient(90deg,transparent 0,transparent 29px,rgba(145,182,214,.09) 30px),#1c344a !important;border-color:#57728a !important;}
+html[data-theme="dark"] .tour360 .tour360__map-line {background:#8caac0 !important;}
+html[data-theme="dark"] .tour360 .tour360__map-current {color:#e9f4ff;}
+@media(max-width:800px) {
+  .tour360--embedded .tour360__map {display:block !important;width:185px !important;top:10px !important;right:8px !important;padding:7px !important;}
+  .tour360--embedded .tour360__map-title {font-size:10px !important;}
+  .tour360--embedded .tour360__map-title small {display:none;}
+  .tour360--embedded .tour360__map-box {height:95px !important;}
+  .tour360--embedded .tour360__map-current {font-size:10px !important;}
+  .tour360--embedded .tour360__location {max-width:calc(100% - 205px);}
+}
+
+/* Theme-aware and varied interaction palette: teal selection, golden hints,
+   indigo details. Always restrained, safe for accessibility and functionality. */
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .app-shell .sidebar-link:not(.sidebar-link--active) {position:relative;transition:background .24s ease,box-shadow .24s ease,transform .24s ease,color .24s ease !important;}
+  .app-shell .sidebar-link:not(.sidebar-link--active):hover {
+    background:linear-gradient(100deg,rgba(12,164,154,.23),rgba(108,78,186,.13)) !important;
+    box-shadow:inset 3px 0 0 #4ce1cd,inset 0 0 0 1px rgba(95,220,216,.16);
+    transform:translateX(4px) !important;
+  }
+  .app-shell .sidebar-link:not(.sidebar-link--active):hover svg {color:#73f0d9;transform:scale(1.1);}
+  .app-shell .sidebar-link--active:hover {box-shadow:inset 3px 0 0 #f4c977,0 5px 17px rgba(5,30,62,.16);}
+  .app-shell .app-content :is(.training-module-card,.designer-role-card,.trainer-stat-card,.trainer-module-row,.admin-stat-card,.sim-card,.training-card,.learning-card,.dashboard-card,.app-card):hover {
+    border-color:var(--motion-accent) !important;
+    box-shadow:0 12px 24px rgba(9,35,64,.12),0 0 0 1px var(--motion-glow) !important;
+    transform:translateY(-3px);
+  }
+  .app-shell .app-content :is(.designer-primary-button,.training-module-card__manage,.profile-photo-change,.sim-button):not(:disabled):hover {
+    background:linear-gradient(110deg,#0b5e8d,#0b978e) !important;
+    color:#fff !important;border-color:#0a8c89 !important;
+    box-shadow:0 7px 20px var(--motion-glow) !important;
+    transform:translateY(-2px);
+    filter:none !important;
+  }
+  html[data-theme="dark"] .app-shell .app-content :is(.designer-primary-button,.training-module-card__manage,.profile-photo-change,.sim-button):not(:disabled):hover {
+    background:linear-gradient(110deg,#17729b,#17776f) !important;color:#fff !important;
+  }
+  .app-shell .app-content :is(.designer-outline-button,.designer-role-card__button,.profile-back-button,.profile-photo-change):not(:disabled):hover {
+    border-color:var(--motion-accent) !important;background:var(--motion-tint) !important;
+    color:var(--motion-strong) !important;box-shadow:0 6px 18px var(--motion-glow) !important;
+    transform:translateY(-2px);
+  }
+  .app-shell .app-content :is(.profile-photo-remove,button[class*="delete"],button[class*="danger"]):not(:disabled):hover {
+    background:rgba(204,66,85,.11) !important;color:#d3445e !important;border-color:rgba(207,75,92,.35) !important;
+  }
+  .app-shell .app-content :where(input,select,textarea):hover {border-color:var(--motion-accent) !important;}
+  .app-shell .app-content :where(input,select,textarea):focus-visible {box-shadow:0 0 0 4px var(--motion-glow) !important;}
+  .app-shell .app-content table tbody tr:hover td {background:var(--motion-tint) !important;}
+  .app-shell .app-content :is(.profile-avatar-button):hover {transform:scale(1.055);box-shadow:0 0 0 3px var(--motion-accent),0 9px 22px var(--motion-glow) !important;}
+  .app-shell .app-content :is(a:not(.sidebar-link)):hover {text-decoration-color:var(--motion-accent);}
+}
+@media(prefers-reduced-motion:reduce){.app-shell :is(.sidebar-link,.profile-avatar-button,.profile-photo-actions button){transition:none !important;transform:none !important;}}
+/* Reliable image fallback when a previously uploaded file is unavailable. */
+.profile-avatar-button .profile-avatar-fallback {
+  position:relative !important;top:auto !important;right:auto !important;bottom:auto !important;left:auto !important;
+  background:#d7f1eb !important;color:#07535f !important;border:0 !important;
+  font-weight:800;flex:1 1 100%;
+}
+html[data-theme="dark"] .profile-avatar-button .profile-avatar-fallback {background:#25546b !important;color:#e8fbff !important;}
+.tour360 .tour360__map-connections {
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
+  z-index:1;overflow:hidden;
+}
+.tour360 .tour360__map-connections line {stroke:#84a6c1;stroke-width:.75;vector-effect:non-scaling-stroke;opacity:.9;}
+html[data-theme="dark"] .tour360 .tour360__map-connections line {stroke:#a0bed6;opacity:.74;}
+/* Keep the floorplan as a floating panorama overlay in all screen modes. */
+.tour360 .tour360__map {position:absolute !important;}
+/* Visible dot, larger pointer/touch hit region without stretching the marker. */
+.tour360 .tour360__map-box .tour360__map-node::before {
+  content:"";position:absolute;inset:-9px;border-radius:50%;
+}

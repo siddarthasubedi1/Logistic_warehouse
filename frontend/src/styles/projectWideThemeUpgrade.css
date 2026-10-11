@@ -1,0 +1,46 @@
+/* Corrective UI layer: scoped typography and contextual contrast, no generic card recoloring. */
+:root { --readable-secondary:#3e526e; --readable-muted:#546781; --ui-hover-border:#95b5d5; }
+html[data-theme="dark"] { --readable-secondary:#cbd9ea; --readable-muted:#b7c9dd; --ui-hover-border:#6e9bcc; }
+body { font-size:16px; }
+.app-shell .sidebar-link { font-size:14px; }
+.app-shell .sidebar-role-card__title { font-size:14px; }
+.app-shell .sidebar-role-card__description {font-size:12px;}
+.app-shell .app-page-header__title {font-size:24px;}
+.app-shell .app-page-header__subtitle {font-size:14px; color:var(--readable-secondary);}
+.app-shell .app-section-description {font-size:14px;}
+.app-shell .app-content :where(input,select,textarea,label,button,td,th) {font-size:14px;}
+.app-shell .app-content :where(input,select,textarea) {min-height:42px;}
+.app-shell .app-content :where(input,textarea)::placeholder {color:var(--readable-muted);opacity:1;}
+/* Utility font sizes are increased without overriding text colors. */
+.app-shell [class*="text-[10px]"] {font-size:12px !important;}
+.app-shell [class*="text-[11px]"] {font-size:13px !important;}
+.app-shell [class*="text-[12px]"] {font-size:14px !important;}
+.app-shell [class*="text-[13px]"] {font-size:15px !important;}
+/* Text on ordinary light surfaces only: explicitly exclude photographic and dark surfaces. */
+html:not([data-theme="dark"]) .app-shell .app-content :where(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500) {color:#52657f !important;}
+html:not([data-theme="dark"]) .app-shell .app-content :where(.text-slate-600,.text-gray-600) {color:#3e526e !important;}
+/* Contrast-critical immersive/photo content retains its own light-on-dark palette. */
+.app-shell .app-content :is(.immersive-card,.immersive-activity,.immersive-overlay,.immersive-module__badge,.immersive-related,.training360-flow__intro,.training360-flow__module,.training360-flow__learn,.tour360__location,.profile-security-banner) :is(h1,h2,h3,h4,h5,h6,b,strong) {color:#f7fbff !important;}
+.app-shell .app-content :is(.immersive-card,.immersive-activity,.immersive-overlay,.immersive-module__badge,.immersive-related,.training360-flow__intro,.training360-flow__module,.training360-flow__learn,.tour360__location,.profile-security-banner) :is(p,span,small,em,label) {color:#dce9f9 !important;}
+.app-shell .app-content :is(.immersive-card,.immersive-activity,.immersive-overlay,.immersive-module__badge,.immersive-related,.training360-flow__intro,.training360-flow__module,.training360-flow__learn,.tour360__location,.profile-security-banner) :is(button) {color:#f7fbff;}
+/* The lessons area is a special dark panel; no page-level blanket text override. */
+.app-shell .app-content .immersive-overlay article :is(p,small,span) {color:#dce9f9 !important;}
+.app-shell .app-content .immersive-overlay nav button {color:#e8f2ff !important;}
+.app-shell .app-content .immersive-overlay nav button.active {color:#fff !important;}
+.app-shell .app-content .immersive-overlay__nav button {color:#fff !important;}
+/* Side panel/profile banners must stay white-on-blue. */
+.app-shell .app-content .profile-security-banner :is(h1,h2,h3,h4,p,small,span,strong) {color:#fff !important;}
+.app-shell .app-content .profile-role-pill :is(span,strong,small) {color:#fff !important;}
+/* Native interactions: restrained hover that does not darken text or recolor large surfaces. */
+.app-shell .sidebar-link {transition: background-color .18s ease, transform .18s ease;}
+.app-shell .sidebar-link:hover {transform:translateX(2px);}
+.app-shell .app-content :where(button:not(:disabled),a[class],input,select,textarea) {transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease;}
+.app-shell .app-content :where(input:hover,select:hover,textarea:hover) {border-color:var(--ui-hover-border);}
+.app-shell .app-content :where(input:focus-visible,select:focus-visible,textarea:focus-visible) {outline:2px solid #3b82f6;outline-offset:1px;}
+.app-shell .app-content :where(button:not(:disabled),a[class]):hover {filter:brightness(1.055);}
+.app-shell .app-content :where(button:not(:disabled),a[class]):active {filter:brightness(.96);}
+/* Hover only actionable cards, not arbitrary sections and modal/dialog surfaces. */
+.app-shell .app-content :where(.immersive-activity,.immersive-card button,.training360-flow__module,.training360-flow__learn):hover {filter:brightness(1.12);}
+.app-shell .app-content table tbody tr:hover {background-color:rgba(11,79,135,.045);}
+html[data-theme="dark"] .app-shell .app-content table tbody tr:hover {background-color:rgba(85,160,255,.085);}
+@media (prefers-reduced-motion:reduce) {.app-shell :where(button,a,input,select,textarea){transition:none !important;}}

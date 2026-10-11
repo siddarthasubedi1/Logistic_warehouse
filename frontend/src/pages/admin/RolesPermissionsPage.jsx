@@ -146,7 +146,7 @@ function RolesPermissionsPage() {
                                 <p>Manage user roles and their permissions.</p>
                             </div>
                         </div>
-                        <button type="button" className="designer-primary-button" aria-disabled="true" title="System roles are fixed in the current project">
+                        <button type="button" className="designer-primary-button" disabled title="System roles are fixed in the current project">
                             + Add New Role
                         </button>
                     </div>

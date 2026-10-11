@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
@@ -25,6 +25,11 @@ function ProfilePage({
 }) {
     const navigate =
         useNavigate();
+
+    const photoInputRef = useRef(null);
+    const [photoUploading, setPhotoUploading] = useState(false);
+    const [photoNotice, setPhotoNotice] = useState("");
+    const [photoVersion, setPhotoVersion] = useState(0);
 
 
     const [
@@ -167,6 +172,63 @@ function ProfilePage({
             .toLowerCase();
 
 
+    const handleProfileImageChange = async (event) => {
+        const file = event.target.files?.[0];
+        // Allow selecting the same file again following a failed attempt.
+        event.target.value = "";
+        if (!file) return;
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+            setError("Choose a JPG, PNG, or WebP image.");
+            setPhotoNotice("");
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            setError("This photo is too large. Choose an image under 2 MB.");
+            setPhotoNotice("");
+            return;
+        }
+        setError("");
+        setPhotoNotice("");
+        setPhotoUploading(true);
+        try {
+            const data = new FormData();
+            data.append("profileImage", file);
+            const response = await api.patch("/users/me/profile-image", data);
+            const updatedImage = response.data?.profileImage || response.data?.user?.profileImage;
+            if (!updatedImage) throw new Error("The server did not return the saved photo. Please refresh your profile.");
+            const updatedUser = { ...user, ...response.data.user, profileImage: updatedImage };
+            setUser(updatedUser);
+            saveSessionUser(updatedUser);
+            setPhotoVersion(version => version + 1);
+            setPhotoNotice("Your profile photo has been saved.");
+            window.dispatchEvent(new Event("logiware-profile-updated"));
+        } catch (uploadError) {
+            setError(uploadError.response?.data?.message || uploadError.message || "Photo upload failed. Please try again.");
+        } finally {
+            setPhotoUploading(false);
+        }
+    };
+
+    const handleRemovePhoto = async () => {
+        if (photoUploading) return;
+        setError("");
+        setPhotoNotice("");
+        setPhotoUploading(true);
+        try {
+            await api.delete("/users/me/profile-image");
+            const updatedUser = { ...user, profileImage: "" };
+            setUser(updatedUser);
+            saveSessionUser(updatedUser);
+            setPhotoNotice("Your profile photo has been removed.");
+            window.dispatchEvent(new Event("logiware-profile-updated"));
+        } catch (deleteError) {
+            setError(deleteError.response?.data?.message || "Unable to remove photo.");
+        } finally {
+            setPhotoUploading(false);
+        }
+    };
+
     const profileImageUrl =
         user?.profileImage
             ? user.profileImage.startsWith(
@@ -188,10 +250,13 @@ function ProfilePage({
                 <FeedbackAlert
                     type="error"
                     message={error}
-                    onClose={() =>
-                        setError("")
-                    }
+                    onClose={() => setError("")}
                 />
+                {photoNotice && (
+                    <div className="profile-photo-success" role="status">
+                        {photoNotice}
+                    </div>
+                )}
 
 
                 {/* TOP BAR */}
@@ -301,28 +366,54 @@ function ProfilePage({
 
                         <div className="profile-user-strip">
 
-                            <div className="profile-avatar-wrap">
-
-                                {profileImageUrl ? (
-                                    <img
-                                        src={profileImageUrl}
-                                        alt={`${name} profile`}
-                                    />
-                                ) : (
-                                    <div className="profile-avatar-fallback">
-                                        {name
-                                            .charAt(0)
-                                            .toUpperCase()}
-                                    </div>
-                                )}
-
-
-                                <span>
-                                    ✎
-                                </span>
-
+                            <div className="profile-photo-controls">
+                                <input
+                                    ref={photoInputRef}
+                                    className="profile-photo-file-input"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    aria-label="Choose a profile photo"
+                                    onChange={handleProfileImageChange}
+                                    disabled={photoUploading}
+                                />
+                                <button
+                                    type="button"
+                                    className="profile-avatar-wrap profile-avatar-button"
+                                    onClick={() => photoInputRef.current?.click()}
+                                    disabled={photoUploading}
+                                    aria-label="Change profile picture"
+                                    title="Change profile picture"
+                                >
+                                    <span className="profile-avatar-fallback" aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
+                                    {profileImageUrl ? (
+                                        <img
+                                            src={`${profileImageUrl}${profileImageUrl.includes("?") ? "&" : "?"}v=${photoVersion}`}
+                                            alt={`${name} profile`}
+                                            onError={event => { event.currentTarget.style.visibility = "hidden"; }}
+                                            onLoad={event => { event.currentTarget.style.visibility = "visible"; }}
+                                        />
+                                    ) : null}
+                                    <span className="profile-avatar-edit" aria-hidden="true">✎</span>
+                                </button>
+                                <div className="profile-photo-actions">
+                                    <button
+                                        type="button"
+                                        className="profile-photo-change"
+                                        onClick={() => photoInputRef.current?.click()}
+                                        disabled={photoUploading}
+                                    >
+                                        {photoUploading ? "Saving photo…" : profileImageUrl ? "Change photo" : "Add photo"}
+                                    </button>
+                                    {profileImageUrl && (
+                                        <button
+                                            type="button"
+                                            className="profile-photo-remove"
+                                            onClick={handleRemovePhoto}
+                                            disabled={photoUploading}
+                                        >Remove</button>
+                                    )}
+                                </div>
                             </div>
-
 
                             <div>
 
@@ -349,7 +440,7 @@ function ProfilePage({
 
 
                                 <small>
-                                    Click your profile image or the edit icon to choose a JPG, PNG or WebP image up to 2 MB.
+                                    Upload a JPG, PNG or WebP image (maximum 2 MB).
                                 </small>
 
                             </div>

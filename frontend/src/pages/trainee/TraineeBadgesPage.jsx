@@ -5,6 +5,7 @@ import FeedbackAlert from "../../components/ui/FeedbackAlert";
 import LoadingCard from "../../components/ui/LoadingCard";
 import api from "../../services/api";
 import { getApiErrorMessage } from "../../utils/training";
+import "../../styles/badgeAwardAnimation.css";
 
 const BADGE_ICONS = {
     "programme-completion": "✓",
@@ -78,7 +79,7 @@ function TraineeBadgesPage() {
                                 const earned = awardsByKey.get(definition.key) || [];
                                 return (
                                     <article key={definition._id || definition.key} className={`rounded-xl border p-5 shadow-sm ${earned.length ? "border-blue-200 bg-white" : "border-[#dbe4ef] bg-slate-50"}`}>
-                                        <div className={`flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold ${earned.length ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-500"}`} aria-hidden="true">
+                                        <div className={`flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold ${earned.length ? "bg-blue-600 text-white badge-earned-reveal" : "bg-slate-200 text-slate-500"}`} aria-hidden="true">
                                             {BADGE_ICONS[definition.key] || "★"}
                                         </div>
                                         <div className="mt-4 flex items-start justify-between gap-3">

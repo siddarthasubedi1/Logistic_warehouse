@@ -9,5 +9,6 @@ module.exports = {
     moduleNameMapper: {
         '^.*shared/simulationEngine\\.mjs$': '<rootDir>/test/nativeSimulationEngine.cjs',
         '^.*shared/simulationTemplates\\.mjs$': '<rootDir>/test/nativeSimulationTemplates.cjs',
+        '^.*shared/safetyMissionLibrary\\.mjs$': '<rootDir>/test/nativeSafetyMissionLibrary.cjs',
     },
 };

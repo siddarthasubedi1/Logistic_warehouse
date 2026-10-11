@@ -12,6 +12,7 @@ import '../../components/simulation/SafetySimulation.css';
 export default function TraineeSafetySimulationPage() {
   const { programmeId, gameId } = useParams(), navigate = useNavigate();
   const [games, setGames] = useState([]), [error, setError] = useState(''), [loading, setLoading] = useState(true);
+  const [selectedLevel, setSelectedLevel] = useState('all');
   const load = useCallback(async () => {
     if (gameId) return;
     try {
@@ -32,13 +33,17 @@ export default function TraineeSafetySimulationPage() {
     return { total: games.length, available, locked, attempted };
   }, [games]);
 
+  const moduleLabel = games[0]?.moduleKey?.replace(/-/g, ' ') || 'your training module';
+  const counts = useMemo(() => Object.fromEntries(['all', 'beginner', 'intermediate', 'advanced'].map(level => [level, level === 'all' ? games.length : games.filter(game => game.difficulty === level).length])), [games]);
+  const visibleGames = useMemo(() => games.filter(game => selectedLevel === 'all' || game.difficulty === selectedLevel).sort((a, b) => ['beginner', 'intermediate', 'advanced'].indexOf(a.difficulty) - ['beginner', 'intermediate', 'advanced'].indexOf(b.difficulty) || a.title.localeCompare(b.title)), [games, selectedLevel]);
+
   return <DashboardLayout role='trainee' title='Safety Simulation Missions'>
     {gameId ? <SafetySimulationGame key={gameId} gameId={gameId} onExit={() => navigate(`/my-training/${programmeId}/safety-simulations`)} /> : <div className='sim-management sim-management--missions'>
       <section className='sim-card sim-card--hero sim-mission-hero'>
         <div className='sim-mission-hero__copy'>
           <span className='sim-eyebrow'>Immersive 360° practice</span>
           <h2>Explore, inspect and respond inside the mission environment</h2>
-          <p>Choose a safety mission, read the briefing, then complete the objectives inside an interactive 360° workspace. Your best result is saved automatically.</p>
+          <p>Train your safety decisions in interactive 360° environments. Inspect hazards, choose safe actions, complete objectives and improve your personal best.</p>
         </div>
         <div className='sim-actions'>
           <button className='sim-button sim-button--light' onClick={back}>Back to training</button>
@@ -59,13 +64,19 @@ export default function TraineeSafetySimulationPage() {
       {!loading && !error && !!games.length && <section className='sim-card sim-mission-browser'>
         <div className='sim-section-heading'>
           <div>
-            <span className='sim-eyebrow'>Available missions</span>
-            <h2>Choose a mission briefing</h2>
-            <p>Each mission includes a 360° environment, inspectable objects, safe-response actions and a recorded score.</p>
+            <span className='sim-eyebrow'>Mission library · {moduleLabel}</span>
+            <h2>Select your difficulty level</h2>
+            <p>Five structured training scenarios per level. Each mission offers inspectable hazards, safe and unsafe choices, a 360° environment and an individually recorded score.</p>
           </div>
         </div>
+        <div className='sim-level-filter' role='group' aria-label='Filter safety missions by difficulty'>
+          {['all', 'beginner', 'intermediate', 'advanced'].map(level => <button type='button' className={`sim-level-filter__button ${selectedLevel === level ? 'sim-level-filter__button--selected' : ''}`} aria-pressed={selectedLevel === level} onClick={() => setSelectedLevel(level)} key={level}>
+            <span>{level === 'all' ? 'All levels' : level}</span><strong>{counts[level]}</strong>
+          </button>)}
+        </div>
+        <p className='sim-result-count' role='status'>Showing {visibleGames.length} of {games.length} missions in {moduleLabel}.</p>
         <div className='sim-game-grid sim-game-grid--missions'>
-          {games.map(game => {
+          {visibleGames.map(game => {
             const stateLabel = game.locked ? 'Locked' : 'Ready';
             return <article className={`sim-game-card sim-mission-card ${game.locked ? 'sim-mission-card--locked' : ''}`} key={game._id}>
               <div className='sim-mission-cover-wrap'>
@@ -76,7 +87,7 @@ export default function TraineeSafetySimulationPage() {
                 </div>
               </div>
               <div className='sim-mission-card__body'>
-                <span className='sim-eyebrow'>{game.moduleKey.replace(/-/g, ' ')} · {game.difficulty}</span>
+                <span className={`sim-difficulty-chip sim-difficulty-chip--${game.difficulty}`}>{game.difficulty}</span>
                 <h2>{game.title}</h2>
                 <p>{game.mission}</p>
                 <div className='sim-inline-metrics'>
@@ -94,6 +105,7 @@ export default function TraineeSafetySimulationPage() {
             </article>;
           })}
         </div>
+        {!visibleGames.length && <p className='sim-no-level-missions'>No {selectedLevel} missions are active for this training programme yet. Ask your trainer to check the mission library and level assignments.</p>}
       </section>}
 
       {!loading && !error && !games.length && <section className='sim-card'><p>No active safety missions are available for this programme yet.</p></section>}

@@ -734,7 +734,7 @@ function CreateUserForm() {
                             setError("");
                             setSuccess("");
                         }}
-                        className="
+                        className="create-user-banner__action
                             relative
                             z-10
                             min-h-[40px]
@@ -1575,7 +1575,7 @@ function CreateUserForm() {
                                     generating ||
                                     loadingPending
                                 }
-                                className="
+                                className="generate-credentials-button
                                     min-h-[42px]
                                     shrink-0
                                     rounded-lg

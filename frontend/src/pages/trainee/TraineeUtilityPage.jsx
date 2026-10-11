@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import FeedbackAlert from "../../components/ui/FeedbackAlert";
@@ -35,9 +36,13 @@ const LEVEL_LABELS = {
 };
 
 function TraineeUtilityPage({ type }) {
+    const navigate = useNavigate();
     const [progress, setProgress] = useState([]);
     const [progressSummary, setProgressSummary] = useState(null);
     const [attempts, setAttempts] = useState([]);
+    const [challengeAttempts, setChallengeAttempts] = useState([]);
+    const [personalBests, setPersonalBests] = useState([]);
+    const [challengeError, setChallengeError] = useState("");
     const [loading, setLoading] = useState(type === "progress" || type === "quizzes");
     const [error, setError] = useState("");
     const [certificate, setCertificate] = useState(null);
@@ -79,6 +84,24 @@ function TraineeUtilityPage({ type }) {
             });
 
         return () => { mounted = false; };
+    }, [type]);
+
+    // Optional games have their own validated scores; they must not change
+    // compulsory training pass/fail or certificate eligibility.
+    useEffect(() => {
+        if (type !== "progress") return undefined;
+        let active = true;
+        Promise.all([
+            api.get("/trainee/challenge-attempts"),
+            api.get("/trainee/personal-bests"),
+        ]).then(([attemptResponse, bestResponse]) => {
+            if (!active) return;
+            setChallengeAttempts(Array.isArray(attemptResponse.data?.attempts) ? attemptResponse.data.attempts : []);
+            setPersonalBests(Array.isArray(bestResponse.data?.personalBests) ? bestResponse.data.personalBests : []);
+        }).catch(() => {
+            if (active) setChallengeError("Optional challenge scores are unavailable right now. Your compulsory training progress is unaffected.");
+        });
+        return () => { active = false; };
     }, [type]);
 
     useEffect(() => {
@@ -173,6 +196,34 @@ function TraineeUtilityPage({ type }) {
                                 )}
                             </div>
                         </section>
+
+                        <section className="rounded-xl border border-[#dbe4ef] bg-white p-5 shadow-sm" aria-label="Optional timed challenge record">
+                            <h2 className="text-[14px] font-bold text-[#172033]">Puzzles &amp; Timed Challenges</h2>
+                            <p className="mt-1 text-[11px] text-[#64748b]">These saved game results are optional. Only server-validated attempts can establish a personal best; game points do not affect safety assessment passes.</p>
+                            {challengeError && <p role="status" className="mt-2 text-[11px] text-[#92400e]">{challengeError}</p>}
+                            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                                <Summary label="Game Attempts" value={challengeAttempts.length} />
+                                <Summary label="Validated Attempts" value={challengeAttempts.filter(item => item.validityStatus === "valid").length} />
+                                <Summary label="Personal Best Records" value={personalBests.length} />
+                            </div>
+                            {personalBests.length ? (
+                                <div className="mt-4 overflow-x-auto">
+                                    <table className="min-w-full text-left text-[11px]">
+                                        <thead className="bg-[#f8fafc] text-[#475569]"><tr><th className="px-3 py-3">Challenge</th><th className="px-3 py-3">Programme</th><th className="px-3 py-3">Best score</th><th className="px-3 py-3">Time</th></tr></thead>
+                                        <tbody className="divide-y divide-[#e2e8f0]">
+                                            {personalBests.map(item => <tr key={item._id} className="text-[#334155]">
+                                                <td className="px-3 py-3 font-semibold">{item.puzzle?.title || (item.type === "safety_simulation" ? "Safety simulation" : "Puzzle challenge")}</td>
+                                                <td className="px-3 py-3">{item.programme?.title || "Training programme"}</td>
+                                                <td className="px-3 py-3 font-semibold">{Number(item.score || 0)}</td>
+                                                <td className="px-3 py-3">{Number.isFinite(Number(item.durationSeconds)) ? `${Math.round(Number(item.durationSeconds))}s` : "—"}</td>
+                                            </tr>)}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="mt-3 text-[11px] text-[#64748b]">No verified personal-best records yet. Complete an assigned puzzle or safety challenge to earn one.</p>
+                            )}
+                        </section>
                     </>
                 )}
 
@@ -184,8 +235,8 @@ function TraineeUtilityPage({ type }) {
                                 <div className="p-4">
                                     <h2 className="text-[11px] font-bold text-[#172033]">{scenario.title}</h2>
                                     <p className="mt-2 text-[9px] text-[#64748b]">{scenario.text}</p>
-                                    <button type="button" className="mt-4 rounded-lg border border-blue-300 bg-white px-4 py-2 text-[9px] font-semibold text-blue-600">
-                                        Start Scenario
+                                    <button type="button" onClick={() => navigate("/my-training")} className="mt-4 rounded-lg border border-blue-300 bg-white px-4 py-2 text-[9px] font-semibold text-blue-600">
+                                        Choose Training Module
                                     </button>
                                 </div>
                             </article>
@@ -375,16 +426,6 @@ function Summary({ label, value }) {
             <p className="text-[10px] text-[#64748b]">{label}</p>
             <strong className="mt-2 block text-[24px] text-[#172033]">{value}</strong>
         </article>
-    );
-}
-
-function EmptyCard({ title, text }) {
-    return (
-        <section className="rounded-xl border border-[#dbe4ef] bg-white p-10 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">✓</div>
-            <h2 className="mt-4 text-[12px] font-bold text-[#172033]">{title}</h2>
-            <p className="mt-2 text-[9px] text-[#64748b]">{text}</p>
-        </section>
     );
 }
 

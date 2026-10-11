@@ -1,0 +1,12 @@
+/* A short visual reward for verified badge awards; respects motion settings. */
+@keyframes logiwareBadgeReveal {
+  0% { transform: scale(.88); opacity: .7; }
+  55% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.trainee-badges-page .badge-earned-reveal {
+  animation: logiwareBadgeReveal 650ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trainee-badges-page .badge-earned-reveal { animation: none; }
+}

@@ -73,9 +73,16 @@ function DashboardLayout({
 
     useEffect(() => {
         if (!sidebarOpen) return undefined;
+        const closeOnEscape = (event) => {
+            if (event.key === "Escape") setSidebarOpen(false);
+        };
+        document.addEventListener("keydown", closeOnEscape);
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        return () => { document.body.style.overflow = previousOverflow; };
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener("keydown", closeOnEscape);
+        };
     }, [sidebarOpen]);
 
 
@@ -112,7 +119,7 @@ function DashboardLayout({
                             }
                         />
 
-                        <div className="app-mobile-drawer__panel">
+                        <div className="app-mobile-drawer__panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
                             <Sidebar
                                 role={displayRole}
                                 onNavigate={() =>

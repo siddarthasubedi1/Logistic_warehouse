@@ -115,14 +115,14 @@ export default function TrainingProgrammesPage() {
             role={role}
             showHeader={false}
         >
-            <div className="space-y-5">
+            <div className="space-y-5 training-programmes-page">
 
                 {/* ==========================================
               HEADER
           =========================================== */}
 
                 <section
-                    className="
+                    className="training-programmes-hero
               relative
               overflow-hidden
               rounded-xl
@@ -224,7 +224,7 @@ export default function TrainingProgrammesPage() {
           =========================================== */}
 
                 <section
-                    className="
+                    className="training-programmes-intro
               rounded-xl
               border
               border-slate-200
@@ -354,7 +354,7 @@ export default function TrainingProgrammesPage() {
                             (module) => (
                                 <article
                                     key={module.id || module._id}
-                                    className="
+                                    className="training-module-card
                       overflow-hidden
                       rounded-xl
                       border
@@ -363,7 +363,7 @@ export default function TrainingProgrammesPage() {
                       shadow-sm
                     "
                                 >
-                                    <div className="p-6">
+                                    <div className="p-6 training-module-card__body">
 
                                         <div
                                             className="
@@ -454,7 +454,7 @@ export default function TrainingProgrammesPage() {
 
 
                                     <div
-                                        className="
+                                        className="training-module-card__footer
                         border-t
                         border-slate-200
                         bg-slate-50

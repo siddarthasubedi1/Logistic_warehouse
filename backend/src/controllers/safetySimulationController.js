@@ -91,7 +91,7 @@ exports.options = safe(async (req, res) => {
   res.json({ programmes, modules, locations, templates: Object.fromEntries(Object.entries(simulationTemplates).filter(([key]) => req.user.role === 'admin' || keys.includes(key))), samples: simulationSamples.filter(sample => req.user.role === 'admin' || keys.includes(sample.moduleKey)) });
 });
 exports.addSamples = safe(async (req, res) => {
-  const result = await addSafetySimulationSamples(req.user);
+  const result = await addSafetySimulationSamples(req.user, { includeLibrary: req.body?.includeLibrary === true, publishLibrary: req.body?.publishLibrary === true && req.user.role === 'admin' });
   if (result.created.length) await writeAuditLog({ req, user: req.user, action: 'SAFETY_SIMULATION_SAMPLES_ADDED', status: 'success', details: { challengeIds: result.created.map(row => row.id), count: result.created.length } });
   res.status(result.created.length ? 201 : 200).json(result);
 });
@@ -151,7 +151,7 @@ exports.status = safe(async (req, res) => {
 });
 exports.duplicate = safe(async (req, res) => {
   const source = await gameFor(req, { manager: true });
-  const data = await payload(req.user, { ...source.toObject(), programmeId: req.body.programmeId || String(source.programme), title: `${source.title.slice(0,135)} (copy)`, status: 'draft' });
+  const data = await payload(req.user, { ...source.toObject(), programmeId: req.body.programmeId || String(source.programme), title: `${source.title.slice(0, 135)} (copy)`, status: 'draft' });
   const game = await Challenge.create({ ...data, createdBy: req.user.id });
   await audit(req, 'SAFETY_SIMULATION_DUPLICATED', game); res.status(201).json({ game });
 });
@@ -165,8 +165,10 @@ exports.preview = safe(async (req, res) => {
 });
 async function persistState(attempt, game, state, at) {
   const finished = state.result !== 'in-progress';
-  const update = { simulationState: state, score: state.score, errors: state.mistakes, feedback: state.feedback, accuracy: state.result === 'completed' ? 1 : missionProgress(game.simulation, state), hazardEvents: state.hazards, solvedHazards: state.hazards.filter(row => row.resolvedAt).map(row => row.id),
-    ...(finished ? { result: state.result, validityStatus: 'valid', finishedAt: new Date(at), durationSeconds: Math.max(0, Math.floor((new Date(at) - attempt.startedAt) / 1000)) } : {}) };
+  const update = {
+    simulationState: state, score: state.score, errors: state.mistakes, feedback: state.feedback, accuracy: state.result === 'completed' ? 1 : missionProgress(game.simulation, state), hazardEvents: state.hazards, solvedHazards: state.hazards.filter(row => row.resolvedAt).map(row => row.id),
+    ...(finished ? { result: state.result, validityStatus: 'valid', finishedAt: new Date(at), durationSeconds: Math.max(0, Math.floor((new Date(at) - attempt.startedAt) / 1000)) } : {})
+  };
   const saved = await ChallengeAttempt.findOneAndUpdate({ _id: attempt._id, __v: attempt.__v, result: 'in-progress' }, { $set: update, $inc: { __v: 1 } }, { returnDocument: 'after' });
   if (!saved) throw new MissionError('The attempt changed. Reload the mission.', 'ATTEMPT_CHANGED', 409);
   const best = state.result === 'completed' ? await maybeUpdatePersonalBest(saved, game) : { updated: false };

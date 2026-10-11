@@ -1,0 +1,281 @@
+/* Warehouse map: retain the existing navigable floor-map, and let trainees
+   preview any available equirectangular warehouse panorama without leaving it.
+   This is a genuine interactive 360° preview, not a fake 3D floor model. */
+.tour360 .tour360__map {
+  --map-fg: #15344f;
+  --map-muted: #506b84;
+  --map-tab: #e8f0f7;
+  --map-tab-border: #c2d1e0;
+  --map-active: #086796;
+  --map-panel-bg: rgba(248, 251, 255, .97);
+  z-index: 9;
+  width: 286px !important;
+  max-width: calc(100% - 20px);
+  padding: 11px !important;
+  background: var(--map-panel-bg) !important;
+  border: 1px solid #a9bfd3 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 35px rgba(4, 18, 33, .28) !important;
+  color: var(--map-fg);
+}
+html[data-theme="dark"] .tour360 .tour360__map {
+  --map-fg: #eef6ff;
+  --map-muted: #c0d7ec;
+  --map-tab: #193d5d;
+  --map-tab-border: #56758e;
+  --map-active: #66b3ff;
+  --map-panel-bg: rgba(16, 39, 59, .97);
+  background: var(--map-panel-bg) !important;
+  border-color: #51728c !important;
+}
+.tour360 .tour360__map--expanded {width: 384px !important;}
+.tour360 .tour360__map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 8px;
+}
+.tour360 .tour360__map-heading {
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  font-weight: 850 !important;
+  letter-spacing: .02em;
+  color: var(--map-fg) !important;
+}
+.tour360 .tour360__map-expand {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  padding: 0;
+  color: var(--map-fg) !important;
+  background: var(--map-tab) !important;
+  border: 1px solid var(--map-tab-border) !important;
+  border-radius: 7px;
+  line-height: 1;
+  font-size: 16px !important;
+  cursor: pointer;
+}
+.tour360 .tour360__map-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 9px;
+}
+.tour360 .tour360__map-tabs button {
+  min-height: 31px;
+  min-width: 0;
+  padding: 5px 3px;
+  white-space: nowrap;
+  font-family: inherit;
+  color: var(--map-muted) !important;
+  background: var(--map-tab) !important;
+  border: 1px solid var(--map-tab-border) !important;
+  border-radius: 7px;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  font-weight: 750;
+  cursor: pointer;
+}
+.tour360 .tour360__map-tabs button.is-active {
+  color: #fff !important;
+  background: #0b679a !important;
+  border-color: #3795c7 !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
+}
+.tour360 .tour360__map-tabs button:hover:not(.is-active),
+.tour360 .tour360__map-expand:hover {filter: brightness(1.08);}
+.tour360 .tour360__map :is(button, select):focus-visible {
+  outline: 2px solid #71caff !important;
+  outline-offset: 2px;
+}
+.tour360 .tour360__map--expanded .tour360__map-box,
+.tour360 .tour360__map--expanded .tour360__map-panorama {
+  height: 230px !important;
+}
+.tour360 .tour360__map-preview {
+  min-width: 0;
+}
+.tour360 .tour360__map-select-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--map-muted) !important;
+  font-size: 10px !important;
+  font-weight: 750;
+}
+.tour360 .tour360__map-select {
+  display: block;
+  width: 100%;
+  min-height: 29px;
+  margin-bottom: 7px;
+  padding: 4px 26px 4px 8px;
+  font-family: inherit;
+  font-size: 11px !important;
+  line-height: 1.2;
+  font-weight: 700;
+  border: 1px solid var(--map-tab-border) !important;
+  border-radius: 7px;
+  color: var(--map-fg) !important;
+  background: var(--map-tab) !important;
+  cursor: pointer;
+}
+.tour360 .tour360__map-select option {color: #0e2a45; background: #fff;}
+.tour360 .tour360__map-panorama {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  background: #0c253a;
+  border: 1px solid var(--map-tab-border);
+  border-radius: 9px;
+  isolation: isolate;
+}
+.tour360 .tour360__map-panorama .tour360__canvas,
+.tour360 .tour360__map-panorama .tour360__canvas--static {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  outline-offset: -3px;
+}
+.tour360 .tour360__map-panorama .tour360__canvas[hidden] {display: none;}
+.tour360 .tour360__map-view-label {
+  position: absolute;
+  top: 6px;
+  left: 7px;
+  padding: 3px 6px;
+  background: rgba(5, 28, 47, .82);
+  border: 1px solid rgba(205,236,255,.33);
+  border-radius: 5px;
+  color: #f5fbff !important;
+  font-size: 9px !important;
+  line-height: 1.25;
+  font-weight: 850;
+  letter-spacing: .025em;
+  pointer-events: none;
+}
+.tour360 .tour360__map-camera-controls {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 9px;
+  background: rgba(5, 25, 42, .77);
+}
+.tour360 .tour360__map-camera-controls button {
+  display: grid;
+  place-items: center;
+  height: 26px;
+  width: 27px;
+  padding: 0;
+  background: rgba(16, 86, 131, .89) !important;
+  border: 1px solid rgba(221, 242, 255, .45) !important;
+  border-radius: 6px;
+  color: #fff !important;
+  font-size: 14px !important;
+  line-height: 1;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tour360 .tour360__map-camera-controls button:hover {background: #147cae !important;}
+.tour360 .tour360__map-view-error {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  max-width: 140px;
+  padding: 4px;
+  color: #fff !important;
+  background: #9f3232;
+  border-radius: 4px;
+  font-size: 10px !important;
+}
+.tour360 .tour360__map-panorama .panorama-render-notice {
+  position: absolute;
+  top: 31px;
+  left: 7px;
+  right: 7px;
+  width: auto;
+  height: auto;
+  padding: 4px 5px;
+  font-size: 10px !important;
+  line-height: 1.3;
+}
+.tour360 .tour360__map-preview-hint {
+  padding-top: 5px;
+  color: var(--map-muted) !important;
+  font-size: 10px !important;
+  line-height: 1.3;
+  text-align: center;
+}
+.tour360 .tour360__map-bottom {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 25px;
+  margin-top: 5px;
+}
+.tour360 .tour360__map-current {
+  min-width: 0;
+  flex: 1;
+  margin-top: 0;
+  color: var(--map-fg) !important;
+  font-size: 11px !important;
+}
+.tour360 .tour360__map-current > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tour360 .tour360__map-go {
+  padding: 6px 9px;
+  white-space: nowrap;
+  border: 1px solid #78c6ee !important;
+  border-radius: 7px;
+  color: #fff !important;
+  background: #056fa1 !important;
+  font-size: 10px !important;
+  line-height: 1.2;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tour360 .tour360__map-go:hover {background: #1687b8 !important;}
+@media (max-width: 800px) {
+  .tour360--embedded .tour360__map {
+    width: 207px !important;
+    padding: 7px !important;
+    top: 10px !important;
+    right: 8px !important;
+  }
+  .tour360--embedded .tour360__map--expanded {
+    width: min(320px, calc(100vw - 18px)) !important;
+  }
+  .tour360--embedded .tour360__map-box,
+  .tour360--embedded .tour360__map-panorama {
+    height: 95px !important;
+  }
+  .tour360--embedded .tour360__map--expanded .tour360__map-box,
+  .tour360--embedded .tour360__map--expanded .tour360__map-panorama {
+    height: 190px !important;
+  }
+  .tour360--embedded .tour360__map-tabs button {font-size: 10px !important;}
+  .tour360--embedded .tour360__map-heading {font-size: 10px !important;}
+  .tour360--embedded .tour360__map-select {font-size: 10px !important;}
+  .tour360--embedded .tour360__map-preview-hint {font-size: 9px !important;}
+  .tour360--embedded .tour360__map-current {font-size: 10px !important;}
+  /* Keep the current-location banner visible beside an unexpanded map. */
+  .tour360--embedded:has(.tour360__map--expanded) .tour360__location {max-width: calc(100% - 30px);top: 64px;}
+}
+@media (max-width: 480px) {
+  .tour360--embedded .tour360__map:not(.tour360__map--expanded) {width: 183px !important;}
+  .tour360 .tour360__map-tabs {gap: 3px;}
+  .tour360 .tour360__map-tabs button {padding: 4px 1px;}
+  .tour360--embedded .tour360__map:not(.tour360__map--expanded) .tour360__map-preview-hint {display: none;}
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour360 .tour360__map-tabs button, .tour360 .tour360__map-go {transition: none !important;}
+}

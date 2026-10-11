@@ -1,0 +1,55 @@
+/* Unified last-loaded contrast and readability rules for all three roles. */
+:root { --ux-readable: #263a55; --ux-subtle: #405671; --ux-highlight: #073763; }
+html[data-theme="dark"] { color-scheme: dark; --ux-readable: #eaf2ff; --ux-subtle: #c2d3e9; --ux-highlight: #93c5fd; --ui-text: #eaf2ff; --ui-text-strong: #f8fbff; --ui-text-muted: #c2d3e9; --ui-surface: #172338; --ui-surface-soft: #22334d; --ui-border: #4b617c; }
+/* Set accessible sizes for common functional content, without scaling graphic icons. */
+.app-content :where(label, input, select, textarea, td, th, button, summary) { font-size: max(14px, .875rem); }
+.app-content :where(p, li, dd) { line-height: 1.55; }
+.app-content :where(input, select, textarea) { min-height: 40px; }
+.app-content :where(button) { min-height: 36px; }
+.puzzle-studio :where(.studio-eyebrow, .studio-welcome__tags span, .studio-activity-meta span, .studio-total small, .studio-total > span, .studio-total button, .scoreboard-table th, .scoreboard-table td small, .scoreboard-footnote) { font-size: 13px !important; line-height: 1.5; }
+.puzzle-studio :where(.studio-welcome__copy p, .studio-prop-lab p, .studio-activity-copy > p, .studio-prop-lab__activities small, .studio-activity-copy .studio-button, .studio-tabs button, .scoreboard-heading p, .scoreboard-rule p, .studio-card-label) { font-size: 15px !important; line-height: 1.55; }
+.puzzle-studio .studio-button { font-size: 14px; min-height: 44px; }
+.puzzle-studio .studio-activity-copy h3 { font-size: 19px; }
+.puzzle-studio .studio-welcome__copy h2 { font-size: clamp(25px, 2.5vw, 34px); }
+.puzzle-studio .studio-activity-meta span { padding: 6px 9px; }
+.puzzle-studio .studio-total { background: #073763; color: #fff; }
+.puzzle-studio .studio-eyebrow { color: #0b4f87; }
+.puzzle-studio .studio-tabs button[aria-selected="true"] { background: #073763; color: #fff; }
+/* Dark mode: give custom cards and puzzle canvas the same dark surfaces as the dashboards. */
+html[data-theme="dark"] :where(.studio-welcome, .studio-activity-card, .studio-prop-lab__activities button, .puzzle-scoreboard, .scoreboard-personal > div, .puzzle-studio .puzzle360-history, .puzzle-studio .puzzle360-result) { background: #172338 !important; border-color: #4b617c !important; color: #eaf2ff !important; }
+html[data-theme="dark"] :where(.studio-prop-lab, .studio-tabs, .studio-activity-art, .studio-prop-icon, .studio-activity-meta span) { background: #22334d !important; border-color: #4b617c !important; }
+html[data-theme="dark"] :where(.puzzle-studio, .puzzle-scoreboard) :where(h2,h3,h4,b,strong) { color: #f8fbff; }
+html[data-theme="dark"] :where(.puzzle-studio, .puzzle-scoreboard) :where(p,small,summary, .studio-card-label) { color: #c2d3e9; }
+html[data-theme="dark"] .puzzle-studio .studio-eyebrow { color: #93c5fd !important; }
+html[data-theme="dark"] .puzzle-studio .studio-welcome__tags span { background: #234465; color: #d9ecff; }
+html[data-theme="dark"] .puzzle-studio .studio-activity-meta .studio-best { background: #124c39 !important; color: #a7f3d0 !important; }
+html[data-theme="dark"] .puzzle-studio .studio-total { background: #0a4275 !important; }
+html[data-theme="dark"] .puzzle-studio .studio-total :where(span,small,strong,button) { color: #f0f8ff !important; }
+html[data-theme="dark"] .puzzle-studio .studio-button:not(.studio-button--secondary), html[data-theme="dark"] .puzzle-studio .studio-tabs button[aria-selected="true"] { background: #145b99 !important; color: #fff !important; border-color: #4a9add !important; }
+html[data-theme="dark"] .puzzle-studio .studio-button--secondary { background: #213957 !important; color: #e5f2ff !important; border: 1px solid #6681a1 !important; }
+html[data-theme="dark"] .puzzle-studio .studio-prop-lab__activities button :where(b,small), html[data-theme="dark"] .puzzle-studio .studio-activity-copy :where(h3,p) { color: #eaf2ff !important; }
+html[data-theme="dark"] .puzzle-studio .studio-activity-art > span { color: #c5ddf7; }
+html[data-theme="dark"] .puzzle-studio .scoreboard-table :where(th,td) { border-color: #4b617c; color: #dbeafe; }
+html[data-theme="dark"] .puzzle-studio .scoreboard-table tr:hover td { background: #243b58; }
+/* Generic content surfaces for utility, admin, trainer, trainee pages. Restrict selectors to app content. */
+html[data-theme="dark"] .app-content :where(input,select,textarea) { background: #111e31 !important; color: #f1f6ff !important; border-color: #68809e !important; }
+html[data-theme="dark"] .app-content :where(input,textarea)::placeholder { color: #a5bad4 !important; opacity: 1; }
+html[data-theme="dark"] .app-content :where(label, th, dt) { color: #d9e7fb; }
+html[data-theme="dark"] .app-content :where(p, li, td, dd, small) { color: #c2d3e9; }
+html[data-theme="dark"] .app-content :where(a:not([class*="button"]):not([class*="btn"])) { text-underline-offset: 3px; }
+html[data-theme="dark"] .app-content :where(table) { border-color: #4b617c; }
+html[data-theme="dark"] .app-content :where(hr) { border-color: #4b617c; }
+html[data-theme="dark"] .app-content :where([class*="bg-white"],[class*="bg-slate-50"],[class*="bg-slate-100"]) { background-color: #172338 !important; }
+html[data-theme="dark"] .app-content :where([class*="text-slate-900"],[class*="text-slate-800"],[class*="text-gray-900"],[class*="text-gray-800"],[class*="text-[#172033]"]) { color: #f0f6ff !important; }
+html[data-theme="dark"] .app-content :where([class*="text-slate-700"],[class*="text-slate-600"],[class*="text-gray-600"],[class*="text-gray-500"]) { color: #c2d3e9 !important; }
+html[data-theme="dark"] .app-content :where([class*="bg-blue-50"]) { background-color: #1c3857 !important; }
+html[data-theme="dark"] .app-content :where([class*="bg-emerald-50"]) { background-color: #123d33 !important; }
+html[data-theme="dark"] .app-content :where([class*="bg-red-50"]) { background-color: #4a2631 !important; }
+html[data-theme="dark"] .app-content :where([class*="bg-amber-50"]) { background-color: #493a20 !important; }
+html[data-theme="dark"] .app-content :where([class*="text-blue-700"],[class*="text-blue-800"]) { color: #b4dcff !important; }
+html[data-theme="dark"] .app-content :where([class*="text-emerald-700"],[class*="text-green-700"]) { color: #a7f3d0 !important; }
+html[data-theme="dark"] .app-content :where([class*="text-red-700"]) { color: #fecaca !important; }
+html[data-theme="dark"] .app-content :where([class*="text-amber-700"]) { color: #fde68a !important; }
+html[data-theme="dark"] .app-content :where(button:disabled) { opacity: .65; }
+html[data-theme="dark"] :where(button,a,input,select,textarea,summary):focus-visible { outline-color: #93c5fd !important; }
+@media (max-width: 640px) { .puzzle-studio .studio-activity-card { grid-template-columns: 76px minmax(0, 1fr); } .puzzle-studio .studio-activity-copy { padding: 14px; } .puzzle-studio .studio-welcome { padding: 18px; } .puzzle-studio .studio-activity-copy h3 { font-size: 17px; } }

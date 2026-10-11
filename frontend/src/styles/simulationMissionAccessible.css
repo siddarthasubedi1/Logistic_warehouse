@@ -1,0 +1,136 @@
+/* Final scoped, theme-aware contrast pass. This stylesheet is imported AFTER other
+   global design styles to avoid lower-contrast generic paragraph overrides. */
+.sim-management--missions,
+.sim-game {
+  --sim-readable-text: #192a42;
+  --sim-readable-secondary: #2d4059;
+  --sim-readable-surface: #ffffff;
+  --sim-readable-tint: #f0f6fc;
+  --sim-readable-border: #beccdc;
+}
+html[data-theme="dark"] :is(.sim-management--missions,.sim-game) {
+  --sim-readable-text: #f5f8ff;
+  --sim-readable-secondary: #d8e5f6;
+  --sim-readable-surface: #14243a;
+  --sim-readable-tint: #1b314b;
+  --sim-readable-border: #4b6685;
+}
+/* The hero has a permanently dark gradient; text must ALWAYS be white.
+   This fixes the nearly invisible subtitle visible in the screenshot. */
+html .app-shell .app-content .sim-management--missions .sim-mission-hero {
+  background: linear-gradient(115deg, #073763, #115c80 74%, #17787d) !important;
+  border-color: #338d9c !important;
+}
+html[data-theme="dark"] .app-shell .app-content .sim-management--missions .sim-mission-hero {
+  background: linear-gradient(115deg, #142b52, #125975 74%, #16737c) !important;
+  border-color: #518ba9 !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-hero :is(h2,p,small) {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-hero .sim-eyebrow {
+  color: #c7f8fb !important;
+  font-weight: 800;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-hero .sim-button--light {
+  color: #063454 !important;
+  background: #f3ffff !important;
+  border-color: #d5fcfd !important;
+}
+/* The rest of the page uses high-contrast tokens, never the translucent
+   muted blue shades that were illegible in light mode. */
+html .app-shell .app-content .sim-management--missions :is(.sim-stat-card,.sim-mission-browser,.sim-mission-card,.sim-help-guide),
+html .app-shell .app-content .sim-game :is(.sim-card,.sim-object-picker,.sim-room-nav,.sim-objective-panel) {
+  background-color: var(--sim-readable-surface) !important;
+  color: var(--sim-readable-text) !important;
+  border-color: var(--sim-readable-border) !important;
+}
+html .app-shell .app-content .sim-management--missions :is(.sim-stat-card,.sim-mission-browser,.sim-mission-card,.sim-help-guide) :is(p,li,small),
+html .app-shell .app-content .sim-game :is(.sim-card,.sim-object-picker,.sim-room-nav,.sim-objective-panel) :is(p,li,small),
+html .app-shell .app-content .sim-management--missions .sim-result-count,
+html .app-shell .app-content .sim-management--missions .sim-no-level-missions {
+  color: var(--sim-readable-secondary) !important;
+  opacity: 1 !important;
+}
+html .app-shell .app-content .sim-management--missions :is(.sim-stat-card,.sim-mission-browser,.sim-mission-card,.sim-help-guide) :is(h2,h3,h4,strong,b,summary),
+html .app-shell .app-content .sim-game :is(.sim-card,.sim-object-picker,.sim-room-nav,.sim-objective-panel) :is(h2,h3,h4,strong,b) {
+  color: var(--sim-readable-text) !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-card :is(.sim-inline-metrics>span,.sim-personal-best) {
+  background: var(--sim-readable-tint) !important;
+  border-color: var(--sim-readable-border) !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-card :is(.sim-inline-metrics>span,.sim-personal-best) :is(small,strong,b) {
+  color: var(--sim-readable-text) !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-eyebrow {
+  color: var(--sim-readable-text) !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip {
+  display: inline-flex; align-items: center; width: fit-content; min-height: 27px;
+  padding: 5px 11px; border-radius: 999px; font-size: 12px;
+  line-height: 1.3; font-weight: 800; text-transform: capitalize;
+  background: #d9f8e8; color: #075e3d !important; border: 1px solid #71cf9e;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip--intermediate {
+  background: #fff0c7; border-color: #dfb755; color: #68410b !important;
+}
+html .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip--advanced {
+  background: #eae5ff; border-color: #aaa0f3; color: #4c3294 !important;
+}
+html[data-theme="dark"] .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip {
+  background: #164c3d; border-color: #3d9679; color: #bafbe0 !important;
+}
+html[data-theme="dark"] .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip--intermediate {
+  background: #604621; border-color: #ad874c; color: #fff0c2 !important;
+}
+html[data-theme="dark"] .app-shell .app-content .sim-management--missions .sim-mission-card .sim-difficulty-chip--advanced {
+  background: #3a2a67; border-color: #8a78d2; color: #e9dcff !important;
+}
+/* In both modes, the filter remains clearly selected and keyboard accessible. */
+.sim-level-filter { display: flex; gap: 10px; flex-wrap: wrap; }
+.sim-level-filter__button {
+  display: flex; gap: 14px; align-items: center; justify-content: space-between;
+  min-height: 46px; padding: 10px 15px; border-radius: 12px;
+  color: var(--sim-readable-text) !important;
+  background: var(--sim-readable-tint) !important;
+  border: 1px solid var(--sim-readable-border) !important;
+  font: inherit; font-weight: 750; font-size: 14px; text-transform: capitalize;
+  cursor: pointer; transition: background .18s, border-color .18s, transform .18s;
+}
+.sim-level-filter__button strong {
+  min-width: 25px; min-height: 25px; padding: 3px 6px; border-radius: 7px;
+  background: var(--sim-readable-surface);
+  color: var(--sim-readable-text) !important;
+  text-align: center; font-size: 12px;
+}
+.sim-level-filter__button[aria-pressed="true"] {
+  background: #073763 !important; border-color: #073763 !important;
+  color: #ffffff !important;
+}
+.sim-level-filter__button[aria-pressed="true"] strong { color: #073763 !important; background: #ffffff !important; }
+html[data-theme="dark"] .sim-level-filter__button[aria-pressed="true"] {
+  background: #147386 !important; border-color: #77d6e4 !important; color: white !important;
+}
+.sim-level-filter__button:hover { border-color: #2f83ae !important; transform: translateY(-1px); }
+.sim-level-filter__button:focus-visible { outline: 3px solid #38a7ea; outline-offset: 3px; }
+.sim-result-count { margin: -7px 0 0; font-size: 13px; font-weight: 650; }
+.sim-no-level-missions { border: 1px dashed var(--sim-readable-border); padding: 16px; border-radius: 12px; }
+/* Protect status text, pill overlays and primary buttons from generic typography rules. */
+html .app-shell .app-content .sim-management--missions .sim-mission-cover__overlay .sim-status-chip {color: #14532d !important;}
+html .app-shell .app-content .sim-management--missions .sim-mission-cover__overlay .sim-status-chip--glass {color: #ffffff !important;}
+html .app-shell .app-content .sim-management--missions .sim-mission-card>.sim-button {color: #ffffff !important;background: #095c94 !important;}
+html .app-shell .app-content .sim-management--missions .sim-mission-card>.sim-button:disabled {background: #d1dbe5 !important; color: #243347 !important; opacity: 1;}
+html[data-theme="dark"] .app-shell .app-content .sim-management--missions .sim-mission-card>.sim-button:disabled {background: #354b62 !important; color: #eaf5ff !important;}
+/* Some wide 360 images/panels were masking their supporting text. */
+html .app-shell .app-content .sim-game :is(.sim-object-card-name,.sim-object-card-status,.sim-action-option small,.sim-object-figure figcaption,.sim-help) { color: var(--sim-readable-secondary) !important; }
+html .app-shell .app-content .sim-game .sim-header :is(h2,h3,p,span) {color:#ffffff !important;}
+html .app-shell .app-content .sim-game .sim-header .sim-eyebrow {color:#c7f8fb !important;}
+@media(max-width: 660px) {
+  .sim-level-filter {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .sim-level-filter__button {min-width:0;padding:10px 12px;}
+  .sim-management--missions .sim-mission-hero h2 {font-size:clamp(23px,6vw,30px);}
+}
+@media(prefers-reduced-motion: reduce) { .sim-level-filter__button {transition:none;transform:none !important;} }

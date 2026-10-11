@@ -1,0 +1,26 @@
+/* Sprint 4: single final shared usability layer. Preserves project palette. */
+:root { --ux-focus: #3b82f6; }
+:where(button, a, input, select, textarea, summary, [role="button"]):focus-visible {
+  outline: 3px solid var(--ux-focus) !important;
+  outline-offset: 2px;
+}
+:where(button, input, select, textarea) { font-family: inherit; }
+:where(input, select, textarea) { max-width: 100%; }
+:where(.app-main, .trainee-page, .sim-management, .sim-play-layout) { min-width: 0; }
+:where(.app-main) :where(table) { max-width: 100%; }
+:where(.app-main) :where(h1,h2,h3,p) { overflow-wrap: anywhere; }
+:where(.app-shell--admin, .app-shell--trainer) :where(label,small,th,td,button,input,select,textarea) { font-size: max(13px, 0.8125rem); }
+:where(.app-shell--trainee) :where(button,summary, a) { font-size: max(13px, 0.8125rem); }
+:where(.app-shell) :where(button, [role="button"]) { touch-action: manipulation; }
+:where(.sim-interaction, .sim-image-dialog) { color: var(--ui-text, #172033); }
+.sim-image-dialog::backdrop { background: rgb(10 22 40 / 70%); }
+@media (max-width: 767px) {
+  .app-main { width: 100%; min-width: 0; }
+  :where(.app-main) :where(table) { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  :where(.sim-play-layout, .sim-game-grid--missions) { grid-template-columns: minmax(0, 1fr) !important; }
+  :where(.sim-card, .sim-interaction, .trainee-page) { min-width: 0; }
+  :where(.sim-actions) { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

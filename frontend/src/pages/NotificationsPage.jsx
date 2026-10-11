@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
@@ -28,13 +28,24 @@ function NotificationsPage({ role: requestedRole = "" }) {
     const [loading, setLoading] = useState(true);
     const [busyId, setBusyId] = useState("");
     const [error, setError] = useState("");
+    const loadedOnceRef = useRef(false);
+    const restoreScrollRef = useRef(null);
+    const preserveScroll = () => { restoreScrollRef.current = window.scrollY; };
+
+    useLayoutEffect(() => {
+        if (restoreScrollRef.current === null) return;
+        const scrollY = restoreScrollRef.current;
+        restoreScrollRef.current = null;
+        window.scrollTo({ top: scrollY, behavior: "auto" });
+    }, [notifications]);
 
     useEffect(() => {
         let mounted = true;
 
         const load = async () => {
             try {
-                setLoading(true);
+                // Keep existing items mounted on filter changes to avoid a jump.
+                if (!loadedOnceRef.current) setLoading(true);
                 setError("");
                 const params = { limit: 100 };
                 if (filter === "unread") params.read = "false";
@@ -48,7 +59,10 @@ function NotificationsPage({ role: requestedRole = "" }) {
                 if (!mounted) return;
                 setError(getApiErrorMessage(requestError, "Unable to load notifications."));
             } finally {
-                if (mounted) setLoading(false);
+                if (mounted) {
+                    loadedOnceRef.current = true;
+                    setLoading(false);
+                }
             }
         };
 
@@ -66,6 +80,7 @@ function NotificationsPage({ role: requestedRole = "" }) {
         if (!item || item.read || busyId) return;
 
         try {
+            preserveScroll();
             setBusyId(id);
             const response = await api.patch(`/notifications/${id}/read`);
             const updated = response.data?.notification;
@@ -87,6 +102,7 @@ function NotificationsPage({ role: requestedRole = "" }) {
         if (!unreadCount || busyId) return;
 
         try {
+            preserveScroll();
             setBusyId("all");
             await api.patch("/notifications/read-all");
             setUnreadCount(0);
@@ -123,8 +139,8 @@ function NotificationsPage({ role: requestedRole = "" }) {
                                 <button
                                     key={value}
                                     type="button"
-                                    onClick={() => setFilter(value)}
-                                    className={`rounded-lg px-3 py-2 text-[11px] font-semibold ${filter === value ? "bg-[#0b4f87] text-white" : "border border-[#dbe4ef] bg-white text-[#52627a]"}`}
+                                    onClick={() => { preserveScroll(); setFilter(value); }}
+                                    className={`notification-filter rounded-lg px-3 py-2 text-[11px] font-semibold ${filter === value ? "bg-[#0b4f87] text-white" : "border border-[#dbe4ef] bg-white text-[#52627a]"}`}
                                     aria-pressed={filter === value}
                                 >
                                     {label}
@@ -136,7 +152,7 @@ function NotificationsPage({ role: requestedRole = "" }) {
                             type="button"
                             onClick={markAllRead}
                             disabled={!unreadCount || busyId === "all"}
-                            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-semibold text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="notification-mark-all rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-semibold text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {busyId === "all" ? "Saving..." : "Mark all as read"}
                         </button>
@@ -149,7 +165,7 @@ function NotificationsPage({ role: requestedRole = "" }) {
                             {notifications.map((notification) => (
                                 <article
                                     key={notification._id}
-                                    className={`flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between ${notification.read ? "bg-white" : "bg-blue-50/50"}`}
+                                    className={`notification-entry flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between ${notification.read ? "bg-white" : "bg-blue-50/50"}`}
                                 >
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
@@ -179,7 +195,7 @@ function NotificationsPage({ role: requestedRole = "" }) {
                                                 type="button"
                                                 onClick={() => markRead(notification._id)}
                                                 disabled={busyId === notification._id}
-                                                className="rounded-lg border border-[#dbe4ef] bg-white px-3 py-2 text-[10px] font-semibold text-[#0b4f87] disabled:opacity-50"
+                                                className="notification-mark-read rounded-lg border border-[#dbe4ef] bg-white px-3 py-2 text-[10px] font-semibold text-[#0b4f87] disabled:opacity-50"
                                             >
                                                 {busyId === notification._id ? "Saving..." : "Mark read"}
                                             </button>

@@ -49,7 +49,7 @@ function EmptyState({
                 <h3
                     className="
                         mt-3
-                        text-[11px]
+                        text-lg
                         font-semibold
                         text-slate-800
                     "
@@ -65,8 +65,8 @@ function EmptyState({
                         className="
                             mx-auto
                             mt-1.5
-                            max-w-xs
-                            text-[8px]
+                            max-w-md
+                            text-sm
                             font-medium
                             leading-4
                             text-slate-500

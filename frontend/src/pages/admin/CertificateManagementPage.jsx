@@ -67,7 +67,13 @@ export default function CertificateManagementPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // Defer the initial asynchronous fetch to avoid synchronous state updates
+  // within the effect. The same loader is reused after confirming a send.
+  useEffect(() => {
+    let mounted = true;
+    Promise.resolve().then(() => { if (mounted) return load(); });
+    return () => { mounted = false; };
+  }, [load]);
 
   // Keep one current cumulative certificate per trainee; older issued versions remain in the database.
   const shown = useMemo(() => rows.filter(row => row.isLatest && (view === 'history' ? row.status === 'sent' : row.status !== 'sent')), [rows, view]);
@@ -142,7 +148,6 @@ export default function CertificateManagementPage() {
         {loading ? <LoadingCard message='Checking completed modules and certificate eligibility...' /> : shown.length ? <div className='certificate-cards'>
           {shown.map(row => {
             const modules = Array.isArray(row.modules) ? row.modules : [];
-            const sendBusy = busyKey === `${row._id}:send`;
             const downloadBusy = busyKey === `${row._id}:download`;
             return <article className={`certificate-record ${row.isLatest ? 'certificate-record--latest' : ''}`} key={row._id}>
               <header className='certificate-record__header'>
@@ -183,6 +188,3 @@ export default function CertificateManagementPage() {
   </DashboardLayout>;
 }
 
-function Summary({ label, value, note }) {
-  return <article className='certificate-summary-card'><span>{label}</span><strong>{value}</strong><p>{note}</p></article>;
-}

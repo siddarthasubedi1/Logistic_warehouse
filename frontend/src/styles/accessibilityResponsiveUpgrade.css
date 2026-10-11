@@ -1,0 +1,249 @@
+/* UK LogiWare — 2026 legibility and responsive pass.
+   Deliberately imported after the legacy designer/theme sheets. Colors and
+   sizes are scoped to ordinary UI, not panoramic hotspots or game canvases. */
+:root,
+html[data-theme="light"] {
+  --readable-heading: #152238;
+  --readable-body: #25354b;
+  --readable-secondary: #34465f;
+  --readable-subtle: #45566e;
+  --readable-outline: #c9d6e5;
+  --readable-surface: #fff;
+  --readable-surface-soft: #f5f8fc;
+}
+html[data-theme="dark"] {
+  --readable-heading: #f1f6fd;
+  --readable-body: #e0eaf6;
+  --readable-secondary: #cbd9e9;
+  --readable-subtle: #bacce1;
+  --readable-outline: #4b6280;
+  --readable-surface: #18273b;
+  --readable-surface-soft: #20334c;
+}
+
+/* Shared dashboard chrome: scale and spacing, not colored banners. */
+.app-shell .app-page-header__title {font-size: clamp(23px, 1.7vw, 28px);line-height:1.2;}
+.app-shell .app-page-header__subtitle,
+.app-shell .app-mobile-header__subtitle {font-size: 15px;color:var(--readable-secondary);line-height:1.5;}
+.app-shell .sidebar-link {font-size: 14px;min-height: 44px;}
+.app-shell .sidebar-role-card__description {font-size: 13px;line-height:1.5;}
+.app-shell .app-section-description {font-size:15px;color:var(--readable-secondary);}
+.app-shell .app-content :where(input, select, textarea) {font-size: 15px;}
+.app-shell .app-content :where(input, textarea)::placeholder {color:var(--readable-subtle);opacity:1;}
+.app-shell .app-content :where(button, a[class*="button"]) {touch-action:manipulation;}
+.app-shell .app-content :where(button, input, select, textarea, a):focus-visible,
+.figma-login-page :where(button, input, a):focus-visible {outline:3px solid #60a5fa !important;outline-offset:3px;}
+
+/* LOGIN: the original Figma build used typography as small as 5–10px. */
+.figma-login-layout {grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}
+.figma-login-logo {top:5.5%;left:8%;gap:12px;}
+.figma-login-logo-icon {width:37px;height:37px;}
+.figma-login-logo-name {font-size:clamp(21px,1.65vw,27px);}
+.figma-login-logo-subtitle {font-size: 11px;line-height:1.35;letter-spacing:.035em;}
+.figma-login-brand-content {top:25%;left:8%;width:85%;max-width:610px;}
+.figma-login-brand-content h1,
+.figma-login-brand-content h2 {font-size:clamp(30px, 2.55vw, 48px);line-height:1.14;letter-spacing:-.025em;}
+.figma-login-brand-content h2 {color:#5a9bff;}
+.figma-login-brand-content > p {font-size:clamp(15px, 1.06vw, 18px);line-height:1.65;max-width:480px;width:96%;margin-top:24px;}
+.figma-login-features {left:8%;right:6%;bottom:3.5%;min-height:142px;border-radius:15px;background:rgba(6,54,96,.97);}
+.figma-login-feature {padding:18px clamp(11px,1.5vw,27px);}
+.figma-login-feature-icon {width:30px;height:30px;margin-bottom:11px;color:#69a9ff;}
+.figma-login-feature h3 {font-size:clamp(14px,.97vw,17px);line-height:1.35;}
+.figma-login-feature p {font-size:clamp(12px,.82vw,15px);line-height:1.5;color:#e7f2ff;margin-top:5px;}
+.figma-login-right {padding:80px clamp(28px,5vw,85px) 48px;background:var(--readable-surface);}
+.figma-login-form-container {max-width:490px;transform:translateY(-2%);}
+.figma-login-heading {margin-bottom:32px;}
+.figma-login-heading h1 {font-size:clamp(29px,2vw,36px);line-height:1.2;color:var(--readable-heading);}
+.figma-login-heading p {font-size:16px;line-height:1.55;margin-top:12px;color:var(--readable-secondary);}
+.figma-login-field {margin-bottom:24px;}
+.figma-login-field label {font-size:15px;line-height:1.5;font-weight:650;color:var(--readable-heading);margin-bottom:9px;}
+.figma-login-input {height:54px;border-color:var(--readable-outline);background:var(--readable-surface);}
+.figma-login-input input {font-size:16px;color:var(--readable-heading);}
+.figma-login-input-icon {color:#657b97;}
+.figma-login-eye {width:36px;height:36px;color:#4f6480;}
+.figma-login-eye svg {width:20px;height:20px;}
+.figma-forgot-row {margin-top:14px;}
+.figma-forgot-row button {font-size:14px;font-weight:650;}
+.figma-login-button {height:55px;margin-top:27px;font-size:16px;font-weight:700;background:#1769e8;}
+.figma-login-divider {background:var(--readable-outline);margin:30px 0 24px;}
+.figma-login-help p {font-size:13px;color:var(--readable-subtle);}
+.figma-login-help button {font-size:15px;font-weight:650;}
+.figma-login-error {margin:-12px 0 20px;}
+.figma-login-error p {font-size:14px;}
+.figma-login-error span {font-size:17px;}
+
+/* Public pages also have an accessible theme switch. It uses the same stored
+   displayMode as the existing dashboard/profile theme controls. */
+.figma-login-right {position:relative;}
+.login-mode-toggle {position:absolute;right:clamp(20px,3vw,54px);top:26px;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:8px 15px;border:1px solid var(--readable-outline);border-radius:999px;background:var(--readable-surface-soft);color:var(--readable-heading);font-family:inherit;font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;transition:background-color .18s ease,border-color .18s ease;}
+.login-mode-toggle span {font-size:20px;line-height:1;}
+.login-mode-toggle:hover {border-color:#5491d5;background:var(--readable-surface);}
+
+/* Login dark mode: correct the legacy fixed white/blue-gray text values. */
+html[data-theme="dark"] .figma-login-page,
+html[data-theme="dark"] .figma-login-layout,
+html[data-theme="dark"] .figma-login-right {background:#101b2b;color:#e6edf8;}
+html[data-theme="dark"] .figma-login-heading h1,
+html[data-theme="dark"] .figma-login-field label {color:#f1f6ff;}
+html[data-theme="dark"] .figma-login-heading p,
+html[data-theme="dark"] .figma-login-help p {color:#c2d3e9;}
+html[data-theme="dark"] .figma-login-input,
+html[data-theme="dark"] .figma-login-input-valid {background:#1a2b41 !important;border-color:#5d7391 !important;}
+html[data-theme="dark"] .figma-login-input input {color:#f2f7ff !important;}
+html[data-theme="dark"] .figma-login-input-icon,
+html[data-theme="dark"] .figma-login-eye {color:#b8c9df;}
+html[data-theme="dark"] .figma-login-divider {background:#405671;}
+html[data-theme="dark"] .login-mode-toggle {background:#20344c;border-color:#4b6380;color:#edf5ff;}
+html[data-theme="dark"] .figma-login-error {background:#401f2a;border-color:#9b5269;color:#ffd8e1;}
+html[data-theme="dark"] .figma-login-error p {color:#ffd8e1;}
+
+/* ROLES & PERMISSIONS: legibility, consistent card rhythm and readable table. */
+.app-shell--admin .admin-roles-page {gap:18px;}
+.app-shell--admin .admin-breadcrumbs {font-size:14px;line-height:1.5;color:var(--readable-secondary);margin-bottom:3px;}
+.app-shell--admin .admin-breadcrumbs strong {color:var(--readable-heading);}
+.app-shell--admin .designer-section-head {padding:20px;gap:16px;}
+.app-shell--admin .designer-section-title-wrap {gap:12px;align-items:flex-start;}
+.app-shell--admin .designer-section-icon {width:35px;height:35px;flex-basis:35px;font-size:17px;}
+.app-shell--admin .designer-section-title-wrap h2 {font-size:21px !important;line-height:1.3;color:var(--readable-heading);}
+.app-shell--admin .designer-section-title-wrap p {font-size:15px !important;line-height:1.5;color:var(--readable-secondary);margin-top:3px;}
+.app-shell--admin .designer-card {border:1px solid var(--readable-outline);border-radius:12px;background:var(--readable-surface);}
+.app-shell--admin .role-card-grid {gap:16px;padding:0 20px 20px;}
+.app-shell--admin .designer-role-card {min-height:213px;padding:18px;border-radius:11px;border-color:var(--readable-outline);background:var(--readable-surface);}
+.app-shell--admin .designer-role-card__top {gap:12px;}
+.app-shell--admin .designer-role-icon {width:40px;height:40px;flex-basis:40px;font-size:20px;}
+.app-shell--admin .designer-role-card__name-line {gap:8px;}
+.app-shell--admin .designer-role-card__name-line h3 {font-size:19px !important;line-height:1.3;color:var(--readable-heading);}
+.app-shell--admin .designer-role-card__name-line span {font-size:12px;line-height:1.3;padding:4px 8px;background:var(--readable-surface-soft);color:var(--readable-secondary);}
+.app-shell--admin .designer-role-card__copy p {font-size:15px !important;line-height:1.55;color:var(--readable-secondary);margin-top:6px;}
+.app-shell--admin .designer-role-meta {margin-top:auto;padding-top:16px;gap:12px;border-top-color:var(--readable-outline);}
+.app-shell--admin .designer-role-meta span {font-size:14px;color:var(--readable-secondary);}
+.app-shell--admin .designer-role-meta strong {font-size:16px;color:var(--readable-heading);}
+.app-shell--admin .designer-role-card__button {min-height:44px;margin-top:15px;border-radius:8px;font-size:15px !important;}
+.app-shell--admin .designer-primary-button,
+.app-shell--admin .designer-outline-button {font-size:15px !important;min-height:43px;}
+.app-shell--admin .designer-primary-button:disabled {background:#dde5ef;color:#46566c;box-shadow:none;cursor:not-allowed;opacity:1;}
+.app-shell--admin .designer-primary-button:disabled:hover {filter:none;}
+.app-shell--admin .designer-table-scroll {padding:0 20px 20px;}
+.app-shell--admin .permissions-overview-table,
+.app-shell--admin .role-permission-table,
+.app-shell--admin .edit-role-permission-table {min-width:760px;}
+.app-shell--admin .permissions-overview-table th,
+.app-shell--admin .role-permission-table th,
+.app-shell--admin .edit-role-permission-table th {font-size:14px !important;line-height:1.5;padding:13px 14px !important;color:var(--readable-heading) !important;}
+.app-shell--admin .permission-data-row td,
+.app-shell--admin .permission-group-row td {font-size:14px !important;line-height:1.55;padding:12px 14px !important;color:var(--readable-body);}
+.app-shell--admin .permission-data-row td:first-child {font-weight:650;color:var(--readable-heading);}
+.app-shell--admin .permission-group-row td {font-weight:800;}
+.app-shell--admin .permission-row-icon {font-size:15px;}
+
+/* Explicit dark-card corrections: legacy theme rules cover the outer section,
+   but nested role cards and fixed-color badges were left on white. */
+html[data-theme="dark"] .app-shell--admin .designer-card,
+html[data-theme="dark"] .app-shell--admin .designer-role-card {background:var(--readable-surface) !important;border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .app-shell--admin .designer-role-card__name-line h3,
+html[data-theme="dark"] .app-shell--admin .designer-role-meta strong,
+html[data-theme="dark"] .app-shell--admin .designer-section-title-wrap h2,
+html[data-theme="dark"] .app-shell--admin .admin-breadcrumbs strong {color:var(--readable-heading) !important;}
+html[data-theme="dark"] .app-shell--admin .designer-role-card__name-line span {background:#273d59;color:#cfe0f4;}
+html[data-theme="dark"] .app-shell--admin .designer-role-card__copy p,
+html[data-theme="dark"] .app-shell--admin .designer-role-meta span,
+html[data-theme="dark"] .app-shell--admin .designer-section-title-wrap p {color:var(--readable-secondary) !important;}
+html[data-theme="dark"] .app-shell--admin .designer-role-meta {border-top-color:var(--readable-outline);}
+html[data-theme="dark"] .app-shell--admin .designer-role-card__button {background:#233c5c;color:#b8d8ff;border-color:#5b85b1;}
+html[data-theme="dark"] .app-shell--admin .designer-primary-button:disabled {background:#33445a;color:#cfdae7;}
+html[data-theme="dark"] .app-shell--admin .permission-data-row td {color:var(--readable-body) !important;background:var(--readable-surface) !important;border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .app-shell--admin .permissions-overview-table th {color:var(--readable-heading) !important;background:#233650 !important;border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .app-shell--admin .permission-group-row td {border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .app-shell--admin .permission-data-row td:first-child {color:var(--readable-heading) !important;}
+
+/* TRAINING MODULES: white-on-blue headline, legible body copy, responsive cards. */
+.training-programmes-page {padding:22px clamp(16px,2.1vw,32px) 40px;}
+.training-programmes-page .training-programmes-hero {border-radius:16px;padding:30px 34px;}
+.training-programmes-page .training-programmes-hero h1 {color:#fff !important;font-size:clamp(27px,2.05vw,36px);line-height:1.23;margin-top:6px;}
+.training-programmes-page .training-programmes-hero p {color:#e7f3ff !important;font-size:16px;line-height:1.55;}
+.training-programmes-page .training-programmes-hero p:first-child {font-size:14px !important;letter-spacing:.1em;font-weight:750;color:#d2e9ff !important;}
+.training-programmes-page .training-programmes-hero button {min-height:46px;font-size:15px;font-weight:750;}
+.training-programmes-page .training-programmes-intro {padding:24px 28px;border-color:var(--readable-outline);border-radius:12px;background:var(--readable-surface);}
+.training-programmes-page .training-programmes-intro h2 {font-size:23px;color:var(--readable-heading);line-height:1.3;}
+.training-programmes-page .training-programmes-intro p {font-size:16px;line-height:1.6;color:var(--readable-secondary);}
+.training-programmes-page .training-module-card {display:flex;flex-direction:column;min-width:0;border-radius:14px;border-color:var(--readable-outline);background:var(--readable-surface);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;}
+.training-programmes-page .training-module-card__body {padding:26px 24px 28px;flex:1;}
+.training-programmes-page .training-module-card h3 {font-size:21px;line-height:1.3;color:var(--readable-heading);margin-top:22px;}
+.training-programmes-page .training-module-card__body > p {font-size:16px;line-height:1.65;color:var(--readable-secondary);}
+.training-programmes-page .training-module-card__body > p.uppercase {font-size:14px;line-height:1.45;color:#12548d;letter-spacing:.045em;}
+.training-programmes-page .training-module-card__footer {margin-top:auto;padding:18px 20px;border-color:var(--readable-outline);background:var(--readable-surface-soft);}
+.training-programmes-page .training-module-card__footer button {min-height:43px;padding:9px 10px;font-size:15px;font-weight:650;border-radius:9px;}
+.training-programmes-page .training-module-card__body span.rounded-full {font-size:13px;}
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .training-programmes-page .training-module-card:hover {transform:translateY(-3px);box-shadow:0 12px 28px rgba(17,36,60,.10);border-color:#a9bed6;}
+}
+html[data-theme="dark"] .training-programmes-page .training-programmes-intro,
+html[data-theme="dark"] .training-programmes-page .training-module-card {background:var(--readable-surface) !important;border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .training-programmes-page .training-module-card__footer {background:var(--readable-surface-soft) !important;border-color:var(--readable-outline) !important;}
+html[data-theme="dark"] .training-programmes-page .training-programmes-intro h2,
+html[data-theme="dark"] .training-programmes-page .training-module-card h3 {color:var(--readable-heading) !important;}
+html[data-theme="dark"] .training-programmes-page .training-programmes-intro p,
+html[data-theme="dark"] .training-programmes-page .training-module-card__body > p {color:var(--readable-secondary) !important;}
+html[data-theme="dark"] .training-programmes-page .training-module-card__body > p.uppercase {color:#9bcaff !important;}
+html[data-theme="dark"] .training-programmes-page .training-programmes-hero h1,
+html[data-theme="dark"] .training-programmes-page .training-programmes-hero p {color:#fff !important;}
+html[data-theme="dark"] .training-programmes-page .training-programmes-hero button {color:#073763 !important;background:#fff !important;}
+html[data-theme="dark"] .training-programmes-page .training-module-card__footer button.bg-white {background:#293e5b !important;color:#e7f0fc !important;}
+
+/* At this breakpoint there is no room for 3 generous role/module columns. */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .app-shell--admin .role-card-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .training-programmes-page .grid.lg\:grid-cols-3 {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:1099px) {
+  .training-programmes-page .grid.lg\:grid-cols-3 {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell--admin .role-card-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:820px) {
+  .figma-login-layout {display:block;}
+  .figma-login-brand {display:none;}
+  .figma-login-right {min-height:100dvh;padding:98px 25px 50px;}
+  .figma-login-form-container {max-width:520px;transform:none;}
+  .training-programmes-page {padding:18px 16px 34px;}
+  .training-programmes-page .training-programmes-hero {padding:25px 24px;}
+  .training-programmes-page .grid.lg\:grid-cols-3 {grid-template-columns:1fr;}
+  .app-shell--admin .role-card-grid {grid-template-columns:1fr;}
+}
+@media (max-width: 600px) {
+  .figma-login-right {align-items:flex-start;padding:90px 20px 40px;}
+  .login-mode-toggle {right:20px;top:22px;}
+  .figma-login-heading h1 {font-size:30px;}
+  .figma-login-heading p {font-size:15px;}
+  .figma-login-field label {font-size:15px;}
+  .figma-login-input input {font-size:16px;}
+  .figma-login-help p {font-size:13px;}
+  .app-shell--admin .admin-roles-page {padding:16px 12px 28px;}
+  .app-shell--admin .designer-section-head {flex-direction:column;align-items:stretch;padding:17px;}
+  .app-shell--admin .role-card-grid {padding:0 14px 16px;}
+  .app-shell--admin .designer-table-scroll {padding:0 12px 14px;}
+  .app-shell--admin .designer-primary-button {align-self:stretch;}
+  .app-shell--admin .designer-role-card {min-height:190px;}
+  .training-programmes-page .training-programmes-hero {padding:23px 20px;}
+  .training-programmes-page .training-programmes-intro {padding:20px;}
+  .training-programmes-page .training-module-card__footer .grid {grid-template-columns:1fr;}
+}
+@media (max-height:680px) and (min-width:821px) {
+  .figma-login-brand-content {top:19%;}
+  .figma-login-features {bottom:2.5%;min-height:112px;}
+  .figma-login-feature {padding-top:10px;padding-bottom:10px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .training-programmes-page .training-module-card,
+  .login-mode-toggle {transition:none;}
+}
+
+/* Readable utility-sized labels across conventional dashboard pages.
+   Exclude intentionally compact 360 floor plans and game/diagram overlays. */
+.app-shell .app-content :is(.text-xs,[class~="text-[10px]"],[class~="text-[11px]"],[class~="text-[12px]"],[class~="text-[13px]"]):not(:is(.tour360 *, .tour360--embedded *, .puzzle-studio *, .training360-flow *, .module360 *)) {
+  font-size:14px !important;
+  line-height:1.45;
+}
+.app-shell .app-content .text-sm:not(:is(.tour360 *, .tour360--embedded *, .puzzle-studio *, .training360-flow *, .module360 *)) {
+  font-size:15px;
+  line-height:1.55;
+}

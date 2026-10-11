@@ -1,0 +1,271 @@
+/* UK LogiWare October contrast and interaction repair.
+   Scoped page palettes prevent pale-on-pale components in dark mode.
+   This file loads LAST; never change the compact navigation type scale. */
+:root, html[data-theme="light"] {
+  --lw-surface: #fff;
+  --lw-surface-muted: #f2f6fc;
+  --lw-surface-hover: #eaf5f8;
+  --lw-body: #15253c;
+  --lw-muted: #425b76;
+  --lw-soft: #506b87;
+  --lw-border: #c4d3e3;
+  --lw-accent: #087f8c;
+  --lw-accent-text: #055b67;
+  --lw-violet: #6d55ae;
+  --lw-gold: #b07517;
+  --lw-glow: rgba(8,127,140,.19);
+  --lw-card-shadow: 0 10px 28px rgba(12,49,91,.07);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --lw-surface: #1a3049;
+  --lw-surface-muted: #223a56;
+  --lw-surface-hover: #26465e;
+  --lw-body: #f5f9ff;
+  --lw-muted: #d5e5f8;
+  --lw-soft: #c2d8ef;
+  --lw-border: #4d6988;
+  --lw-accent: #70e6dc;
+  --lw-accent-text: #8df1e8;
+  --lw-violet: #d2bfff;
+  --lw-gold: #f5d18c;
+  --lw-glow: rgba(94,231,218,.24);
+  --lw-card-shadow: 0 12px 30px rgba(1,8,22,.2);
+}
+
+/* Sidebar always has its established font sizing and dark blue identity. */
+.app-shell .sidebar-link { font-size:14px !important; line-height:1.4 !important; }
+.app-shell .sidebar-role-card__title { font-size:14px !important; }
+.app-shell .sidebar-role-card__description { font-size:12px !important; }
+
+/* Accessible foregrounds for legacy utility classes used in 100+ views.
+   Converting the BACKGROUND and TEXT together avoids forcing white lettering
+   onto original white utility panels. Special banners/chips override below. */
+html[data-theme="dark"] .app-shell .app-content :is([class~="bg-white"],[class~="bg-white/95"],[class~="bg-white/90"],[class~="bg-[#f8fafc]"],[class~="bg-[#f5f7fb]"]) {
+  background-color:var(--lw-surface) !important;
+  border-color:var(--lw-border);
+}
+html[data-theme="dark"] .app-shell .app-content :is([class~="bg-blue-50"],[class~="bg-blue-50/50"],[class~="bg-slate-50"],[class~="bg-slate-100"],[class~="bg-[#eef6ff]"]) {
+  background-color:var(--lw-surface-muted) !important;
+}
+html[data-theme="dark"] .app-shell .app-content :is([class*="text-[#172033]"],[class*="text-[#334155]"],[class*="text-[#475569]"],[class*="text-[#52627a]"],[class*="text-[#64748b]"],[class*="text-[#0b4f87]"],[class*="text-slate-900"],[class*="text-slate-800"],[class*="text-slate-700"],[class*="text-slate-600"],[class*="text-slate-500"],[class*="text-blue-700"]) {
+  color:var(--lw-muted) !important;
+}
+html[data-theme="dark"] .app-shell .app-content :is([class*="border-[#dbe4ef]"],[class*="border-[#e8eef5]"],[class*="border-[#d7e0ea]"],[class*="border-blue-100"],[class*="border-slate-200"]) {border-color:var(--lw-border) !important;}
+html[data-theme="dark"] .app-shell .app-content :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  background-color:#14283f !important;color:#f5f9ff !important;
+  border-color:#63819e !important;caret-color:#95f2ec;
+}
+html[data-theme="dark"] .app-shell .app-content :is(input,textarea)::placeholder {color:#c6d8e9 !important;opacity:1;}
+html[data-theme="dark"] .app-shell .app-content :where(label,legend) {color:var(--lw-muted);}
+html[data-theme="dark"] .app-shell .app-content :where(button:disabled) {opacity:.72;}
+html[data-theme="dark"] .app-shell .app-content :is(.app-page-header__subtitle,.app-section-description) {color:#d6e8fa !important;}
+html[data-theme="dark"] .app-shell .app-content :where(table) {color:var(--lw-body);}
+html[data-theme="dark"] .app-shell .app-content :where(thead,th) {border-color:var(--lw-border);}
+html[data-theme="dark"] .app-shell .app-content :where(td,small) {border-color:var(--lw-border);}
+html[data-theme="dark"] .app-shell .app-content :is(.text-slate-400,.text-gray-400) {color:#bed4eb !important;}
+
+/* Explicit contrast fix for admin Quick Actions: all four buttons are surfaces,
+   not invisible white rectangles. Each tone has a distinct interactive accent. */
+.app-shell--admin .admin-quick-actions-list {gap:10px;padding:12px 14px 18px;}
+.app-shell--admin .admin-quick-action {
+  --action-tone:#087f8c;
+  border-radius:12px;min-height:70px;
+  border:1px solid var(--lw-border) !important;
+  background:var(--lw-surface) !important;color:var(--lw-body) !important;
+  box-shadow:0 3px 11px rgba(7,55,99,.05);
+  transition:transform .19s ease,box-shadow .19s ease,border-color .19s ease,background-color .19s ease;
+}
+.app-shell--admin .admin-quick-action--teal {--action-tone:var(--lw-accent);}
+.app-shell--admin .admin-quick-action--violet {--action-tone:var(--lw-violet);}
+.app-shell--admin .admin-quick-action--gold {--action-tone:var(--lw-gold);}
+.app-shell--admin .admin-quick-action--blue {--action-tone:#62acff;}
+.app-shell--admin .admin-quick-action__copy strong {color:var(--lw-body) !important;font-size:14px !important;line-height:1.4;}
+.app-shell--admin .admin-quick-action__copy small {color:var(--lw-muted) !important;font-size:13px !important;line-height:1.5;}
+.app-shell--admin .admin-quick-action__icon {color:var(--action-tone) !important;border:1px solid var(--lw-border);background:var(--lw-surface-muted) !important;}
+.app-shell--admin .admin-quick-action__arrow {color:var(--action-tone) !important;font-size:22px;transition:transform .2s;}
+.app-shell--admin .admin-quick-action:is(:hover,:focus-visible) {
+  border-color:var(--action-tone) !important;
+  background:var(--lw-surface-hover) !important;
+  box-shadow:0 10px 25px var(--lw-glow) !important;
+  transform:translateY(-2px);
+}
+.app-shell--admin .admin-quick-action:is(:hover,:focus-visible) .admin-quick-action__arrow {transform:translateX(4px);}
+.app-shell--admin .admin-quick-action:focus-visible {outline:3px solid var(--action-tone);outline-offset:2px;}
+
+/* Create User banner and credentials action never disappear in dark mode. */
+.app-shell--admin .create-user-banner {background:linear-gradient(109deg,#07436c 0%,#126da3 54%,#4932a1 100%);}
+.app-shell--admin .create-user-banner :is(h2,p,small,span) {color:#f6faff !important;}
+.app-shell--admin .create-user-banner > .create-user-banner__action {
+  color:#073763 !important;background:#fff !important;border:1px solid #d7ecff !important;
+  min-height:44px;font-size:14px !important;font-weight:800;
+}
+.app-shell--admin .create-user-banner > .create-user-banner__action:hover {background:#ddfff6 !important;box-shadow:0 0 0 3px rgba(255,255,255,.16),0 8px 19px rgba(0,20,60,.22);transform:translateY(-2px);}
+.app-shell--admin .generate-credentials-button:not(:disabled) {background:#1769e8 !important;color:#fff !important;border:1px solid #7ebaff;}
+html[data-theme="dark"] .app-shell--admin .generate-credentials-button:disabled {
+  background:#38516c !important;color:#e3edfa !important;opacity:1 !important;
+  border:1px solid #627c99 !important;
+}
+html[data-theme="light"] .app-shell--admin .generate-credentials-button:disabled {color:#27394f !important;background:#d6dfe9 !important;opacity:1 !important;}
+
+/* Admin controls and data: readability without recoloring semantic badges. */
+html[data-theme="dark"] .app-shell--admin :is(.admin-dashboard,.admin-page,.admin-create-user,.admin-manage-users) :is(.designer-card,.admin-stat-card,.designer-table-card,.admin-card,.admin-form-card) {color:var(--lw-body);background:var(--lw-surface);border-color:var(--lw-border);}
+html[data-theme="dark"] .app-shell--admin :is(.admin-dashboard,.admin-page,.admin-create-user,.admin-manage-users) :where(p:not([class*="text-white"]),small:not([class*="text-white"])) {color:var(--lw-muted);}
+html[data-theme="dark"] .app-shell--admin :is(.admin-dashboard,.admin-page,.admin-create-user,.admin-manage-users) :is(h2,h3,h4) {color:var(--lw-body);}
+html[data-theme="dark"] .app-shell--admin :is(.admin-dashboard,.admin-page,.admin-create-user,.admin-manage-users) .create-user-banner :is(h2,h3,p,small) {color:#fff !important;}
+html[data-theme="dark"] .app-shell--admin :is(.admin-dashboard,.admin-page,.admin-create-user,.admin-manage-users) :is(.admin-quick-actions-card,.admin-stat-card,.admin-card-heading) :is(h2,h3,strong) {color:var(--lw-body) !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.status-active,.badge-active,.admin-status--active) {color:#abf3d0;background:#184d3e;}
+html[data-theme="dark"] .app-shell .app-content :where(.status-warning,.badge-warning) {color:#ffe1a5;background:#5a4020;}
+
+/* Stable Notifications: no theme mismatches or fading action labels. */
+.trainee-notifications-page {overflow-anchor:none;}
+.trainee-notifications-page .notification-entry {transition:background-color .18s ease;}
+.trainee-notifications-page .notification-entry:hover {background:var(--lw-surface-hover) !important;}
+.trainee-notifications-page .notification-filter,
+.trainee-notifications-page .notification-mark-all,
+.trainee-notifications-page .notification-mark-read {
+  font-size:13px !important; min-height:42px;color:var(--lw-body) !important;
+  border:1px solid var(--lw-border) !important;background:var(--lw-surface-muted) !important;
+  transition:background .17s,border-color .17s,box-shadow .17s;
+}
+.trainee-notifications-page .notification-filter[aria-pressed="true"] {background:#115c91 !important;color:#fff !important;border-color:#4297c8 !important;}
+.trainee-notifications-page :is(.notification-mark-read,.notification-mark-all,.notification-filter):not(:disabled):hover {border-color:var(--lw-accent) !important;background:var(--lw-surface-hover) !important;box-shadow:0 0 0 3px var(--lw-glow);}
+.trainee-notifications-page .notification-filter[aria-pressed="true"]:hover {color:#fff !important;background:#156aa2 !important;}
+.trainee-notifications-page :is(.notification-mark-read,.notification-mark-all):disabled {opacity:.7 !important;cursor:not-allowed;}
+html[data-theme="dark"] .trainee-notifications-page :where(article,section):not(.notification-entry) {border-color:var(--lw-border);}
+html[data-theme="dark"] .trainee-notifications-page .notification-entry {background:var(--lw-surface) !important;border-color:var(--lw-border);}
+html[data-theme="dark"] .trainee-notifications-page .notification-entry:has(.notification-mark-read) {background:#1c3d56 !important;}
+html[data-theme="dark"] .trainee-notifications-page .notification-entry :is(p,span) {color:var(--lw-muted);}
+html[data-theme="dark"] .trainee-notifications-page .notification-entry span[class*="bg-blue-600"] {background:#2878e9;color:white !important;}
+html[data-theme="dark"] .trainee-notifications-page :is(h2,strong) {color:var(--lw-body);}
+
+/* ---------------- PUZZLES: complete dual-theme workspace ---------------- */
+.puzzle-studio {color:var(--lw-body);}
+.puzzle-studio .studio-welcome {
+  border-radius:22px;
+  background:radial-gradient(circle at 82% 15%,rgba(14,162,169,.11),transparent 42%),linear-gradient(122deg,#fff 5%,#f2f8fd 96%) !important;
+  border:1px solid var(--lw-border) !important;
+  box-shadow:var(--lw-card-shadow) !important;
+}
+.puzzle-studio .studio-welcome__copy h2 {color:var(--lw-body) !important;}
+.puzzle-studio .studio-welcome__copy p {color:var(--lw-muted) !important;font-size:15px;}
+.puzzle-studio .studio-eyebrow {color:var(--lw-accent-text) !important;}
+.puzzle-studio .studio-welcome__tags span {border:1px solid var(--lw-border);border-radius:999px;background:var(--lw-surface-muted);color:var(--lw-accent-text);}
+.puzzle-studio .studio-total {background:linear-gradient(135deg,#073763,#176b83 77%,#177e87) !important;border:1px solid #2a879d;box-shadow:0 8px 26px rgba(1,25,45,.18);color:#fff !important;}
+.puzzle-studio .studio-total :is(span,strong,small,button) {color:#f3fbff !important;}
+.puzzle-studio .studio-tabs {background:var(--lw-surface-muted);border-color:var(--lw-border);}
+.puzzle-studio .studio-tabs button {color:var(--lw-muted);}
+.puzzle-studio .studio-tabs button[aria-selected="true"] {background:#0b5680;color:#fff !important;}
+.puzzle-studio .studio-tabs button:not([aria-selected="true"]):hover {background:var(--lw-surface-hover);color:var(--lw-body);}
+.puzzle-studio .studio-prop-lab {background:var(--lw-surface-muted) !important;border-color:var(--lw-border) !important;box-shadow:var(--lw-card-shadow);}
+.puzzle-studio .studio-prop-lab :is(h3,b) {color:var(--lw-body) !important;}
+.puzzle-studio .studio-prop-lab p,.puzzle-studio .studio-prop-lab small {color:var(--lw-muted) !important;}
+.puzzle-studio .studio-prop-lab__activities button {background:var(--lw-surface);color:var(--lw-body);border-color:var(--lw-border);}
+.puzzle-studio .studio-prop-icon {background:var(--lw-surface-muted);color:var(--lw-accent-text);}
+.puzzle-studio .studio-prop-lab__activities button:not(:disabled):hover {background:var(--lw-surface-hover);border-color:var(--lw-accent);box-shadow:0 10px 25px var(--lw-glow);transform:translateY(-2px);}
+.puzzle-studio .studio-activity-card {background:var(--lw-surface) !important;border-color:var(--lw-border) !important;box-shadow:var(--lw-card-shadow) !important;}
+.puzzle-studio .studio-activity-card:hover {border-color:var(--lw-accent) !important;transform:translateY(-4px);box-shadow:0 14px 30px var(--lw-glow) !important;}
+.puzzle-studio .studio-activity-art {background:linear-gradient(160deg,#d9f4ee,#e4eeff);}
+.puzzle-studio .studio-activity-copy h3 {color:var(--lw-body) !important;font-size:18px;}
+.puzzle-studio .studio-activity-copy > p {color:var(--lw-muted) !important;font-size:14px;}
+.puzzle-studio .studio-activity-meta span {color:var(--lw-muted);background:var(--lw-surface-muted);}
+.puzzle-studio .studio-activity-meta .studio-best {background:#dbf7e9;color:#076849;}
+.puzzle-studio .studio-button:not(.studio-button--secondary) {background:#0b5d87;border-color:#0b5d87;color:#fff !important;}
+.puzzle-studio .studio-button:not(:disabled):hover {background:#087e8b;border-color:#087e8b;box-shadow:0 7px 16px var(--lw-glow);}
+.puzzle-studio .studio-button--secondary {background:var(--lw-surface) !important;color:var(--lw-body) !important;border-color:var(--lw-border);}
+.puzzle-studio .studio-button--secondary:hover {background:var(--lw-surface-hover) !important;border-color:var(--lw-accent);}
+.puzzle-studio .studio-live-heading {background:linear-gradient(105deg,#073763,#11647d) !important;color:#fff;}
+.puzzle-studio .studio-live-heading :is(h2,p,b,span) {color:#fff !important;}
+.puzzle-studio .puzzle360-live,.puzzle-studio .puzzle360-history,.puzzle-studio .puzzle360-result {background:var(--lw-surface) !important;border-color:var(--lw-border) !important;color:var(--lw-body) !important;}
+.puzzle-studio .studio-live-body,.puzzle-studio .puzzle360-instructions {background:var(--lw-surface) !important;color:var(--lw-body);}
+.puzzle-studio .puzzle360-instructions {border-color:var(--lw-border) !important;}
+.puzzle-studio .puzzle360-instructions :is(h3,p,label) {color:var(--lw-muted) !important;}
+.puzzle-studio .puzzle360-card {background:var(--lw-surface) !important;border-color:var(--lw-border) !important;color:var(--lw-body);}
+.puzzle-studio .puzzle360-card:hover {border-color:var(--lw-accent) !important;box-shadow:0 6px 22px var(--lw-glow) !important;}
+.puzzle-studio .studio-card-label,.puzzle-studio .puzzle360-card b {color:var(--lw-body);}
+.puzzle-studio .studio-card-movers button {background:var(--lw-surface-muted) !important;color:var(--lw-body) !important;border:1px solid var(--lw-border);}
+.puzzle-studio .studio-card-movers button:not(:disabled):hover {background:var(--lw-surface-hover) !important;border-color:var(--lw-accent);}
+.puzzle-studio .studio-card-position {color:var(--lw-soft) !important;}
+.puzzle-studio .puzzle360-history :is(summary,td),.puzzle-studio .puzzle360-result :is(h2,p) {color:var(--lw-muted) !important;}
+.puzzle-studio .puzzle-scoreboard {background:var(--lw-surface);border-color:var(--lw-border);}
+.puzzle-studio .puzzle-scoreboard :is(h2,strong,td) {color:var(--lw-body);}
+.puzzle-studio .puzzle-scoreboard :is(p,small,span,th) {color:var(--lw-muted);}
+.puzzle-studio .scoreboard-personal > div {background:var(--lw-surface-muted);border-color:var(--lw-border);}
+html[data-theme="dark"] .puzzle-studio .studio-welcome {background:radial-gradient(circle at 83% 13%,rgba(89,222,216,.17),transparent 44%),linear-gradient(122deg,#172d47,#203b57 100%) !important;}
+html[data-theme="dark"] .puzzle-studio .studio-total {background:linear-gradient(130deg,#104362,#115e66) !important;border-color:#559d9f;}
+html[data-theme="dark"] .puzzle-studio .studio-activity-art {background:linear-gradient(150deg,#234e57,#263d62);}
+html[data-theme="dark"] .puzzle-studio .studio-activity-meta .studio-best {background:#164b3f;color:#b4f7d8;}
+html[data-theme="dark"] .puzzle-studio :is(.puzzle360-live,.puzzle360-history,.puzzle360-result) {background:var(--lw-surface) !important;color:var(--lw-body) !important;}
+html[data-theme="dark"] .puzzle-studio .puzzle360-instructions :where(button) {color:var(--lw-body) !important;}
+html[data-theme="dark"] .puzzle-studio .studio-live-heading :is(span,p,h2) {color:#fff !important;}
+
+/* ---------------- SAFETY MISSIONS: themed browsing + gameplay ---------------- */
+.sim-management,.sim-game {color:var(--lw-body);}
+.sim-management :is(.sim-card,.sim-game-card),.sim-game .sim-card {
+  color:var(--lw-body);background:var(--lw-surface);border:1px solid var(--lw-border);
+  box-shadow:var(--lw-card-shadow);
+}
+.sim-management :is(p,.sim-help),.sim-game :is(p,.sim-help) {color:var(--lw-muted) !important;}
+.sim-management :is(h1,h2,h3,h4,strong),.sim-game :is(h1,h2,h3,h4,strong) {color:var(--lw-body);}
+.sim-management .sim-eyebrow,.sim-game .sim-eyebrow {color:var(--lw-accent-text);font-size:12px;}
+.sim-management .sim-mission-hero,
+.sim-game .sim-header {
+  background:linear-gradient(112deg,#073763,#126381 72%,#247782) !important;
+  border:1px solid #3183a3;box-shadow:0 14px 31px rgba(4,40,70,.18);
+}
+.sim-management .sim-mission-hero :is(h1,h2,h3,p,small,span),.sim-game .sim-header :is(h1,h2,h3,p,small,span) {color:#f5fbff !important;}
+.sim-management .sim-mission-hero .sim-eyebrow,.sim-game .sim-header .sim-eyebrow {color:#b4f5ec !important;}
+.sim-management .sim-mission-hero .sim-button--light {background:#f4fffd !important;border-color:#cdfaf4;color:#073763 !important;}
+.sim-management .sim-mission-hero .sim-button--light:hover {background:#c9faf1 !important;color:#073763 !important;}
+.sim-management .sim-mission-stat-grid .sim-stat-card {border-color:var(--lw-border);}
+.sim-management .sim-stat-card strong,.sim-game .sim-metrics strong,.sim-game .sim-hud strong {color:var(--lw-body);}
+.sim-management .sim-stat-card:nth-child(1) {border-top:3px solid #34a8aa;}
+.sim-management .sim-stat-card:nth-child(2) {border-top:3px solid #36ad7c;}
+.sim-management .sim-stat-card:nth-child(3) {border-top:3px solid #987add;}
+.sim-management .sim-stat-card:nth-child(4) {border-top:3px solid #e0a852;}
+.sim-management .sim-mission-card {border-radius:18px;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s;}
+.sim-management .sim-mission-card:not(.sim-mission-card--locked):hover {transform:translateY(-4px);border-color:var(--lw-accent);box-shadow:0 16px 32px var(--lw-glow);}
+.sim-management .sim-mission-card__body :is(h2,strong) {color:var(--lw-body);}
+.sim-management .sim-mission-card__body p {color:var(--lw-muted) !important;}
+.sim-management .sim-inline-metrics>span,.sim-management .sim-personal-best,
+.sim-game :is(.sim-hud,.sim-object-picker,.sim-objective-panel,.sim-room-nav,.sim-metrics>span,.sim-objectives li,.sim-object-detail,.sim-feedback) {
+  background:var(--lw-surface-muted) !important;border-color:var(--lw-border) !important;color:var(--lw-body);
+}
+.sim-management .sim-inline-metrics :is(small,b),.sim-management .sim-personal-best :is(small,strong) {color:var(--lw-muted) !important;}
+.sim-game :is(.sim-objectives li,.sim-object-card,.sim-builder-item,.sim-object-shelf,.sim-reference-field) {border-color:var(--lw-border);}
+.sim-game :is(.sim-metrics>span,.sim-hud>span,.sim-objectives li,.sim-help) {color:var(--lw-muted) !important;}
+.sim-game .sim-object-card {background:var(--lw-surface);color:var(--lw-body);}
+.sim-game .sim-object-card:is(:hover,:focus-visible) {border-color:var(--lw-accent);background:var(--lw-surface-hover);box-shadow:0 8px 20px var(--lw-glow);}
+.sim-game .sim-object-card--selected {background:var(--lw-surface-hover);border:2px solid var(--lw-accent);}
+.sim-game .sim-object-card :is(.sim-object-card-name,.sim-object-card-status) {color:var(--lw-muted);}
+.sim-game .sim-objective-panel .sim-objectives li:not(.sim-objective--done):hover {border-color:var(--lw-accent);}
+.sim-game .sim-button {background:#0b5d87;color:#fff !important;border-color:#5c9dc4;}
+.sim-game .sim-button:hover:not(:disabled) {background:#087c88;box-shadow:0 6px 18px var(--lw-glow);}
+.sim-game .sim-button--light,.sim-game .sim-button--danger {color:var(--lw-body) !important;background:var(--lw-surface-muted);border-color:var(--lw-border);}
+.sim-game .sim-location-name :is(span,strong,b),.sim-game .sim-object-pin :is(span,b) {color:#fff !important;}
+.sim-game .sim-location-name {background:#092e4de6 !important;}
+.sim-game .sim-pause :is(h2,p,span) {color:#fff !important;}
+html[data-theme="dark"] .sim-management .sim-mission-hero,
+html[data-theme="dark"] .sim-game .sim-header {background:linear-gradient(112deg,#132d52,#116263 80%,#154f75) !important;border-color:#528f9f;}
+html[data-theme="dark"] .sim-game:fullscreen {background:#0b192c;}
+html[data-theme="dark"] .sim-game .sim-image-dialog {background:var(--lw-surface);color:var(--lw-body);border-color:var(--lw-border);}
+html[data-theme="dark"] .sim-game .sim-objective--done {background:#154939 !important;color:#b5f6d5 !important;border-color:#36856d !important;}
+
+/* Tooltips, small-screen content and motion preferences. */
+@media(max-width:760px) {
+  .puzzle-studio .studio-activity-grid {grid-template-columns:1fr;}
+  .puzzle-studio .studio-welcome {grid-template-columns:1fr;gap:14px;padding:17px;}
+  .puzzle-studio .studio-activity-card {grid-template-columns:90px minmax(0,1fr);}
+  .puzzle-studio .studio-welcome__copy h2 {font-size:24px;}
+  .sim-management--missions .sim-mission-stat-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+}
+@media(max-width:440px) {
+  .sim-management--missions .sim-mission-stat-grid {grid-template-columns:1fr;}
+  .puzzle-studio .studio-activity-card {grid-template-columns:76px minmax(0,1fr);}
+  .puzzle-studio .studio-activity-copy {padding:13px;}
+  .puzzle-studio .studio-tabs {max-width:100%;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .app-content :is(.admin-quick-action,.studio-activity-card,.sim-mission-card,.studio-prop-lab__activities button),
+  .app-shell .app-content :is(.admin-quick-action,.studio-activity-card,.sim-mission-card,.studio-prop-lab__activities button):hover {transition:none !important;transform:none !important;}
+}

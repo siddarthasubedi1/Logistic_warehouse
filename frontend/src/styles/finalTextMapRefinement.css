@@ -1,0 +1,44 @@
+/* FINAL REFINEMENT: readable application text, compact 360 map labels.
+   The map is intentionally excluded from global font scaling. */
+:root {
+ --text-secondary:#364b67;
+ --text-muted:#4d617c;
+ --readable-secondary:#364b67;
+ --readable-muted:#4d617c;
+}
+html[data-theme="dark"] {
+ --text-secondary:#d4e1f2;
+ --text-muted:#b8cbe1;
+ --readable-secondary:#d4e1f2;
+ --readable-muted:#b8cbe1;
+}
+/* Typography on regular page surfaces. Do not change text colors inside photo,
+   panorama, dark banner, tooltip, overlay or status-related content. */
+html:not([data-theme="dark"]) .app-shell :is(.app-page-header__subtitle,.app-mobile-header__subtitle,.app-section-description) {color:#364b67;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-\[\#94a3b8\],.text-\[\#64748b\]) {color:#4d617c !important;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-600,.text-gray-600) {color:#364b67 !important;}
+html[data-theme="dark"] .app-shell :is(.app-page-header__subtitle,.app-mobile-header__subtitle,.app-section-description) {color:#d4e1f2;}
+html[data-theme="dark"] .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-slate-600,.text-gray-600) {color:#b8cbe1 !important;}
+/* More readable field metadata and placeholders, both schemes. */
+html:not([data-theme="dark"]) .app-shell .app-content :is(input,textarea)::placeholder {color:#526782;opacity:1;}
+html[data-theme="dark"] .app-shell .app-content :is(input,textarea)::placeholder {color:#b8cbe1;opacity:1;}
+/* Never force generic text colors over intentional dark/photographic UI. */
+.app-shell .app-content :is(.tour360__location,.profile-security-banner,.immersive-card,.immersive-activity,.immersive-overlay,.training360-flow__module,.training360-flow__learn) :is(h1,h2,h3,h4,p,small,strong,span) {color:inherit;}
+/* MAP ONLY: original compact font scale. The previous broad font upgrade
+   incorrectly inflated labels to full-size UI text. */
+.tour360 .tour360__map-title,
+.tour360--embedded .tour360__map-title {font-size:11px !important;line-height:1.2 !important;}
+.tour360 .tour360__map-label,
+.tour360--embedded .tour360__map-label {font-size:7px !important;line-height:1.2 !important;padding:2px 4px !important;max-width:135px;text-overflow:ellipsis;white-space:nowrap;}
+.tour360 .tour360__map-node,
+.tour360--embedded .tour360__map-node {font-size:inherit !important;}
+/* Preserve the map markers while hiding overlapping place names until interaction.
+   The active place is always labeled; all other places are readable on hover/focus. */
+.tour360 .tour360__map-label:not(.active) {opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease;}
+.tour360 .tour360__map-box > span:hover .tour360__map-label,
+.tour360 .tour360__map-box > span:focus-within .tour360__map-label,
+.tour360 .tour360__map-label.active {opacity:1;visibility:visible;pointer-events:auto;}
+.tour360 .tour360__map-node:hover,
+.tour360 .tour360__map-node:focus-visible {border-color:#55a0ff;box-shadow:0 0 0 3px rgba(85,160,255,.28);}
+html[data-theme="dark"] .tour360 .tour360__map-label:not(.active) {color:#e8f2ff;background:#1b2e45;}
+@media(prefers-reduced-motion:reduce){.tour360 .tour360__map-label{transition:none;}}

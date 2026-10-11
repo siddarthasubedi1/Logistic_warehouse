@@ -24,7 +24,8 @@
     "test:all-sprints": "jest --runInBand",
     "test:report": "jest --runInBand --json --outputFile=docs/test-results.json",
     "check:production": "node checks/productionSmoke.cjs",
-    "check:progress-performance": "node checks/benchmarkProgress.cjs"
+    "check:progress-performance": "node checks/benchmarkProgress.cjs",
+    "check:mission-library": "node checks/verifyMissionLibrary.cjs"
   },
   "keywords": [],
   "author": "",

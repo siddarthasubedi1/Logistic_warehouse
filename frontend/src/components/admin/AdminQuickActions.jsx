@@ -5,24 +5,28 @@ function AdminQuickActions({ pendingUsers = 0, pendingCertificates = 0 }) {
     const actions = [
         {
             title: "Create User Account",
+            tone: "teal",
             description: `${pendingUsers} pending ${pendingUsers === 1 ? "user" : "users"}`,
             action: () => navigate("/admin/create-user"),
             icon: "♙",
         },
         {
             title: "Manage Users",
+            tone: "violet",
             description: "Activate, deactivate or remove accounts",
             action: () => navigate("/admin/users"),
             icon: "♟",
         },
         {
             title: "Send Certificates",
+            tone: "gold",
             description: `${pendingCertificates} ${pendingCertificates === 1 ? "certificate" : "certificates"} ready to email`,
             action: () => navigate("/admin/certificates"),
             icon: "✓",
         },
         {
             title: "Access Control",
+            tone: "blue",
             description: "Admin roles are protected by role-based access control",
             action: () => navigate("/admin/roles"),
             icon: "♢",
@@ -42,7 +46,7 @@ function AdminQuickActions({ pendingUsers = 0, pendingCertificates = 0 }) {
                         key={action.title}
                         type="button"
                         onClick={action.action}
-                        className={`admin-quick-action ${action.highlighted ? "admin-quick-action--highlighted" : ""}`}
+                        className={`admin-quick-action admin-quick-action--${action.tone} ${action.highlighted ? "admin-quick-action--highlighted" : ""}`}
                     >
                         <span className="admin-quick-action__icon">{action.icon}</span>
                         <span className="admin-quick-action__copy">

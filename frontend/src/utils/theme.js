@@ -32,6 +32,10 @@ export function rememberDisplayMode(value) {
 
     if (typeof window !== "undefined") {
         window.localStorage.setItem(DISPLAY_MODE_KEY, displayMode);
+        // Same-tab controls do not receive a browser "storage" event.
+        window.dispatchEvent(new CustomEvent("logiware-theme-change", {
+            detail: { displayMode },
+        }));
     }
 
     return displayMode;

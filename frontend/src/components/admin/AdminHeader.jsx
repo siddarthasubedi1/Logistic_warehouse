@@ -256,7 +256,7 @@ function AdminHeader({
                 <p
                     className="
                         mt-1
-                        text-[10px]
+                        text-sm
                         text-[#64748b]
                     "
                 >
@@ -459,7 +459,7 @@ function AdminHeader({
                                             px-4
                                             py-10
                                             text-center
-                                            text-[10px]
+                                            text-sm
                                             text-[#64748b]
                                         "
                                     >
@@ -565,7 +565,7 @@ function AdminHeader({
                                                             justify-center
                                                             rounded-full
                                                             bg-[#eef6ff]
-                                                            text-[10px]
+                                                            text-sm
                                                             font-bold
                                                             text-blue-600
                                                         "
@@ -595,7 +595,7 @@ function AdminHeader({
                                                             <p
                                                                 className="
                                                                     truncate
-                                                                    text-[10px]
+                                                                    text-sm
                                                                     font-semibold
                                                                     text-[#172033]
                                                                 "
@@ -677,7 +677,7 @@ function AdminHeader({
                                             bg-[#1769e8]
                                             px-3
                                             py-2
-                                            text-[10px]
+                                            text-sm
                                             font-semibold
                                             text-white
                                             transition
@@ -713,7 +713,7 @@ function AdminHeader({
                             className="
                                 max-w-[180px]
                                 truncate
-                                text-[10px]
+                                text-sm
                                 font-semibold
                                 text-[#172033]
                             "

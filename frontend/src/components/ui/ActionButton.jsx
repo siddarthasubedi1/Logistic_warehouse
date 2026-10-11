@@ -86,7 +86,7 @@ function ActionButton({
             disabled={disabled}
             className={`
                 inline-flex
-                min-h-[38px]
+                min-h-[44px]
                 items-center
                 justify-center
                 gap-2
@@ -94,7 +94,7 @@ function ActionButton({
                 border
                 px-4
                 py-2
-                text-[9px]
+                text-sm
                 font-semibold
                 leading-none
                 transition

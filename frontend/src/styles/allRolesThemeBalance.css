@@ -1,0 +1,65 @@
+/* Shared final contrast pass: admin, trainer and trainee, both themes.
+   Keep semantic status colors, photographs, charts and intentionally colored buttons. */
+:root {
+  --text-main:#172033; --text-secondary:#34445b; --text-muted:#526176;
+  --ui-text:#172033; --ui-text-strong:#111b2d; --ui-text-muted:#40516a;
+  --ui-text-subtle:#53647b; --ui-border:#c8d3e1; --ui-border-strong:#abbace;
+  --ui-surface:#ffffff; --ui-surface-soft:#f4f6fa;
+  --ux-readable:#243349; --ux-subtle:#43546b;
+}
+/* Muted content remains muted, but no longer pale or washed out. */
+.app-shell .app-content :where(p,li,dd,dt,small,td,th,label) { line-height:1.5; }
+.app-shell .app-content :where(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500) { color:#526176 !important; }
+.app-shell .app-content :where(.text-slate-600,.text-gray-600) { color:#40516a !important; }
+.app-shell .app-content :where(.text-slate-700,.text-gray-700) { color:#34445b !important; }
+.app-shell .app-content :where(input,select,textarea) {
+  color:var(--ui-text); border-color:var(--ui-border-strong);
+}
+.app-shell .app-content :where(input,textarea)::placeholder {color:#64748b; opacity:1;}
+.app-shell .app-content :where(.app-table,.scoreboard-table) :where(th,td) { border-color:var(--ui-border); }
+/* Do not turn all prose into colored/highlighted text. Links and actions stay identifiable. */
+html[data-theme="dark"] {
+  color-scheme:dark;
+  --page-bg:#0c1422; --page-bg-top:#101b2e;
+  --text-main:#e6edf7; --text-secondary:#ccd7e6; --text-muted:#b6c4d6;
+  --ui-bg:#0c1422; --ui-bg-top:#101b2e;
+  --ui-surface:#182537; --ui-surface-soft:#213047; --ui-surface-raised:#24344c;
+  --ui-text:#e6edf7; --ui-text-strong:#f3f7fd; --ui-text-muted:#c6d1e1;
+  --ui-text-subtle:#afbed1; --ui-border:#40536c; --ui-border-strong:#60738d;
+  --ux-readable:#e6edf7; --ux-subtle:#c6d1e1;
+}
+html[data-theme="dark"] .app-shell .app-content :where(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-slate-600,.text-gray-600,.text-slate-700,.text-gray-700) {
+  color:#c6d1e1 !important;
+}
+html[data-theme="dark"] .app-shell .app-content :where(.text-slate-800,.text-slate-900,.text-gray-800,.text-gray-900) {
+  color:#ecf2fb !important;
+}
+html[data-theme="dark"] .app-shell .app-content :where(input,select,textarea) {
+  background-color:#111d2e !important; color:#eef3fb !important; border-color:#60738d !important;
+}
+html[data-theme="dark"] .app-shell .app-content :where(input,textarea)::placeholder {
+  color:#afbed1 !important; opacity:1;
+}
+html[data-theme="dark"] .app-shell .app-content :where(.bg-white,.bg-slate-50,.bg-slate-100,.bg-gray-50,.bg-gray-100) {
+  background-color:#182537 !important;
+}
+html[data-theme="dark"] .app-shell .app-content :where(.border-slate-200,.border-slate-300,.border-gray-200,.border-gray-300) {
+  border-color:#40536c !important;
+}
+html[data-theme="dark"] .app-shell .app-content :where(table) { border-color:#40536c; }
+html[data-theme="dark"] .app-shell .app-content :where(thead) { color:#e6edf7; }
+html[data-theme="dark"] .app-shell .app-content :where(.app-table,.scoreboard-table) :where(th,td) { border-color:#40536c; }
+html[data-theme="dark"] .app-shell .app-content :where(.bg-blue-50) {background-color:#203b59 !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.bg-green-50,.bg-emerald-50) {background-color:#173e33 !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.bg-red-50) {background-color:#452733 !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.bg-amber-50,.bg-yellow-50) {background-color:#453921 !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.text-blue-700,.text-blue-800) {color:#badcff !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.text-green-700,.text-emerald-700) {color:#a9e6c9 !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.text-red-700,.text-red-800) {color:#ffc4cd !important;}
+html[data-theme="dark"] .app-shell .app-content :where(.text-amber-700,.text-yellow-700) {color:#f7dfa4 !important;}
+/* Focus is a keyboard navigation affordance, not a decorative highlight. */
+.app-shell :where(button,a,input,select,textarea,[role="button"]):focus-visible {outline:2px solid var(--ui-focus,#3b82f6);outline-offset:2px;}
+@media (max-width:640px) {
+ .app-shell .app-content :where(input,select,textarea){font-size:16px;}
+ .app-shell .app-content :where(table){display:block;max-width:100%;overflow-x:auto;}
+}

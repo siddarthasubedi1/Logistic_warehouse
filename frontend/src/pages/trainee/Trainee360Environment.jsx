@@ -36,7 +36,7 @@ const localPanoramaFor = (sceneId) => `${SCENE_PANORAMAS[sceneId] || "/panoramas
 // A clean visitor-facing map: only meaningful areas are shown, not every internal checkpoint.
 const MAP_LOCATION_IDS = [
     "entrance", "receiving", "main-aisle", "rack-a", "forklift", "picking",
-    "packing", "dispatch", "loading", "yard", "office", "training", "canteen",
+    "packing", "dispatch", "loading", "yard", "training", "canteen",
     "restroom", "first-aid"
 ];
 
@@ -45,8 +45,7 @@ const MAP_LOCATION_IDS = [
 const FORWARD_ROUTE = [
     "entrance", "security", "receiving", "inbound", "main-aisle", "rack-a",
     "rack-b", "high-rack", "forklift", "charging", "picking", "packing",
-    "quality", "dispatch", "loading", "yard", "emergency", "office",
-    "training", "canteen", "restroom", "first-aid"
+    "quality", "dispatch", "loading", "yard", "emergency", "training", "canteen", "restroom", "first-aid"
 ];
 
 
@@ -54,7 +53,7 @@ const FORWARD_ROUTE = [
 // These local scenes make the first version usable immediately. The API version uses
 // the same shape, so replacing a placeholder with a real 2:1 equirectangular panorama
 // only requires changing `panorama` in MongoDB.
-const FALLBACK_SCENES = [
+const ALL_FALLBACK_SCENES = [
     { locationId: 'entrance', name: 'Warehouse Entrance', panorama: localPanoramaFor("entrance"), description: 'Explore the warehouse entrance inside the logistics warehouse.', mapX: 12, mapY: 52, connectedLocations: ["security", "receiving"], hotspots: [{ id: 'entrance-security', type: "navigation", label: 'Security & Check-in', yaw: 0, pitch: -8, targetLocationId: 'security' }, { id: 'entrance-receiving', type: "navigation", label: 'Receiving Dock', yaw: 70, pitch: -8, targetLocationId: 'receiving' }] },
     { locationId: 'security', name: 'Security & Check-in', panorama: localPanoramaFor("security"), description: 'Explore the security & check-in inside the logistics warehouse.', mapX: 20, mapY: 38, connectedLocations: ["entrance", "main-aisle", "office"], hotspots: [{ id: 'security-entrance', type: "navigation", label: 'Warehouse Entrance', yaw: 0, pitch: -8, targetLocationId: 'entrance' }, { id: 'security-main-aisle', type: "navigation", label: 'Main Warehouse Aisle', yaw: 70, pitch: -8, targetLocationId: 'main-aisle' }, { id: 'security-office', type: "navigation", label: 'Warehouse Control Office', yaw: -70, pitch: -8, targetLocationId: 'office' }] },
     { locationId: 'receiving', name: 'Receiving Dock', panorama: localPanoramaFor("receiving"), description: 'Explore the receiving dock inside the logistics warehouse.', mapX: 28, mapY: 70, connectedLocations: ["entrance", "inbound"], hotspots: [{ id: 'receiving-entrance', type: "navigation", label: 'Warehouse Entrance', yaw: 0, pitch: -8, targetLocationId: 'entrance' }, { id: 'receiving-inbound', type: "navigation", label: 'Inbound Staging', yaw: 70, pitch: -8, targetLocationId: 'inbound' }] },
@@ -80,6 +79,13 @@ const FALLBACK_SCENES = [
     { locationId: 'restroom', name: 'Restroom', panorama: localPanoramaFor("restroom"), description: 'Staff restroom and wash facilities.', mapX: 8, mapY: 34, connectedLocations: ["canteen", "first-aid"], hotspots: [{ id: 'restroom-canteen', type: "navigation", label: 'Canteen', yaw: 0, pitch: -8, targetLocationId: 'canteen' }, { id: 'restroom-first-aid', type: "navigation", label: 'First Aid & Welfare', yaw: 70, pitch: -8, targetLocationId: 'first-aid' }] },
     { locationId: 'first-aid', name: 'First Aid & Welfare Room', panorama: localPanoramaFor("first-aid"), description: 'First-aid treatment and staff welfare room.', mapX: 10, mapY: 44, connectedLocations: ["restroom", "office", "emergency"], hotspots: [{ id: 'firstaid-restroom', type: "navigation", label: 'Restroom', yaw: 0, pitch: -8, targetLocationId: 'restroom' }, { id: 'firstaid-office', type: "navigation", label: 'Site Office', yaw: 70, pitch: -8, targetLocationId: 'office' }, { id: 'firstaid-emergency', type: "navigation", label: 'Emergency Exit', yaw: -70, pitch: -8, targetLocationId: 'emergency' }] },
 ];
+const HIDDEN_LOCATIONS = new Set(["office"]);
+const removeHiddenLocations = (items) => items.filter(item => !HIDDEN_LOCATIONS.has(item.locationId)).map(item => ({
+    ...item,
+    connectedLocations: (item.connectedLocations || []).filter(id => !HIDDEN_LOCATIONS.has(id)),
+    hotspots: (item.hotspots || []).filter(hotspot => !HIDDEN_LOCATIONS.has(hotspot.targetLocationId)),
+}));
+const FALLBACK_SCENES = removeHiddenLocations(ALL_FALLBACK_SCENES);
 
 function wrapAngle(a) { return ((a + 180) % 360 + 360) % 360 - 180; }
 function projectHotspot(h, yaw, pitch, fov, width, height) {
@@ -91,6 +97,16 @@ function projectHotspot(h, yaw, pitch, fov, width, height) {
 
 export default function Trainee360Environment({ embedded = false, puzzleHazards = [], solvedHazards = [], onHazardSelect, hud }) {
     const [scenes, setScenes] = useState(FALLBACK_SCENES), [sceneId, setSceneId] = useState("entrance"), [yaw, setYaw] = useState(0), [pitch, setPitch] = useState(0), [fov, setFov] = useState(78), [panel, setPanel] = useState(null), [apiNote, setApiNote] = useState(""), [imageFailed, setImageFailed] = useState(false);
+    // The navigation overlay has two genuinely different views: a location map and
+    // a separately controllable 360° panorama preview. Do not couple its camera to
+    // the main panorama: users can inspect a destination before travelling there.
+    const [mapMode, setMapMode] = useState("floor");
+    const [mapExpanded, setMapExpanded] = useState(false);
+    const [previewId, setPreviewId] = useState("entrance");
+    const [previewYaw, setPreviewYaw] = useState(0);
+    const [previewPitch, setPreviewPitch] = useState(0);
+    const [previewFov, setPreviewFov] = useState(78);
+    const [previewFailed, setPreviewFailed] = useState(false);
     const stageRef = useRef(null); const historyRef = useRef([]); const [size, setSize] = useState({ w: 1200, h: 700 });
     useEffect(() => {
         const headers = { Authorization: `Bearer ${getAccessToken()}` };
@@ -110,13 +126,31 @@ export default function Trainee360Environment({ embedded = false, puzzleHazards 
                     }).filter(h => h.targetLocationId);
                     return { locationId, name: record.name, description: record.description || "", panorama: /^https?:\/\//i.test(record.imageUrl) ? record.imageUrl : `${origin}${record.imageUrl}`, mapX: base?.mapX ?? 15 + (index % 5) * 18, mapY: base?.mapY ?? 25 + Math.floor(index / 5) * 20, hotspots, connectedLocations: hotspots.map(h => h.targetLocationId) };
                 });
-                setScenes(dynamic); setSceneId(dynamic.find(x => x.locationId === "entrance")?.locationId || dynamic[0].locationId); setApiNote("");
+                const visible = removeHiddenLocations(dynamic);
+                if (!visible.length) { setApiNote("No visible warehouse panoramas are configured. Using local scenes."); return; }
+                const firstId = visible.find(x => x.locationId === "entrance")?.locationId || visible[0].locationId;
+                setScenes(visible); setSceneId(firstId); setPreviewId(firstId); setApiNote("");
             })
             .catch(() => setApiNote("Warehouse Tour API is unavailable. Using the safe local fallback."));
     }, []);
     useEffect(() => { const el = stageRef.current; if (!el) return; const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height })); ro.observe(el); return () => ro.disconnect() }, []);
     const scene = useMemo(() => scenes.find(s => s.locationId === sceneId) || scenes[0], [scenes, sceneId]);
-    const go = useCallback((id, { remember = true } = {}) => { if (!scenes.some(s => s.locationId === id) || id === sceneId) return; if (remember) historyRef.current.push(sceneId); setSceneId(id); setYaw(0); setPitch(0); setFov(78); setPanel(null); setImageFailed(false) }, [scenes, sceneId]);
+    const choosePreview = useCallback(id => {
+        setPreviewId(id);
+        setPreviewYaw(0);
+        setPreviewPitch(0);
+        setPreviewFov(78);
+        setPreviewFailed(false);
+    }, []);
+    const go = useCallback((id, { remember = true } = {}) => {
+        if (!scenes.some(s => s.locationId === id) || id === sceneId) return;
+        if (remember) historyRef.current.push(sceneId);
+        setSceneId(id);
+        setYaw(0); setPitch(0); setFov(78);
+        // Navigating in the main tour also resets the next 360° preview target.
+        choosePreview(id);
+        setPanel(null); setImageFailed(false);
+    }, [scenes, sceneId, choosePreview]);
     const goBack = useCallback(() => { const id = historyRef.current.pop(); if (id) go(id, { remember: false }); }, [go]);
     const goForward = useCallback(() => {
         const index = FORWARD_ROUTE.indexOf(sceneId);
@@ -128,15 +162,34 @@ export default function Trainee360Environment({ embedded = false, puzzleHazards 
         const nextId = current?.connectedLocations?.find(id => id !== historyRef.current.at(-1));
         if (nextId) go(nextId);
     }, [scenes, sceneId, go]);
-    useEffect(() => { const key = e => { if (e.ctrlKey || e.metaKey || e.altKey || panel || !stageRef.current?.contains(document.activeElement) || e.target?.closest?.('input,textarea,select,button,a,[contenteditable=true]')) return; const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) e.preventDefault(); if (k === 'arrowup' || k === 'w') goForward(); else if (k === 'arrowdown' || k === 's') goBack(); else if (k === 'arrowleft' || k === 'a') setYaw(v => wrapAngle(v - 18)); else if (k === 'arrowright' || k === 'd') setYaw(v => wrapAngle(v + 18)); }; window.addEventListener('keydown', key, { passive: false }); return () => window.removeEventListener('keydown', key) }, [goForward, goBack, panel]);
+    useEffect(() => { const key = e => { if (e.ctrlKey || e.metaKey || e.altKey || panel || !stageRef.current?.contains(document.activeElement) || e.target?.closest?.('input,textarea,select,button,a,[contenteditable=true],.tour360__map')) return; const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) e.preventDefault(); if (k === 'arrowup' || k === 'w') goForward(); else if (k === 'arrowdown' || k === 's') goBack(); else if (k === 'arrowleft' || k === 'a') setYaw(v => wrapAngle(v - 18)); else if (k === 'arrowright' || k === 'd') setYaw(v => wrapAngle(v + 18)); }; window.addEventListener('keydown', key, { passive: false }); return () => window.removeEventListener('keydown', key) }, [goForward, goBack, panel]);
     const visible = [...(scene?.hotspots || []), ...puzzleHazards.filter(h => h.locationId === scene?.locationId).map(h => ({ ...h, type: "hazard" }))].map(h => ({ h, pos: projectHotspot(h, yaw, pitch, fov, size.w, size.h) })).filter(x => x.pos);
     const toggleFullscreen = () => { if (!document.fullscreenElement) stageRef.current?.requestFullscreen?.(); else document.exitFullscreen?.() };
-    const mapScenes = scenes.filter(s => MAP_LOCATION_IDS.includes(s.locationId));
-    const mapLines = [];
-    for (let i = 0; i < mapScenes.length - 1; i++) {
-        const a = mapScenes[i], b = mapScenes[i + 1];
-        const dx = b.mapX - a.mapX, dy = b.mapY - a.mapY, len = Math.hypot(dx, dy), angle = Math.atan2(dy, dx) * 180 / Math.PI;
-        mapLines.push(<span key={`${a.locationId}-${b.locationId}`} className="tour360__map-line" style={{ left: `${a.mapX}%`, top: `${a.mapY}%`, width: `${len}%`, transform: `rotate(${angle}deg)` }} />);
+    const mappedScenes = scenes.filter(s => MAP_LOCATION_IDS.includes(s.locationId));
+    // Custom API uploads may have area IDs outside the bundled navigation map.
+    const mapScenes = mappedScenes.length ? mappedScenes : scenes;
+    const previewScene = scenes.find(s => s.locationId === previewId) || scene;
+    const previewOptions = mapScenes.some(s => s.locationId === scene.locationId)
+        ? mapScenes : [scene, ...mapScenes];
+    const mapLinks = [];
+    const linkedLocations = new Set();
+    for (const source of mapScenes) {
+        for (const targetId of source.connectedLocations || []) {
+            const target = mapScenes.find(item => item.locationId === targetId);
+            if (!target) continue;
+            const key = [source.locationId, target.locationId].sort().join(":");
+            if (linkedLocations.has(key)) continue;
+            linkedLocations.add(key);
+            mapLinks.push(
+                <line
+                    key={key}
+                    x1={source.mapX}
+                    y1={source.mapY}
+                    x2={target.mapX}
+                    y2={target.mapY}
+                />
+            );
+        }
     }
     return <div className={`tour360 ${embedded ? "tour360--embedded" : ""}`}>
 
@@ -147,7 +200,71 @@ export default function Trainee360Environment({ embedded = false, puzzleHazards 
             {visible.map(({ h, pos }) => <button key={h.id} className={`tour360__hotspot ${h.type === 'hazard' ? 'border-amber-300 bg-amber-700 text-white' : 'tour360__hotspot--navigation'}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={() => h.type === 'hazard' ? onHazardSelect?.(h) : go(h.targetLocationId)}><span className="tour360__hotspot-icon">{h.type === 'hazard' ? solvedHazards.includes(h.id) ? '✓' : '⌕' : '➜'}</span>{h.type === 'hazard' ? solvedHazards.includes(h.id) ? `${h.label} · resolved` : h.label : h.label}</button>)}
             <div className="tour360__controls"><button className="tour360__control" title="Return to entrance" onClick={() => go("entrance")}>⌂</button><button className="tour360__control" title="Zoom in" onClick={() => setFov(v => Math.max(45, v - 8))}>+</button><button className="tour360__control" title="Zoom out" onClick={() => setFov(v => Math.min(105, v + 8))}>−</button><button className="tour360__control" title="Fullscreen" onClick={toggleFullscreen}>⛶</button><button className="tour360__control" title="Help" onClick={() => setPanel({ title: "How to use the 360° tour", type: "training", content: "Game-style controls: press ↑ or W repeatedly to continue forward through the warehouse route, ↓ or S to return to the previous checkpoint, and ←/A or →/D to turn. You can also drag to look around, use the mouse wheel to zoom, click blue navigation arrows, or click a point on the warehouse map." })}>?</button></div>
             <div className="tour360__hint">Drag to look • Arrow keys move • Scroll to zoom</div><div className="tour360__gamepad" aria-label="Keyboard navigation"><button title="Move forward (↑ / W)" onClick={goForward}>↑</button><button title="Turn left (← / A)" onClick={() => setYaw(v => wrapAngle(v - 18))}>←</button><button title="Move backward (↓ / S)" onClick={goBack}>↓</button><button title="Turn right (→ / D)" onClick={() => setYaw(v => wrapAngle(v + 18))}>→</button></div>
-            <div className="tour360__map"><div className="tour360__map-title">WAREHOUSE MAP</div><div className="tour360__map-box">{mapLines}{mapScenes.map(s => <span key={s.locationId}><button aria-label={`Go to ${s.name}`} title={`Go to ${s.name}`} onClick={() => go(s.locationId)} className={`tour360__map-node ${s.locationId === scene.locationId ? "active" : ""}`} style={{ left: `${s.mapX}%`, top: `${s.mapY}%` }} /><button className={`tour360__map-label ${s.locationId === scene.locationId ? "active" : ""}`} style={{ left: `${s.mapX}%`, top: `${s.mapY}%` }} onClick={() => go(s.locationId)}>{s.locationId === scene.locationId ? `You are here · ${s.name}` : s.name}</button></span>)}</div></div>
+            <section className={`tour360__map ${mapExpanded ? "tour360__map--expanded" : ""}`} aria-label="Warehouse navigation map and 360 degree preview">
+                <div className="tour360__map-header">
+                    <span className="tour360__map-heading">WAREHOUSE MAP</span>
+                    <button type="button" className="tour360__map-expand" aria-label={mapExpanded ? "Shrink warehouse map" : "Expand warehouse map"} aria-pressed={mapExpanded} onClick={() => setMapExpanded(v => !v)} title={mapExpanded ? "Shrink map" : "Expand map"}>{mapExpanded ? "↙" : "⤢"}</button>
+                </div>
+                <div className="tour360__map-tabs" role="group" aria-label="Map display mode">
+                    <button type="button" className={mapMode === "floor" ? "is-active" : ""} aria-pressed={mapMode === "floor"} onClick={() => setMapMode("floor")}>⌖ &nbsp;Floor map</button>
+                    <button type="button" className={mapMode === "panorama" ? "is-active" : ""} aria-pressed={mapMode === "panorama"} onClick={() => { choosePreview(scene.locationId); setMapMode("panorama"); }}>◉ &nbsp;360° view</button>
+                </div>
+                {mapMode === "floor" ? (
+                    <div className="tour360__map-box" role="group" aria-label="Select a warehouse location">
+                        <svg className="tour360__map-connections" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                            {mapLinks}
+                        </svg>
+                        {mapScenes.map(s => (
+                            <button
+                                key={s.locationId}
+                                type="button"
+                                aria-label={`Go to ${s.name}`}
+                                aria-current={s.locationId === scene.locationId ? "location" : undefined}
+                                title={s.name}
+                                data-label={s.name}
+                                onClick={() => go(s.locationId)}
+                                className={`tour360__map-node ${s.locationId === scene.locationId ? "active" : ""}`}
+                                style={{ left: `${s.mapX}%`, top: `${s.mapY}%` }}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="tour360__map-preview">
+                        <label className="tour360__map-select-label" htmlFor="warehouse-360-preview-location">Explore location</label>
+                        <select id="warehouse-360-preview-location" className="tour360__map-select" value={previewScene.locationId} onChange={e => choosePreview(e.target.value)}>
+                            {previewOptions.map(s => <option key={s.locationId} value={s.locationId}>{s.name}</option>)}
+                        </select>
+                        <div className="tour360__map-panorama" aria-label={`Interactive 360 degree preview of ${previewScene.name}`}>
+                            <PanoramaCanvas
+                                src={previewScene.panorama}
+                                yaw={previewYaw}
+                                pitch={previewPitch}
+                                fov={previewFov}
+                                onImageError={() => setPreviewFailed(true)}
+                                onViewChange={(nextYaw, nextPitch, nextFov) => {
+                                    setPreviewYaw(nextYaw);
+                                    setPreviewPitch(nextPitch);
+                                    setPreviewFov(nextFov);
+                                }}
+                            />
+                            <div className="tour360__map-view-label">360° INTERACTIVE</div>
+                            {previewFailed && <span className="tour360__map-view-error">Preview unavailable</span>}
+                            <div className="tour360__map-camera-controls" aria-label="Preview camera controls">
+                                <button type="button" aria-label="Turn 360 preview left" title="Look left" onClick={() => setPreviewYaw(v => wrapAngle(v - 30))}>←</button>
+                                <button type="button" aria-label="Reset 360 preview view" title="Reset view" onClick={() => { setPreviewYaw(0); setPreviewPitch(0); setPreviewFov(78); }}>⟳</button>
+                                <button type="button" aria-label="Turn 360 preview right" title="Look right" onClick={() => setPreviewYaw(v => wrapAngle(v + 30))}>→</button>
+                            </div>
+                        </div>
+                        <div className="tour360__map-preview-hint">Drag to look around · Scroll to zoom</div>
+                    </div>
+                )}
+                <div className="tour360__map-bottom">
+                    <div className="tour360__map-current"><span className="tour360__map-pulse" /> <span title={mapMode === "floor" ? scene.name : previewScene.name}>{mapMode === "floor" ? scene.name : previewScene.name}</span></div>
+                    {mapMode === "panorama" && previewScene.locationId !== scene.locationId && (
+                        <button type="button" className="tour360__map-go" onClick={() => go(previewScene.locationId)}>Visit area <span aria-hidden="true">↗</span></button>
+                    )}
+                </div>
+            </section>
             {apiNote && <div className="tour360__error">{apiNote}</div>}
             {panel && <div className="tour360__panel-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setPanel(null) }}><aside className="tour360__panel"><div className="tour360__panel-head"><div><div className="tour360__panel-kicker">Interactive Logistics Warehouse</div><h2>{panel.title || panel.label}</h2></div><button className="tour360__close" onClick={() => setPanel(null)}>×</button></div><p>{panel.content}</p>{panel.activityType && <button className="tour360__action" onClick={() => setPanel({ ...panel, title: "Activity ready", content: `This warehouse tour is for navigation only. Training scenarios remain inside the relevant training programme.` })}>Start training activity</button>}</aside></div>}
         </main>

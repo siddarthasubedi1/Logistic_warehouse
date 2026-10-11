@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import {
     NavLink,
 } from "react-router-dom";
@@ -262,6 +263,7 @@ function SidebarLink({
         <NavLink
             to={to}
             end={end}
+            preventScrollReset={true}
             onClick={onNavigate}
             className={({
                 isActive,
@@ -288,10 +290,15 @@ function SidebarLink({
 }
 
 
+// Scroll offsets survive route changes; the shell may unmount/remount Sidebar.
+const sidebarScrollPositions = new Map();
+
 function Sidebar({
     role,
     onNavigate,
 }) {
+    const navigationRef = useRef(null);
+
     const normalizedRole =
         String(role || "")
             .trim()
@@ -503,6 +510,20 @@ function Sidebar({
     }
 
 
+    // Restore before browser paint; do not jump the nav to Dashboard when
+    // opening Notifications or other routes farther down the menu.
+    useLayoutEffect(() => {
+        const navigation = navigationRef.current;
+        if (!navigation) return undefined;
+        navigation.scrollTop = sidebarScrollPositions.get(normalizedRole) || 0;
+        const save = () => sidebarScrollPositions.set(normalizedRole, navigation.scrollTop);
+        navigation.addEventListener("scroll", save, { passive: true });
+        return () => {
+            save();
+            navigation.removeEventListener("scroll", save);
+        };
+    }, [normalizedRole]);
+
     const roleTitle =
         normalizedRole ===
             "admin"
@@ -535,7 +556,7 @@ function Sidebar({
 
             {/* LINKS */}
 
-            <nav className="sidebar__nav">
+            <nav className="sidebar__nav" ref={navigationRef}>
 
                 <div className="sidebar__links">
 

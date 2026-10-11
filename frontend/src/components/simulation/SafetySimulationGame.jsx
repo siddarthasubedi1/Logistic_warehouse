@@ -188,7 +188,7 @@ export default function SafetySimulationGame({ gameId, previewGame = null, onExi
               </button>;
             })}</div>
           </div>
-          {selected && !paused && <section className={`sim-interaction sim-card ${['workstation', 'email', 'file', 'device'].includes(selected.type) ? 'sim-interaction--digital' : ''}`} aria-labelledby='sim-object-heading' onKeyDown={event => { if (event.key === 'Escape') setObjectId(''); }}>
+          {selected && !paused && <section className={`sim-interaction sim-card ${['workstation', 'email', 'file', 'device'].includes(selected.type) ? 'sim-interaction--digital' : ''}`} role='region' aria-labelledby='sim-object-heading' onKeyDown={event => { if (event.key === 'Escape') setObjectId(''); }}>
             <div className='sim-interaction-heading'><div><span className='sim-eyebrow'>{selected.type}</span><h2 id='sim-object-heading'>{selected.name}</h2></div><button ref={lastControlRef} type='button' className='sim-button sim-button--light' aria-label='Close object controls' onClick={() => setObjectId('')}>×</button></div>
             <div className='sim-object-detail'>
               <figure className='sim-object-figure'><button type='button' className='sim-image-inspect' aria-label={`Enlarge image of ${selected.name}`} onClick={() => imageDialogRef.current?.showModal()}><SimulationImage className='sim-object-image' src={selectedVisual.src} fallback={selectedVisual.fallback} alt={selectedVisual.alt} /><span>Enlarge image ↗</span></button><figcaption>{selected.imageUrl ? 'Object reference image' : 'Training illustration'} · {selected.name}</figcaption></figure>

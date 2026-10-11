@@ -5,15 +5,10 @@ import {
     getSessionUser,
     updateSessionUser,
 } from "../../utils/session";
-import {
-    initializeDisplayMode,
-    rememberDisplayMode,
-} from "../../utils/theme";
+import useDisplayMode from "../../hooks/useDisplayMode";
 
 function ThemeToggle() {
-    const [displayMode, setDisplayMode] = useState(() =>
-        initializeDisplayMode(getSessionUser())
-    );
+    const [displayMode, setDisplayMode] = useDisplayMode();
     const [saving, setSaving] = useState(false);
 
     const toggle = async () => {
@@ -23,7 +18,6 @@ function ThemeToggle() {
         const next = previous === "dark" ? "light" : "dark";
 
         setDisplayMode(next);
-        rememberDisplayMode(next);
         setSaving(true);
 
         const currentUser = getSessionUser();

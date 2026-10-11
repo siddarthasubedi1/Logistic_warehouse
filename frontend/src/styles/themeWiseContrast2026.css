@@ -1,0 +1,133 @@
+/* Theme-aware contrast refinement (both themes, all role dashboards).
+   This is a PALETTE refinement, not another blanket text-color override.
+   Preserve white-on-navy banners, photo hotspots, map lettering and status colors. */
+:root,
+html[data-theme="light"] {
+  --text-main: #172033;
+  --text-secondary: #354963;
+  --text-muted: #4b6079;
+  --ui-text: #172033;
+  --ui-text-strong: #101c2e;
+  --ui-text-muted: #3d526b;
+  --ui-text-subtle: #50647d;
+  --ux-readable: #273a52;
+  --ux-subtle: #435974;
+  --readable-secondary: #354963;
+  --readable-muted: #4b6079;
+  --ui-border: #bfcede;
+  --ui-border-strong: #9eb2ca;
+  --ui-surface: #ffffff;
+  --ui-surface-soft: #f1f5fa;
+  --theme-action-hover: rgba(11,79,135,.075);
+  --theme-row-hover: rgba(11,79,135,.045);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --page-bg: #0c1524;
+  --page-bg-top: #101d30;
+  --text-main: #eaf1fa;
+  --text-secondary: #d1dff0;
+  --text-muted: #b7cae0;
+  --ui-text: #eaf1fa;
+  --ui-text-strong: #f5f9ff;
+  --ui-text-muted: #cfdef0;
+  --ui-text-subtle: #b8cee5;
+  --ux-readable: #eaf1fa;
+  --ux-subtle: #cbdaec;
+  --readable-secondary: #d1dff0;
+  --readable-muted: #b7cae0;
+  --ui-bg: #0c1524;
+  --ui-bg-top: #101d30;
+  --ui-surface: #17273d;
+  --ui-surface-soft: #21334b;
+  --ui-border: #415c78;
+  --ui-border-strong: #607e9f;
+  --theme-action-hover: rgba(109,177,255,.13);
+  --theme-row-hover: rgba(109,177,255,.085);
+}
+/* Page chrome and ordinary content only; dark/photographic in-content widgets
+   own their text colors and are purposefully not blanket-targeted. */
+.app-shell .app-page-header__subtitle,
+.app-shell .app-mobile-header__subtitle,
+.app-shell .app-section-description { color:var(--readable-secondary); }
+.app-shell .app-page-header__admin-copy span {color:var(--readable-muted);}
+.app-shell .app-content :is(input,textarea)::placeholder {color:var(--readable-muted);opacity:1;}
+.app-shell .app-content :is(input,select,textarea) {border-color:var(--ui-border);}
+.app-shell .app-content :is(input,select,textarea):hover {border-color:var(--ui-border-strong);}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500) {color:#4b6079 !important;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-600,.text-gray-600) {color:#354963 !important;}
+html[data-theme="dark"] .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-slate-600,.text-gray-600) {color:#b7cae0 !important;}
+/* Controls and table rows receive theme-appropriate restrained hover feedback. */
+.app-shell .app-content table tbody tr:hover {background-color:var(--theme-row-hover);}
+.app-shell .app-content :is(input,select,textarea):focus-visible {outline:2px solid #55a0ff;outline-offset:2px;}
+.app-shell .sidebar-link:not(.sidebar-link--active):hover {background-color:var(--theme-action-hover);}
+/* The map remains on its restored original compact font scale. */
+.tour360 .tour360__map-label,
+.tour360--embedded .tour360__map-label {font-size:7px !important;}
+.tour360 .tour360__map-title,
+.tour360--embedded .tour360__map-title {font-size:11px !important;}
+@media(prefers-reduced-motion:reduce){.app-shell .sidebar-link{transition:none;}}
+
+/* Light theme only: modestly deepen ordinary content, not white-on-navy UI.
+   Do not target headings globally: banners and panoramic hotspots own their colors. */
+html:not([data-theme="dark"]) {
+  --text-main: #142035;
+  --text-secondary: #2e415b;
+  --text-muted: #415672;
+  --ui-text: #142035;
+  --ui-text-strong: #101b2e;
+  --ui-text-muted: #344b66;
+  --ui-text-subtle: #435973;
+  --ux-readable: #223650;
+  --ux-subtle: #354c68;
+  --readable-secondary: #2e415b;
+  --readable-muted: #415672;
+  --final-text-main: #142035;
+  --final-text-strong: #101b2e;
+  --final-text-soft: #344962;
+  --final-text-muted: #415672;
+  --final-text-placeholder: #536780;
+}
+html:not([data-theme="dark"]) .app-shell .app-page-header__subtitle,
+html:not([data-theme="dark"]) .app-shell .app-mobile-header__subtitle,
+html:not([data-theme="dark"]) .app-shell .app-page-header__admin-copy span,
+html:not([data-theme="dark"]) .app-shell .app-section-description {
+  color: #344962;
+}
+html:not([data-theme="dark"]) .app-shell .app-content :is(input,textarea)::placeholder {
+  color: #536780;
+  opacity: 1;
+}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500) {
+  color: #415672 !important;
+}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-600,.text-gray-600) {
+  color: #344962 !important;
+}
+/* Keep the warehouse map typography and dark-background hotspot/lesson lettering unchanged. */
+
+/* 2026-10-08: stronger light-theme text contrast only.
+   Deliberately exclude panorama overlays, hero banners and status colors. */
+html:not([data-theme="dark"]) {
+  --text-main: #111c30;
+  --text-secondary: #25374f;
+  --text-muted: #334961;
+  --ui-text: #111c30;
+  --ui-text-strong: #0d1729;
+  --ui-text-muted: #293d55;
+  --ui-text-subtle: #344b63;
+  --readable-secondary: #25374f;
+  --readable-muted: #334961;
+  --final-text-main: #111c30;
+  --final-text-strong: #0d1729;
+  --final-text-soft: #283c54;
+  --final-text-muted: #344b63;
+  --final-text-placeholder: #455a72;
+}
+html:not([data-theme="dark"]) .app-shell :is(.app-page-header__subtitle,.app-mobile-header__subtitle,.app-section-description,.app-page-header__admin-copy span) {
+  color: #283c54;
+}
+html:not([data-theme="dark"]) .app-shell .app-content :is(input,textarea)::placeholder {color:#455a72;opacity:1;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500) {color:#344b63 !important;}
+html:not([data-theme="dark"]) .app-shell .app-content :is(.text-slate-600,.text-gray-600) {color:#283c54 !important;}
+/* Avoid blanket p/h overrides: white-on-blue content must remain white. */

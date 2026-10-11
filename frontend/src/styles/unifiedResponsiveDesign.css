@@ -1,0 +1,352 @@
+/*
+ * UK LogiWare | Shared design system, October 2026
+ * Intentionally loaded LAST so all Sprint 1–4 pages receive the same readable
+ * typography, semantic contrast, focus treatments, responsive behaviour and
+ * theme-aware interaction patterns. No gameplay, panorama coordinates, app
+ * routing, permissions or backend logic are changed by this file.
+ *
+ * Component targets are deliberately scoped to the application surface.
+ * Immersive 360° overlay/wayfinding labels stay spatially small by design.
+ */
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --lw-canvas: #f3f6fb;
+  --lw-canvas-deep: #edf2f8;
+  --lw-surface: #ffffff;
+  --lw-surface-raised: #ffffff;
+  --lw-surface-soft: #f4f7fc;
+  --lw-ink: #152137;
+  --lw-ink-strong: #101a2c;
+  --lw-ink-secondary: #34465e;
+  --lw-ink-muted: #465a74;
+  --lw-line: #ccd8e8;
+  --lw-line-strong: #9ab3d0;
+  --lw-primary: #145eac;
+  --lw-primary-hover: #0b4f87;
+  --lw-action-on: #ffffff;
+  --lw-link: #1359a6;
+  --lw-hover-fill: #eaf3ff;
+  --lw-selected-fill: #e5f0ff;
+  --lw-row-hover: #eef5fd;
+  --lw-shadow: 0 2px 7px rgba(19,43,77,.05),0 12px 30px rgba(19,43,77,.035);
+  --lw-shadow-hover: 0 10px 28px rgba(25,55,95,.12);
+  --lw-focus: #287bee;
+  --page-bg: var(--lw-canvas);
+  --page-bg-top: #f8faff;
+  --text-main: var(--lw-ink);
+  --text-secondary: var(--lw-ink-secondary);
+  --text-muted: var(--lw-ink-muted);
+  --readable-heading: var(--lw-ink-strong);
+  --readable-body: var(--lw-ink);
+  --readable-secondary: var(--lw-ink-secondary);
+  --readable-subtle: var(--lw-ink-muted);
+  --readable-outline: var(--lw-line);
+  --readable-surface: var(--lw-surface);
+  --readable-surface-soft: var(--lw-surface-soft);
+  --ui-surface: var(--lw-surface);
+  --ui-surface-soft: var(--lw-surface-soft);
+  --ui-border: var(--lw-line);
+  --ui-text: var(--lw-ink);
+  --ui-text-strong: var(--lw-ink-strong);
+  --ui-text-muted: var(--lw-ink-secondary);
+  --ui-text-subtle: var(--lw-ink-muted);
+  --sidebar-width: 244px;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --lw-canvas: #0c1625;
+  --lw-canvas-deep: #101d30;
+  --lw-surface: #17283c;
+  --lw-surface-raised: #1c2e44;
+  --lw-surface-soft: #233750;
+  --lw-ink: #e8f0fb;
+  --lw-ink-strong: #f7faff;
+  --lw-ink-secondary: #cbd9eb;
+  --lw-ink-muted: #b9cbe0;
+  --lw-line: #45607f;
+  --lw-line-strong: #7598bd;
+  --lw-primary: #4c9cff;
+  --lw-primary-hover: #80baff;
+  --lw-action-on: #101a2c;
+  --lw-link: #92c8ff;
+  --lw-hover-fill: #274665;
+  --lw-selected-fill: #20486d;
+  --lw-row-hover: #253d58;
+  --lw-shadow: 0 3px 9px rgba(0,0,0,.16),0 12px 26px rgba(0,0,0,.11);
+  --lw-shadow-hover: 0 12px 28px rgba(0,0,0,.30);
+  --lw-focus: #9bc6ff;
+  --page-bg: var(--lw-canvas);
+  --page-bg-top: #101e31;
+  --text-main: var(--lw-ink);
+  --text-secondary: var(--lw-ink-secondary);
+  --text-muted: var(--lw-ink-muted);
+  --readable-heading: var(--lw-ink-strong);
+  --readable-body: var(--lw-ink);
+  --readable-secondary: var(--lw-ink-secondary);
+  --readable-subtle: var(--lw-ink-muted);
+  --readable-outline: var(--lw-line);
+  --readable-surface: var(--lw-surface);
+  --readable-surface-soft: var(--lw-surface-soft);
+  --ui-surface: var(--lw-surface);
+  --ui-surface-soft: var(--lw-surface-soft);
+  --ui-border: var(--lw-line);
+  --ui-text: var(--lw-ink);
+  --ui-text-strong: var(--lw-ink-strong);
+  --ui-text-muted: var(--lw-ink-secondary);
+  --ui-text-subtle: var(--lw-ink-muted);
+  --sidebar-width: 244px;
+}
+
+/* The browser base is the body-copy size, not a 9- or 10px Figma mockup. */
+html { font-size: 16px; }
+body, #root { font-size: 16px; color:var(--lw-ink); background:var(--lw-canvas); }
+body { line-height:1.58; }
+.app-shell, .app-content, .app-page { color:var(--lw-ink); }
+.app-shell, .app-content, .app-page {
+  background-color:var(--lw-canvas);
+  background-image:linear-gradient(180deg, var(--page-bg-top),var(--lw-canvas));
+}
+.app-page-header, .app-mobile-header { background:var(--lw-surface); border-bottom:1px solid var(--lw-line); }
+.app-page-header { padding:20px clamp(22px,2.4vw,36px); min-height:96px; }
+.app-page-header__title { font-size:clamp(25px,1.9vw,31px) !important; line-height:1.2; color:var(--lw-ink-strong) !important; letter-spacing:-.025em; }
+.app-page-header__subtitle, .app-mobile-header__subtitle { font-size:15px !important; line-height:1.6; color:var(--lw-ink-secondary) !important; margin-top:5px; }
+.app-page-header__admin-copy :is(strong,span) {font-size:14px;}
+.app-page-header__admin-copy span {color:var(--lw-ink-secondary);}
+.app-mobile-header__title {color:var(--lw-ink-strong);font-size:17px;font-weight:750;}
+.app-content { min-width:0; }
+.app-content > :where(.app-page,.admin-page,.profile-figma-page) { max-width:100%; }
+.app-section-title {font-size:21px;line-height:1.32;font-weight:750;color:var(--lw-ink-strong);}
+.app-section-description {font-size:15px !important;line-height:1.6;color:var(--lw-ink-secondary) !important;}
+.app-shell .sidebar-link {font-size:15px !important;min-height:47px;line-height:1.4;}
+.app-shell .sidebar-role-card__title {font-size:15px;}
+.app-shell .sidebar-role-card__description {font-size:13px;line-height:1.6;}
+
+/* Consistent text hierarchy for ordinary cards, tables, forms and dashboard
+   panels. Avoid overwriting icons, fullscreen exercises, charts and 360 labels. */
+.app-content :where(p, li, dd, dt) { line-height:1.65; }
+.app-content :where(label, th, td, input, select, textarea, summary) {font-size:15px;}
+.app-content :where(button) {font-size:15px;}
+.app-content :where(.text-xs,
+  [class~="text-[6px]"],[class~="text-[7px]"],[class~="text-[8px]"],
+  [class~="text-[9px]"],[class~="text-[10px]"],[class~="text-[11px]"],
+  [class~="text-[12px]"],[class~="text-[13px]"]
+):not(:is(.tour360 *, .tour360--embedded *, .puzzle360-scene *, .panorama-canvas *, .module360 *, .training360-flow__map *, .sim-image-hotspot *, svg *)) {
+  font-size:14px !important;
+  line-height:1.5;
+}
+.app-content :where(.text-sm,[class~="text-[14px]"],[class~="text-[15px]"]):not(:is(.tour360 *, .tour360--embedded *, .module360 *, .panorama-canvas *)) {
+  font-size:16px !important;
+  line-height:1.6;
+}
+.app-content :where(.text-base,[class~="text-[16px]"]) {font-size:16px;line-height:1.6;}
+.app-content :where(.text-lg,[class~="text-[18px]"]) {font-size:19px;line-height:1.45;}
+.app-content :where(.text-xl,[class~="text-[20px]"]) {font-size:22px;line-height:1.35;}
+.app-content :where(.text-2xl,[class~="text-[22px]"]) {font-size:clamp(25px,2vw,30px);line-height:1.25;}
+.app-content :where(.text-3xl) {font-size:clamp(29px,2.4vw,37px);line-height:1.2;}
+.app-content :where(.font-bold,.font-semibold) {letter-spacing:-.006em;}
+
+/* Text utilities and hard-coded supporting colors in old admin/trainer/trainee
+   pages: replace only low-contrast colors, not status or white-on-navy. */
+html[data-theme="light"] .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,
+  [class*="text-[#64748b]"],[class*="text-[#94a3b8]"],[class*="text-[#52627a]"]):not(:is(.training-programmes-hero *, .immersive-overlay *, .immersive-card *, .tour360 *, .training360-flow__intro *, .profile-security-banner *)) {
+  color:var(--lw-ink-muted) !important;
+}
+html[data-theme="light"] .app-content :is(.text-slate-600,.text-gray-600,
+  [class*="text-[#475569]"],[class*="text-[#334155]"]):not(:is(.training-programmes-hero *, .immersive-overlay *, .tour360 *, .profile-security-banner *)) {
+  color:var(--lw-ink-secondary) !important;
+}
+html[data-theme="dark"] .app-content :is(.text-slate-400,.text-slate-500,.text-gray-400,.text-gray-500,.text-slate-600,.text-gray-600,
+  [class*="text-[#64748b]"],[class*="text-[#94a3b8]"],[class*="text-[#52627a]"],[class*="text-[#475569]"],
+  [class*="text-[#334155]"],[class*="text-[#172033]"]):not(:is(.training-programmes-hero *, .immersive-overlay *, .immersive-card *, .tour360 *, .profile-security-banner *)) {
+  color:var(--lw-ink-secondary) !important;
+}
+
+/* Interactive elements: clear affordance in BOTH palettes, visible focus and
+   gentle hover movement only where a pointer actually supports hover. */
+.app-shell :is(button,a,select,input,textarea), .figma-login-page :is(button,a,input) {
+  transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease,transform .18s ease;
+}
+.app-shell :is(button,a,input,select,textarea,[role="button"]):focus-visible,
+.figma-login-page :is(button,a,input,[role="button"]):focus-visible {
+  outline:3px solid var(--lw-focus) !important;
+  outline-offset:3px;
+}
+.app-shell .app-content :where(input,select,textarea) {
+  min-height:46px;
+  border:1px solid var(--lw-line);
+  border-radius:9px;
+  background:var(--lw-surface);
+  color:var(--lw-ink);
+  font-size:16px;
+}
+.app-shell .app-content :where(input,textarea)::placeholder {color:var(--lw-ink-muted) !important;opacity:1;}
+.app-shell .app-content :where(input,select,textarea):hover {border-color:var(--lw-line-strong);}
+.app-shell .app-content :where(input,select,textarea):focus {border-color:var(--lw-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--lw-focus) 19%,transparent);}
+.app-shell .app-content :where(button:not(:disabled),a[class]):active {transform:translateY(0);filter:brightness(.96);}
+.app-shell :is(button:disabled,[aria-disabled="true"]) {cursor:not-allowed;}
+
+/* The generic surfaces share depths and a subtle hover response. Rows do not
+   translate because tables must remain stable under cursor and keyboard. */
+.app-content :is(.app-card,.designer-card,.designer-role-card,.training-module-card,
+  .trainer-panel,.trainer-stat-card,.trainer-module-row,.admin-stat-card,.sim-card,
+  .training-card,.learning-card,.report-card,.dashboard-card) {
+  box-shadow:var(--lw-shadow);
+  border-color:var(--lw-line);
+  transition:box-shadow .2s ease,border-color .2s ease,background-color .2s ease,transform .2s ease;
+}
+.app-content :where(table) {font-size:15px;line-height:1.55;}
+.app-content :where(th) {font-size:14px !important;font-weight:750;line-height:1.5;}
+.app-content :where(td) {font-size:15px !important;line-height:1.6;}
+.app-content table tbody tr {transition:background-color .18s ease;}
+.app-content table tbody tr:hover {background-color:var(--lw-row-hover) !important;}
+.app-content :where(.overflow-x-auto,.designer-table-scroll,.table-wrapper,.table-responsive,.table-scroll) {scrollbar-width:thin;scrollbar-color:var(--lw-line-strong) transparent;}
+.app-content :where(.overflow-x-auto,.designer-table-scroll,.table-wrapper,.table-responsive,.table-scroll):focus-visible {outline:3px solid var(--lw-focus);outline-offset:3px;}
+
+/* Responsive shell: more comfortable readable navigation and content gutters. */
+@media(min-width:1024px) {
+  .app-sidebar-desktop,.app-sidebar-desktop__fixed {width:var(--sidebar-width);}
+  .app-sidebar-desktop {flex-basis:var(--sidebar-width);}
+  .app-main {width:calc(100% - var(--sidebar-width));}
+}
+@media(max-width:1279px) and (min-width:1024px) {
+  :root, html[data-theme="dark"] {--sidebar-width:218px;}
+  .app-page {padding:20px 22px 32px;}
+}
+@media(max-width:1023px) {
+  .app-main {width:100%;}
+  .app-content {min-width:0;}
+  .app-page-header {padding:18px 20px;}
+  .app-mobile-header {min-height:70px;padding:12px 17px;}
+}
+@media(max-width:767px) {
+  .app-page {padding:18px 15px 30px;}
+  .app-content :where(.grid.lg\:grid-cols-3,.grid.md\:grid-cols-3) {grid-template-columns:repeat(1,minmax(0,1fr));}
+  .app-content :where(.grid.lg\:grid-cols-4,.grid.md\:grid-cols-4) {grid-template-columns:repeat(1,minmax(0,1fr));}
+  .app-content :where(.flex.items-center.justify-between) {row-gap:12px;}
+  .app-content :where(.app-card,.designer-card) {border-radius:12px;}
+  .app-content :where(.overflow-x-auto,.designer-table-scroll,.table-wrapper,.table-responsive,.table-scroll) {max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+}
+@media(max-width:479px) {
+  .app-shell .app-content :where(button) {min-height:43px;}
+  .app-mobile-header__title {font-size:16px;}
+  .app-mobile-header__subtitle {font-size:13px !important;}
+}
+
+/* Theme-aware card/form surfaces for older pages with hard-coded white and
+   pale gray Tailwind utilities (their status-color pills retain semantics). */
+html[data-theme="dark"] .app-content :is(.app-card,.designer-card,.designer-role-card,.trainer-panel,
+  .trainer-stat-card,.trainer-module-row,.training-module-card,.training-management-shell,
+  .training-programmes-intro,.admin-page-card,.report-card,.dashboard-card,.learning-card) {
+  background-color:var(--lw-surface) !important;
+  color:var(--lw-ink);
+  border-color:var(--lw-line) !important;
+}
+html[data-theme="dark"] .app-content :is(.bg-white,.bg-slate-50,.bg-slate-100,[class*="bg-[#f8fafc]"],[class*="bg-[#f5f7fb]"]):not(:is(.training-programmes-hero *, .profile-security-banner *, .immersive-overlay *, .immersive-card *, .tour360 *, .training360-flow__intro *, .training360-flow__module *, .training360-flow__learn *)) {
+  background-color:var(--lw-surface) !important;
+}
+html[data-theme="dark"] .app-content :where(.border-slate-200,.border-slate-100,.border-[#dbe4ef],.border-[#cbd5e1]) {border-color:var(--lw-line) !important;}
+html[data-theme="dark"] .app-content :where(input,select,textarea) {background:var(--lw-canvas-deep) !important;color:var(--lw-ink-strong) !important;border-color:var(--lw-line) !important;}
+html[data-theme="dark"] .app-content :where(label,dt,th) {color:var(--lw-ink-secondary);}
+html[data-theme="dark"] .app-content :where(p,li,td,dd,small) {color:var(--lw-ink-secondary);}
+html[data-theme="dark"] .app-content :where(th) {background:var(--lw-surface-soft);color:var(--lw-ink-strong);}
+html[data-theme="dark"] .app-content :where([class*="bg-blue-50"]) {background:#233d5b !important;}
+html[data-theme="dark"] .app-content :where([class*="bg-emerald-50"]) {background:#123e33 !important;}
+html[data-theme="dark"] .app-content :where([class*="bg-amber-50"]) {background:#493820 !important;}
+html[data-theme="dark"] .app-content :where([class*="bg-red-50"]) {background:#482630 !important;}
+html[data-theme="dark"] .app-content :where(.text-blue-700,.text-blue-800) {color:#afd9ff !important;}
+html[data-theme="dark"] .app-content :where(.text-emerald-700,.text-green-700) {color:#a9f4d4 !important;}
+html[data-theme="dark"] .app-content :where(.text-red-700) {color:#ffd1d6 !important;}
+html[data-theme="dark"] .app-content :where(.text-amber-700) {color:#ffe4a1 !important;}
+html[data-theme="dark"] .app-content :where(.app-theme-toggle,.profile-back-button) {background:var(--lw-surface-raised);border-color:var(--lw-line);color:var(--lw-ink);}
+
+/* Buttons and visible primary links: consistent minimum hit area. */
+.app-shell .app-content :where(button,a[class*="button"],a[class*="btn"]) {min-height:42px;}
+.app-shell .app-content :where(.designer-primary-button,.designer-outline-button,.app-theme-toggle,.designer-role-card__button,.sim-button) {font-size:15px !important;}
+.app-theme-toggle {min-height:43px;border-radius:999px;border:1px solid var(--lw-line);}
+.app-theme-toggle__label {font-size:14px;font-weight:700;}
+.app-theme-toggle:hover {border-color:var(--lw-line-strong);box-shadow:0 5px 15px color-mix(in srgb,var(--lw-primary) 16%,transparent);}
+.app-theme-toggle[aria-pressed="true"] .app-theme-toggle__icon {color:#f4c985;}
+.app-theme-toggle[aria-pressed="false"] .app-theme-toggle__icon {color:var(--lw-primary);}
+
+/* Login: retain the warehouse photography, but make even secondary and feature
+   content comfortably readable and offer an unmistakable theme switch. */
+.figma-login-page {background:var(--lw-canvas);color:var(--lw-ink);}
+.figma-login-layout {grid-template-columns:minmax(0,51fr) minmax(0,49fr);}
+.figma-login-right {background:var(--lw-surface);padding-top:clamp(88px,9vh,140px);}
+.figma-login-logo-name {font-size:clamp(22px,1.55vw,28px);}
+.figma-login-logo-subtitle {font-size:11px;line-height:1.4;}
+.figma-login-brand-content {top:25%;max-width:640px;}
+.figma-login-brand-content h1,.figma-login-brand-content h2 {font-size:clamp(32px,2.7vw,49px);line-height:1.14;}
+.figma-login-brand-content > p {font-size:clamp(16px,1.05vw,18px);line-height:1.65;}
+.figma-login-feature h3 {font-size:clamp(15px,1vw,18px);}
+.figma-login-feature p {font-size:clamp(13px,.85vw,15px);line-height:1.5;color:#eaf4ff;}
+.figma-login-right .figma-login-heading h1 {font-size:clamp(30px,2.2vw,38px);}
+.figma-login-heading p,.figma-login-help button {font-size:16px;}
+.figma-login-field label {font-size:15px;}
+.figma-login-input input {font-size:16px;}
+.login-mode-toggle {font-size:14px;min-height:44px;box-shadow:var(--lw-shadow);}
+.login-mode-toggle:hover {transform:translateY(-2px);box-shadow:var(--lw-shadow-hover);}
+html[data-theme="dark"] .figma-login-right {background:#111e30;}
+html[data-theme="dark"] .figma-login-input {background:#1b2c43;border-color:var(--lw-line);}
+html[data-theme="dark"] .figma-login-input input {background:transparent;color:#fff;}
+html[data-theme="dark"] .figma-login-heading p {color:var(--lw-ink-secondary);}
+@media(max-width:950px) {
+  .figma-login-layout {display:flex;flex-direction:column;}
+  .figma-login-brand {display:block;min-height:260px;height:260px;flex:0 0 auto;}
+  .figma-login-brand-image {object-position:center 57%;}
+  .figma-login-logo {left:27px;top:21px;}
+  .figma-login-brand-content {position:absolute;top:auto;bottom:23px;left:27px;width:calc(100% - 54px);}
+  .figma-login-brand-content h1,.figma-login-brand-content h2 {font-size:clamp(27px,4.2vw,35px);}
+  .figma-login-brand-content > p {font-size:14px;line-height:1.45;margin-top:10px;}
+  .figma-login-features {display:none;}
+  .figma-login-right {min-height:0;flex:1;padding:86px 24px 56px;align-items:flex-start;}
+  .figma-login-form-container {width:100%;max-width:560px;margin:0 auto;transform:none;}
+}
+@media(max-width:480px) {
+  .figma-login-brand {height:215px;min-height:215px;}
+  .figma-login-brand-content {bottom:18px;}
+  .figma-login-brand-content h1,.figma-login-brand-content h2 {font-size:27px;}
+  .figma-login-brand-content > p {font-size:13px;max-width:340px;}
+  .figma-login-right {padding:88px 20px 42px;}
+  .login-mode-toggle {top:20px;right:20px;}
+}
+
+/* Uniform hover for navigation, cards, row links and tabs; no distracting
+   animation when reduced motion is requested. */
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .app-shell .sidebar-link:hover:not(.sidebar-link--active) {background:rgba(96,165,250,.20);transform:translateX(3px);}
+  .app-shell .app-content :is(.app-card,.designer-role-card,.training-module-card,.trainer-stat-card,.trainer-module-row,.training-card,.sim-card):hover {
+    box-shadow:var(--lw-shadow-hover);border-color:var(--lw-line-strong);transform:translateY(-2px);
+  }
+  .app-shell .app-content :where(button:not(:disabled),a[class]):hover {filter:brightness(1.055);}
+  .app-shell .app-content :where(.bg-white.border,a[class*="button"],button[class*="outline"]):hover {border-color:var(--lw-line-strong);}
+  html[data-theme="light"] .app-shell .app-content :where(.bg-white.border,button[class*="outline"]):hover {background-color:var(--lw-hover-fill);}
+  html[data-theme="dark"] .app-shell .app-content :where(.bg-white.border,button[class*="outline"]):hover {background-color:var(--lw-hover-fill);}
+  .app-shell .app-content :where(button:not(:disabled)):hover {box-shadow:0 3px 11px color-mix(in srgb,var(--lw-primary) 12%,transparent);}
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {transition-duration:.01ms !important;animation-duration:.01ms !important;scroll-behavior:auto !important;}
+}
+
+/* Final high-contrast fixes verified with light/dark desktop screenshots. */
+html[data-theme="dark"] .figma-login-brand-content h2 {color:#7bb4ff !important;}
+html[data-theme="dark"] .figma-forgot-row button,
+html[data-theme="dark"] .figma-login-help button {color:#a9d5ff !important;}
+html[data-theme="dark"] .figma-forgot-row button:hover,
+html[data-theme="dark"] .figma-login-help button:hover {color:#e1f0ff !important;text-decoration:underline;}
+html[data-theme="dark"] .app-shell--admin .designer-role-meta .role-active-dot {color:#78e6b0 !important;}
+
+/* Theme-matched secondary-button and data-row hover states (the legacy table
+   files assign solid cell backgrounds, so hovering the <tr> alone is not enough). */
+@media(hover:hover) {
+  html[data-theme="light"] .app-content table tbody tr:hover td,
+  html[data-theme="dark"] .app-content table tbody tr:hover td {
+    background-color:var(--lw-row-hover) !important;
+  }
+  html[data-theme="light"] .app-content :is(.designer-outline-button,.designer-role-card__button):not(:disabled):hover,
+  html[data-theme="dark"] .app-content :is(.designer-outline-button,.designer-role-card__button):not(:disabled):hover {
+    background-color:var(--lw-hover-fill) !important;
+    border-color:var(--lw-line-strong) !important;
+    color:var(--lw-ink-strong) !important;
+  }
+}

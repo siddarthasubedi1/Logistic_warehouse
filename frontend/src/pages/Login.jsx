@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import LoginBranding from "../components/auth/LoginBranding";
+import useDisplayMode from "../hooks/useDisplayMode";
 import LoginForm from "../components/auth/LoginForm";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
 import ForcePasswordChangeModal from "../components/auth/ForcePasswordChangeModal";
@@ -17,6 +18,12 @@ import "../styles/login.css";
 function Login() {
     const navigate =
         useNavigate();
+
+    const [displayMode, setDisplayMode] = useDisplayMode();
+    const toggleTheme = () => {
+        const next = displayMode === "dark" ? "light" : "dark";
+        setDisplayMode(next);
+    };
 
 
     const [
@@ -45,6 +52,16 @@ function Login() {
 
 
                 <section className="figma-login-right">
+                    <button
+                        type="button"
+                        className="login-mode-toggle"
+                        onClick={toggleTheme}
+                        aria-label={`Switch to ${displayMode === "dark" ? "light" : "dark"} mode`}
+                        aria-pressed={displayMode === "dark"}
+                    >
+                        <span aria-hidden="true">{displayMode === "dark" ? "☀" : "☾"}</span>
+                        {displayMode === "dark" ? "Light mode" : "Dark mode"}
+                    </button>
 
                     <div className="figma-login-form-container">
 
