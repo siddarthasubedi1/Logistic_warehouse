@@ -253,7 +253,7 @@ exports.createPuzzle = async (req, res) => {
     if (problem) return res.status(400).json({ message: problem });
     const puzzle = await Puzzle.create({ ...payload, createdBy: req.user.id });
     const challenge = await Challenge.create({ puzzle: puzzle._id, ...challengePayload(req.body.challenge || req.body), createdBy: req.user.id });
-    await writeAuditLog({ req, user: req.user, action: 'SPRINT3_PUZZLE_CREATED', status: 'success', details: { puzzleId: puzzle._id, programmeId } }).catch(() => {});
+    await writeAuditLog({ req, user: req.user, action: 'SPRINT3_PUZZLE_CREATED', status: 'success', details: { puzzleId: puzzle._id, programmeId } }).catch(() => { });
     res.status(201).json({ message: 'Puzzle activity created.', puzzle, challenge });
   } catch (error) {
     console.error('createPuzzle failed:', error);
@@ -277,7 +277,7 @@ exports.updatePuzzle = async (req, res) => {
     if (!challenge) challenge = new Challenge({ puzzle: puzzle._id, createdBy: req.user.id });
     Object.assign(challenge, challengePayload(req.body.challenge || req.body, challenge), { updatedBy: req.user.id });
     await challenge.save();
-    await writeAuditLog({ req, user: req.user, action: 'SPRINT3_PUZZLE_UPDATED', status: 'success', details: { puzzleId: puzzle._id } }).catch(() => {});
+    await writeAuditLog({ req, user: req.user, action: 'SPRINT3_PUZZLE_UPDATED', status: 'success', details: { puzzleId: puzzle._id } }).catch(() => { });
     res.json({ message: 'Puzzle activity updated.', puzzle, challenge });
   } catch (error) {
     console.error('updatePuzzle failed:', error);
@@ -439,8 +439,8 @@ exports.submitChallenge = async (req, res) => {
       const targets = challenge.puzzle.targets || [];
       const ids = new Set(challenge.puzzle.digitalProps.map(p => String(p.id)));
       if (!answers || typeof answers !== 'object' || Array.isArray(answers) || Object.keys(answers).length !== targets.length ||
-          !targets.every(t => Object.prototype.hasOwnProperty.call(answers, t.id) && ids.has(String(answers[t.id]))) ||
-          new Set(Object.values(answers).map(String)).size !== targets.length) {
+        !targets.every(t => Object.prototype.hasOwnProperty.call(answers, t.id) && ids.has(String(answers[t.id]))) ||
+        new Set(Object.values(answers).map(String)).size !== targets.length) {
         return res.status(400).json({ code: 'INCOMPLETE_MATCH', message: 'Place each prop once and fill every target.' });
       }
     }
@@ -571,11 +571,13 @@ exports.hazardAction = async (req, res) => {
       - events.filter(e => !e.hint && !e.correct).reduce((sum, e) => sum + Number(challenge.puzzle.hazards.find(h => h.id === e.hazardId)?.penalty || challenge.incorrectPenalty), 0)
       - hintsUsed * challenge.hintPenalty;
     const timeBonus = complete ? Math.round(challenge.maxTimeBonus * Math.max(0, challenge.timeLimitSeconds - durationSeconds) / challenge.timeLimitSeconds) : 0;
-    const score = Math.max(0, Math.min(challenge.maxScore, raw + timeBonus + (complete ? challenge.completionBonus : 0))); 
+    const score = Math.max(0, Math.min(challenge.maxScore, raw + timeBonus + (complete ? challenge.completionBonus : 0)));
     const updated = await ChallengeAttempt.findOneAndUpdate({ _id: attempt._id, __v: attempt.__v, result: 'in-progress' }, {
-      $set: { hazardEvents: events, solvedHazards, answers: events.filter(e => !e.hint).map(e => ({ hazardId: e.hazardId, action: e.action })), errors, hintsUsed, score, accuracy: solvedHazards.length / challenge.puzzle.hazards.length,
-        ...(complete ? { result: 'completed', validityStatus: 'valid', finishedAt: new Date(), durationSeconds, feedback: challenge.puzzle.correctFeedback } : {}) }, $inc: { __v: 1 }
-    }, { new: true });
+      $set: {
+        hazardEvents: events, solvedHazards, answers: events.filter(e => !e.hint).map(e => ({ hazardId: e.hazardId, action: e.action })), errors, hintsUsed, score, accuracy: solvedHazards.length / challenge.puzzle.hazards.length,
+        ...(complete ? { result: 'completed', validityStatus: 'valid', finishedAt: new Date(), durationSeconds, feedback: challenge.puzzle.correctFeedback } : {})
+      }, $inc: { __v: 1 }
+    }, { returnDocument: 'after' });
     if (!updated) return res.status(409).json({ message: 'Attempt changed. Refresh to continue.' });
     const best = complete ? await maybeUpdatePersonalBest(updated, challenge) : { updated: false };
     res.json({ attempt: updated, correct, complete, feedback: correct ? hazard.correctFeedback || challenge.puzzle.correctFeedback : hint ? hazard.hint || challenge.puzzle.hint : hazard.incorrectFeedback || challenge.puzzle.incorrectFeedback, personalBestUpdated: best.updated });
@@ -611,20 +613,26 @@ exports.totalScores = async (req, res) => {
       { $match: { score: { $gt: 0 }, puzzle: { $type: 'objectId' } } },
       { $group: { _id: { trainee: '$trainee', puzzle: '$puzzle' }, score: { $max: '$score' } } },
       { $group: { _id: '$_id.trainee', highScore: { $sum: '$score' }, puzzlesCompleted: { $sum: 1 } } },
-      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'profile', pipeline: [
-        { $match: { role: 'trainee', status: 'active' } },
-        { $project: { firstName: 1, lastName: 1, profileImage: 1 } },
-      ] } },
+      {
+        $lookup: {
+          from: 'users', localField: '_id', foreignField: '_id', as: 'profile', pipeline: [
+            { $match: { role: 'trainee', status: 'active' } },
+            { $project: { firstName: 1, lastName: 1, profileImage: 1 } },
+          ]
+        }
+      },
       { $unwind: '$profile' },
       { $sort: { highScore: -1, _id: 1 } },
-      { $facet: {
-        entries: [
-          { $skip: (page - 1) * pageSize }, { $limit: pageSize },
-          { $project: { _id: 0, highScore: 1, name: { $trim: { input: { $concat: [{ $ifNull: ['$profile.firstName', ''] }, ' ', { $ifNull: ['$profile.lastName', ''] }] } } }, profileImage: { $ifNull: ['$profile.profileImage', ''] } } },
-        ],
-        count: [{ $count: 'total' }],
-        mine: [{ $match: { _id: new mongoose.Types.ObjectId(req.user.id) } }, { $project: { _id: 0, highScore: 1, puzzlesCompleted: 1 } }],
-      } },
+      {
+        $facet: {
+          entries: [
+            { $skip: (page - 1) * pageSize }, { $limit: pageSize },
+            { $project: { _id: 0, highScore: 1, name: { $trim: { input: { $concat: [{ $ifNull: ['$profile.firstName', ''] }, ' ', { $ifNull: ['$profile.lastName', ''] }] } } }, profileImage: { $ifNull: ['$profile.profileImage', ''] } } },
+          ],
+          count: [{ $count: 'total' }],
+          mine: [{ $match: { _id: new mongoose.Types.ObjectId(req.user.id) } }, { $project: { _id: 0, highScore: 1, puzzlesCompleted: 1 } }],
+        }
+      },
     ]);
     // Explicit allowlist also protects the response if the database projection
     // is changed later. Other trainees' IDs and contact details never leave it.

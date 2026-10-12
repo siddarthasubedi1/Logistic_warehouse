@@ -12,7 +12,7 @@ async function maybeUpdatePersonalBest(attempt, challenge) {
     const personalBest = await PersonalBest.findOneAndUpdate(
       { trainee: attempt.trainee, challenge: attempt.challenge, $or: alternatives },
       { $set: { trainee: attempt.trainee, challenge: attempt.challenge, programme: attempt.programme, puzzle: attempt.puzzle, type: attempt.type || 'puzzle', achievedAt: attempt.finishedAt || new Date(), attempt: attempt._id, score: attempt.score, durationSeconds: attempt.durationSeconds } },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
     return { updated: true, personalBest };
   } catch (error) {
@@ -24,7 +24,7 @@ async function maybeUpdatePersonalBest(attempt, challenge) {
     const improved = await PersonalBest.findOneAndUpdate(
       { trainee: attempt.trainee, challenge: attempt.challenge, $or: alternatives },
       { $set: { achievedAt: attempt.finishedAt || new Date(), attempt: attempt._id, score: attempt.score, durationSeconds: attempt.durationSeconds } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     return { updated: !!improved, personalBest: improved || await PersonalBest.findOne({ trainee: attempt.trainee, challenge: attempt.challenge }) };
   }

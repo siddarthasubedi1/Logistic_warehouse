@@ -41,7 +41,7 @@ async function upsertUser(data, password) {
     return User.findOneAndUpdate(
         { email: data.email },
         { $set: { ...data, passwordHash, accountStatus: "created", status: "active", mustChangePassword: false } },
-        { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+        { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
 }
 
@@ -62,27 +62,27 @@ async function run() {
         await TrainingModule.findOneAndUpdate(
             { key: moduleData.key },
             { $set: { ...moduleData, status: "active", createdBy: admin._id } },
-            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
         );
 
         const programme = await TrainingProgramme.findOneAndUpdate(
             { programmeType: moduleData.key, title: `${moduleData.name} Safety Programme` },
             { $set: { description: `${moduleData.description} Complete the ordered learning and progressive assessments. Scenario practice is optional.`, owner: trainerA._id, authorizedTrainers: [trainerA._id], passMark: PASS_MARK, status: "active", createdBy: admin._id, updatedBy: admin._id } },
-            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
         );
 
         for (const [index, title] of sectionTitles[moduleData.key].entries()) {
             await LearningSection.findOneAndUpdate(
                 { programme: programme._id, order: index + 1 },
                 { $set: { title, content: `${title} learning content for ${moduleData.name}. This seeded content can be replaced by an Administrator or authorised Trainer.`, imageUrl: "", imageAltText: "", status: "active", createdBy: admin._id, updatedBy: admin._id } },
-                { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+                { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
             );
         }
 
         await Scenario.findOneAndUpdate(
             { programme: programme._id, order: 1 },
             { $set: { title: `${moduleData.name} Scenario`, prompt: `Identify the safest response in this ${moduleData.name} situation.`, type: moduleData.key === "cyber-awareness" ? "cyber" : "hazard", options: ["safe-response", "unsafe-response"], correctResponses: ["safe-response"], feedbackCorrect: "Correct. You identified the safer response.", feedbackIncorrect: "That response leaves a risk. Review the learning content and try again.", status: "active", createdBy: admin._id, updatedBy: admin._id } },
-            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
         );
 
         for (const level of ["basic", "intermediate", "high"]) {
@@ -90,7 +90,7 @@ async function run() {
                 await AssessmentQuestion.findOneAndUpdate(
                     { programme: programme._id, level, order },
                     { $set: { question: `${questionText[moduleData.key]} (${level} ${order})`, options: ["Follow the approved safe procedure", "Ignore the risk", "Continue without checking"], correctAnswer: "Follow the approved safe procedure", points: 1, feedback: "Use the approved procedure and reassess the risk before continuing.", status: "active", createdBy: admin._id, updatedBy: admin._id } },
-                    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+                    { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
                 );
             }
         }
@@ -101,7 +101,7 @@ async function run() {
             await TrainingAssignment.findOneAndUpdate(
                 { programme: programme._id, trainee: trainee._id, status: "active" },
                 { $setOnInsert: { assignedBy: admin._id, assignedAt: new Date(), status: "active" } },
-                { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+                { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
             );
         }
     }
