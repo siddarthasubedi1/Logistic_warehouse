@@ -36,10 +36,11 @@ const {
 const requestPasswordReset =
     async (req, res) => {
         try {
-            const username =
-                req.body.username
-                    ?.trim()
-                    .toLowerCase();
+            const input = req.body?.username;
+            if (typeof input !== "string" || input.length > 80) {
+                return res.status(400).json({ message: "Please enter a valid username." });
+            }
+            const username = input.trim().toLowerCase();
 
 
             // ==================================================

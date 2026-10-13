@@ -104,6 +104,8 @@ function UserDetailsForm({
                             <input
                                 type="text"
                                 name="firstName"
+                                minLength={2}
+                                maxLength={60}
                                 value={
                                     formData.firstName
                                 }
@@ -128,6 +130,8 @@ function UserDetailsForm({
                             <input
                                 type="text"
                                 name="lastName"
+                                minLength={2}
+                                maxLength={60}
                                 value={
                                     formData.lastName
                                 }
@@ -216,6 +220,7 @@ function UserDetailsForm({
                             <input
                                 type="email"
                                 name="email"
+                                maxLength={254}
                                 value={
                                     formData.email
                                 }
@@ -240,6 +245,10 @@ function UserDetailsForm({
                             <input
                                 type="text"
                                 name="phoneNumber"
+                                inputMode="numeric"
+                                pattern="[0-9]{10}"
+                                minLength={10}
+                                maxLength={10}
                                 value={
                                     formData.phoneNumber
                                 }

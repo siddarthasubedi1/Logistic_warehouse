@@ -1,3 +1,4 @@
+const { validateUserDetails } = require("../utils/userInputValidation");
 const bcrypt =
     require("bcrypt");
 
@@ -464,6 +465,11 @@ const updateUser =
             };
 
 
+            const detailsCheck = validateUserDetails(req.body, { partial: true });
+            if (detailsCheck.error) {
+                return res.status(400).json({ code: "VALIDATION_ERROR", message: detailsCheck.error });
+            }
+
             const changedFields = {};
 
 
@@ -697,15 +703,8 @@ const updateUser =
                     ).trim();
 
 
-                if (
-                    !value
-                ) {
-                    return res
-                        .status(400)
-                        .json({
-                            message:
-                                "Phone number cannot be empty",
-                        });
+                if (!/^\d{10}$/.test(value)) {
+                    return res.status(400).json({ message: "Phone number must contain exactly 10 digits (no spaces or symbols)." });
                 }
 
 
@@ -971,6 +970,11 @@ const updateUser =
                 error
             );
 
+
+            if (error?.name === "ValidationError") {
+                const issue = Object.values(error.errors || {})[0];
+                return res.status(400).json({ code: "VALIDATION_ERROR", message: issue?.message || "Invalid user information." });
+            }
 
             if (
                 error.code ===

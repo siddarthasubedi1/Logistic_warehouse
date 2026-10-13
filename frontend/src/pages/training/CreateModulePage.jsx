@@ -115,7 +115,7 @@ function ModuleEditor() {
                     .replace(
                         /^-+|-+$/g,
                         ""
-                    );
+                    ).slice(0, 30).replace(/-+$/, "");
 
             setFormData(
                 (previous) => ({
@@ -139,7 +139,7 @@ function ModuleEditor() {
             return;
         }
 
-        if (!file.type.startsWith("image/")) {
+        if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.type)) {
             setError("Please select a valid image file.");
             event.target.value = "";
             return;
@@ -238,6 +238,19 @@ function ModuleEditor() {
             return;
         }
 
+
+        if (formData.name.trim().length > 120) {
+            setError('Module name cannot exceed 120 characters.');
+            return;
+        }
+        if (formData.description.trim().length > 3000) {
+            setError('Module description cannot exceed 3000 characters.');
+            return;
+        }
+        if (formData.code && (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(formData.code.trim()) || formData.code.trim().length > 30)) {
+            setError('Module code must be 1–30 letters, numbers, underscores or hyphens.');
+            return;
+        }
 
         setSaving(true);
         try {
@@ -401,7 +414,7 @@ function ModuleEditor() {
                                     onChange={
                                         handleChange
                                     }
-                                    maxLength={150}
+                                    maxLength={120}
                                     placeholder="Enter module name"
                                     className={inputClass}
                                 />
@@ -420,7 +433,7 @@ function ModuleEditor() {
                                     onChange={
                                         handleChange
                                     }
-                                    maxLength={50}
+                                    maxLength={30}
                                     placeholder="Example: MODULE-001"
                                     className={inputClass}
                                 />

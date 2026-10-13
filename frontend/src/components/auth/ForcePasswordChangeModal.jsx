@@ -1,3 +1,4 @@
+import { validateNewPassword } from "../../utils/formValidation";
 import {
     useState,
 } from "react";
@@ -84,6 +85,9 @@ function ForcePasswordChangeModal({
                 return "New password must contain at least 12 characters.";
             }
 
+
+            const passwordError = validateNewPassword(newPassword);
+            if (passwordError) return passwordError;
 
             if (
                 newPassword ===
@@ -338,12 +342,24 @@ function ForcePasswordChangeModal({
                         <Requirement
                             passed={
                                 newPassword.length >=
-                                12
+                                12 && newPassword.length <= 128
                             }
                         >
-                            At least 12 characters
+                            12–128 characters
                         </Requirement>
 
+
+                        <Requirement passed={/[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword)}>
+                            Uppercase and lowercase letters
+                        </Requirement>
+
+                        <Requirement passed={/\d/.test(newPassword) && /[^\w\s]/.test(newPassword)}>
+                            At least one number and one symbol
+                        </Requirement>
+
+                        <Requirement passed={!/\s/.test(newPassword) && Boolean(newPassword)}>
+                            No spaces or line breaks
+                        </Requirement>
 
                         <Requirement
                             passed={

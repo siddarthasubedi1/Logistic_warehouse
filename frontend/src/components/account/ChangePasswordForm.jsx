@@ -1,3 +1,4 @@
+import { validateNewPassword } from "../../utils/formValidation";
 import {
     useState,
 } from "react";
@@ -100,6 +101,12 @@ function ChangePasswordForm() {
                 return;
             }
 
+
+            const passwordError = validateNewPassword(newPassword);
+            if (passwordError) {
+                setError(passwordError);
+                return;
+            }
 
             if (
                 newPassword !==
@@ -414,8 +421,8 @@ function ChangePasswordForm() {
                             text-[#64748b]
                         "
                     >
-                        Use at least 12 characters and choose a password
-                        different from your current password.
+                        Use 12–128 characters, including uppercase and lowercase letters,
+                        a number and a symbol. Do not use spaces or reuse the current password.
                     </p>
 
                 </div>

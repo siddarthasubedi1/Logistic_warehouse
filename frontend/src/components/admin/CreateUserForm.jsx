@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import api from "../../services/api";
+import { validateUserDetails } from "../../utils/formValidation";
 import GeneratedCredentialsModal from "./GeneratedCredentialsModal";
 
 
@@ -371,6 +372,12 @@ function CreateUserForm() {
                 return;
             }
 
+
+            const validationError = validateUserDetails(formData);
+            if (validationError) {
+                setError(validationError);
+                return;
+            }
 
             if (
                 formData.role ===
@@ -950,6 +957,8 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter first name"
+                                    minLength={2}
+                                    maxLength={60}
                                     required
                                 />
 
@@ -964,6 +973,8 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="Enter last name"
+                                    minLength={2}
+                                    maxLength={60}
                                     required
                                 />
 
@@ -973,6 +984,8 @@ function CreateUserForm() {
                                     name="age"
                                     type="number"
                                     min="16"
+                                    max="100"
+                                    step="1"
                                     value={
                                         formData.age
                                     }
@@ -1054,6 +1067,7 @@ function CreateUserForm() {
                                         handleChange
                                     }
                                     placeholder="name@example.com"
+                                    maxLength={254}
                                     required
                                 />
 
@@ -1067,7 +1081,13 @@ function CreateUserForm() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Enter phone number"
+                                    placeholder="10-digit phone number"
+                                    inputMode="numeric"
+                                    autoComplete="tel-national"
+                                    pattern="[0-9]{10}"
+                                    minLength={10}
+                                    maxLength={10}
+                                    title="Enter exactly 10 digits without spaces or symbols"
                                     required
                                 />
 
@@ -1087,6 +1107,8 @@ function CreateUserForm() {
                                             handleChange
                                         }
                                         placeholder="Enter full address"
+                                        minLength={5}
+                                        maxLength={250}
                                         required
                                     />
                                 </div>

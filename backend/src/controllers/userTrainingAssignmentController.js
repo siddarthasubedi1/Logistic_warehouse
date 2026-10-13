@@ -1,6 +1,7 @@
 const User =
     require("../models/User");
 const TrainingModule = require("../models/TrainingModule");
+const { validateUserDetails } = require("../utils/userInputValidation");
 
 
 const {
@@ -105,6 +106,10 @@ const validateTrainingSections = (
 const createPendingUser =
     async (req, res) => {
         try {
+            const detailsCheck = validateUserDetails(req.body);
+            if (detailsCheck.error) {
+                return res.status(400).json({ code: "VALIDATION_ERROR", message: detailsCheck.error });
+            }
             const {
                 firstName,
                 lastName,
@@ -205,10 +210,7 @@ const createPendingUser =
             // GENDER
             // ==================================================
 
-            const normalizedGender =
-                String(gender)
-                    .trim()
-                    .toLowerCase();
+            const normalizedGender = detailsCheck.values.gender;
 
 
             if (
@@ -216,6 +218,7 @@ const createPendingUser =
                     "male",
                     "female",
                     "other",
+                    "prefer-not-to-say",
                 ].includes(
                     normalizedGender
                 )
@@ -315,22 +318,22 @@ const createPendingUser =
                         null,
 
                     firstName:
-                        firstName.trim(),
+                        detailsCheck.values.firstName,
 
                     lastName:
-                        lastName.trim(),
+                        detailsCheck.values.lastName,
 
                     age:
-                        parsedAge,
+                        detailsCheck.values.age,
 
                     email:
                         normalizedEmail,
 
                     phoneNumber:
-                        phoneNumber.trim(),
+                        detailsCheck.values.phoneNumber,
 
                     address:
-                        address.trim(),
+                        detailsCheck.values.address,
 
                     gender:
                         normalizedGender,
@@ -443,6 +446,11 @@ const createPendingUser =
                 error
             );
 
+
+            if (error?.name === "ValidationError") {
+                const issue = Object.values(error.errors || {})[0];
+                return res.status(400).json({ code: "VALIDATION_ERROR", message: issue?.message || "Invalid user information." });
+            }
 
             if (
                 error.code ===

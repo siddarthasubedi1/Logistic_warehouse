@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
             sparse: true,
             lowercase: true,
             trim: true,
+            minlength: 3,
+            maxlength: 80,
         },
 
         email: {
@@ -16,6 +18,8 @@ const userSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
+            maxlength: 254,
+            match: [/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, "Please enter a valid email address."],
         },
 
         passwordHash: {
@@ -27,12 +31,16 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
+            minlength: 2,
+            maxlength: 60,
         },
 
         lastName: {
             type: String,
             required: true,
             trim: true,
+            minlength: 2,
+            maxlength: 60,
         },
 
         age: {
@@ -46,6 +54,8 @@ const userSchema = new mongoose.Schema(
             },
 
             min: 16,
+            max: 100,
+            validate: { validator: Number.isInteger, message: "Age must be a whole number." },
         },
 
         phoneNumber: {
@@ -59,6 +69,7 @@ const userSchema = new mongoose.Schema(
             },
 
             trim: true,
+            match: [/^\d{10}$/, "Phone number must contain exactly 10 digits."],
         },
 
         address: {
@@ -72,6 +83,8 @@ const userSchema = new mongoose.Schema(
             },
 
             trim: true,
+            minlength: 5,
+            maxlength: 250,
         },
 
         gender: {
@@ -88,6 +101,7 @@ const userSchema = new mongoose.Schema(
                 "male",
                 "female",
                 "other",
+                "prefer-not-to-say",
             ],
         },
 

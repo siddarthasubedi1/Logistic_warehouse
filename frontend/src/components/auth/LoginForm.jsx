@@ -280,6 +280,8 @@ function LoginForm({
                         <input
                             id="login-username"
                             type="text"
+                            minLength={3}
+                            maxLength={80}
                             value={
                                 username
                             }
@@ -342,6 +344,7 @@ function LoginForm({
 
                         <input
                             id="login-password"
+                            maxLength={128}
                             type={
                                 showPassword
                                     ? "text"

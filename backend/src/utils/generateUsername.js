@@ -7,10 +7,12 @@ const cleanText = (text) => {
 };
 
 const generateUsername = async (firstName, lastName) => {
-    const first = cleanText(firstName);
-    const last = cleanText(lastName);
-
-    const baseUsername = `${first}.${last}`;
+    // Usernames are ASCII-safe and bounded even when a legal name is long or
+    // written in a script that has no straightforward ASCII transliteration.
+    const first = cleanText(String(firstName || '').normalize('NFKD')).slice(0, 35);
+    const last = cleanText(String(lastName || '').normalize('NFKD')).slice(0, 35);
+    const suffix = require('node:crypto').randomBytes(4).toString('hex');
+    const baseUsername = `${first || `user${suffix}`}.${last || `account${suffix}`}`;
 
     let username = baseUsername;
     let number = 1;

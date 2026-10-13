@@ -1,6 +1,7 @@
 import {
     useState,
 } from "react";
+import { validateUserDetails } from "../../utils/formValidation";
 
 
 function getInitialValues(
@@ -133,6 +134,12 @@ function EditUserForm({
             return;
         }
 
+
+        const validationError = validateUserDetails(values);
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
 
         onSave?.({
             firstName:
@@ -388,6 +395,8 @@ function EditUserForm({
                         <InputField
                             label="First Name"
                             name="firstName"
+                            minLength={2}
+                            maxLength={60}
                             value={
                                 values.firstName
                             }
@@ -400,6 +409,8 @@ function EditUserForm({
                         <InputField
                             label="Last Name"
                             name="lastName"
+                            minLength={2}
+                            maxLength={60}
                             value={
                                 values.lastName
                             }
@@ -413,6 +424,7 @@ function EditUserForm({
                             label="Email"
                             name="email"
                             type="email"
+                            maxLength={254}
                             value={
                                 values.email
                             }
@@ -425,6 +437,12 @@ function EditUserForm({
                         <InputField
                             label="Phone Number"
                             name="phoneNumber"
+                            inputMode="numeric"
+                            autoComplete="tel-national"
+                            minLength={10}
+                            maxLength={10}
+                            pattern="[0-9]{10}"
+                            title="Enter exactly 10 digits without spaces or symbols"
                             value={
                                 values.phoneNumber
                             }
@@ -439,6 +457,8 @@ function EditUserForm({
                             name="age"
                             type="number"
                             min="16"
+                            max="100"
+                            step="1"
                             value={
                                 values.age
                             }

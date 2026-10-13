@@ -262,6 +262,8 @@ function ForgotPasswordForm({
 
                     <input
                         type="text"
+                        minLength={3}
+                        maxLength={80}
                         value={
                             username
                         }

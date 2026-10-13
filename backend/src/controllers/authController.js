@@ -1,3 +1,4 @@
+const { validateNewPassword } = require("../utils/userInputValidation");
 const refreshDigest = token => require('node:crypto').createHash('sha256').update(token).digest('hex');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -45,7 +46,7 @@ const login = async (req, res) => {
         const {
             username,
             password,
-        } = req.body;
+        } = req.body || {};
 
 
         // ==================================================
@@ -70,6 +71,12 @@ const login = async (req, res) => {
                 .trim()
                 .toLowerCase();
 
+
+        if (typeof username !== "string" || typeof password !== "string" ||
+            normalizedUsername.length < 3 || normalizedUsername.length > 80 ||
+            password.length > 128 || password.length === 0) {
+            return res.status(400).json({ message: "Invalid username or password format." });
+        }
 
         // ==================================================
         // FIND USER
@@ -416,7 +423,7 @@ const changePassword =
             const {
                 currentPassword,
                 newPassword,
-            } = req.body;
+            } = req.body || {};
 
 
             // ==================================================
@@ -452,6 +459,14 @@ const changePassword =
                     });
             }
 
+
+            if (typeof currentPassword !== 'string' || currentPassword.length > 128) {
+                return res.status(400).json({ message: 'Invalid current password format.' });
+            }
+            const passwordError = validateNewPassword(newPassword);
+            if (passwordError) {
+                return res.status(400).json({ code: "VALIDATION_ERROR", message: passwordError });
+            }
 
             // ==================================================
             // CURRENT USER

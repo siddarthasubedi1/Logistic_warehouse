@@ -474,7 +474,7 @@ const createTrainingProgramme = async (
         // ==================================================
 
         if (
-            !Number.isFinite(
+            !Number.isInteger(
                 passMark
             ) ||
             passMark < 0 ||
@@ -487,7 +487,7 @@ const createTrainingProgramme = async (
                         "INVALID_PASS_MARK",
 
                     message:
-                        "Pass mark must be a number between 0 and 100.",
+                        "Pass mark must be a whole number between 0 and 100.",
                 });
         }
 
@@ -1296,7 +1296,7 @@ const updateTrainingProgramme = async (
         // ==================================================
 
         if (
-            !Number.isFinite(
+            !Number.isInteger(
                 nextPassMark
             ) ||
             nextPassMark < 0 ||
@@ -1309,7 +1309,7 @@ const updateTrainingProgramme = async (
                         "INVALID_PASS_MARK",
 
                     message:
-                        "Pass mark must be a number between 0 and 100.",
+                        "Pass mark must be a whole number between 0 and 100.",
                 });
         }
 
